@@ -47,9 +47,12 @@ public class GCBiomeTagProvider extends FabricTagProvider<Biome> {
                 .add(GCBiomes.Moon.OLIVINE_SPIKES);
 
         this.tag(GCBiomeTags.VENUS)
-                .add(GCBiomes.Venus.VENUS_VALLEY)
-                .add(GCBiomes.Venus.VENUS_FLAT)
-                .add(GCBiomes.Venus.VENUS_MOUNTAIN);
+                .add(GCBiomes.Venus.VENUS_VOLCANIC_PLAINS)
+                .add(GCBiomes.Venus.VENUS_HIGHLANDS)
+                .add(GCBiomes.Venus.VENUS_LAVA_CHANNELS)
+                .add(GCBiomes.Venus.VENUS_SHIELD_VOLCANO)
+                .add(GCBiomes.Venus.VENUS_SULFUR_FLATS)
+                .add(GCBiomes.Venus.VENUS_LAVA_SEA);
 
         this.tag(GCBiomeTags.MARS)
                 .add(GCBiomes.Mars.MARS)

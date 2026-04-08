@@ -1,7 +1,10 @@
 {
   "values": [
-    "galacticraft:venus_valley",
-    "galacticraft:venus_flat",
-    "galacticraft:venus_mountain"
+    "galacticraft:venus_volcanic_plains",
+    "galacticraft:venus_highlands",
+    "galacticraft:venus_lava_channels",
+    "galacticraft:venus_shield_volcano",
+    "galacticraft:venus_sulfur_flats",
+    "galacticraft:venus_lava_sea"
   ]
 }

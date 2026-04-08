@@ -372,6 +372,8 @@ public class GCTranslationProvider extends TranslationProvider {
         this.block(GCBlocks.BASIC_SOLAR_PANEL, "Basic Solar Panel");
         this.block(GCBlocks.ADVANCED_SOLAR_PANEL, "Advanced Solar Panel");
         this.block(GCBlocks.ENERGY_STORAGE_MODULE, "Energy Storage Module");
+        this.block(GCBlocks.ENERGY_STORAGE_CLUSTER, "Energy Storage Cluster");
+        this.block(GCBlocks.OXYGEN_DETECTOR, "Oxygen Detector");
         this.block(GCBlocks.ELECTRIC_FURNACE, "Electric Furnace");
         this.block(GCBlocks.ELECTRIC_ARC_FURNACE, "Electric Arc Furnace");
         this.block(GCBlocks.REFINERY, "Refinery");
@@ -382,6 +384,11 @@ public class GCTranslationProvider extends TranslationProvider {
         this.block(GCBlocks.OXYGEN_COMPRESSOR, "Oxygen Compressor");
         this.block(GCBlocks.OXYGEN_STORAGE_MODULE, "Oxygen Storage Module");
         this.block(GCBlocks.FUEL_LOADER, "Fuel Loader");
+        this.block(GCBlocks.CARGO_LOADER, "Cargo Loader");
+        this.block(GCBlocks.CARGO_UNLOADER, "Cargo Unloader");
+        this.block(GCBlocks.FLUID_TANK, "Fluid Tank");
+        this.block(GCBlocks.PAINTER, "Painter");
+        this.block(GCBlocks.DECONSTRUCTOR, "Deconstructor");
 
         this.block(GCBlocks.AIR_LOCK_CONTROLLER, "Airlock Controller");
         this.block(GCBlocks.AIR_LOCK_FRAME, "Airlock Frame");
@@ -578,6 +585,8 @@ public class GCTranslationProvider extends TranslationProvider {
 
         // VEHICLES
         this.item(GCItems.BUGGY, "Buggy");
+        this.item(GCItems.ASTRO_MINER, "Astro Miner");
+        this.item(GCItems.CARGO_ROCKET, "Cargo Rocket");
         this.item(GCItems.ROCKET, "Rocket");
 
         // ROCKET PARTS
@@ -815,6 +824,8 @@ public class GCTranslationProvider extends TranslationProvider {
         this.entity(GCEntityTypes.ARCH_GREY, "Arch Grey");
         this.entity(GCEntityTypes.BUBBLE, "Bubble");
         this.entity(GCEntityTypes.BUGGY, "Buggy");
+        this.entity(GCEntityTypes.ASTRO_MINER, "Astro Miner");
+        this.entity(GCEntityTypes.CARGO_ROCKET, "Cargo Rocket");
         this.entity(GCEntityTypes.COMET_CUBE, "Comet Cube");
         this.entity(GCEntityTypes.EVOLVED_CREEPER, "Evolved Creeper");
         this.entity(GCEntityTypes.EVOLVED_ENDERMAN, "Evolved Enderman");
@@ -822,6 +833,8 @@ public class GCTranslationProvider extends TranslationProvider {
         this.entity(GCEntityTypes.EVOLVED_PILLAGER, "Evolved Pillager");
         this.entity(GCEntityTypes.EVOLVED_SKELETON, "Evolved Skeleton");
         this.entity(GCEntityTypes.SKELETON_BOSS, "Evolved Skeleton Boss");
+        this.entity(GCEntityTypes.CREEPER_BOSS, "Evolved Creeper Boss");
+        this.entity(GCEntityTypes.SPIDER_BOSS, "Evolved Spider Queen");
         this.entity(GCEntityTypes.EVOLVED_SPIDER, "Evolved Spider");
         this.entity(GCEntityTypes.EVOLVED_VINDICATOR, "Evolved Vindicator");
         this.entity(GCEntityTypes.EVOLVED_WITCH, "Evolved Witch");
@@ -894,9 +907,12 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(GCBiomes.Moon.LUNAR_LOWLANDS, "Lunar Lowlands");
         this.add(GCBiomes.Moon.OLIVINE_SPIKES, "Olivine Spikes");
         this.add(GCBiomes.SPACE, "Space");
-        this.add(GCBiomes.Venus.VENUS_FLAT, "Venus Flat");
-        this.add(GCBiomes.Venus.VENUS_MOUNTAIN, "Venus Mountain");
-        this.add(GCBiomes.Venus.VENUS_VALLEY, "Venus Valley");
+        this.add(GCBiomes.Venus.VENUS_VOLCANIC_PLAINS, "Venus Volcanic Plains");
+        this.add(GCBiomes.Venus.VENUS_HIGHLANDS, "Venus Highlands");
+        this.add(GCBiomes.Venus.VENUS_LAVA_CHANNELS, "Venus Lava Channels");
+        this.add(GCBiomes.Venus.VENUS_SHIELD_VOLCANO, "Venus Shield Volcano");
+        this.add(GCBiomes.Venus.VENUS_SULFUR_FLATS, "Venus Sulfur Flats");
+        this.add(GCBiomes.Venus.VENUS_LAVA_SEA, "Venus Lava Sea");
     }
 
     protected void generateChatTranslations() {
@@ -943,6 +959,10 @@ public class GCTranslationProvider extends TranslationProvider {
                 "%s was dissolved by sulfuric acid while trying to escape %s");
         this.deathBy(GCDamageTypes.VINE_POISON, "%s succumbed to the poison of some vines",
                 "%s succumbed to the poison of some vines while trying to escape %s");
+        this.deathBy(GCDamageTypes.COLD, "%s froze to death",
+                "%s froze to death while trying to escape %s");
+        this.deathBy(GCDamageTypes.HEAT, "%s burned up",
+                "%s burned up while trying to escape %s");
 
         this.add(Boss.SKELETON_BOSS_DESPAWN, "Boss despawned, don't leave the boss room while fighting! Re-enter room to respawn boss.");
     }
@@ -956,6 +976,14 @@ public class GCTranslationProvider extends TranslationProvider {
         this.rocketPart(GCRocketParts.TIER_1_FIN, "Basic Fins");
         this.rocketPart(GCRocketParts.STORAGE_UPGRADE, "Storage Upgrade");
         this.rocketPart(GCRocketParts.EXPLOSIVE_UPGRADE, "Explosive Upgrade");
+        this.rocketPart(GCRocketParts.TIER_2_CONE, "Tier 2 Cone");
+        this.rocketPart(GCRocketParts.TIER_2_BODY, "Tier 2 Body");
+        this.rocketPart(GCRocketParts.TIER_2_FIN, "Tier 2 Fins");
+        this.rocketPart(GCRocketParts.TIER_2_ENGINE, "Tier 2 Engine");
+        this.rocketPart(GCRocketParts.TIER_3_CONE, "Tier 3 Cone");
+        this.rocketPart(GCRocketParts.TIER_3_BODY, "Tier 3 Body");
+        this.rocketPart(GCRocketParts.TIER_3_FIN, "Tier 3 Fins");
+        this.rocketPart(GCRocketParts.TIER_3_ENGINE, "Tier 3 Engine");
     }
 
     protected void generateSmithingTranslations() {
@@ -998,8 +1026,15 @@ public class GCTranslationProvider extends TranslationProvider {
         this.blockDesc(GCBlocks.ELECTRIC_FURNACE, "Uses electricity instead of fuel to smelt items.");
         this.blockDesc(GCBlocks.ELECTRIC_ARC_FURNACE, "A faster, electric blast furnace for smelting ores.");
         this.blockDesc(GCBlocks.ENERGY_STORAGE_MODULE, "Stores a large amount of energy.");
+        this.blockDesc(GCBlocks.ENERGY_STORAGE_CLUSTER, "Stores an enormous amount of energy.");
+        this.blockDesc(GCBlocks.OXYGEN_DETECTOR, "Emits a redstone signal when in a sealed, oxygenated area.");
         this.blockDesc(GCBlocks.FOOD_CANNER, "Compresses several food items into a single can. Canned foods can be eaten while wearing an oxygen mask.");
         this.blockDesc(GCBlocks.FUEL_LOADER, "Loads fuel into a rocket placed on an adjacent launch pad.");
+        this.blockDesc(GCBlocks.CARGO_LOADER, "Pushes items from its buffer into an adjacent container.");
+        this.blockDesc(GCBlocks.CARGO_UNLOADER, "Pulls items from an adjacent container into its buffer.");
+        this.blockDesc(GCBlocks.FLUID_TANK, "Stores a large amount of any single fluid and connects to fluid pipes.");
+        this.blockDesc(GCBlocks.PAINTER, "Recolors dyeable blocks such as glass, terracotta, and concrete using a dye.");
+        this.blockDesc(GCBlocks.DECONSTRUCTOR, "Reverse-engineers compressed metals back into their base ingots.");
         this.blockDesc(GCBlocks.GLOWSTONE_LANTERN, "Provides light, even in areas without oxygen.");
         this.blockDesc(GCBlocks.GLOWSTONE_TORCH, "Provides light, even in areas without oxygen.");
         this.blockDesc(GCBlocks.MOON_CHEESE_WHEEL, "Can be placed and eaten like a cake. Made with all-natural Moon cheese.");
@@ -1042,6 +1077,11 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(Config.MISC, "Misc");
         this.add(Config.CREATIVE, "Creative");
         this.add(Config.ENABLE_CREATIVE_GEARINV, "Enable Creative Gear Inventory");
+        this.add(Config.DISABLE_SPACE_STATION_CREATION, "Disable Space Station Creation");
+        this.add(Config.SPACE_STATION_ALLOWED_BODIES, "Space Station Allowed Bodies");
+        this.add(Config.SPACE_STATION_ALLOWED_BODIES_DESC, "Celestial body IDs where space stations may be created (e.g. \"galacticraft:earth\"). Leave empty to allow all bodies.");
+        this.add(Config.SPACE_STATION_SHARED_BODIES, "Space Station Shared Bodies");
+        this.add(Config.SPACE_STATION_SHARED_BODIES_DESC, "Celestial body IDs whose stations share one communal dimension, each player scattered far apart. Leave empty for private per-player stations.");
         this.add(Config.DEBUG, "Debug");
         this.add(Config.DEBUG_LOGGING, "Debug Logging");
         this.add(Config.HIDE_ALPHA_WARNING, "Hide Alpha Warning");
@@ -1303,6 +1343,7 @@ public class GCTranslationProvider extends TranslationProvider {
         this.advancement(Advancements.LEAVE_ROCKET_DURING_COUNTDOWN, "We've Forgotten the Crackers!", "Leave a Rocket during the countdown");
         this.advancement(Advancements.LAUNCH_ROCKET, "We Have Liftoff", "Launch your first Rocket");
         this.advancement(Advancements.MOON, "The Moon!", "Land on the Moon");
+        this.advancement(Advancements.MARS, "The Red Planet", "Land on Mars in a Tier 2 Rocket");
         this.advancement(Advancements.PARROT_LANDING, "The Parrot has Landed", "Land on the Moon with a Parrot on your shoulder");
         this.advancement(Advancements.EAT_MOON_CHEESE_CURD, "Wensleydale? Stilton?", "Eat Moon Cheese Curd");
         this.advancement(Advancements.CHEESE_AND_CRACKERS, "It's Like No Cheese I've Ever Tasted...", "Eat cheese and crackers");

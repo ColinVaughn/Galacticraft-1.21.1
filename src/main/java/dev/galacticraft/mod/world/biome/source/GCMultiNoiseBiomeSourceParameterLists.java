@@ -144,30 +144,61 @@ public class GCMultiNoiseBiomeSourceParameterLists {
     @Contract("_ -> new")
     private static <T> Climate.@NotNull ParameterList<T> generateVenus(Function<ResourceKey<Biome>, T> biomeRegistry) {
         ImmutableList.Builder<Pair<Climate.ParameterPoint, T>> builder = ImmutableList.builder();
+        // All biomes HOT/DRY (hot prevents snow); differentiated by continentalness/erosion/weirdness.
+        // Volcanic plains — the calm default: mid inland, flat, low-mixed weirdness.
         writeBiomeParameters(builder::add,
-                HOT, // hot to prevent snow
+                HOT,
                 DRY,
-                Parameter.span(SHORE_CONTINENTALNESS, MID_INLAND_CONTINENTALNESS),
+                Parameter.span(NEAR_INLAND_CONTINENTALNESS, MID_INLAND_CONTINENTALNESS),
+                MIN_EROSION,
+                WEIRDNESS_L_MIXED,
+                0.0F,
+                biomeRegistry.apply(GCBiomes.Venus.VENUS_VOLCANIC_PLAINS));
+        // Highland tesserae — far inland, flat erosion (tall rough plateaus), high-mixed weirdness.
+        writeBiomeParameters(builder::add,
+                HOT,
+                DRY,
+                FAR_INLAND_CONTINENTALNESS,
                 MIN_EROSION,
                 WEIRDNESS_H_MIXED,
                 0.0F,
-                biomeRegistry.apply(GCBiomes.Venus.VENUS_MOUNTAIN));
+                biomeRegistry.apply(GCBiomes.Venus.VENUS_HIGHLANDS));
+        // Lava channels — river weirdness carves the winding valleys.
         writeBiomeParameters(builder::add,
                 HOT,
                 DRY,
                 Parameter.span(SHORE_CONTINENTALNESS, MID_INLAND_CONTINENTALNESS),
-                MIN_EROSION,
-                WEIRDNESS_L_MIXED,
+                MED_EROSION,
+                WEIRDNESS_RIVER,
                 0.0F,
-                biomeRegistry.apply(GCBiomes.Venus.VENUS_FLAT));
+                biomeRegistry.apply(GCBiomes.Venus.VENUS_LAVA_CHANNELS));
+        // Shield volcano — far inland, mountainous weirdness (towering peaks).
         writeBiomeParameters(builder::add,
                 HOT,
                 DRY,
-                Parameter.span(SHORE_CONTINENTALNESS, MID_INLAND_CONTINENTALNESS),
+                FAR_INLAND_CONTINENTALNESS,
                 MIN_EROSION,
-                WEIRDNESS_L_MIXED,
+                WEIRDNESS_H_MOUNTAINS,
                 0.0F,
-                biomeRegistry.apply(GCBiomes.Venus.VENUS_VALLEY));
+                biomeRegistry.apply(GCBiomes.Venus.VENUS_SHIELD_VOLCANO));
+        // Sulfur flats — shore/near-inland, eroded lowlands, low-plains weirdness.
+        writeBiomeParameters(builder::add,
+                HOT,
+                DRY,
+                Parameter.span(SHORE_CONTINENTALNESS, NEAR_INLAND_CONTINENTALNESS),
+                SOMEWHAT_ERODED,
+                WEIRDNESS_L_PLAINS,
+                0.0F,
+                biomeRegistry.apply(GCBiomes.Venus.VENUS_SULFUR_FLATS));
+        // Lava sea — low shore basins, eroded, low-mountains weirdness (broad depressions).
+        writeBiomeParameters(builder::add,
+                HOT,
+                DRY,
+                SHORE_CONTINENTALNESS,
+                ERODED,
+                WEIRDNESS_L_MOUNTAINS,
+                0.0F,
+                biomeRegistry.apply(GCBiomes.Venus.VENUS_LAVA_SEA));
 
         return new Climate.ParameterList<>(builder.build());
     }

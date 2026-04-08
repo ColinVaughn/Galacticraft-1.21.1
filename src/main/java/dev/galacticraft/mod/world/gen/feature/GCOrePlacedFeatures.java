@@ -80,6 +80,7 @@ public class GCOrePlacedFeatures {
     public static final ResourceKey<PlacedFeature> ORE_ALUMINUM_VENUS = key("ore_aluminum_venus");
     public static final ResourceKey<PlacedFeature> ORE_SOLAR_VENUS = key("ore_solar_venus");
     public static final ResourceKey<PlacedFeature> ORE_GALENA_VENUS = key("ore_galena_venus");
+    public static final ResourceKey<PlacedFeature> ORE_GALENA_VENUS_VOLCANIC = key("ore_galena_venus_volcanic");
 
     public static void register() {
         BiomeModifications.create(Constant.id("ores")).add(ModificationPhase.ADDITIONS, BiomeSelectors.foundInOverworld(), context -> {
@@ -129,6 +130,8 @@ public class GCOrePlacedFeatures {
         context.register(ORE_ALUMINUM_VENUS, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.ORE_ALUMINUM_VENUS), modifiersWithCount(9, HeightRangePlacement.triangle(VerticalAnchor.bottom(), VerticalAnchor.absolute(96)))));
         context.register(ORE_SOLAR_VENUS, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.ORE_SOLAR_VENUS), modifiersWithCount(6, HeightRangePlacement.triangle(VerticalAnchor.absolute(0), VerticalAnchor.absolute(64)))));
         context.register(ORE_GALENA_VENUS, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.ORE_GALENA_VENUS), modifiersWithCount(7, HeightRangePlacement.triangle(VerticalAnchor.bottom(), VerticalAnchor.absolute(72)))));
+        // Concentrated galena in the shield volcano (denser, distinct placement to avoid a FeatureSorter cycle).
+        context.register(ORE_GALENA_VENUS_VOLCANIC, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.ORE_GALENA_VENUS), modifiersWithCount(12, HeightRangePlacement.triangle(VerticalAnchor.bottom(), VerticalAnchor.absolute(112)))));
     }
 
     @Contract(pure = true)

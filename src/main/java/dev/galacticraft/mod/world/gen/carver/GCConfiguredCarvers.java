@@ -49,6 +49,9 @@ public class GCConfiguredCarvers {
     public static final ResourceKey<ConfiguredWorldCarver<?>> MARS_CRATER_CARVER = key(Constant.Carver.MARS_CRATER_CARVER);
     public static final ResourceKey<ConfiguredWorldCarver<?>> MARS_CAVE_CARVER = key(Constant.Carver.MARS_CAVE_CARVER);
     public static final ResourceKey<ConfiguredWorldCarver<?>> MARS_CHANNEL_CARVER = key(Constant.Carver.MARS_CHANNEL_CARVER);
+    public static final ResourceKey<ConfiguredWorldCarver<?>> VENUS_CAVE_CARVER = key(Constant.Carver.VENUS_CAVE_CARVER);
+    public static final ResourceKey<ConfiguredWorldCarver<?>> VENUS_CRATER_CARVER = key(Constant.Carver.VENUS_CRATER_CARVER);
+    public static final ResourceKey<ConfiguredWorldCarver<?>> VENUS_LAVA_CHANNEL_CARVER = key(Constant.Carver.VENUS_LAVA_CHANNEL_CARVER);
 
     @Contract(pure = true)
     private static @NotNull ResourceKey<ConfiguredWorldCarver<?>> key(String s) {
@@ -147,6 +150,45 @@ public class GCConfiguredCarvers {
                 VerticalAnchor.aboveBottom(8),
                 CarverDebugSettings.DEFAULT,
                 BuiltInRegistries.BLOCK.getOrCreateTag(GCBlockTags.MARS_CARVER_REPLACEABLES),
+                UniformFloat.of(-0.1f, 0.1f),
+                new CanyonCarverConfiguration.CanyonShapeConfiguration(
+                        UniformFloat.of(0.6f, 1.0f),
+                        TrapezoidFloat.of(0, 3, 1),
+                        3,
+                        UniformFloat.of(0.75f, 1.0f),
+                        0.4f,
+                        0.0f)
+        )));
+
+        // Venus base caves — hollows threading the volcanic bedrock.
+        context.register(VENUS_CAVE_CARVER, GCCarvers.LUNAR_CAVE.configured(new CaveCarverConfiguration(
+                0.14f,
+                UniformHeight.of(VerticalAnchor.aboveBottom(8), VerticalAnchor.absolute(180)),
+                UniformFloat.of(0.1f, 0.9f),
+                VerticalAnchor.aboveBottom(-64),
+                BuiltInRegistries.BLOCK.getOrCreateTag(GCBlockTags.VENUS_CARVER_REPLACEABLES),
+                UniformFloat.of(0.7f, 1.4f),
+                UniformFloat.of(0.8f, 1.3f),
+                UniformFloat.of(-1.0f, -0.4f)
+        )));
+        // Impact craters pocking the highland tesserae.
+        context.register(VENUS_CRATER_CARVER, GCCarvers.CRATERS.configured(new CraterCarverConfig(
+                0.04f,
+                ConstantHeight.of(VerticalAnchor.absolute(128)),
+                UniformFloat.of(0.4f, 0.6f),
+                CarverDebugSettings.DEFAULT,
+                24,
+                7,
+                7
+        )));
+        // Shallow winding channels — lava rivers once the lava-disk feature floods their floors (Baltis Vallis).
+        context.register(VENUS_LAVA_CHANNEL_CARVER, WorldCarver.CANYON.configured(new CanyonCarverConfiguration(
+                0.09f,
+                UniformHeight.of(VerticalAnchor.absolute(55), VerticalAnchor.absolute(85)),
+                ConstantFloat.of(2.0f),
+                VerticalAnchor.aboveBottom(8),
+                CarverDebugSettings.DEFAULT,
+                BuiltInRegistries.BLOCK.getOrCreateTag(GCBlockTags.VENUS_CARVER_REPLACEABLES),
                 UniformFloat.of(-0.1f, 0.1f),
                 new CanyonCarverConfiguration.CanyonShapeConfiguration(
                         UniformFloat.of(0.6f, 1.0f),

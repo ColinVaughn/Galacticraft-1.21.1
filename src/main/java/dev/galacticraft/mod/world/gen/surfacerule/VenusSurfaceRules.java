@@ -34,16 +34,40 @@ import org.jetbrains.annotations.NotNull;
 public class VenusSurfaceRules {
     private static final SurfaceRules.RuleSource BEDROCK = block(Blocks.BEDROCK);
     public static final SurfaceRules.RuleSource HARD_ROCK = block(GCBlocks.HARD_VENUS_ROCK);
+    private static final SurfaceRules.RuleSource SOFT_ROCK = block(GCBlocks.SOFT_VENUS_ROCK);
+    private static final SurfaceRules.RuleSource SCORCHED_ROCK = block(GCBlocks.SCORCHED_VENUS_ROCK);
+    private static final SurfaceRules.RuleSource VOLCANIC_ROCK = block(GCBlocks.VOLCANIC_ROCK);
+    private static final SurfaceRules.RuleSource BASALT = block(Blocks.BASALT);
+    private static final SurfaceRules.RuleSource MAGMA = block(Blocks.MAGMA_BLOCK);
+
+    // Top layer per region.
+    private static final SurfaceRules.RuleSource SURFACE_MATERIAL = SurfaceRules.sequence(
+            SurfaceRules.ifTrue(SurfaceRules.isBiome(GCBiomes.Venus.VENUS_LAVA_SEA), MAGMA),
+            SurfaceRules.ifTrue(SurfaceRules.isBiome(GCBiomes.Venus.VENUS_SHIELD_VOLCANO), VOLCANIC_ROCK),
+            SurfaceRules.ifTrue(SurfaceRules.isBiome(GCBiomes.Venus.VENUS_SULFUR_FLATS), SOFT_ROCK),
+            SurfaceRules.ifTrue(SurfaceRules.isBiome(GCBiomes.Venus.VENUS_VOLCANIC_PLAINS, GCBiomes.Venus.VENUS_LAVA_CHANNELS), SCORCHED_ROCK),
+            HARD_ROCK // highlands + fallback
+    );
+
+    // Layer just beneath the surface.
+    private static final SurfaceRules.RuleSource SUBSURFACE_MATERIAL = SurfaceRules.sequence(
+            SurfaceRules.ifTrue(SurfaceRules.isBiome(GCBiomes.Venus.VENUS_LAVA_SEA), SCORCHED_ROCK),
+            SurfaceRules.ifTrue(SurfaceRules.isBiome(GCBiomes.Venus.VENUS_SHIELD_VOLCANO), BASALT),
+            SurfaceRules.ifTrue(SurfaceRules.isBiome(GCBiomes.Venus.VENUS_SULFUR_FLATS), SOFT_ROCK),
+            HARD_ROCK
+    );
+
+    private static final SurfaceRules.RuleSource SURFACE_GENERATION = SurfaceRules.sequence(
+            SurfaceRules.ifTrue(SurfaceRules.ON_FLOOR, SURFACE_MATERIAL),
+            SurfaceRules.ifTrue(SurfaceRules.UNDER_FLOOR, SUBSURFACE_MATERIAL)
+    );
 
     public static final SurfaceRules.RuleSource VENUS = createDefaultRule();
 
     public static @NotNull SurfaceRules.RuleSource createDefaultRule() {
         return SurfaceRules.sequence(
-                SurfaceRules.ifTrue(
-                        SurfaceRules.isBiome(GCBiomes.Venus.VENUS_MOUNTAIN, GCBiomes.Venus.VENUS_FLAT),
-                        HARD_ROCK
-                ),
-                SurfaceRules.ifTrue(SurfaceRules.verticalGradient("bedrock_floor", VerticalAnchor.bottom(), VerticalAnchor.aboveBottom(5)), BEDROCK)
+                SurfaceRules.ifTrue(SurfaceRules.verticalGradient("bedrock_floor", VerticalAnchor.bottom(), VerticalAnchor.aboveBottom(5)), BEDROCK),
+                SurfaceRules.ifTrue(SurfaceRules.abovePreliminarySurface(), SURFACE_GENERATION)
         );
     }
 

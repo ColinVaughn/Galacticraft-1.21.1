@@ -45,9 +45,12 @@ public final class GCBiomes {
     }
 
     public static final class Venus {
-        public static final ResourceKey<Biome> VENUS_VALLEY = key("venus_valley");
-        public static final ResourceKey<Biome> VENUS_FLAT = key("venus_flat");
-        public static final ResourceKey<Biome> VENUS_MOUNTAIN = key("venus_mountain");
+        public static final ResourceKey<Biome> VENUS_VOLCANIC_PLAINS = key("venus_volcanic_plains"); // regional lava plains (default)
+        public static final ResourceKey<Biome> VENUS_HIGHLANDS = key("venus_highlands"); // Ishtar/Aphrodite tesserae
+        public static final ResourceKey<Biome> VENUS_LAVA_CHANNELS = key("venus_lava_channels"); // Baltis Vallis lava rivers
+        public static final ResourceKey<Biome> VENUS_SHIELD_VOLCANO = key("venus_shield_volcano"); // Maat/Sapas Mons
+        public static final ResourceKey<Biome> VENUS_SULFUR_FLATS = key("venus_sulfur_flats"); // corrosive lowlands
+        public static final ResourceKey<Biome> VENUS_LAVA_SEA = key("venus_lava_sea"); // broad volcanic basins
     }
 
     public static final class Mars {
@@ -94,9 +97,12 @@ public final class GCBiomes {
         context.register(Moon.LUNAR_LOWLANDS, MoonBiomes.createLunarLowlands(featureLookup, carverLookup));
         context.register(Moon.OLIVINE_SPIKES, MoonBiomes.createOlivineSpikes(featureLookup, carverLookup));
 
-        context.register(Venus.VENUS_VALLEY, VenusBiomes.venus(featureLookup, carverLookup));
-        context.register(Venus.VENUS_FLAT, VenusBiomes.venus(featureLookup, carverLookup));
-        context.register(Venus.VENUS_MOUNTAIN, VenusBiomes.venus(featureLookup, carverLookup));
+        context.register(Venus.VENUS_VOLCANIC_PLAINS, VenusBiomes.volcanicPlains(featureLookup, carverLookup));
+        context.register(Venus.VENUS_HIGHLANDS, VenusBiomes.highlands(featureLookup, carverLookup));
+        context.register(Venus.VENUS_LAVA_CHANNELS, VenusBiomes.lavaChannels(featureLookup, carverLookup));
+        context.register(Venus.VENUS_SHIELD_VOLCANO, VenusBiomes.shieldVolcano(featureLookup, carverLookup));
+        context.register(Venus.VENUS_SULFUR_FLATS, VenusBiomes.sulfurFlats(featureLookup, carverLookup));
+        context.register(Venus.VENUS_LAVA_SEA, VenusBiomes.lavaSea(featureLookup, carverLookup));
 
         context.register(Mars.MARS, MarsBiomes.vastitas(featureLookup, carverLookup));
         context.register(Mars.MARS_HIGHLANDS, MarsBiomes.highlands(featureLookup, carverLookup));

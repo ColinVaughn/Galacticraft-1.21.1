@@ -1414,6 +1414,9 @@ public interface Constant {
         String MARS_CRATER_CARVER = "mars_crater_carver";
         String MARS_CAVE_CARVER = "mars_cave_carver";
         String MARS_CHANNEL_CARVER = "mars_channel_carver";
+        String VENUS_CAVE_CARVER = "venus_cave_carver";
+        String VENUS_CRATER_CARVER = "venus_crater_carver";
+        String VENUS_LAVA_CHANNEL_CARVER = "venus_lava_channel_carver";
     }
 
     interface Packet {

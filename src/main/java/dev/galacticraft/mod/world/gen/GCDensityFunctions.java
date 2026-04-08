@@ -30,6 +30,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.levelgen.DensityFunction;
 import net.minecraft.world.level.levelgen.DensityFunctions;
 import net.minecraft.world.level.levelgen.NoiseRouterData;
+import net.minecraft.world.level.levelgen.Noises;
 import net.minecraft.world.level.levelgen.synth.BlendedNoise;
 
 public class GCDensityFunctions {
@@ -41,6 +42,8 @@ public class GCDensityFunctions {
     }
 
     public static final class Venus {
+        // Sloped cheese drives the dramatic volcanic relief (mirrors mars/sloped_cheese).
+        public static final ResourceKey<DensityFunction> SLOPED_CHEESE = createKey("venus/sloped_cheese");
         // Final Density handles overall terrain shape
         public static final ResourceKey<DensityFunction> FINAL_DENSITY = createKey("venus/final_density");
     }
@@ -130,10 +133,26 @@ public class GCDensityFunctions {
 //            )
 //        );
 
-        context.register(Venus.FINAL_DENSITY, DensityFunctions.add(
-                DensityFunctions.yClampedGradient(0, 90, 1, -1),
-                BlendedNoise.createUnseeded(0.25, 0.375, 80.0, 160.0, 8.0)
+        // Dramatic volcanic terrain, mirroring mars/sloped_cheese: the overworld
+        // depth/jaggedness/factor/base-3d chain gives real highlands, basins and ridges
+        // for the multi-noise biome source to differentiate.
+        DensityFunction venusDepth = getFunction(vanillaRegistry, NoiseRouterData.DEPTH);
+        DensityFunction venusFactor = getFunction(vanillaRegistry, NoiseRouterData.FACTOR);
+        DensityFunction venusJaggedness = getFunction(vanillaRegistry, NoiseRouterData.JAGGEDNESS);
+        // Overworld base-3d-noise (old_blended_noise) with the vanilla overworld parameters.
+        DensityFunction venusBase3d = BlendedNoise.createUnseeded(0.25, 0.375, 80.0, 160.0, 8.0);
+        DensityFunction venusJaggedNoise = DensityFunctions.noise(noiseRegistry.getOrThrow(Noises.JAGGED), 1500.0, 0.0);
+        DensityFunction venusSlopedCheese = registerAndWrap(context, Venus.SLOPED_CHEESE, DensityFunctions.add(
+                DensityFunctions.mul(
+                        DensityFunctions.constant(4.0),
+                        DensityFunctions.mul(
+                                DensityFunctions.add(venusDepth, DensityFunctions.mul(venusJaggedness, venusJaggedNoise.halfNegative())),
+                                venusFactor
+                        ).quarterNegative()
+                ),
+                venusBase3d.squeeze().clamp(-0.2, 0.2)
         ));
+        context.register(Venus.FINAL_DENSITY, DensityFunctions.interpolated(DensityFunctions.blendDensity(venusSlopedCheese)));
 
         context.register(Asteroid.FINAL_DENSITY, DensityFunctions.add(
                 DensityFunctions.yClampedGradient(0, 90, 1, -1),

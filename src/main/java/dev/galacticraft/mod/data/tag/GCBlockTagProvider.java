@@ -154,6 +154,16 @@ public class GCBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                 .add(Blocks.SMOOTH_BASALT)
                 .add(Blocks.BLACKSTONE);
 
+        this.tag(GCBlockTags.VENUS_CARVER_REPLACEABLES)
+                .add(GCBlocks.HARD_VENUS_ROCK)
+                .add(GCBlocks.SOFT_VENUS_ROCK)
+                .add(GCBlocks.SCORCHED_VENUS_ROCK)
+                .add(GCBlocks.VOLCANIC_ROCK)
+                .add(GCBlocks.PUMICE)
+                .add(Blocks.BASALT)
+                .add(Blocks.BLACKSTONE)
+                .add(Blocks.MAGMA_BLOCK);
+
         this.tag(GCBlockTags.MOON_STONE_ORE_REPLACEABLES)
                 .add(GCBlocks.MOON_ROCK);
         this.tag(GCBlockTags.LUNASLATE_ORE_REPLACEABLES)

@@ -55,6 +55,11 @@ public class GCConfiguredFeature {
     public static final ResourceKey<ConfiguredFeature<?, ?>> MARS_FROZEN_BRINE = key("mars_frozen_brine");
     public static final ResourceKey<ConfiguredFeature<?, ?>> MARS_FROZEN_LAKE = key("mars_frozen_lake");
 
+    // Venus surface decoration
+    public static final ResourceKey<ConfiguredFeature<?, ?>> VENUS_LAVA_LAKE = key("venus_lava_lake");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> VENUS_VOLCANIC_BOULDER = key("venus_volcanic_boulder");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> VENUS_PUMICE_BOULDER = key("venus_pumice_boulder");
+
     private static ResourceKey<ConfiguredFeature<?, ?>> key(String id) {
         return ResourceKey.create(Registries.CONFIGURED_FEATURE, Constant.id(id));
     }
@@ -90,5 +95,21 @@ public class GCConfiguredFeature {
                                 Blocks.RED_SAND, Blocks.PACKED_ICE, Blocks.BLUE_ICE)),
                         UniformInt.of(6, 8),
                         2)));
+
+        // Broad flat sheets of surface lava — lava lakes and the floors of lava channels.
+        context.register(VENUS_LAVA_LAKE, new ConfiguredFeature<>(Feature.DISK,
+                new DiskConfiguration(
+                        RuleBasedBlockStateProvider.simple(BlockStateProvider.simple(Blocks.LAVA)),
+                        BlockPredicate.matchesBlocks(List.of(
+                                GCBlocks.HARD_VENUS_ROCK, GCBlocks.SCORCHED_VENUS_ROCK, GCBlocks.VOLCANIC_ROCK,
+                                Blocks.MAGMA_BLOCK, Blocks.BASALT)),
+                        UniformInt.of(5, 8),
+                        2)));
+        // Scattered volcanic-rock outcrops.
+        context.register(VENUS_VOLCANIC_BOULDER, new ConfiguredFeature<>(Feature.FOREST_ROCK,
+                new BlockStateConfiguration(GCBlocks.VOLCANIC_ROCK.defaultBlockState())));
+        // Pumice mounds around the shield volcano.
+        context.register(VENUS_PUMICE_BOULDER, new ConfiguredFeature<>(Feature.FOREST_ROCK,
+                new BlockStateConfiguration(GCBlocks.PUMICE.defaultBlockState())));
     }
 }

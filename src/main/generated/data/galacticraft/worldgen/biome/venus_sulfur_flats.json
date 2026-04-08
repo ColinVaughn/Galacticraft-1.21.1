@@ -1,8 +1,10 @@
 {
-  "carvers": {},
+  "carvers": {
+    "air": "galacticraft:venus_cave_carver"
+  },
   "downfall": 0.5,
   "effects": {
-    "fog_color": 10518688,
+    "fog_color": 13222478,
     "mood_sound": {
       "block_search_extent": 8,
       "offset": 2.0,
@@ -15,11 +17,32 @@
       "replace_current_music": false,
       "sound": "galacticraft:music.moon"
     },
-    "sky_color": -14016,
+    "sky_color": 14209120,
     "water_color": 4159204,
     "water_fog_color": 329011
   },
-  "features": [],
+  "features": [
+    [],
+    [
+      "galacticraft:sulfuric_acid_lake"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [
+      "galacticraft:ore_copper_venus",
+      "galacticraft:ore_tin_venus",
+      "galacticraft:ore_aluminum_venus",
+      "galacticraft:ore_solar_venus",
+      "galacticraft:ore_galena_venus"
+    ],
+    [],
+    [],
+    [
+      "galacticraft:venus_vapor_spout"
+    ]
+  ],
   "has_precipitation": true,
   "spawn_costs": {},
   "spawners": {

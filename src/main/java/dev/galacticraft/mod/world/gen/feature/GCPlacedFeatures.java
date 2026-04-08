@@ -53,6 +53,12 @@ public class GCPlacedFeatures {
     public static final ResourceKey<PlacedFeature> MARS_FROZEN_BRINE = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("mars_frozen_brine"));
     public static final ResourceKey<PlacedFeature> MARS_FROZEN_LAKE = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("mars_frozen_lake"));
 
+    public static final ResourceKey<PlacedFeature> VENUS_LAVA_LAKE = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("venus_lava_lake"));
+    public static final ResourceKey<PlacedFeature> VENUS_LAVA_LAKE_DENSE = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("venus_lava_lake_dense"));
+    public static final ResourceKey<PlacedFeature> VENUS_VOLCANIC_BOULDER = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("venus_volcanic_boulder"));
+    public static final ResourceKey<PlacedFeature> VENUS_VOLCANIC_BOULDER_SPARSE = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("venus_volcanic_boulder_sparse"));
+    public static final ResourceKey<PlacedFeature> VENUS_PUMICE_BOULDER = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("venus_pumice_boulder"));
+
     private static PlacedFeature surfaceScatter(HolderGetter<ConfiguredFeature<?, ?>> lookup, ResourceKey<ConfiguredFeature<?, ?>> feature, int rarity) {
         return new PlacedFeature(lookup.getOrThrow(feature), List.of(
                 RarityFilter.onAverageOnceEvery(rarity),
@@ -83,6 +89,23 @@ public class GCPlacedFeatures {
                 PlacementUtils.HEIGHTMAP_WORLD_SURFACE,
                 BiomeFilter.biome()
         )));
+        // Surface lava sheets — overlapping disks build up broad lakes; dense variant floods lava seas/channels.
+        context.register(VENUS_LAVA_LAKE, new PlacedFeature(configuredFeatureLookup.getOrThrow(GCConfiguredFeature.VENUS_LAVA_LAKE), List.of(
+                RarityFilter.onAverageOnceEvery(6),
+                InSquarePlacement.spread(),
+                PlacementUtils.HEIGHTMAP_WORLD_SURFACE,
+                BiomeFilter.biome()
+        )));
+        context.register(VENUS_LAVA_LAKE_DENSE, new PlacedFeature(configuredFeatureLookup.getOrThrow(GCConfiguredFeature.VENUS_LAVA_LAKE), List.of(
+                CountPlacement.of(3),
+                RarityFilter.onAverageOnceEvery(2),
+                InSquarePlacement.spread(),
+                PlacementUtils.HEIGHTMAP_WORLD_SURFACE,
+                BiomeFilter.biome()
+        )));
+        context.register(VENUS_VOLCANIC_BOULDER, surfaceScatter(configuredFeatureLookup, GCConfiguredFeature.VENUS_VOLCANIC_BOULDER, 5));
+        context.register(VENUS_VOLCANIC_BOULDER_SPARSE, surfaceScatter(configuredFeatureLookup, GCConfiguredFeature.VENUS_VOLCANIC_BOULDER, 14));
+        context.register(VENUS_PUMICE_BOULDER, surfaceScatter(configuredFeatureLookup, GCConfiguredFeature.VENUS_PUMICE_BOULDER, 6));
         context.register(OIL_LAKE, new PlacedFeature(configuredFeatureLookup.getOrThrow(GCConfiguredFeature.OIL_LAKE), List.of(
                 PlacementUtils.HEIGHTMAP_WORLD_SURFACE,
                 RarityFilter.onAverageOnceEvery(70),

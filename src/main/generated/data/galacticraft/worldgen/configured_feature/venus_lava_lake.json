@@ -1,0 +1,33 @@
+{
+  "type": "minecraft:disk",
+  "config": {
+    "half_height": 2,
+    "radius": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 8,
+      "min_inclusive": 5
+    },
+    "state_provider": {
+      "fallback": {
+        "type": "minecraft:simple_state_provider",
+        "state": {
+          "Name": "minecraft:lava",
+          "Properties": {
+            "level": "0"
+          }
+        }
+      },
+      "rules": []
+    },
+    "target": {
+      "type": "minecraft:matching_blocks",
+      "blocks": [
+        "galacticraft:hard_venus_rock",
+        "galacticraft:scorched_venus_rock",
+        "galacticraft:volcanic_rock",
+        "minecraft:magma_block",
+        "minecraft:basalt"
+      ]
+    }
+  }
+}
