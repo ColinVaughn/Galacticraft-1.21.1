@@ -33,6 +33,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.placement.BiomeFilter;
+import net.minecraft.world.level.levelgen.placement.CountPlacement;
 import net.minecraft.world.level.levelgen.placement.InSquarePlacement;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraft.world.level.levelgen.placement.RarityFilter;
@@ -41,13 +42,64 @@ import java.util.List;
 
 public class GCPlacedFeatures {
     public static final ResourceKey<PlacedFeature> OIL_LAKE = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("oil_lake"));
+    public static final ResourceKey<PlacedFeature> SULFURIC_ACID_LAKE = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("sulfuric_acid_lake"));
+    public static final ResourceKey<PlacedFeature> VENUS_VAPOR_SPOUT = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("venus_vapor_spout"));
+
+    public static final ResourceKey<PlacedFeature> MARS_BOULDER = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("mars_boulder"));
+    public static final ResourceKey<PlacedFeature> MARS_BOULDER_SPARSE = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("mars_boulder_sparse"));
+    public static final ResourceKey<PlacedFeature> MARS_HEMATITE_DEPOSIT = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("mars_hematite_deposit"));
+    public static final ResourceKey<PlacedFeature> MARS_ICE_SPIKE = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("mars_ice_spike"));
+    public static final ResourceKey<PlacedFeature> MARS_ICE_BOULDER = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("mars_ice_boulder"));
+    public static final ResourceKey<PlacedFeature> MARS_FROZEN_BRINE = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("mars_frozen_brine"));
+    public static final ResourceKey<PlacedFeature> MARS_FROZEN_LAKE = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("mars_frozen_lake"));
+
+    private static PlacedFeature surfaceScatter(HolderGetter<ConfiguredFeature<?, ?>> lookup, ResourceKey<ConfiguredFeature<?, ?>> feature, int rarity) {
+        return new PlacedFeature(lookup.getOrThrow(feature), List.of(
+                RarityFilter.onAverageOnceEvery(rarity),
+                InSquarePlacement.spread(),
+                PlacementUtils.HEIGHTMAP_WORLD_SURFACE,
+                BiomeFilter.biome()
+        ));
+    }
 
     public static void bootstrapRegistries(BootstrapContext<PlacedFeature> context) {
         HolderGetter<ConfiguredFeature<?, ?>> configuredFeatureLookup = context.lookup(Registries.CONFIGURED_FEATURE);
+        context.register(MARS_BOULDER, surfaceScatter(configuredFeatureLookup, GCConfiguredFeature.MARS_BOULDER, 5));
+        context.register(MARS_BOULDER_SPARSE, surfaceScatter(configuredFeatureLookup, GCConfiguredFeature.MARS_BOULDER, 14));
+        context.register(MARS_HEMATITE_DEPOSIT, surfaceScatter(configuredFeatureLookup, GCConfiguredFeature.MARS_HEMATITE_DEPOSIT, 10));
+        context.register(MARS_ICE_SPIKE, new PlacedFeature(configuredFeatureLookup.getOrThrow(GCConfiguredFeature.MARS_ICE_SPIKE), List.of(
+                CountPlacement.of(2),
+                RarityFilter.onAverageOnceEvery(3),
+                InSquarePlacement.spread(),
+                PlacementUtils.HEIGHTMAP_WORLD_SURFACE,
+                BiomeFilter.biome()
+        )));
+        context.register(MARS_ICE_BOULDER, surfaceScatter(configuredFeatureLookup, GCConfiguredFeature.MARS_ICE_BOULDER, 6));
+        context.register(MARS_FROZEN_BRINE, surfaceScatter(configuredFeatureLookup, GCConfiguredFeature.MARS_FROZEN_BRINE, 8));
+        // Frequent, overlapping ice sheets build up into broad frozen lake beds.
+        context.register(MARS_FROZEN_LAKE, new PlacedFeature(configuredFeatureLookup.getOrThrow(GCConfiguredFeature.MARS_FROZEN_LAKE), List.of(
+                RarityFilter.onAverageOnceEvery(4),
+                InSquarePlacement.spread(),
+                PlacementUtils.HEIGHTMAP_WORLD_SURFACE,
+                BiomeFilter.biome()
+        )));
         context.register(OIL_LAKE, new PlacedFeature(configuredFeatureLookup.getOrThrow(GCConfiguredFeature.OIL_LAKE), List.of(
                 PlacementUtils.HEIGHTMAP_WORLD_SURFACE,
                 RarityFilter.onAverageOnceEvery(70),
                 InSquarePlacement.spread(),
+                BiomeFilter.biome()
+        )));
+        context.register(SULFURIC_ACID_LAKE, new PlacedFeature(configuredFeatureLookup.getOrThrow(GCConfiguredFeature.SULFURIC_ACID_LAKE), List.of(
+                PlacementUtils.HEIGHTMAP_WORLD_SURFACE,
+                RarityFilter.onAverageOnceEvery(9),
+                InSquarePlacement.spread(),
+                BiomeFilter.biome()
+        )));
+        context.register(VENUS_VAPOR_SPOUT, new PlacedFeature(configuredFeatureLookup.getOrThrow(GCConfiguredFeature.VENUS_VAPOR_SPOUT), List.of(
+                CountPlacement.of(2),
+                RarityFilter.onAverageOnceEvery(3),
+                InSquarePlacement.spread(),
+                PlacementUtils.HEIGHTMAP_WORLD_SURFACE,
                 BiomeFilter.biome()
         )));
     }

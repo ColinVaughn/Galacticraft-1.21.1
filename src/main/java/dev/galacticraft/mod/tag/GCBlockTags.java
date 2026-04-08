@@ -36,12 +36,14 @@ public class GCBlockTags {
 
     public static final TagKey<Block> INFINIBURN_MOON = galacticraftTag("infiniburn_moon");
     public static final TagKey<Block> INFINIBURN_VENUS = galacticraftTag("infiniburn_venus");
+    public static final TagKey<Block> INFINIBURN_MARS = galacticraftTag("infiniburn_mars");
     public static final TagKey<Block> INFINIBURN_ASTEROID = galacticraftTag("infiniburn_asteroid");
     public static final TagKey<Block> INFINIBURN_SATELLITE = galacticraftTag("infiniburn_satellite");
 
     public static final TagKey<Block> BASE_STONE_MOON = galacticraftTag("base_stone_moon");
     public static final TagKey<Block> MOON_CARVER_REPLACEABLES = galacticraftTag("moon_carver_replaceables");
     public static final TagKey<Block> MOON_CRATER_CARVER_REPLACEABLES = galacticraftTag("moon_crater_carver_replaceables");
+    public static final TagKey<Block> MARS_CARVER_REPLACEABLES = galacticraftTag("mars_carver_replaceables");
 
     public static final TagKey<Block> MOON_STONE_ORE_REPLACEABLES = galacticraftTag("moon_stone_ore_replaceables");
     public static final TagKey<Block> MOON_BASALT_ORE_REPLACEABLES = galacticraftTag("moon_basalt_ore_replaceables");

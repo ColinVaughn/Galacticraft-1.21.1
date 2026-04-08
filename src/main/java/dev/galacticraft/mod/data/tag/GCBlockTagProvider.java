@@ -116,6 +116,8 @@ public class GCBlockTagProvider extends FabricTagProvider.BlockTagProvider {
 
         this.tag(GCBlockTags.INFINIBURN_MOON)
                 .add(GCBlocks.MOON_BASALT_BRICK);
+        this.tag(GCBlockTags.INFINIBURN_MARS)
+                .add(GCBlocks.MARS_COBBLESTONE);
         this.tag(GCBlockTags.BASE_STONE_MOON)
                 .add(GCBlocks.MOON_ROCK);
         this.tag(GCBlockTags.MOON_CARVER_REPLACEABLES)
@@ -140,6 +142,17 @@ public class GCBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                 .add(GCBlocks.MOON_TURF)
                 .add(GCBlocks.DENSE_ICE)
                 .add(GCBlocks.LUNASLATE);
+
+        this.tag(GCBlockTags.MARS_CARVER_REPLACEABLES)
+                .add(GCBlocks.MARS_STONE)
+                .add(GCBlocks.MARS_SURFACE_ROCK)
+                .add(GCBlocks.MARS_SUB_SURFACE_ROCK)
+                .add(GCBlocks.MARS_COBBLESTONE)
+                .add(Blocks.RED_SAND)
+                .add(Blocks.RED_SANDSTONE)
+                .add(Blocks.BASALT)
+                .add(Blocks.SMOOTH_BASALT)
+                .add(Blocks.BLACKSTONE);
 
         this.tag(GCBlockTags.MOON_STONE_ORE_REPLACEABLES)
                 .add(GCBlocks.MOON_ROCK);
@@ -400,10 +413,14 @@ public class GCBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                 GCBlocks.BASIC_SOLAR_PANEL,
                 GCBlocks.ADVANCED_SOLAR_PANEL,
                 GCBlocks.ENERGY_STORAGE_MODULE,
+                GCBlocks.ENERGY_STORAGE_CLUSTER,
+                GCBlocks.OXYGEN_DETECTOR,
                 GCBlocks.ELECTRIC_FURNACE,
                 GCBlocks.ELECTRIC_ARC_FURNACE,
                 GCBlocks.REFINERY,
                 GCBlocks.FUEL_LOADER,
+                GCBlocks.CARGO_LOADER,
+                GCBlocks.CARGO_UNLOADER,
                 GCBlocks.OXYGEN_COLLECTOR,
                 GCBlocks.OXYGEN_SEALER,
                 GCBlocks.OXYGEN_BUBBLE_DISTRIBUTOR,
@@ -411,6 +428,9 @@ public class GCBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                 GCBlocks.OXYGEN_COMPRESSOR,
                 GCBlocks.OXYGEN_STORAGE_MODULE,
                 GCBlocks.FOOD_CANNER,
+                GCBlocks.FLUID_TANK,
+                GCBlocks.PAINTER,
+                GCBlocks.DECONSTRUCTOR,
                 GCBlocks.ROCKET_WORKBENCH
         );
 

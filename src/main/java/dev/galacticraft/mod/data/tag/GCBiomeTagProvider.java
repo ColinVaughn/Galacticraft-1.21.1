@@ -51,6 +51,14 @@ public class GCBiomeTagProvider extends FabricTagProvider<Biome> {
                 .add(GCBiomes.Venus.VENUS_FLAT)
                 .add(GCBiomes.Venus.VENUS_MOUNTAIN);
 
+        this.tag(GCBiomeTags.MARS)
+                .add(GCBiomes.Mars.MARS)
+                .add(GCBiomes.Mars.MARS_HIGHLANDS)
+                .add(GCBiomes.Mars.MARS_DUNES)
+                .add(GCBiomes.Mars.MARS_CANYON)
+                .add(GCBiomes.Mars.MARS_VOLCANICS)
+                .add(GCBiomes.Mars.MARS_POLAR);
+
         this.tag(GCBiomeTags.ASTEROID)
                 .add(GCBiomes.Asteroid.ASTEROID_FIELD);
 
@@ -62,5 +70,11 @@ public class GCBiomeTagProvider extends FabricTagProvider<Biome> {
                 .add(GCBiomes.Moon.BASALTIC_MARE);
         this.tag(GCBiomeTags.MOON_BOSS_HAS_STRUCTURE)
                 .addTag(GCBiomeTags.MOON);
+        this.tag(GCBiomeTags.MARS_BOSS_HAS_STRUCTURE)
+                .addTag(GCBiomeTags.MARS);
+        this.tag(GCBiomeTags.VENUS_BOSS_HAS_STRUCTURE)
+                .addTag(GCBiomeTags.VENUS);
+        this.tag(GCBiomeTags.ASTEROID_DUNGEON_HAS_STRUCTURE)
+                .add(GCBiomes.Asteroid.ASTEROID_FIELD);
     }
 }

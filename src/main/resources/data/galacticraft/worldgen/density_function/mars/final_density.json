@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:min",
+  "argument1": {
+    "type": "minecraft:interpolated",
+    "argument": {
+      "type": "minecraft:blend_density",
+      "argument": "galacticraft:mars/sloped_cheese"
+    }
+  },
+  "argument2": "galacticraft:caves/noodles"
+}

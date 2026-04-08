@@ -50,6 +50,15 @@ public final class GCBiomes {
         public static final ResourceKey<Biome> VENUS_MOUNTAIN = key("venus_mountain");
     }
 
+    public static final class Mars {
+        public static final ResourceKey<Biome> MARS = key("mars"); // Vastitas Borealis (dusty lowlands)
+        public static final ResourceKey<Biome> MARS_HIGHLANDS = key("mars_highlands");
+        public static final ResourceKey<Biome> MARS_DUNES = key("mars_dunes");
+        public static final ResourceKey<Biome> MARS_CANYON = key("mars_canyon");
+        public static final ResourceKey<Biome> MARS_VOLCANICS = key("mars_volcanics");
+        public static final ResourceKey<Biome> MARS_POLAR = key("mars_polar");
+    }
+
     public static final class Asteroid {
         public static final ResourceKey<Biome> ASTEROID_FIELD = key("asteroid_field");
     }
@@ -88,6 +97,13 @@ public final class GCBiomes {
         context.register(Venus.VENUS_VALLEY, VenusBiomes.venus(featureLookup, carverLookup));
         context.register(Venus.VENUS_FLAT, VenusBiomes.venus(featureLookup, carverLookup));
         context.register(Venus.VENUS_MOUNTAIN, VenusBiomes.venus(featureLookup, carverLookup));
+
+        context.register(Mars.MARS, MarsBiomes.vastitas(featureLookup, carverLookup));
+        context.register(Mars.MARS_HIGHLANDS, MarsBiomes.highlands(featureLookup, carverLookup));
+        context.register(Mars.MARS_DUNES, MarsBiomes.dunes(featureLookup, carverLookup));
+        context.register(Mars.MARS_CANYON, MarsBiomes.canyon(featureLookup, carverLookup));
+        context.register(Mars.MARS_VOLCANICS, MarsBiomes.volcanics(featureLookup, carverLookup));
+        context.register(Mars.MARS_POLAR, MarsBiomes.polar(featureLookup, carverLookup));
 
         context.register(Asteroid.ASTEROID_FIELD, AsteroidBiomes.asteroid(featureLookup, carverLookup));
     }

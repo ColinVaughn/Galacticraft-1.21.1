@@ -318,6 +318,8 @@ public interface Constant {
         String REFINERY = "refinery";
         String TERRAFORMER = "terraformer";
         String DECONSTRUCTOR = "deconstructor";
+        String FLUID_TANK = "fluid_tank";
+        String PAINTER = "painter";
         String WATER_ELECTROLYZER = "water_electrolyzer";
         String METHANE_SYNTHESIZIER = "methane_synthesizer";
         String GAS_LIQUEFIER = "gas_liquefier";
@@ -570,6 +572,8 @@ public interface Constant {
 
         String BUGGY = "buggy";
         String ROCKET = "rocket";
+        String ASTRO_MINER = "astro_miner";
+        String CARGO_ROCKET = "cargo_rocket";
 
         String TIER_2_ROCKET_SCHEMATIC = "tier_2_rocket_schematic";
         String TIER_3_ROCKET_SCHEMATIC = "tier_3_rocket_schematic";
@@ -634,6 +638,7 @@ public interface Constant {
         ResourceLocation OXYGEN_STORAGE_MODULE_SCREEN = id("textures/gui/oxygen_storage_module_screen.png");
         ResourceLocation OXYGEN_SEALER_SCREEN = id("textures/gui/oxygen_sealer_screen.png");
         ResourceLocation FUEL_LOADER_SCREEN = id("textures/gui/fuel_loader_screen.png");
+        ResourceLocation CARGO_LOADER_SCREEN = id("textures/gui/cargo_loader_screen.png");
         ResourceLocation SOLAR_PANEL_DAY = id("textures/gui/solar_panel/day.png");
         ResourceLocation SOLAR_PANEL_NIGHT = id("textures/gui/solar_panel/night.png");
         ResourceLocation SOLAR_PANEL_BLOCKED = id("textures/gui/solar_panel/blocked.png");
@@ -1075,6 +1080,7 @@ public interface Constant {
         ResourceLocation SUN = ResourceLocation.withDefaultNamespace("textures/environment/sun.png");
         ResourceLocation SUN_MOON = id("textures/environment/sun_moon.png");
         ResourceLocation SUN_VENUS = id("textures/environment/sun_venus.png");
+        ResourceLocation SUN_MARS = id("textures/environment/sun_mars.png");
         ResourceLocation EARTH = id("textures/environment/earth.png");
         ResourceLocation CLOUDS = id("textures/environment/clouds.png");
         ResourceLocation ATMOSPHERE = id("textures/environment/atmosphere.png");
@@ -1125,6 +1131,8 @@ public interface Constant {
         String ROCKET = "rocket";
         String LANDER = "lander";
         String BUGGY = "buggy";
+        String ASTRO_MINER = "astro_miner";
+        String CARGO_ROCKET = "cargo_rocket";
         String PARACHEST = "parachest";
         String BUBBLE = "bubble";
         String GREY = "grey";
@@ -1135,6 +1143,8 @@ public interface Constant {
         String GAZER = "gazer";
         String FALLING_METEOR = "falling_meteor";
         String EVOLVED_SKELETON_BOSS = "evolved_skeleton_boss";
+        String CREEPER_BOSS = "creeper_boss";
+        String SPIDER_BOSS = "spider_boss";
     }
 
     interface SpawnEgg {
@@ -1190,6 +1200,7 @@ public interface Constant {
         String PLAYER_INVENTORY_MENU = "player_inventory_menu";
         String PET_INVENTORY_MENU = "pet_inventory_menu";
         String ENERGY_STORAGE_MODULE_MENU = "energy_storage_module_menu";
+        String ENERGY_STORAGE_CLUSTER_MENU = "energy_storage_cluster_menu";
         String REFINERY_MENU = "refinery_menu";
         String ELECTRIC_FURNACE_MENU = "electric_furnace_menu";
         String ELECTRIC_ARC_FURNACE_MENU = "electric_arc_furnace_menu";
@@ -1201,12 +1212,18 @@ public interface Constant {
         String OXYGEN_STORAGE_MODULE_MENU = "oxygen_storage_module_menu";
         String OXYGEN_SEALER_MENU = "oxygen_sealer_menu";
         String FUEL_LOADER_MENU = "fuel_loader_menu";
+        String CARGO_LOADER_MENU = "cargo_loader_menu";
+        String CARGO_UNLOADER_MENU = "cargo_unloader_menu";
+        String FLUID_TANK_MENU = "fluid_tank_menu";
+        String PAINTER_MENU = "painter_menu";
+        String DECONSTRUCTOR_MENU = "deconstructor_menu";
         String AIR_LOCK_CONTROLLER_MENU = "air_lock_menu";
         String ROCKET_WORKBENCH_MENU = "rocket_workbench_menu";
         String ROCKET = "rocket";
         String PARACHEST = "parachest";
         String BUGGY_BENCH = "buggy_bench";
         String TIER_1_ROCKET = "tier_1_rocket";
+        String VEHICLE_INVENTORY = "vehicle_inventory";
     }
 
     interface LootTable {
@@ -1298,11 +1315,6 @@ public interface Constant {
         int WIDTH = 16;
         int SECTION_HEIGHT = 16;
         int CHUNK_SECTION_AREA = WIDTH * WIDTH * SECTION_HEIGHT;
-    }
-
-    interface Energy {
-        long T1_MACHINE_ENERGY_USAGE = 100; // TODO: adjust these later
-        long T2_MACHINE_ENERGY_USAGE = 200;
     }
 
     interface Landing {
@@ -1398,6 +1410,10 @@ public interface Constant {
         String MOON_CRATER_CARVER = "moon_crater_carver";
         String MOON_HIGHLANDS_CAVE_CARVER = "moon_highlands_cave_carver";
         String MOON_MARE_CAVE_CARVER = "moon_mare_cave_carver";
+        String MARS_CANYON_CARVER = "mars_canyon_carver";
+        String MARS_CRATER_CARVER = "mars_crater_carver";
+        String MARS_CAVE_CARVER = "mars_cave_carver";
+        String MARS_CHANNEL_CARVER = "mars_channel_carver";
     }
 
     interface Packet {

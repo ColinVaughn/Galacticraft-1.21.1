@@ -1,0 +1,84 @@
+{
+  "type": "galacticraft:mars",
+  "generator": {
+    "biome_source": {
+      "type": "minecraft:multi_noise",
+      "biomes": [
+        {
+          "parameters": {
+            "temperature": [-1.0, -0.4],
+            "humidity": [-1.0, 1.0],
+            "continentalness": [-1.0, 1.0],
+            "erosion": [-1.0, 1.0],
+            "weirdness": [-1.0, 1.0],
+            "depth": [0.0, 0.0],
+            "offset": 0.0
+          },
+          "biome": "galacticraft:mars_polar"
+        },
+        {
+          "parameters": {
+            "temperature": [0.3, 1.0],
+            "humidity": [-1.0, 1.0],
+            "continentalness": [0.55, 1.0],
+            "erosion": [-1.0, -0.5],
+            "weirdness": [0.3, 1.0],
+            "depth": [0.0, 0.0],
+            "offset": 0.0
+          },
+          "biome": "galacticraft:mars_volcanics"
+        },
+        {
+          "parameters": {
+            "temperature": [-0.4, 1.0],
+            "humidity": [-1.0, 1.0],
+            "continentalness": [-0.1, 1.0],
+            "erosion": [-0.7, 0.05],
+            "weirdness": [0.5, 1.0],
+            "depth": [0.0, 0.0],
+            "offset": 0.0
+          },
+          "biome": "galacticraft:mars_canyon"
+        },
+        {
+          "parameters": {
+            "temperature": [-0.4, 1.0],
+            "humidity": [-1.0, 1.0],
+            "continentalness": [0.3, 1.0],
+            "erosion": [-0.6, 0.1],
+            "weirdness": [-1.0, 0.4],
+            "depth": [0.0, 0.0],
+            "offset": 0.0
+          },
+          "biome": "galacticraft:mars_highlands"
+        },
+        {
+          "parameters": {
+            "temperature": [0.4, 1.0],
+            "humidity": [-1.0, 1.0],
+            "continentalness": [-1.0, 0.1],
+            "erosion": [-0.1, 0.6],
+            "weirdness": [-1.0, 0.0],
+            "depth": [0.0, 0.0],
+            "offset": 0.0
+          },
+          "biome": "galacticraft:mars_dunes"
+        },
+        {
+          "parameters": {
+            "temperature": [-0.4, 1.0],
+            "humidity": [-1.0, 1.0],
+            "continentalness": [-1.0, 0.35],
+            "erosion": [0.0, 1.0],
+            "weirdness": [-0.4, 0.5],
+            "depth": [0.0, 0.0],
+            "offset": 0.0
+          },
+          "biome": "galacticraft:mars"
+        }
+      ]
+    },
+    "settings": "galacticraft:mars",
+    "type": "minecraft:noise"
+  }
+}
