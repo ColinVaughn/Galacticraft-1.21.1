@@ -39,9 +39,9 @@ import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.Galacticraft;
 import dev.galacticraft.mod.api.entity.Dockable;
 import dev.galacticraft.mod.content.GCBlockEntityTypes;
-import dev.galacticraft.mod.content.GCBlocks;
 import dev.galacticraft.mod.content.GCFluids;
 import dev.galacticraft.mod.content.block.machine.FuelLoaderBlock;
+import dev.galacticraft.mod.tag.GCFluidTags;
 import dev.galacticraft.mod.content.block.special.launchpad.AbstractLaunchPad;
 import dev.galacticraft.mod.content.block.special.launchpad.LaunchPadBlockEntity;
 import dev.galacticraft.mod.machine.GCMachineStatuses;
@@ -89,7 +89,7 @@ public class FuelLoaderBlockEntity extends MachineBlockEntity {
                     ItemResourceSlot.builder(TransferType.PROCESSING)
                             .pos(44, 35)
                             .capacity(1)
-                            .filter(ResourceFilters.canExtractFluid(GCFluids.FUEL)) // fixme: fuel tag?,
+                            .filter(ResourceFilters.canExtractFluid(GCFluidTags.FUEL))
                             .icon(Pair.of(InventoryMenu.BLOCK_ATLAS, Constant.SlotSprite.BUCKET))
             ),
             MachineEnergyStorage.spec(
@@ -104,7 +104,7 @@ public class FuelLoaderBlockEntity extends MachineBlockEntity {
                             .height(47)
                             .unmarked()
                             .capacity(FluidConstants.BUCKET * NUM_BUCKETS)
-                            .filter(ResourceFilters.ofResource(GCFluids.FUEL)) // fixme: tag?
+                            .filter(ResourceFilters.fluidTag(GCFluidTags.FUEL))
             )
     );
 
@@ -192,7 +192,9 @@ public class FuelLoaderBlockEntity extends MachineBlockEntity {
         if (this.check.size() > 0) {
             for (Direction direction : this.check) {
                 BlockPos launchPad = this.worldPosition.relative(direction);
-                if (this.level.getBlockState(launchPad).getBlock() == GCBlocks.ROCKET_LAUNCH_PAD) {
+                // Accept any launch/fuelling pad (rocket pad or buggy fuelling pad); the docking
+                // and fuel-transfer below are generic over Dockable.
+                if (this.level.getBlockState(launchPad).getBlock() instanceof AbstractLaunchPad) {
                     launchPad = launchPad.offset(AbstractLaunchPad.partToCenterPos(level.getBlockState(launchPad).getValue(AbstractLaunchPad.PART)));
                     if (this.level.getBlockState(launchPad).getBlock() instanceof AbstractLaunchPad
                             && this.level.getBlockState(launchPad).getValue(AbstractLaunchPad.PART) == AbstractLaunchPad.Part.CENTER

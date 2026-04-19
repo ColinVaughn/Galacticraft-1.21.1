@@ -22,16 +22,76 @@
 
 package dev.galacticraft.mod.content.item;
 
+import dev.galacticraft.mod.content.GCBlocks;
+import dev.galacticraft.mod.content.GCEntityTypes;
+import dev.galacticraft.mod.content.block.special.launchpad.AbstractLaunchPad;
+import dev.galacticraft.mod.content.block.special.launchpad.LaunchPadBlockEntity;
+import dev.galacticraft.mod.content.entity.vehicle.Buggy;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.List;
 
 public class BuggyItem extends Item {
     public BuggyItem(Properties properties) {
         super(properties);
+    }
+
+    @Override
+    public InteractionResult useOn(UseOnContext context) {
+        Level level = context.getLevel();
+        BlockPos clickedPos = context.getClickedPos();
+        BlockState clickedState = level.getBlockState(clickedPos);
+
+        // Right-clicking a Fuelling Pad docks the buggy so it can be refuelled by a Fuel
+        // Loader, mirroring RocketItem.useOn / the legacy Buggy Fueling Pad.
+        if (clickedState.getBlock() == GCBlocks.FUELING_PAD
+                && clickedState.getValue(AbstractLaunchPad.PART) != AbstractLaunchPad.Part.NONE) {
+            if (level instanceof ServerLevel) {
+                BlockPos center = clickedPos.offset(AbstractLaunchPad.partToCenterPos(clickedState.getValue(AbstractLaunchPad.PART)));
+                if (level.getBlockEntity(center) instanceof LaunchPadBlockEntity pad) {
+                    if (pad.hasDockedEntity()) {
+                        return InteractionResult.FAIL;
+                    }
+                    spawnBuggy(level, center.getX() + 0.5D, center.getY() + 1.0D, center.getZ() + 0.5D, context, pad);
+                }
+            }
+            return InteractionResult.sidedSuccess(level.isClientSide);
+        }
+
+        // Otherwise place a free (unfuelled) buggy on top of the clicked face.
+        if (level instanceof ServerLevel) {
+            BlockPos pos = clickedPos.relative(context.getClickedFace());
+            spawnBuggy(level, pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D, context, null);
+        }
+        return InteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    private static void spawnBuggy(Level level, double x, double y, double z, UseOnContext context, LaunchPadBlockEntity pad) {
+        Buggy buggy = new Buggy(GCEntityTypes.BUGGY, level);
+        buggy.setVariant(Buggy.BuggyType.NORMAL);
+        buggy.setPos(x, y, z);
+        buggy.setYRot(context.getHorizontalDirection().toYRot());
+        if (pad != null) {
+            buggy.setPad(pad);
+        }
+        level.addFreshEntity(buggy);
+        if (pad != null) {
+            pad.setDockedEntity(buggy);
+        }
+        Player player = context.getPlayer();
+        if (player == null || !player.isCreative()) {
+            context.getItemInHand().shrink(1);
+        }
     }
 
     @Override

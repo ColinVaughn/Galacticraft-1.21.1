@@ -27,10 +27,13 @@ import dev.galacticraft.api.universe.celestialbody.CelestialBody;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.api.block.entity.FuelDock;
 import dev.galacticraft.mod.api.entity.Dockable;
+import dev.galacticraft.mod.content.block.special.launchpad.LaunchPadBlockEntity;
 import dev.galacticraft.mod.util.FluidUtil;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.fluid.base.SingleFluidStorage;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -51,6 +54,10 @@ import java.util.function.IntFunction;
 
 public class Buggy extends GCVehicle implements ContainerListener, ControllableEntity, Dockable, VariantHolder<Buggy.BuggyType> {
     private static final EntityDataAccessor<Integer> DATA_TYPE_ID = SynchedEntityData.defineId(Buggy.class, EntityDataSerializers.INT);
+    // Synced server -> client so the controlling client (which simulates movement) knows
+    // whether there is fuel. The tank itself lives only on the server, so without this the
+    // client's movement gate would always read an empty tank. Mirrors legacy PacketDynamic.
+    private static final EntityDataAccessor<Integer> DATA_FUEL = SynchedEntityData.defineId(Buggy.class, EntityDataSerializers.INT);
     public static final int TANK_CAPACITY = 1;
     private final SingleFluidStorage tank = SingleFluidStorage.withFixedCapacity(FluidUtil.bucketsToDroplets(TANK_CAPACITY), () -> {
     });
@@ -74,7 +81,16 @@ public class Buggy extends GCVehicle implements ContainerListener, ControllableE
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
         builder.define(DATA_TYPE_ID, 0);
+        builder.define(DATA_FUEL, 0);
         createInventory();
+    }
+
+    /**
+     * The buggy's fuel level, synced from the server. Used by the movement gate on the
+     * controlling client (the tank itself only exists server-side).
+     */
+    public int getFuel() {
+        return this.entityData.get(DATA_FUEL);
     }
 
     @Override
@@ -192,8 +208,24 @@ public class Buggy extends GCVehicle implements ContainerListener, ControllableE
             this.timeClimbing = 0;
         }
 
+        if (!this.level().isClientSide) {
+            // Burn fuel while driving, then publish the tank level to clients. Legacy drained
+            // 1 mB every floor(2/d)+1 ticks where d is the horizontal speed squared; the
+            // server's `speed` field is kept in step by the control payload, so we reuse it.
+            if (!this.tank.isResourceBlank()) {
+                double d = this.speed * this.speed;
+                if (d > 1.0E-6D && this.tickCount % (Mth.floor(2.0D / d) + 1) == 0) {
+                    try (Transaction transaction = Transaction.openOuter()) {
+                        this.tank.extract(this.tank.getResource(), FluidConstants.BUCKET / 1000L, transaction);
+                        transaction.commit();
+                    }
+                }
+            }
+            this.entityData.set(DATA_FUEL, (int) this.tank.getAmount());
+        }
+
         if (isControlledByLocalInstance()) {
-            if (!this.tank.isResourceBlank() && this.tank.getAmount() > 0) {
+            if (this.getFuel() > 0) {
                 setDeltaMovement(-(this.speed * Math.cos((getYRot() - 90F) / Constant.RADIANS_TO_DEGREES)), getDeltaMovement().y, -(this.speed * Math.sin((getYRot() - 90F) / Constant.RADIANS_TO_DEGREES)));
             }
 
@@ -243,7 +275,8 @@ public class Buggy extends GCVehicle implements ContainerListener, ControllableE
 
     @Override
     public boolean isDockValid(FuelDock dock) {
-        return false;
+        // Legacy: the buggy only docks on its dedicated fuelling pad (TileEntityBuggyFueler).
+        return dock instanceof LaunchPadBlockEntity pad && pad.getPadType() == LaunchPadBlockEntity.Type.FUEL;
     }
 
     @Override
