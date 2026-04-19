@@ -4,13 +4,13 @@
     "lava_level": {
       "above_bottom": 8
     },
-    "probability": 0.09,
+    "probability": 0.14,
     "replaceable": "#galacticraft:venus_carver_replaceables",
     "shape": {
       "distance_factor": {
         "type": "minecraft:uniform",
         "max_exclusive": 1.0,
-        "min_inclusive": 0.6
+        "min_inclusive": 0.7
       },
       "horizontal_radius_factor": {
         "type": "minecraft:uniform",
@@ -19,12 +19,12 @@
       },
       "thickness": {
         "type": "minecraft:trapezoid",
-        "max": 3.0,
+        "max": 4.0,
         "min": 0.0,
         "plateau": 1.0
       },
       "vertical_radius_center_factor": 0.0,
-      "vertical_radius_default_factor": 0.4,
+      "vertical_radius_default_factor": 0.5,
       "width_smoothness": 3
     },
     "vertical_rotation": {
@@ -35,12 +35,12 @@
     "y": {
       "type": "minecraft:uniform",
       "max_inclusive": {
-        "absolute": 85
+        "absolute": 66
       },
       "min_inclusive": {
-        "absolute": 55
+        "absolute": 44
       }
     },
-    "yScale": 2.0
+    "yScale": 3.0
   }
 }

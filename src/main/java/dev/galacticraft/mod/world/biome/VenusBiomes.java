@@ -74,10 +74,9 @@ public class VenusBiomes {
         return generation;
     }
 
-    /** Volcanic plains — scorched-rock flats flecked with lava pools and vapor spouts. The calm default. */
+    /** Volcanic plains — scorched-rock flats dipping into lava at the low points, dotted with vapor spouts. The calm default. */
     public static Biome volcanicPlains(HolderGetter<PlacedFeature> featureGetter, HolderGetter<ConfiguredWorldCarver<?>> carverGetter) {
         BiomeGenerationSettings.Builder generation = baseGeneration(featureGetter, carverGetter);
-        generation.addFeature(GenerationStep.Decoration.LOCAL_MODIFICATIONS, GCPlacedFeatures.VENUS_LAVA_LAKE);
         generation.addFeature(GenerationStep.Decoration.SURFACE_STRUCTURES, GCPlacedFeatures.VENUS_VOLCANIC_BOULDER_SPARSE);
         generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, GCPlacedFeatures.VENUS_VAPOR_SPOUT);
         return venus(generation, 0xC97A3D, 0xE0A050, ParticleTypes.ASH);
@@ -95,7 +94,6 @@ public class VenusBiomes {
     public static Biome lavaChannels(HolderGetter<PlacedFeature> featureGetter, HolderGetter<ConfiguredWorldCarver<?>> carverGetter) {
         BiomeGenerationSettings.Builder generation = baseGeneration(featureGetter, carverGetter);
         generation.addCarver(GenerationStep.Carving.AIR, GCConfiguredCarvers.VENUS_LAVA_CHANNEL_CARVER);
-        generation.addFeature(GenerationStep.Decoration.LOCAL_MODIFICATIONS, GCPlacedFeatures.VENUS_LAVA_LAKE_DENSE);
         generation.addFeature(GenerationStep.Decoration.SURFACE_STRUCTURES, GCPlacedFeatures.VENUS_VOLCANIC_BOULDER);
         return venus(generation, 0xC85028, 0xE87038, ParticleTypes.ASH);
     }
@@ -104,7 +102,6 @@ public class VenusBiomes {
     public static Biome shieldVolcano(HolderGetter<PlacedFeature> featureGetter, HolderGetter<ConfiguredWorldCarver<?>> carverGetter) {
         BiomeGenerationSettings.Builder generation = baseGeneration(featureGetter, carverGetter);
         generation.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, GCOrePlacedFeatures.ORE_GALENA_VENUS_VOLCANIC);
-        generation.addFeature(GenerationStep.Decoration.LOCAL_MODIFICATIONS, GCPlacedFeatures.VENUS_LAVA_LAKE);
         generation.addFeature(GenerationStep.Decoration.SURFACE_STRUCTURES, GCPlacedFeatures.VENUS_PUMICE_BOULDER);
         generation.addFeature(GenerationStep.Decoration.SURFACE_STRUCTURES, GCPlacedFeatures.VENUS_VOLCANIC_BOULDER);
         return venus(generation, 0x8C3A20, 0xC85830, ParticleTypes.WHITE_ASH);
@@ -118,11 +115,10 @@ public class VenusBiomes {
         return venus(generation, 0xC9C24E, 0xD8D060, null);
     }
 
-    /** Lava sea — vast low basins flooded with broad sheets of lava over a magma floor. */
+    /** Lava sea — vast low basins flooded with connected lava over a magma floor. */
     public static Biome lavaSea(HolderGetter<PlacedFeature> featureGetter, HolderGetter<ConfiguredWorldCarver<?>> carverGetter) {
         BiomeGenerationSettings.Builder generation = baseGeneration(featureGetter, carverGetter);
         generation.addCarver(GenerationStep.Carving.AIR, GCConfiguredCarvers.VENUS_LAVA_CHANNEL_CARVER);
-        generation.addFeature(GenerationStep.Decoration.LOCAL_MODIFICATIONS, GCPlacedFeatures.VENUS_LAVA_LAKE_DENSE);
         return venus(generation, 0xE0431E, 0xFF6636, ParticleTypes.ASH);
     }
 

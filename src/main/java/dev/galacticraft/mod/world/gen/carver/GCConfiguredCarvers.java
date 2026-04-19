@@ -181,21 +181,21 @@ public class GCConfiguredCarvers {
                 7,
                 7
         )));
-        // Shallow winding channels — lava rivers once the lava-disk feature floods their floors (Baltis Vallis).
+        // Winding channels cut below the lava line — they flood into lava rivers (Baltis Vallis).
         context.register(VENUS_LAVA_CHANNEL_CARVER, WorldCarver.CANYON.configured(new CanyonCarverConfiguration(
-                0.09f,
-                UniformHeight.of(VerticalAnchor.absolute(55), VerticalAnchor.absolute(85)),
-                ConstantFloat.of(2.0f),
+                0.14f,
+                UniformHeight.of(VerticalAnchor.absolute(44), VerticalAnchor.absolute(66)),
+                ConstantFloat.of(3.0f),
                 VerticalAnchor.aboveBottom(8),
                 CarverDebugSettings.DEFAULT,
                 BuiltInRegistries.BLOCK.getOrCreateTag(GCBlockTags.VENUS_CARVER_REPLACEABLES),
                 UniformFloat.of(-0.1f, 0.1f),
                 new CanyonCarverConfiguration.CanyonShapeConfiguration(
-                        UniformFloat.of(0.6f, 1.0f),
-                        TrapezoidFloat.of(0, 3, 1),
+                        UniformFloat.of(0.7f, 1.0f),
+                        TrapezoidFloat.of(0, 4, 1),
                         3,
                         UniformFloat.of(0.75f, 1.0f),
-                        0.4f,
+                        0.5f,
                         0.0f)
         )));
     }

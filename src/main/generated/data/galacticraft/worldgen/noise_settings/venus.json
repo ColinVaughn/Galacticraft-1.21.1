@@ -4,7 +4,10 @@
     "Name": "galacticraft:hard_venus_rock"
   },
   "default_fluid": {
-    "Name": "minecraft:air"
+    "Name": "minecraft:lava",
+    "Properties": {
+      "level": "0"
+    }
   },
   "disable_mob_generation": false,
   "legacy_random_source": false,
@@ -69,7 +72,7 @@
     "vein_toggle": 0.0
   },
   "ore_veins_enabled": false,
-  "sea_level": -32,
+  "sea_level": 56,
   "spawn_target": [
     {
       "continentalness": [

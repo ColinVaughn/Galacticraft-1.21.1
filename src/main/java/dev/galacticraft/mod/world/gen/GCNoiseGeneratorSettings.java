@@ -64,11 +64,13 @@ public class GCNoiseGeneratorSettings {
         context.register(VENUS, new NoiseGeneratorSettings(
                 NoiseSettings.create(-32, 256, 1, 2),
                 GCBlocks.HARD_VENUS_ROCK.defaultBlockState(),
-                Blocks.AIR.defaultBlockState(),
+                // A global lava table: low basins flood into connected lava seas and carved
+                // channels become lava rivers, while highlands and volcanoes rise above it.
+                Blocks.LAVA.defaultBlockState(),
                 GCNoiseGeneratorSettings.venus(densityLookup, noiseLookup),
                 VenusSurfaceRules.VENUS,
                 new OverworldBiomeBuilder().spawnTarget(),
-                -32,
+                56, // lava sea level
                 false,
                 false,
                 false,
