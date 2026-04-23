@@ -64,20 +64,21 @@ public class ConfigImpl implements Config {
     private long energyStorageModuleStorageSize = 300_000;
     private long coalGeneratorEnergyProductionRate = 120; // /t
     private long solarPanelEnergyProductionRate = 44;
-    private long circuitFabricatorEnergyConsumptionRate = Constant.Energy.T1_MACHINE_ENERGY_USAGE;
-    private long electricCompressorEnergyConsumptionRate = Constant.Energy.T2_MACHINE_ENERGY_USAGE;
-    private long electricFurnaceEnergyConsumptionRate = Constant.Energy.T2_MACHINE_ENERGY_USAGE;
-    private long electricArcFurnaceEnergyConsumptionRate = Constant.Energy.T2_MACHINE_ENERGY_USAGE;
+    private long circuitFabricatorEnergyConsumptionRate = 20;
+    private long electricCompressorEnergyConsumptionRate = 75;
+    private long electricFurnaceEnergyConsumptionRate = 20;
+    private long electricArcFurnaceEnergyConsumptionRate = 20;
     private float electricArcFurnaceBonusChance = 0.25F;
-    private long oxygenCollectorEnergyConsumptionRate = Constant.Energy.T1_MACHINE_ENERGY_USAGE;
-    private long oxygenCompressorEnergyConsumptionRate = Constant.Energy.T1_MACHINE_ENERGY_USAGE;
-    private long oxygenDecompressorEnergyConsumptionRate = Constant.Energy.T1_MACHINE_ENERGY_USAGE;
-    private long oxygenSealerEnergyConsumptionRate = Constant.Energy.T1_MACHINE_ENERGY_USAGE;
+    private long oxygenCollectorEnergyConsumptionRate = 10;
+    private long oxygenCompressorEnergyConsumptionRate = 15;
+    private long oxygenDecompressorEnergyConsumptionRate = 15;
+    private long oxygenSealerEnergyConsumptionRate = 10;
     private long oxygenSealerOxygenConsumptionRate = 1000;
     private long maxSealingPower = 1024;
-    private long refineryEnergyConsumptionRate = Constant.Energy.T2_MACHINE_ENERGY_USAGE;
-    private long fuelLoaderEnergyConsumptionRate = Constant.Energy.T1_MACHINE_ENERGY_USAGE;
-    private long foodCannerEnergyConsumptionRate = Constant.Energy.T1_MACHINE_ENERGY_USAGE;
+    private long refineryEnergyConsumptionRate = 60;
+    private long fuelLoaderEnergyConsumptionRate = 15;
+    private long foodCannerEnergyConsumptionRate = 15;
+    private int astroMinerMax = 6;
     private boolean squareCannedFood = false;
     private long fluidCanisterCapacity = FluidConstants.BUCKET;
     private long smallOxygenTankCapacity = FluidConstants.BUCKET;
@@ -90,10 +91,22 @@ public class ConfigImpl implements Config {
     private boolean cannotEatInNoAtmosphere = true;
     private boolean cannotEatWithMask = true;
     private float meteorSpawnMultiplier = 1.0f;
+    private boolean dustStormsEnabled = true;
+    private int dustStormMeanInterval = 36000;
+    private int dustStormMinDuration = 2400;
+    private int dustStormMaxDuration = 6000;
+    private float dustStormIntensity = 1.0f;
+    private boolean dustStormDamage = true;
+    private float dustStormSolarPenalty = 0.9f;
+    private boolean machineDustEnabled = true;
+    private boolean terrainDustEnabled = true;
     private double bossHealthMultiplier = 1.0;
     private boolean hideAlphaWarning = false;
     private boolean enableGcHouston = true;
     private boolean enableCreativeGearInv = true;
+    private boolean disableSpaceStationCreation = false;
+    private java.util.List<String> spaceStationAllowedBodies = new java.util.ArrayList<>();
+    private java.util.List<String> spaceStationSharedBodies = new java.util.ArrayList<>();
 
     public ConfigImpl(File file) {
         this.gson = new GsonBuilder()
@@ -300,6 +313,15 @@ public class ConfigImpl implements Config {
         return foodCannerEnergyConsumptionRate;
     }
 
+    @Override
+    public int astroMinerMax() {
+        return astroMinerMax;
+    }
+
+    public void setAstroMinerMax(int amount) {
+        this.astroMinerMax = amount;
+    }
+
     public void setFoodCannerEnergyConsumptionRate(long amount) {
         this.foodCannerEnergyConsumptionRate = amount;
     }
@@ -418,6 +440,87 @@ public class ConfigImpl implements Config {
     }
 
     @Override
+    public boolean dustStormsEnabled() {
+        return this.dustStormsEnabled;
+    }
+
+    public void setDustStormsEnabled(boolean dustStormsEnabled) {
+        this.dustStormsEnabled = dustStormsEnabled;
+    }
+
+    @Override
+    public int dustStormMeanInterval() {
+        return this.dustStormMeanInterval;
+    }
+
+    public void setDustStormMeanInterval(int dustStormMeanInterval) {
+        this.dustStormMeanInterval = dustStormMeanInterval;
+    }
+
+    @Override
+    public int dustStormMinDuration() {
+        return this.dustStormMinDuration;
+    }
+
+    public void setDustStormMinDuration(int dustStormMinDuration) {
+        this.dustStormMinDuration = dustStormMinDuration;
+    }
+
+    @Override
+    public int dustStormMaxDuration() {
+        return this.dustStormMaxDuration;
+    }
+
+    public void setDustStormMaxDuration(int dustStormMaxDuration) {
+        this.dustStormMaxDuration = dustStormMaxDuration;
+    }
+
+    @Override
+    public float dustStormIntensity() {
+        return this.dustStormIntensity;
+    }
+
+    public void setDustStormIntensity(float dustStormIntensity) {
+        this.dustStormIntensity = dustStormIntensity;
+    }
+
+    @Override
+    public boolean dustStormDamage() {
+        return this.dustStormDamage;
+    }
+
+    public void setDustStormDamage(boolean dustStormDamage) {
+        this.dustStormDamage = dustStormDamage;
+    }
+
+    @Override
+    public float dustStormSolarPenalty() {
+        return this.dustStormSolarPenalty;
+    }
+
+    public void setDustStormSolarPenalty(float dustStormSolarPenalty) {
+        this.dustStormSolarPenalty = dustStormSolarPenalty;
+    }
+
+    @Override
+    public boolean machineDustEnabled() {
+        return this.machineDustEnabled;
+    }
+
+    public void setMachineDustEnabled(boolean machineDustEnabled) {
+        this.machineDustEnabled = machineDustEnabled;
+    }
+
+    @Override
+    public boolean terrainDustEnabled() {
+        return this.terrainDustEnabled;
+    }
+
+    public void setTerrainDustEnabled(boolean terrainDustEnabled) {
+        this.terrainDustEnabled = terrainDustEnabled;
+    }
+
+    @Override
     public double bossHealthMultiplier() {
         return this.bossHealthMultiplier;
     }
@@ -442,6 +545,33 @@ public class ConfigImpl implements Config {
 
     public void setCreativeGearInv(boolean enableCreativeGearInv) {
         this.enableCreativeGearInv = enableCreativeGearInv;
+    }
+
+    @Override
+    public boolean disableSpaceStationCreation() {
+        return this.disableSpaceStationCreation;
+    }
+
+    public void setDisableSpaceStationCreation(boolean disableSpaceStationCreation) {
+        this.disableSpaceStationCreation = disableSpaceStationCreation;
+    }
+
+    @Override
+    public java.util.List<String> spaceStationAllowedBodies() {
+        return this.spaceStationAllowedBodies != null ? this.spaceStationAllowedBodies : java.util.Collections.emptyList();
+    }
+
+    public void setSpaceStationAllowedBodies(java.util.List<String> spaceStationAllowedBodies) {
+        this.spaceStationAllowedBodies = new java.util.ArrayList<>(spaceStationAllowedBodies);
+    }
+
+    @Override
+    public java.util.List<String> spaceStationSharedBodies() {
+        return this.spaceStationSharedBodies != null ? this.spaceStationSharedBodies : java.util.Collections.emptyList();
+    }
+
+    public void setSpaceStationSharedBodies(java.util.List<String> spaceStationSharedBodies) {
+        this.spaceStationSharedBodies = new java.util.ArrayList<>(spaceStationSharedBodies);
     }
 
     public void load() {
@@ -808,6 +938,34 @@ public class ConfigImpl implements Config {
             ConfigCategory misc = b.getOrCreateCategory(Component.translatable(Translations.Config.MISC));
 
             misc.addEntry(creative.build());
+
+            misc.addEntry(new BooleanToggleBuilder(
+                    Component.translatable(Translations.Config.RESET),
+                    label.apply(Translations.Config.DISABLE_SPACE_STATION_CREATION),
+                    config.disableSpaceStationCreation())
+                    .setTooltip(tooltipSingular.apply(Translations.Config.DISABLE_SPACE_STATION_CREATION))
+                    .setSaveConsumer(config::setDisableSpaceStationCreation)
+                    .setDefaultValue(false)
+                    .build()
+            );
+
+            misc.addEntry(ConfigEntryBuilder.create().startStrList(
+                    label.apply(Translations.Config.SPACE_STATION_ALLOWED_BODIES),
+                    config.spaceStationAllowedBodies())
+                    .setTooltip(tooltipWithDesc.apply(Translations.Config.SPACE_STATION_ALLOWED_BODIES, Translations.Config.SPACE_STATION_ALLOWED_BODIES_DESC))
+                    .setSaveConsumer(config::setSpaceStationAllowedBodies)
+                    .setDefaultValue(java.util.Collections.emptyList())
+                    .build()
+            );
+
+            misc.addEntry(ConfigEntryBuilder.create().startStrList(
+                    label.apply(Translations.Config.SPACE_STATION_SHARED_BODIES),
+                    config.spaceStationSharedBodies())
+                    .setTooltip(tooltipWithDesc.apply(Translations.Config.SPACE_STATION_SHARED_BODIES, Translations.Config.SPACE_STATION_SHARED_BODIES_DESC))
+                    .setSaveConsumer(config::setSpaceStationSharedBodies)
+                    .setDefaultValue(java.util.Collections.emptyList())
+                    .build()
+            );
 
             misc.addEntry(new LongFieldBuilder(
                     Component.translatable(Translations.Config.RESET),
