@@ -41,7 +41,8 @@ public class GCDamageTypeTagProvider extends FabricTagProvider<DamageType> {
     @Override
     protected void addTags(HolderLookup.Provider arg) {
         this.tag(DamageTypeTags.BYPASSES_ARMOR)
-                .add(GCDamageTypes.SUFFOCATION);
+                .add(GCDamageTypes.SUFFOCATION)
+                .add(GCDamageTypes.DUST_STORM);
 
         this.tag(DamageTypeTags.BYPASSES_WOLF_ARMOR)
                 .add(GCDamageTypes.SUFFOCATION);
@@ -55,12 +56,14 @@ public class GCDamageTypeTagProvider extends FabricTagProvider<DamageType> {
         this.tag(DamageTypeTags.NO_IMPACT)
                 .add(GCDamageTypes.VINE_POISON)
                 .add(GCDamageTypes.SUFFOCATION)
-                .add(GCDamageTypes.SULFURIC_ACID);
+                .add(GCDamageTypes.SULFURIC_ACID)
+                .add(GCDamageTypes.DUST_STORM);
 
         this.tag(DamageTypeTags.NO_KNOCKBACK)
                 .add(GCDamageTypes.VINE_POISON)
                 .add(GCDamageTypes.SUFFOCATION)
-                .add(GCDamageTypes.SULFURIC_ACID);
+                .add(GCDamageTypes.SULFURIC_ACID)
+                .add(GCDamageTypes.DUST_STORM);
 
         this.tag(DamageTypeTags.ALWAYS_KILLS_ARMOR_STANDS)
                 .add(GCDamageTypes.METEOR_STRIKE)
@@ -68,12 +71,14 @@ public class GCDamageTypeTagProvider extends FabricTagProvider<DamageType> {
 
         this.tag(DamageTypeTags.PANIC_ENVIRONMENTAL_CAUSES)
                 .add(GCDamageTypes.VINE_POISON)
-                .add(GCDamageTypes.SULFURIC_ACID);
+                .add(GCDamageTypes.SULFURIC_ACID)
+                .add(GCDamageTypes.DUST_STORM);
 
         this.tag(DamageTypeTags.WITHER_IMMUNE_TO)
                 .add(GCDamageTypes.VINE_POISON)
                 .add(GCDamageTypes.SUFFOCATION)
-                .add(GCDamageTypes.SULFURIC_ACID);
+                .add(GCDamageTypes.SULFURIC_ACID)
+                .add(GCDamageTypes.DUST_STORM);
 
         this.tag(GCDamageTypeTags.IS_METEOR)
                 .add(GCDamageTypes.METEOR_STRIKE);

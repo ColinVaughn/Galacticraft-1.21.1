@@ -227,6 +227,7 @@ public class GCTranslationProvider extends TranslationProvider {
         this.block(GCBlocks.VOLCANIC_ROCK, "Volcanic Rock");
         this.block(GCBlocks.PUMICE, "Pumice");
         this.block(GCBlocks.VAPOR_SPOUT, "Vapor Spout");
+        this.block(GCBlocks.VOLCANO_VENT, "Volcano Vent");
 
         // MISC DECOR
         this.block(GCBlocks.WALKWAY, "Walkway");
@@ -386,6 +387,7 @@ public class GCTranslationProvider extends TranslationProvider {
         this.block(GCBlocks.FUEL_LOADER, "Fuel Loader");
         this.block(GCBlocks.CARGO_LOADER, "Cargo Loader");
         this.block(GCBlocks.CARGO_UNLOADER, "Cargo Unloader");
+        this.block(GCBlocks.ASTRO_MINER_BASE, "Astro Miner Base");
         this.block(GCBlocks.FLUID_TANK, "Fluid Tank");
         this.block(GCBlocks.PAINTER, "Painter");
         this.block(GCBlocks.DECONSTRUCTOR, "Deconstructor");
@@ -963,6 +965,8 @@ public class GCTranslationProvider extends TranslationProvider {
                 "%s froze to death while trying to escape %s");
         this.deathBy(GCDamageTypes.HEAT, "%s burned up",
                 "%s burned up while trying to escape %s");
+        this.deathBy(GCDamageTypes.DUST_STORM, "%s was lost in a Martian dust storm",
+                "%s was lost in a Martian dust storm while trying to escape %s");
 
         this.add(Boss.SKELETON_BOSS_DESPAWN, "Boss despawned, don't leave the boss room while fighting! Re-enter room to respawn boss.");
     }

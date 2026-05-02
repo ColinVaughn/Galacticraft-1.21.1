@@ -36,6 +36,9 @@ public class GCDamageTypes {
     public static final ResourceKey<DamageType> SUFFOCATION = Constant.key(Registries.DAMAGE_TYPE, "suffocation");
     public static final ResourceKey<DamageType> SULFURIC_ACID = Constant.key(Registries.DAMAGE_TYPE, "sulfuric_acid");
     public static final ResourceKey<DamageType> VINE_POISON = Constant.key(Registries.DAMAGE_TYPE, "vine_poison");
+    public static final ResourceKey<DamageType> COLD = Constant.key(Registries.DAMAGE_TYPE, "cold");
+    public static final ResourceKey<DamageType> HEAT = Constant.key(Registries.DAMAGE_TYPE, "heat");
+    public static final ResourceKey<DamageType> DUST_STORM = Constant.key(Registries.DAMAGE_TYPE, "dust_storm");
 
     public static void bootstrapRegistries(BootstrapContext<DamageType> context) {
         context.register(CRASH_LANDING, new DamageType("crash_landing", DamageScaling.ALWAYS, 0.1f));
@@ -44,5 +47,8 @@ public class GCDamageTypes {
         context.register(SUFFOCATION, new DamageType("suffocation", 0.0f));
         context.register(SULFURIC_ACID, new DamageType("sulfuric_acid", 0.0f));
         context.register(VINE_POISON, new DamageType("vine_poison", 0.0f));
+        context.register(COLD, new DamageType("cold", 0.0f));
+        context.register(HEAT, new DamageType("heat", 0.0f));
+        context.register(DUST_STORM, new DamageType("dust_storm", 0.0f));
     }
 }
