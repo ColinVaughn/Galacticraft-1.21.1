@@ -43,6 +43,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientWorldEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.DimensionRenderingRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+import dev.galacticraft.mod.client.render.dimension.duststorm.ClientDustStorms;
 import net.minecraft.core.Holder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -81,6 +82,7 @@ public class ClientEventHandler {
     public static void clientTick(Minecraft client) {
         OxygenOverlay.clientTick();
         LanderOverlay.clientTick();
+        ClientDustStorms.clientTick();
         GCKeyBinds.handleKeybinds(client);
     }
 
