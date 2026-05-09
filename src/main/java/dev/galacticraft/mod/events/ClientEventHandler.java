@@ -44,6 +44,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.DimensionRenderingRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import dev.galacticraft.mod.client.render.dimension.duststorm.ClientDustStorms;
+import dev.galacticraft.mod.client.gui.overlay.DustStormOverlay;
 import net.minecraft.core.Holder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -58,6 +59,7 @@ public class ClientEventHandler {
         ClientTickEvents.END_WORLD_TICK.register(ClientEventHandler::tickFootprints);
         MachineStatusEvents.MACHINE_STATUS_CHANGED.register(GCSoundManager::onStatusChanged);
         HudRenderCallback.EVENT.register(OxygenOverlay::onHudRender);
+        HudRenderCallback.EVENT.register(DustStormOverlay::onHudRender);
         HudRenderCallback.EVENT.register(RocketOverlay::onHudRender);
         HudRenderCallback.EVENT.register(LanderOverlay::onRenderHud);
         HudRenderCallback.EVENT.register(CountdownOverlay::renderCountdown);

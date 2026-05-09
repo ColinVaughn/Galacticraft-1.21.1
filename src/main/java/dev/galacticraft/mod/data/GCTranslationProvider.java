@@ -1270,6 +1270,8 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(Ui.OXYGEN_TANK_2_LEVEL, "Oxygen Tank 2: %s");
         this.add(Ui.OXYGEN_WARNING, "WARNING");
         this.add(Ui.OXYGEN_SETUP_INVALID, "Oxygen Setup is Invalid!");
+        this.add(Ui.DUST_STORM_INCOMING, "Dust Storm Incoming — %ss");
+        this.add(Ui.DUST_STORM_CLEARING, "Dust Storm Clearing — %ss");
         this.add(Ui.ROCKET_FUEL, "Fuel:");
         this.add(Ui.ROCKET_FULL, "% full");
         this.add(Ui.ROCKET_NO_FUEL, "No fuel");

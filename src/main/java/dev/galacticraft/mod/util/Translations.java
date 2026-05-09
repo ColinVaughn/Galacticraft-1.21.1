@@ -48,6 +48,7 @@ public interface Translations {
         String LEAVE_ROCKET_DURING_COUNTDOWN = "advancement.galacticraft.leave_rocket_during_countdown";
         String LAUNCH_ROCKET = "advancement.galacticraft.launch_rocket";
         String MOON = "advancement.galacticraft.moon";
+        String MARS = "advancement.galacticraft.mars";
         String PARROT_LANDING = "advancement.galacticraft.parrot_landing";
         String EAT_MOON_CHEESE_CURD = "advancement.galacticraft.eat_moon_cheese_curd";
         String CHEESE_AND_CRACKERS = "advancement.galacticraft.cheese_and_crackers";
@@ -192,6 +193,11 @@ public interface Translations {
         String MISC = "config.galacticraft.misc";
         String CREATIVE = "config.galacticraft.misc.creative";
         String ENABLE_CREATIVE_GEARINV = "config.galacticraft.misc.creative.enable_gearinv";
+        String DISABLE_SPACE_STATION_CREATION = "config.galacticraft.misc.disable_space_station_creation";
+        String SPACE_STATION_ALLOWED_BODIES = "config.galacticraft.misc.space_station_allowed_bodies";
+        String SPACE_STATION_ALLOWED_BODIES_DESC = "config.galacticraft.misc.space_station_allowed_bodies.description";
+        String SPACE_STATION_SHARED_BODIES = "config.galacticraft.misc.space_station_shared_bodies";
+        String SPACE_STATION_SHARED_BODIES_DESC = "config.galacticraft.misc.space_station_shared_bodies.description";
 
         String DEBUG = "config.galacticraft.debug";
         String DEBUG_LOGGING = "config.galacticraft.debug.logging";
@@ -460,6 +466,8 @@ public interface Translations {
         String OXYGEN_TANK_2_LEVEL = "ui.galacticraft.player_inv_screen.oxygen_tank_2_level";
         String OXYGEN_WARNING = "ui.galacticraft.oxygen.warning";
         String OXYGEN_SETUP_INVALID = "ui.galacticraft.oxygen.invalid_setup";
+        String DUST_STORM_INCOMING = "ui.galacticraft.dust_storm.incoming";
+        String DUST_STORM_CLEARING = "ui.galacticraft.dust_storm.clearing";
         String ROCKET_FUEL = "ui.galacticraft.rocket.fuel";
         String ROCKET_FULL = "ui.galacticraft.rocket.full";
         String ROCKET_NO_FUEL = "ui.galacticraft.rocket.no_fuel";
