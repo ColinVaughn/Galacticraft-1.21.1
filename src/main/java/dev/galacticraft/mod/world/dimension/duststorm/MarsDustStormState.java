@@ -161,7 +161,7 @@ public class MarsDustStormState extends SavedData {
 
     // --- Debug hooks (used by the /duststorm command) ---
 
-    /** Jumps straight into a storm at the given peak, skipping the forecast window. */
+    /** Jumps straight to the peak of a storm at the given intensity, skipping forecast/build-up. */
     public void debugStart(RandomSource random, DustStormTuning tuning, float peak) {
         int span = Math.max(1, tuning.maxDuration() - tuning.minDuration() + 1);
         int total = tuning.minDuration() + random.nextInt(span);
@@ -169,8 +169,8 @@ public class MarsDustStormState extends SavedData {
         this.dyingDuration = Math.max(1, Math.round(total * 0.2f));
         this.peakDuration = Math.max(1, total - this.buildingDuration - this.dyingDuration);
         this.peakIntensity = Mth.clamp(peak, 0.0f, 1.0f);
-        this.phase = DustStormPhase.BUILDING;
-        this.phaseDuration = this.buildingDuration;
+        this.phase = DustStormPhase.PEAK;
+        this.phaseDuration = this.peakDuration;
         this.ticksIntoPhase = 0;
         this.setDirty();
     }

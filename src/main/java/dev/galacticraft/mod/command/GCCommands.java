@@ -29,6 +29,7 @@ public class GCCommands {
     public static void register() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             DimensionTpCommand.register(dispatcher);
+            DustStormCommand.register(dispatcher);
 
             if (Galacticraft.CONFIG.enableGcHouston()) {
                 GCHoustonCommand.register(dispatcher);
