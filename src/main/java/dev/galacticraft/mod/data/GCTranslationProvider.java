@@ -203,6 +203,7 @@ public class GCTranslationProvider extends TranslationProvider {
 
         // MARS NATURAL
         this.block(GCBlocks.MARS_SURFACE_ROCK, "Mars Surface Rock");
+        this.block(GCBlocks.MARS_DUST_LAYER, "Martian Dust");
         this.block(GCBlocks.MARS_SUB_SURFACE_ROCK, "Mars Sub-Surface Rock");
 
         this.block(GCBlocks.MARS_STONE, "Mars Stone");

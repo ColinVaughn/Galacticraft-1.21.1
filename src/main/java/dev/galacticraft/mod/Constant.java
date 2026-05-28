@@ -152,6 +152,7 @@ public interface Constant {
 
         String MOON_DIRT = "moon_dirt";
         String MARS_SURFACE_ROCK = "mars_surface_rock";
+        String MARS_DUST_LAYER = "mars_dust_layer";
         String MARS_SUB_SURFACE_ROCK = "mars_sub_surface_rock";
         String MARS_STONE = "mars_stone";
         String MARS_STONE_SLAB = "mars_stone_slab";
@@ -173,6 +174,7 @@ public interface Constant {
         String VOLCANIC_ROCK = "volcanic_rock";
         String PUMICE = "pumice";
         String VAPOR_SPOUT = "vapor_spout";
+        String VOLCANO_VENT = "volcano_vent";
 
         // Ore
         String MARS_IRON_ORE = "mars_iron_ore";
@@ -1224,6 +1226,7 @@ public interface Constant {
         String BUGGY_BENCH = "buggy_bench";
         String TIER_1_ROCKET = "tier_1_rocket";
         String VEHICLE_INVENTORY = "vehicle_inventory";
+        String ASTRO_MINER_BASE_MENU = "astro_miner_base_menu";
     }
 
     interface LootTable {

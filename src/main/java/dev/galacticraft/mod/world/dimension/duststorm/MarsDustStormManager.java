@@ -37,6 +37,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -75,6 +76,34 @@ public final class MarsDustStormManager {
             float intensity = state.currentIntensity();
             for (ServerPlayer player : level.players()) {
                 applyPlayerEffects(player, level, intensity, config);
+            }
+        }
+
+        // At the height of the storm, dust settles over the terrain near players (cosmetic).
+        if (state.phase() == DustStormPhase.PEAK && config.terrainDustEnabled() && level.getGameTime() % 20L == 0L) {
+            placeTerrainDust(level);
+        }
+    }
+
+    private static final int MAX_DUST_PLACEMENTS_PER_SWEEP = 12;
+
+    private static void placeTerrainDust(ServerLevel level) {
+        RandomSource random = level.random;
+        int placed = 0;
+        for (ServerPlayer player : level.players()) {
+            if (placed >= MAX_DUST_PLACEMENTS_PER_SWEEP) break;
+            BlockPos base = player.blockPosition();
+            for (int i = 0; i < 3 && placed < MAX_DUST_PLACEMENTS_PER_SWEEP; i++) {
+                BlockPos surface = level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING,
+                        base.offset(random.nextInt(24) - 12, 0, random.nextInt(24) - 12));
+                BlockPos below = surface.below();
+                if (level.isEmptyBlock(surface)
+                        && level.getBlockState(below).isFaceSturdy(level, below, Direction.UP)
+                        && !(level.getBlockState(below).getBlock() instanceof dev.galacticraft.mod.content.block.environment.MarsDustLayerBlock)) {
+                    level.setBlock(surface, dev.galacticraft.mod.content.GCBlocks.MARS_DUST_LAYER.defaultBlockState(),
+                            net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+                    placed++;
+                }
             }
         }
     }
