@@ -84,6 +84,22 @@ public final class MarsDustStormManager {
         return body != null && body.is(GCCelestialBodies.MARS);
     }
 
+    /** Current dust intensity in {@code [0,1]} for this level, or 0 if not a Mars storm. */
+    public static float currentIntensity(ServerLevel level) {
+        if (!isMars(level) || !Galacticraft.CONFIG.dustStormsEnabled()) return 0.0f;
+        return MarsDustStormState.get(level).currentIntensity();
+    }
+
+    /**
+     * Generation multiplier for a sky-exposed solar panel, in {@code [0,1]}: 1.0 in clear weather,
+     * dropping toward 0 as a dust storm peaks (scaled by the configured solar penalty).
+     */
+    public static double solarMultiplier(ServerLevel level) {
+        float intensity = currentIntensity(level);
+        if (intensity <= 0.0f) return 1.0;
+        return Math.max(0.0, 1.0 - intensity * Galacticraft.CONFIG.dustStormSolarPenalty());
+    }
+
     /** Sends the current storm state to every player in the level. */
     public static void sync(ServerLevel level, MarsDustStormState state) {
         var payload = new dev.galacticraft.mod.network.s2c.DustStormSyncPayload(

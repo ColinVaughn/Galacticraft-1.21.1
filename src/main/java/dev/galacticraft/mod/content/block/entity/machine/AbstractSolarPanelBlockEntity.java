@@ -28,10 +28,15 @@ import dev.galacticraft.machinelib.api.machine.MachineStatus;
 import dev.galacticraft.machinelib.api.machine.MachineStatuses;
 import dev.galacticraft.machinelib.api.storage.StorageSpec;
 import dev.galacticraft.machinelib.api.util.EnergySource;
+import dev.galacticraft.mod.Galacticraft;
+import dev.galacticraft.mod.api.block.entity.Dustable;
 import dev.galacticraft.mod.api.block.entity.SolarPanel;
 import dev.galacticraft.mod.machine.GCMachineStatuses;
+import dev.galacticraft.mod.world.dimension.duststorm.MarsDustStormManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -40,7 +45,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 
-public abstract class AbstractSolarPanelBlockEntity extends MachineBlockEntity implements SolarPanel {
+public abstract class AbstractSolarPanelBlockEntity extends MachineBlockEntity implements SolarPanel, Dustable {
     public static final float SPEED = Mth.DEG_TO_RAD * 0.5F;
     public static final float DAWN = 4.0F * Mth.PI / 3.0F;
     public static final float SUNRISE = 1.5F * Mth.PI;
@@ -58,6 +63,8 @@ public abstract class AbstractSolarPanelBlockEntity extends MachineBlockEntity i
     public long currentEnergyGeneration = 0;
     private long dayLength = 24000;
     private float tilt = NOON;
+    // Martian dust that settles on the panel during storms and lingers, cutting output until it weathers off.
+    private float dustLevel = 0.0f;
 
     public AbstractSolarPanelBlockEntity(BlockEntityType<? extends AbstractSolarPanelBlockEntity> type, BlockPos pos, BlockState state, StorageSpec spec) {
         super(type, pos, state, spec);
@@ -86,7 +93,23 @@ public abstract class AbstractSolarPanelBlockEntity extends MachineBlockEntity i
                 }
             }
         }
+        profiler.popPush("dust");
+        if (Galacticraft.CONFIG.machineDustEnabled()) {
+            this.tickDust(level);
+        }
         profiler.pop();
+    }
+
+    /** Accrues dust while a storm blows over a sky-exposed panel; slowly weathers it off when clear. */
+    private void tickDust(@NotNull ServerLevel level) {
+        float intensity = MarsDustStormManager.currentIntensity(level);
+        float before = this.dustLevel;
+        if (intensity > 0.0f && this.blocked < 9) {
+            this.dustLevel = Math.min(1.0f, this.dustLevel + intensity * 0.0006f);
+        } else if (intensity <= 0.0f && this.dustLevel > 0.0f) {
+            this.dustLevel = Math.max(0.0f, this.dustLevel - 0.00008f);
+        }
+        if (this.dustLevel != before) this.setChanged();
     }
 
     @Override
@@ -105,6 +128,17 @@ public abstract class AbstractSolarPanelBlockEntity extends MachineBlockEntity i
         } else if (level.isRaining()) {
             if (status == null) status = GCMachineStatuses.PARTIALLY_GENERATING;
             multiplier *= 0.5;
+        }
+        // A Mars dust storm blots out the sun, cutting solar output while it rages.
+        double stormMultiplier = MarsDustStormManager.solarMultiplier(level);
+        if (stormMultiplier < 1.0) {
+            if (status == null) status = GCMachineStatuses.PARTIALLY_GENERATING;
+            multiplier *= stormMultiplier;
+        }
+        // Dust that has settled on the panel keeps output down even after the storm passes.
+        if (this.dustLevel > 0.0f) {
+            if (status == null) status = GCMachineStatuses.PARTIALLY_GENERATING;
+            multiplier *= (1.0 - this.dustLevel * 0.8);
         }
         long time = level.getDayTime() % this.dayLength;
         // Don't use this.isDay() because it returns false when it is thundering
@@ -172,5 +206,28 @@ public abstract class AbstractSolarPanelBlockEntity extends MachineBlockEntity i
     @Override
     public long getCurrentEnergyGeneration() {
         return this.currentEnergyGeneration;
+    }
+
+    @Override
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider lookup) {
+        super.saveAdditional(tag, lookup);
+        tag.putFloat("DustLevel", this.dustLevel);
+    }
+
+    @Override
+    public void loadAdditional(CompoundTag tag, HolderLookup.Provider lookup) {
+        super.loadAdditional(tag, lookup);
+        this.dustLevel = tag.getFloat("DustLevel");
+    }
+
+    @Override
+    public float galacticraft$getDustLevel() {
+        return this.dustLevel;
+    }
+
+    @Override
+    public void galacticraft$setDustLevel(float level) {
+        this.dustLevel = Mth.clamp(level, 0.0f, 1.0f);
+        this.setChanged();
     }
 }
