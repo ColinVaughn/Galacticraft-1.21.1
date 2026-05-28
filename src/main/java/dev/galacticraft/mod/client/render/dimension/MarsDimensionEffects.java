@@ -30,21 +30,25 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.ParticleStatus;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.util.CubicSampler;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Vector3f;
 
 @Environment(EnvType.CLIENT)
 public class MarsDimensionEffects extends GalacticDimensionEffects {
     // Mars has a thin, dusty reddish atmosphere (unlike the airless Moon, which is pure black).
     private static final Vec3 MARS_FOG = new Vec3(0.52D, 0.29D, 0.20D);
     private static final Vec3 MARS_SKY = new Vec3(0.776D, 0.478D, 0.329D);
-    // During a storm the air fills with choking rust dust: darker, denser, browner.
-    private static final Vec3 STORM_FOG = new Vec3(0.30D, 0.16D, 0.10D);
-    private static final Vec3 STORM_SKY = new Vec3(0.22D, 0.12D, 0.08D);
+    // Inside a storm the whole sky becomes a churning wall of warm dust — near-uniform fog and sky
+    // so it reads as being *inside* a dust cloud rather than a dark orange tint.
+    private static final Vec3 STORM_FOG = new Vec3(0.60D, 0.43D, 0.30D);
+    private static final Vec3 STORM_SKY = new Vec3(0.55D, 0.39D, 0.27D);
+    // Warm rust-tan blowing dust motes.
+    private static final DustParticleOptions DUST = new DustParticleOptions(new Vector3f(0.64F, 0.44F, 0.29F), 1.4F);
 
     public static final MarsDimensionEffects INSTANCE = new MarsDimensionEffects();
 
@@ -99,18 +103,20 @@ public class MarsDimensionEffects extends GalacticDimensionEffects {
 
         RandomSource random = RandomSource.create((long) ticks * 0x9E3779B97F4A7C15L);
         Vec3 cam = camera.getPosition();
-        int count = (int) (70.0F * intensity * intensity);
+        int count = (int) (200.0F * intensity * intensity);
         ParticleStatus particles = this.minecraft.options.particles().get();
         if (particles == ParticleStatus.MINIMAL) return true;
         if (particles == ParticleStatus.DECREASED) count /= 2;
 
-        double wind = 0.35D + intensity * 0.55D;
+        // Fast, downwind-streaking dust concentrated close to the camera so it whips past the view.
+        double wind = 0.7D + intensity * 0.9D;
         for (int i = 0; i < count; i++) {
-            double px = cam.x + (random.nextDouble() - 0.5D) * 30.0D;
-            double py = cam.y + (random.nextDouble() - 0.2D) * 12.0D;
-            double pz = cam.z + (random.nextDouble() - 0.5D) * 30.0D;
-            // Dust blows roughly downwind (+x/+z) rather than falling straight down.
-            level.addParticle(ParticleTypes.WHITE_ASH, px, py, pz, wind, -0.02D, wind * 0.4D);
+            double px = cam.x + (random.nextDouble() - 0.5D) * 22.0D;
+            double py = cam.y + (random.nextDouble() - 0.35D) * 11.0D;
+            double pz = cam.z + (random.nextDouble() - 0.5D) * 22.0D;
+            double gust = 0.75D + random.nextDouble() * 0.5D;
+            level.addParticle(DUST, px, py, pz,
+                    wind * gust, (random.nextDouble() - 0.5D) * 0.15D, wind * gust * 0.6D);
         }
         return true;
     }

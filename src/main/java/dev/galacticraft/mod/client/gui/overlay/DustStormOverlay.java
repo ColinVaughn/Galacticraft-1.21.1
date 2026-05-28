@@ -60,11 +60,14 @@ public class DustStormOverlay {
                 || player.getVehicle() instanceof LanderEntity;
         if (intensity > 0.05F && !sheltered && !player.isSpectator()) {
             boolean glasses = player.getItemBySlot(EquipmentSlot.HEAD).is(GCItems.SENSOR_GLASSES);
-            float alphaF = Math.min(0.55F, intensity * 0.6F);
-            if (glasses) alphaF *= 0.5F;
-            int alpha = (int) (alphaF * 255.0F);
-            if (alpha > 0) {
-                graphics.fill(0, 0, width, height, FastColor.ARGB32.color(alpha, 150, 90, 55));
+            float alphaF = Math.min(0.38F, intensity * 0.42F);
+            if (glasses) alphaF *= 0.45F;
+            int topAlpha = (int) (alphaF * 255.0F);
+            if (topAlpha > 0) {
+                // Warm dust haze, denser toward the top/horizon and thinning toward the ground.
+                int top = FastColor.ARGB32.color(topAlpha, 173, 125, 84);
+                int bottom = FastColor.ARGB32.color((int) (topAlpha * 0.35F), 173, 125, 84);
+                graphics.fillGradient(0, 0, width, height, top, bottom);
             }
         }
 
