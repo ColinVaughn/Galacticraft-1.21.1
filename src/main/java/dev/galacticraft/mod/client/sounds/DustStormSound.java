@@ -71,9 +71,9 @@ public class DustStormSound extends AbstractTickableSoundInstance {
             this.stop();
             return;
         }
-        float target = Math.min(1.0F, 0.15F + intensity * 0.85F);
+        float target = Math.min(1.0F, 0.35F + intensity * 0.85F);
         if (mc.level.isBreathable(player.blockPosition().above())) {
-            target *= 0.25F; // muffled inside a sealed base or sealer bubble
+            target *= 0.3F; // muffled inside a sealed base or sealer bubble
         }
         this.volume = target;
     }
