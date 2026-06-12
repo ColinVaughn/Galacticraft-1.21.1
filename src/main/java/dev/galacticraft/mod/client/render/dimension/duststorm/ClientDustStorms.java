@@ -69,6 +69,8 @@ public final class ClientDustStorms {
         prevRenderIntensity = renderIntensity;
         float target = targetIntensity();
         renderIntensity += (target - renderIntensity) * 0.06f;
+
+        dev.galacticraft.mod.client.sounds.DustStormSound.tickAmbient();
     }
 
     private static float targetIntensity() {

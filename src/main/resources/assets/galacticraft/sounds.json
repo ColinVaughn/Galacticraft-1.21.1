@@ -8,6 +8,15 @@
       }
     ]
   },
+  "ambient.dust_storm": {
+    "subtitle": "subtitles.galacticraft.ambient.dust_storm",
+    "sounds": [
+      {
+        "name": "galacticraft:ambient/dust_storm",
+        "stream": true
+      }
+    ]
+  },
   "ambient.single_drip": {
     "subtitle": "subtitles.galacticraft.ambient.single_drip",
     "sounds": [

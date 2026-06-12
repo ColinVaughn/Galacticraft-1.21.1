@@ -1273,6 +1273,7 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(Ui.OXYGEN_SETUP_INVALID, "Oxygen Setup is Invalid!");
         this.add(Ui.DUST_STORM_INCOMING, "Dust Storm Incoming — %ss");
         this.add(Ui.DUST_STORM_CLEARING, "Dust Storm Clearing — %ss");
+        this.add("subtitles.galacticraft.ambient.dust_storm", "Wind howls");
         this.add(Ui.ROCKET_FUEL, "Fuel:");
         this.add(Ui.ROCKET_FULL, "% full");
         this.add(Ui.ROCKET_NO_FUEL, "No fuel");
