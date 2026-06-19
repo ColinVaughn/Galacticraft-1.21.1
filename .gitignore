@@ -222,3 +222,6 @@ src/main/generated/.cache/
 
 # Python 
 .github/scripts/__pycache__
+
+# Synaptic
+synaptic-out/
