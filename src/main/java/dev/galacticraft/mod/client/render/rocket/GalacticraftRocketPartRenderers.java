@@ -24,6 +24,8 @@ package dev.galacticraft.mod.client.render.rocket;
 
 import dev.galacticraft.api.entity.rocket.render.RocketPartRendererRegistry;
 import dev.galacticraft.impl.client.rocket.render.BakedModelRocketPartRenderer;
+import dev.galacticraft.impl.client.rocket.render.EmptyRocketPartRenderer;
+import dev.galacticraft.impl.client.rocket.render.ScaledModelRocketPartRenderer;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.content.GCRocketParts;
 import net.minecraft.resources.ResourceLocation;
@@ -39,6 +41,18 @@ public class GalacticraftRocketPartRenderers {
     public static final ResourceLocation BOOSTER_TIER_1 = Constant.id("models/misc/rocket_thruster_tier_1.json");
     public static final ResourceLocation BOOSTER_TIER_2 = Constant.id("models/misc/rocket_thruster_tier_2.json");
 
+    // Tiers 2 and 3 use legacy whole-rocket meshes (single OBJ each) rather than per-part models.
+    public static final ResourceLocation ROCKET_T2 = Constant.id("models/misc/rocket_t2.json");
+    public static final ResourceLocation ROCKET_T3 = Constant.id("models/misc/rocket_t3.json");
+
+    // Visual tuning for the whole-rocket meshes: {scale, yOffset}. The legacy meshes are ~2x the
+    // tier-1 assembled rocket; yOffset also absorbs the fixed +1.9375 the entity renderer
+    // accumulates before the body slot. Dial these in-game if a rocket sits wrong on the pad.
+    private static final float ROCKET_T2_SCALE = 0.57F;
+    private static final float ROCKET_T2_Y_OFFSET = -1.94F;
+    private static final float ROCKET_T3_SCALE = 0.60F;
+    private static final float ROCKET_T3_Y_OFFSET = -1.02F;
+
     public static void register() {
         RocketPartRendererRegistry.INSTANCE.register(GCRocketParts.TIER_1_CONE, new BakedModelRocketPartRenderer(DEFAULT_CONE));
         RocketPartRendererRegistry.INSTANCE.register(GCRocketParts.ADVANCED_CONE, new BakedModelRocketPartRenderer(ADVANCED_CONE));
@@ -48,6 +62,18 @@ public class GalacticraftRocketPartRenderers {
         RocketPartRendererRegistry.INSTANCE.register(GCRocketParts.TIER_1_ENGINE, new BakedModelRocketPartRenderer(DEFAULT_ENGINE));
         RocketPartRendererRegistry.INSTANCE.register(GCRocketParts.STORAGE_UPGRADE, new BakedModelItemRocketPartRenderer(Items.CHEST.getDefaultInstance(), null));
         RocketPartRendererRegistry.INSTANCE.register(GCRocketParts.TIER_1_BOOSTER, new BakedModelRocketPartRenderer(BOOSTER_TIER_1));
-        RocketPartRendererRegistry.INSTANCE.register(GCRocketParts.TIER_2_BOOSTER, new BakedModelRocketPartRenderer(BOOSTER_TIER_2));
+
+        // Tiers 2 and 3 render a single legacy whole-rocket mesh via the body slot; the remaining
+        // slots are emptied so the tier-1 part models don't draw and overlap the mesh.
+        RocketPartRendererRegistry.INSTANCE.register(GCRocketParts.TIER_2_BODY, new ScaledModelRocketPartRenderer(ROCKET_T2, ROCKET_T2_SCALE, ROCKET_T2_Y_OFFSET));
+        RocketPartRendererRegistry.INSTANCE.register(GCRocketParts.TIER_2_CONE, EmptyRocketPartRenderer.INSTANCE);
+        RocketPartRendererRegistry.INSTANCE.register(GCRocketParts.TIER_2_FIN, EmptyRocketPartRenderer.INSTANCE);
+        RocketPartRendererRegistry.INSTANCE.register(GCRocketParts.TIER_2_ENGINE, EmptyRocketPartRenderer.INSTANCE);
+        RocketPartRendererRegistry.INSTANCE.register(GCRocketParts.TIER_2_BOOSTER, EmptyRocketPartRenderer.INSTANCE);
+
+        RocketPartRendererRegistry.INSTANCE.register(GCRocketParts.TIER_3_BODY, new ScaledModelRocketPartRenderer(ROCKET_T3, ROCKET_T3_SCALE, ROCKET_T3_Y_OFFSET));
+        RocketPartRendererRegistry.INSTANCE.register(GCRocketParts.TIER_3_CONE, EmptyRocketPartRenderer.INSTANCE);
+        RocketPartRendererRegistry.INSTANCE.register(GCRocketParts.TIER_3_FIN, EmptyRocketPartRenderer.INSTANCE);
+        RocketPartRendererRegistry.INSTANCE.register(GCRocketParts.TIER_3_ENGINE, EmptyRocketPartRenderer.INSTANCE);
     }
 }
