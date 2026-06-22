@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": {
+      "item": "minecraft:iron_pickaxe"
+    },
+    "S": {
+      "item": "galacticraft:compressed_steel"
+    },
+    "W": {
+      "item": "galacticraft:basic_wafer"
+    }
+  },
+  "pattern": [
+    "SPS",
+    "SWS",
+    "SSS"
+  ],
+  "result": {
+    "count": 1,
+    "id": "galacticraft:deconstructor"
+  }
+}

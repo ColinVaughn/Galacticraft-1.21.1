@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "galacticraft:compressed_aluminum"
+    },
+    "S": {
+      "item": "galacticraft:compressed_steel"
+    },
+    "W": {
+      "item": "galacticraft:basic_wafer"
+    }
+  },
+  "pattern": [
+    "SAS",
+    "AWA",
+    "SAS"
+  ],
+  "result": {
+    "count": 1,
+    "id": "galacticraft:painter"
+  }
+}

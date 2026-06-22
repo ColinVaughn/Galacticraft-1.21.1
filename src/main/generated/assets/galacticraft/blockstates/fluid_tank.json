@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "galacticraft:machine/fluid_tank"
+    }
+  }
+}

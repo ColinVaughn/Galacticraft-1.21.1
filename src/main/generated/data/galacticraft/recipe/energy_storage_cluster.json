@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "M": {
+      "item": "galacticraft:energy_storage_module"
+    },
+    "S": {
+      "item": "galacticraft:compressed_steel"
+    }
+  },
+  "pattern": [
+    "SSS",
+    "MMM",
+    "SSS"
+  ],
+  "result": {
+    "count": 1,
+    "id": "galacticraft:energy_storage_cluster"
+  }
+}

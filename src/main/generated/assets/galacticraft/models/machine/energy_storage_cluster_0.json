@@ -1,0 +1,7 @@
+{
+  "data": {
+    "back": "galacticraft:block/energy_storage_cluster_0",
+    "front": "galacticraft:block/energy_storage_cluster_0"
+  },
+  "machinelib:type": "machine"
+}

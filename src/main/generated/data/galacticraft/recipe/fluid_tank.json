@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": {
+      "item": "minecraft:glass"
+    },
+    "S": {
+      "item": "galacticraft:compressed_steel"
+    }
+  },
+  "pattern": [
+    "SGS",
+    "G G",
+    "SGS"
+  ],
+  "result": {
+    "count": 1,
+    "id": "galacticraft:fluid_tank"
+  }
+}
