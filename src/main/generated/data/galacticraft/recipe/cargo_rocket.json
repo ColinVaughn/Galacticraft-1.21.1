@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "tag": "c:chests/wooden"
+    },
+    "E": {
+      "item": "galacticraft:rocket_engine"
+    },
+    "F": {
+      "item": "galacticraft:rocket_fin"
+    },
+    "P": {
+      "item": "galacticraft:heavy_plating"
+    }
+  },
+  "pattern": [
+    "P P",
+    "PCP",
+    "FEF"
+  ],
+  "result": {
+    "count": 1,
+    "id": "galacticraft:cargo_rocket"
+  }
+}

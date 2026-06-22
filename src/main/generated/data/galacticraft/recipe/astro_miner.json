@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": {
+      "item": "galacticraft:desh_ingot"
+    },
+    "I": {
+      "item": "galacticraft:compressed_iron"
+    },
+    "P": {
+      "item": "galacticraft:heavy_plating"
+    },
+    "S": {
+      "item": "galacticraft:compressed_steel"
+    }
+  },
+  "pattern": [
+    "PSP",
+    "IDI",
+    "PSP"
+  ],
+  "result": {
+    "count": 1,
+    "id": "galacticraft:astro_miner"
+  }
+}
