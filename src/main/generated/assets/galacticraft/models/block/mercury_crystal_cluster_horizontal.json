@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cross",
+  "textures": {
+    "cross": "galacticraft:block/mercury_crystal_cluster_horizontal"
+  }
+}

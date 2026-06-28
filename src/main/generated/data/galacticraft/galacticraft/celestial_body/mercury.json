@@ -1,12 +1,16 @@
 {
-  "type": "galacticraft:decorative_planet",
+  "type": "galacticraft:planet",
   "config": {
     "parent": "galacticraft:sol",
+    "access_weight": 3,
     "atmosphere": {
       "composition": {},
-      "pressure": 3.0E-15,
-      "temperature": 23.0
+      "pressure": 1.0E-14,
+      "temperature": 167.0
     },
+    "celestial_handler": "galacticraft:default",
+    "day_length": 96000,
+    "day_temperature": 430,
     "description": {
       "translate": "planet.galacticraft.mercury.description"
     },
@@ -14,6 +18,7 @@
       "type": "galacticraft:icon",
       "config": {
         "height": 16,
+        "rocket_overlay": "galacticraft:textures/gui/rocket/mercury_rocket_gui.png",
         "scale": 1.0,
         "texture": "galacticraft:textures/gui/celestialbodies/mercury.png",
         "u": 0,
@@ -21,10 +26,11 @@
         "width": 16
       }
     },
-    "gravity": 0.166,
+    "gravity": 0.38,
     "name": {
       "translate": "planet.galacticraft.mercury"
     },
+    "night_temperature": -20,
     "position": {
       "type": "galacticraft:orbital",
       "config": {
@@ -37,6 +43,8 @@
     "ring": {
       "type": "galacticraft:default",
       "config": {}
-    }
+    },
+    "teleporter": "galacticraft:lander",
+    "world": "galacticraft:mercury"
   }
 }

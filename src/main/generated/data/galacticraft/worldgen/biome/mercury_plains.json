@@ -1,0 +1,74 @@
+{
+  "carvers": {
+    "air": [
+      "galacticraft:mercury_cave_carver",
+      "galacticraft:mercury_cavern_carver",
+      "galacticraft:mercury_canyon_carver"
+    ]
+  },
+  "downfall": 0.0,
+  "effects": {
+    "fog_color": 1710623,
+    "mood_sound": {
+      "block_search_extent": 8,
+      "offset": 2.0,
+      "sound": "minecraft:ambient.cave",
+      "tick_delay": 6000
+    },
+    "music": {
+      "max_delay": 24000,
+      "min_delay": 12000,
+      "replace_current_music": false,
+      "sound": "galacticraft:music.moon"
+    },
+    "sky_color": 0,
+    "water_color": 4159204,
+    "water_fog_color": 329011
+  },
+  "features": [
+    [],
+    [
+      "galacticraft:mercury_lava_lake"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "galacticraft:mercury_crystal_scatter"
+    ]
+  ],
+  "has_precipitation": false,
+  "spawn_costs": {},
+  "spawners": {
+    "ambient": [],
+    "axolotls": [],
+    "creature": [],
+    "misc": [],
+    "monster": [
+      {
+        "type": "galacticraft:evolved_spider",
+        "maxCount": 3,
+        "minCount": 2,
+        "weight": 100
+      },
+      {
+        "type": "galacticraft:evolved_skeleton",
+        "maxCount": 4,
+        "minCount": 2,
+        "weight": 100
+      },
+      {
+        "type": "galacticraft:evolved_creeper",
+        "maxCount": 3,
+        "minCount": 2,
+        "weight": 90
+      }
+    ],
+    "underground_water_creature": [],
+    "water_ambient": [],
+    "water_creature": []
+  },
+  "temperature": 2.0
+}

@@ -1,0 +1,40 @@
+{
+  "parent": "minecraft:galacticraft/mars",
+  "criteria": {
+    "mercury_landing": {
+      "conditions": {
+        "player": [
+          {
+            "condition": "minecraft:entity_properties",
+            "entity": "this",
+            "predicate": {
+              "location": {
+                "dimension": "galacticraft:mercury"
+              }
+            }
+          }
+        ]
+      },
+      "trigger": "galacticraft:safe_landing"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.galacticraft.mercury.description"
+    },
+    "frame": "challenge",
+    "icon": {
+      "count": 1,
+      "id": "galacticraft:mercury_stone"
+    },
+    "title": {
+      "translate": "advancement.galacticraft.mercury.title"
+    }
+  },
+  "requirements": [
+    [
+      "mercury_landing"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

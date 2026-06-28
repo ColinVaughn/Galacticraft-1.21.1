@@ -1,0 +1,11 @@
+{
+  "values": [
+    "galacticraft:mercury_stone",
+    "galacticraft:mercury_surface_rock",
+    "galacticraft:mercury_sub_surface_rock",
+    "galacticraft:mercury_scarp_rock",
+    "minecraft:basalt",
+    "minecraft:blackstone",
+    "minecraft:magma_block"
+  ]
+}
