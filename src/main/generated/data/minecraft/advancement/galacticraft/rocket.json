@@ -29,5 +29,11 @@
       "craft_rocket"
     ]
   ],
+  "rewards": {
+    "rocket_parts": [
+      "galacticraft:rocket_booster/tier_1",
+      "galacticraft:rocket_upgrade/storage"
+    ]
+  },
   "sends_telemetry_event": true
 }

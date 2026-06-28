@@ -1,0 +1,41 @@
+{
+  "parent": "minecraft:galacticraft/tier_2_rocket_schematic",
+  "criteria": {
+    "tier_3_rocket_schematic": {
+      "conditions": {
+        "items": [
+          {
+            "items": "galacticraft:tier_3_rocket_schematic"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.galacticraft.tier_3_schematic.description"
+    },
+    "icon": {
+      "count": 1,
+      "id": "galacticraft:tier_3_rocket_schematic"
+    },
+    "title": {
+      "translate": "advancement.galacticraft.tier_3_schematic.title"
+    }
+  },
+  "requirements": [
+    [
+      "tier_3_rocket_schematic"
+    ]
+  ],
+  "rewards": {
+    "rocket_parts": [
+      "galacticraft:rocket_cone/tier_3",
+      "galacticraft:rocket_body/tier_3",
+      "galacticraft:rocket_fin/tier_3",
+      "galacticraft:rocket_engine/tier_3"
+    ]
+  },
+  "sends_telemetry_event": true
+}

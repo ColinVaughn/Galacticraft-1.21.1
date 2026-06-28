@@ -168,6 +168,26 @@ public class GCRocketRecipes extends FabricRecipeProvider {
                 .storage(GCItemTags.ROCKET_STORAGE_UPGRADE_ITEMS)
                 .unlockedBy(getHasName(GCItems.TIER_1_HEAVY_DUTY_PLATE), has(GCItems.TIER_1_HEAVY_DUTY_PLATE))
                 .save(output, getItemName(GCItems.ROCKET) + "_with_storage_upgrade");
+
+        RocketRecipeBuilder.create(GCItems.ROCKET)
+                .rocketData(RocketPrefabs.TIER_2)
+                .cone(GCItems.NOSE_CONE)
+                .body(GCItems.TIER_2_HEAVY_DUTY_PLATE)
+                .bodyHeight(4)
+                .fins(GCItems.ROCKET_FIN)
+                .engine(GCItems.ROCKET_ENGINE)
+                .unlockedBy(getHasName(GCItems.TIER_2_HEAVY_DUTY_PLATE), has(GCItems.TIER_2_HEAVY_DUTY_PLATE))
+                .save(output, getItemName(GCItems.ROCKET) + "_tier_2");
+
+        RocketRecipeBuilder.create(GCItems.ROCKET)
+                .rocketData(RocketPrefabs.TIER_3)
+                .cone(GCItems.HEAVY_NOSE_CONE)
+                .body(GCItems.TIER_3_HEAVY_DUTY_PLATE)
+                .bodyHeight(4)
+                .fins(GCItems.HEAVY_ROCKET_FIN)
+                .engine(GCItems.HEAVY_ROCKET_ENGINE)
+                .unlockedBy(getHasName(GCItems.TIER_3_HEAVY_DUTY_PLATE), has(GCItems.TIER_3_HEAVY_DUTY_PLATE))
+                .save(output, getItemName(GCItems.ROCKET) + "_tier_3");
     }
 
     @Override

@@ -34,6 +34,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.Containers;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -102,12 +103,17 @@ public class RocketWorkbenchBlockEntity extends BlockEntity implements ExtendedS
     }
 
     public void resizeInventory(int newSize) {
-        if (newSize >= this.ingredients.getTargetSize()) {
-            this.ingredients.resize(newSize);
-        } else {
-            // TODO drop excess items
-            this.ingredients.resize(newSize);
+        if (newSize < this.ingredients.getTargetSize() && this.level != null && !this.level.isClientSide) {
+            // Return any items held in the slots being removed to the world so they aren't orphaned.
+            for (int slot = newSize; slot < this.ingredients.getContainerSize(); slot++) {
+                ItemStack stack = this.ingredients.getItem(slot);
+                if (!stack.isEmpty()) {
+                    Containers.dropItemStack(this.level, this.worldPosition.getX(), this.worldPosition.getY(), this.worldPosition.getZ(), stack.copy());
+                    this.ingredients.setItem(slot, ItemStack.EMPTY);
+                }
+            }
         }
+        this.ingredients.resize(newSize);
     }
 
     @Override

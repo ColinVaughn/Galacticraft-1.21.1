@@ -80,7 +80,7 @@ public class RocketItem extends Item {
                 rocket.absRotateTo(180.0F + player.getDirection().toYRot(), 0.0F);
                 boolean creative = held.getComponents().getOrDefault(GCDataComponents.CREATIVE, false);
                 if (creative) {
-                    rocket.setFuel(Long.MAX_VALUE);
+                    rocket.setCreative(true);
                 }
                 level.addFreshEntity(rocket);
 

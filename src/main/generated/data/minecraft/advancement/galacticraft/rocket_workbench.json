@@ -29,5 +29,13 @@
       "craft_rocket_workbench"
     ]
   ],
+  "rewards": {
+    "rocket_parts": [
+      "galacticraft:rocket_cone/tier_1",
+      "galacticraft:rocket_body/tier_1",
+      "galacticraft:rocket_fin/tier_1",
+      "galacticraft:rocket_engine/tier_1"
+    ]
+  },
   "sends_telemetry_event": true
 }

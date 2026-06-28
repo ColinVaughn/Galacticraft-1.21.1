@@ -39,6 +39,7 @@ import dev.galacticraft.mod.content.rocket.part.type.StorageUpgradeType;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import org.jetbrains.annotations.Contract;
@@ -51,7 +52,17 @@ public class GCRocketParts {
     public static final ResourceKey<RocketBooster<?, ?>> TIER_1_BOOSTER = booster("tier_1");
     public static final ResourceKey<RocketEngine<?, ?>> TIER_1_ENGINE = engine("tier_1");
 
-    public static final ResourceKey<RocketCone<?, ?>> ADVANCED_CONE = cone("advanced_cone"); //todo implement these again
+    public static final ResourceKey<RocketCone<?, ?>> TIER_2_CONE = cone("tier_2");
+    public static final ResourceKey<RocketBody<?, ?>> TIER_2_BODY = body("tier_2");
+    public static final ResourceKey<RocketFin<?, ?>> TIER_2_FIN = fin("tier_2");
+    public static final ResourceKey<RocketEngine<?, ?>> TIER_2_ENGINE = engine("tier_2");
+
+    public static final ResourceKey<RocketCone<?, ?>> TIER_3_CONE = cone("tier_3");
+    public static final ResourceKey<RocketBody<?, ?>> TIER_3_BODY = body("tier_3");
+    public static final ResourceKey<RocketFin<?, ?>> TIER_3_FIN = fin("tier_3");
+    public static final ResourceKey<RocketEngine<?, ?>> TIER_3_ENGINE = engine("tier_3");
+
+    public static final ResourceKey<RocketCone<?, ?>> ADVANCED_CONE = cone("advanced_cone");
     public static final ResourceKey<RocketCone<?, ?>> SLOPED_CONE = cone("sloped_cone");
 
     public static final ResourceKey<RocketBooster<?, ?>> TIER_2_BOOSTER = booster("tier_2");
@@ -88,15 +99,44 @@ public class GCRocketParts {
                         )
                 )
         );
-        context.register(ADVANCED_CONE,
+          context.register(ADVANCED_CONE,
+                  BasicRocketConeType.INSTANCE.configure(
+                          new BasicRocketConeConfig(
+                                  AccessWeightTravelPredicateType.INSTANCE.configure(new AccessWeightTravelPredicateConfig(1, TravelPredicateType.Result.PASS)),
+                                  RocketPartRecipeBuilder.create()
+                                          .define('T', Ingredient.of(Items.REDSTONE_TORCH))
+                                          .define('D', Ingredient.of(GCItems.TIER_2_HEAVY_DUTY_PLATE))
+                                          .center("T")
+                                          .center("D")
+                                          .center("DD")
+                                          .center("DD")
+                                          .build()
+                        )
+                )
+        );
+        context.register(TIER_2_CONE,
                 BasicRocketConeType.INSTANCE.configure(
                         new BasicRocketConeConfig(
-                                AccessWeightTravelPredicateType.INSTANCE.configure(new AccessWeightTravelPredicateConfig(1, TravelPredicateType.Result.PASS)),
+                                AccessWeightTravelPredicateType.INSTANCE.configure(new AccessWeightTravelPredicateConfig(2, TravelPredicateType.Result.PASS)),
                                 RocketPartRecipeBuilder.create()
                                         .define('T', Ingredient.of(Items.REDSTONE_TORCH))
-                                        .define('D', Ingredient.of(GCItems.TIER_1_HEAVY_DUTY_PLATE))
+                                        .define('D', Ingredient.of(GCItems.TIER_2_HEAVY_DUTY_PLATE))
                                         .center("T")
+                                        .center("D")
                                         .center("DD")
+                                        .build()
+                        )
+                )
+        );
+        context.register(TIER_3_CONE,
+                BasicRocketConeType.INSTANCE.configure(
+                        new BasicRocketConeConfig(
+                                AccessWeightTravelPredicateType.INSTANCE.configure(new AccessWeightTravelPredicateConfig(3, TravelPredicateType.Result.PASS)),
+                                RocketPartRecipeBuilder.create()
+                                        .define('T', Ingredient.of(Items.REDSTONE_TORCH))
+                                        .define('D', Ingredient.of(GCItems.TIER_3_HEAVY_DUTY_PLATE))
+                                        .center("T")
+                                        .center("D")
                                         .center("DD")
                                         .build()
                         )
@@ -111,6 +151,40 @@ public class GCRocketParts {
                         1,
                         RocketPartRecipeBuilder.create()
                                 .define('D', Ingredient.of(GCItems.TIER_1_HEAVY_DUTY_PLATE))
+                                .left("D")
+                                .left("D")
+                                .left("D")
+                                .left("D")
+                                .right("D")
+                                .right("D")
+                                .right("D")
+                                .right("D")
+                                .build()
+                ))
+        );
+        context.register(TIER_2_BODY,
+                BasicRocketBodyType.INSTANCE.configure(new BasicRocketBodyConfig(
+                        AccessWeightTravelPredicateType.INSTANCE.configure(new AccessWeightTravelPredicateConfig(2, TravelPredicateType.Result.PASS)),
+                        1,
+                        RocketPartRecipeBuilder.create()
+                                .define('D', Ingredient.of(GCItems.TIER_2_HEAVY_DUTY_PLATE))
+                                .left("D")
+                                .left("D")
+                                .left("D")
+                                .left("D")
+                                .right("D")
+                                .right("D")
+                                .right("D")
+                                .right("D")
+                                .build()
+                ))
+        );
+        context.register(TIER_3_BODY,
+                BasicRocketBodyType.INSTANCE.configure(new BasicRocketBodyConfig(
+                        AccessWeightTravelPredicateType.INSTANCE.configure(new AccessWeightTravelPredicateConfig(3, TravelPredicateType.Result.PASS)),
+                        1,
+                        RocketPartRecipeBuilder.create()
+                                .define('D', Ingredient.of(GCItems.TIER_3_HEAVY_DUTY_PLATE))
                                 .left("D")
                                 .left("D")
                                 .left("D")
@@ -142,19 +216,77 @@ public class GCRocketParts {
                         )
                 )
         );
+        context.register(TIER_2_FIN,
+                BasicRocketFinType.INSTANCE.configure(
+                        new BasicRocketFinConfig(
+                                AccessWeightTravelPredicateType.INSTANCE.configure(
+                                        new AccessWeightTravelPredicateConfig(2, TravelPredicateType.Result.PASS)
+                                ),
+                                false,
+                                RocketPartRecipeBuilder.create()
+                                        .define('F', Ingredient.of(GCItems.ROCKET_FIN))
+                                        .left("F")
+                                        .left("F")
+                                        .right("F")
+                                        .right("F")
+                                        .build()
+                        )
+                )
+        );
+        context.register(TIER_3_FIN,
+                BasicRocketFinType.INSTANCE.configure(
+                        new BasicRocketFinConfig(
+                                AccessWeightTravelPredicateType.INSTANCE.configure(
+                                        new AccessWeightTravelPredicateConfig(3, TravelPredicateType.Result.PASS)
+                                ),
+                                false,
+                                RocketPartRecipeBuilder.create()
+                                        .define('F', Ingredient.of(GCItems.HEAVY_ROCKET_FIN))
+                                        .left("F")
+                                        .left("F")
+                                        .right("F")
+                                        .right("F")
+                                        .build()
+                        )
+                )
+        );
     }
 
     public static void bootstrapBooster(BootstrapContext<RocketBooster<?, ?>> context) {
         context.register(TIER_1_BOOSTER,
                 BasicRocketBoosterType.INSTANCE.configure(
+                          new BasicRocketBoosterConfig(
+                                  AccessWeightTravelPredicateType.INSTANCE.configure(
+                                          new AccessWeightTravelPredicateConfig(1, TravelPredicateType.Result.PASS)
+                                  ),
+                                  1.0,
+                                  0.02,
+                                  FluidConstants.NUGGET,
+                                  RocketPartRecipeBuilder.create()
+                                          .define('B', Ingredient.of(GCItems.ROCKET_BOOSTER))
+                                          .left("B")
+                                          .right("B")
+                                          .build()
+                          )
+                  )
+          );
+        context.register(TIER_2_BOOSTER,
+                BasicRocketBoosterType.INSTANCE.configure(
                         new BasicRocketBoosterConfig(
                                 AccessWeightTravelPredicateType.INSTANCE.configure(
-                                        new AccessWeightTravelPredicateConfig(1, TravelPredicateType.Result.PASS)
+                                        new AccessWeightTravelPredicateConfig(2, TravelPredicateType.Result.PASS)
                                 ),
-                                0,
-                                0,
-                                0,
-                                null //fixme no t1 booster (t2 only!)
+                                1.25,
+                                0.03,
+                                FluidConstants.NUGGET * 2,
+                                RocketPartRecipeBuilder.create()
+                                        .define('B', Ingredient.of(GCItems.ROCKET_BOOSTER))
+                                        .define('P', Ingredient.of(GCItems.TIER_2_HEAVY_DUTY_PLATE))
+                                        .left("P")
+                                        .left("B")
+                                        .right("P")
+                                        .right("B")
+                                        .build()
                         )
                 )
         );
@@ -170,6 +302,34 @@ public class GCRocketParts {
                                 FluidConstants.BUCKET * 16,
                                 RocketPartRecipeBuilder.create()
                                         .define('E', Ingredient.of(GCItems.ROCKET_ENGINE))
+                                        .center("E")
+                                        .build()
+                        )
+                )
+        );
+        context.register(TIER_2_ENGINE,
+                BasicRocketEngineType.INSTANCE.configure(
+                        new BasicRocketEngineConfig(
+                                AccessWeightTravelPredicateType.INSTANCE.configure(
+                                        new AccessWeightTravelPredicateConfig(2, TravelPredicateType.Result.PASS)
+                                ),
+                                FluidConstants.BUCKET * 24,
+                                RocketPartRecipeBuilder.create()
+                                        .define('E', Ingredient.of(GCItems.ROCKET_ENGINE))
+                                        .center("E")
+                                        .build()
+                        )
+                )
+        );
+        context.register(TIER_3_ENGINE,
+                BasicRocketEngineType.INSTANCE.configure(
+                        new BasicRocketEngineConfig(
+                                AccessWeightTravelPredicateType.INSTANCE.configure(
+                                        new AccessWeightTravelPredicateConfig(3, TravelPredicateType.Result.PASS)
+                                ),
+                                FluidConstants.BUCKET * 32,
+                                RocketPartRecipeBuilder.create()
+                                        .define('E', Ingredient.of(GCItems.HEAVY_ROCKET_ENGINE))
                                         .center("E")
                                         .build()
                         )
@@ -199,7 +359,11 @@ public class GCRocketParts {
                                 .build()
                 ),
                 ExplosiveUpgradeType.INSTANCE
-        ));
+          ));
+    }
+
+    public static ResourceLocation recipeId(ResourceKey<?> part) {
+        return part.location().withPath(part.registry().getPath() + "/" + part.location().getPath());
     }
 
     @Contract(pure = true)

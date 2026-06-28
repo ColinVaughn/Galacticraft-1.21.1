@@ -49,13 +49,22 @@ public class RocketPrefabs {
             null,
             0xFFFFFFFF
     );
-    // Same as t1 for now
     public static final RocketData TIER_2 = new RocketData(
-            new EitherHolder<>(GCRocketParts.TIER_1_CONE),
-            new EitherHolder<>(GCRocketParts.TIER_1_BODY),
-            new EitherHolder<>(GCRocketParts.TIER_1_FIN),
+            new EitherHolder<>(GCRocketParts.TIER_2_CONE),
+            new EitherHolder<>(GCRocketParts.TIER_2_BODY),
+            new EitherHolder<>(GCRocketParts.TIER_2_FIN),
             null,
-            new EitherHolder<>(GCRocketParts.TIER_1_ENGINE),
+            new EitherHolder<>(GCRocketParts.TIER_2_ENGINE),
+            null,
+            null,
+            0xFFFFFFFF
+    );
+    public static final RocketData TIER_3 = new RocketData(
+            new EitherHolder<>(GCRocketParts.TIER_3_CONE),
+            new EitherHolder<>(GCRocketParts.TIER_3_BODY),
+            new EitherHolder<>(GCRocketParts.TIER_3_FIN),
+            null,
+            new EitherHolder<>(GCRocketParts.TIER_3_ENGINE),
             null,
             null,
             0xFFFFFFFF

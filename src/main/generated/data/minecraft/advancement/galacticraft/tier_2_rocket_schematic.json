@@ -1,0 +1,45 @@
+{
+  "parent": "minecraft:galacticraft/moon_dungeon_key",
+  "criteria": {
+    "tier_2_rocket_schematic": {
+      "conditions": {
+        "items": [
+          {
+            "items": "galacticraft:tier_2_rocket_schematic"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.galacticraft.tier_2_schematic.description"
+    },
+    "icon": {
+      "count": 1,
+      "id": "galacticraft:tier_2_rocket_schematic"
+    },
+    "title": {
+      "translate": "advancement.galacticraft.tier_2_schematic.title"
+    }
+  },
+  "requirements": [
+    [
+      "tier_2_rocket_schematic"
+    ]
+  ],
+  "rewards": {
+    "rocket_parts": [
+      "galacticraft:rocket_cone/sloped_cone",
+      "galacticraft:rocket_cone/advanced_cone",
+      "galacticraft:rocket_booster/tier_2",
+      "galacticraft:rocket_upgrade/explosive",
+      "galacticraft:rocket_cone/tier_2",
+      "galacticraft:rocket_body/tier_2",
+      "galacticraft:rocket_fin/tier_2",
+      "galacticraft:rocket_engine/tier_2"
+    ]
+  },
+  "sends_telemetry_event": true
+}

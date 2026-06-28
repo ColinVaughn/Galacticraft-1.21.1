@@ -1,35 +1,47 @@
 {
   "type": "galacticraft:basic",
   "config": {
-    "acceleration": 0.02,
-    "fuel_usage": 1000,
-    "max_velocity": 1.0,
+    "can_maneuver": false,
     "predicate": {
       "type": "galacticraft:access_weight",
       "config": {
-        "weight": 1
+        "weight": 2
       }
     },
     "recipe": {
       "type": "galacticraft:wrap_patterned",
       "config": {
-        "height": 18,
+        "height": 36,
         "left": [
           {
             "ingredient": {
-              "item": "galacticraft:rocket_booster"
+              "item": "galacticraft:rocket_fin"
             },
             "x": -18,
             "y": 0
+          },
+          {
+            "ingredient": {
+              "item": "galacticraft:rocket_fin"
+            },
+            "x": -18,
+            "y": 18
           }
         ],
         "right": [
           {
             "ingredient": {
-              "item": "galacticraft:rocket_booster"
+              "item": "galacticraft:rocket_fin"
             },
             "x": 0,
             "y": 0
+          },
+          {
+            "ingredient": {
+              "item": "galacticraft:rocket_fin"
+            },
+            "x": 0,
+            "y": 18
           }
         ]
       }

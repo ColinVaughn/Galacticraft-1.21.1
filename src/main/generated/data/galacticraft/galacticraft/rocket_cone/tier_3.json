@@ -4,13 +4,13 @@
     "predicate": {
       "type": "galacticraft:access_weight",
       "config": {
-        "weight": 1
+        "weight": 3
       }
     },
     "recipe": {
       "type": "galacticraft:centered_patterned",
       "config": {
-        "height": 72,
+        "height": 54,
         "slots": [
           {
             "ingredient": {
@@ -21,38 +21,24 @@
           },
           {
             "ingredient": {
-              "item": "galacticraft:heavy_plating_t2"
+              "item": "galacticraft:heavy_plating_t3"
             },
             "x": -9,
             "y": 18
           },
           {
             "ingredient": {
-              "item": "galacticraft:heavy_plating_t2"
+              "item": "galacticraft:heavy_plating_t3"
             },
             "x": -18,
             "y": 36
           },
           {
             "ingredient": {
-              "item": "galacticraft:heavy_plating_t2"
+              "item": "galacticraft:heavy_plating_t3"
             },
             "x": 0,
             "y": 36
-          },
-          {
-            "ingredient": {
-              "item": "galacticraft:heavy_plating_t2"
-            },
-            "x": -18,
-            "y": 54
-          },
-          {
-            "ingredient": {
-              "item": "galacticraft:heavy_plating_t2"
-            },
-            "x": 0,
-            "y": 54
           }
         ]
       }

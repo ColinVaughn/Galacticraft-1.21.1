@@ -57,34 +57,29 @@ public record CenteredPatternedRocketPartRecipeConfig(int height, @NotNull List<
     }));
 
     public static final Decoder<CenteredPatternedRocketPartRecipeConfig> PRETTY_DECODER = (JsonDecoder<CenteredPatternedRocketPartRecipeConfig>) (ops, elem) -> {
-        try {
-            JsonObject json = elem.getAsJsonObject();
-            Char2ObjectMap<Ingredient> ingredients = new Char2ObjectArrayMap<>();
-            Char2IntMap spacing = new Char2IntArrayMap();
-            spacing.put(' ', 18);
-            spacing.put('.', 9);
+        JsonObject json = elem.getAsJsonObject();
+        Char2ObjectMap<Ingredient> ingredients = new Char2ObjectArrayMap<>();
+        Char2IntMap spacing = new Char2IntArrayMap();
+        spacing.put(' ', 18);
+        spacing.put('.', 9);
 
 
-            for (Map.Entry<String, JsonElement> entry : json.get("key").getAsJsonObject().entrySet()) {
-                String s = entry.getKey();
-                JsonElement element = entry.getValue();
-                char key = s.charAt(0);
-                if (spacing.containsKey(key) || ingredients.containsKey(key)) {
-                    throw new RuntimeException("duplicate key '" + key + "'!");
-                }
-                if (element.isJsonPrimitive()) {
-                    spacing.put(key, element.getAsInt());
-                } else {
-                    ingredients.put(key, Ingredient.CODEC.decode(JsonOps.INSTANCE, element).getOrThrow().getFirst());
-                }
+        for (Map.Entry<String, JsonElement> entry : json.get("key").getAsJsonObject().entrySet()) {
+            String s = entry.getKey();
+            JsonElement element = entry.getValue();
+            char key = s.charAt(0);
+            if (spacing.containsKey(key) || ingredients.containsKey(key)) {
+                throw new RuntimeException("duplicate key '" + key + "'!");
             }
-
-            return CenteredPatternedRocketPartRecipeConfig.parse(spacing, ingredients,
-                    json.getAsJsonArray("pattern").asList().stream().map(JsonElement::getAsString).toList());
-        } catch (RuntimeException ex) {
-            ex.printStackTrace();
-            return null; //fixme
+            if (element.isJsonPrimitive()) {
+                spacing.put(key, element.getAsInt());
+            } else {
+                ingredients.put(key, Ingredient.CODEC.decode(JsonOps.INSTANCE, element).getOrThrow().getFirst());
+            }
         }
+
+        return CenteredPatternedRocketPartRecipeConfig.parse(spacing, ingredients,
+                json.getAsJsonArray("pattern").asList().stream().map(JsonElement::getAsString).toList());
     };
 
     @NotNull

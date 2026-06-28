@@ -125,7 +125,7 @@ public class JEIRocketCategory implements IRecipeCategory<RocketRecipe> {
 
         // Output
         builder.addOutputSlot(OUTPUT_X - RECIPE_VIEWER_X, OUTPUT_Y - RECIPE_VIEWER_Y)
-                .addItemStack(recipe.getResultItem(null)); //fixme
+                .addItemStack(recipe.getResultItem(Minecraft.getInstance().level.registryAccess()));
     }
 
     @Override

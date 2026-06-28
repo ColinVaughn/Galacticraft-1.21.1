@@ -24,6 +24,7 @@ package dev.galacticraft.mod.content.entity.vehicle;
 
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
+import dev.galacticraft.api.component.GCDataComponents;
 import dev.galacticraft.api.entity.ControllableEntity;
 import dev.galacticraft.api.entity.IgnoreShift;
 import dev.galacticraft.api.rocket.LaunchStage;
@@ -43,7 +44,9 @@ import dev.galacticraft.mod.content.advancements.GCTriggers;
 import dev.galacticraft.mod.content.block.special.launchpad.AbstractLaunchPad;
 import dev.galacticraft.mod.content.entity.data.GCEntityDataSerializers;
 import dev.galacticraft.mod.content.item.GCItems;
+import dev.galacticraft.mod.content.rocket.part.config.StorageUpgradeConfig;
 import dev.galacticraft.mod.content.rocket.part.data.ExplosiveRocketData;
+import dev.galacticraft.mod.content.rocket.part.type.StorageUpgradeType;
 import dev.galacticraft.mod.events.RocketEvents;
 import dev.galacticraft.mod.network.s2c.OpenCelestialScreenPayload;
 import dev.galacticraft.mod.particle.EntityParticleOption;
@@ -108,8 +111,10 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
     private static final EntityDataAccessor<Float> THRUST = SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<RocketData> ROCKET_DATA = SynchedEntityData.defineId(RocketEntity.class, GCEntityDataSerializers.ROCKET_DATA);
     private static final EntityDataAccessor<Long> FUEL = SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.LONG);
+    private static final EntityDataAccessor<Boolean> CREATIVE = SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.BOOLEAN);
 
     private static final int CRASH_ARM_DELAY_TICKS = 20;
+    private static final int ROCKET_LAUNCH_PAD_BLOCKS = 9;
 
     private static final double CRASH_MIN_SPEED_SQR = 0.0 * 0.0; //rockets now explode when they hit anything at any speed
     private static final double CRASH_MIN_HORIZ_SQR = 0.0 * 0.0;
@@ -223,6 +228,9 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
     }
 
     public boolean isTankEmpty() {
+        if (this.isCreative()) {
+            return false;
+        }
         return this.getTank().getAmount() <= 0 || this.getTank().getResource().isBlank();
     }
 
@@ -239,7 +247,14 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
     }
 
     public void setCreative(boolean creative) {
-        // TODO
+        this.entityData.set(CREATIVE, creative);
+        if (creative) {
+            this.setFuel(this.getFuelTankCapacity());
+        }
+    }
+
+    public boolean isCreative() {
+        return this.entityData.get(CREATIVE);
     }
 
     public long getFuel() {
@@ -281,6 +296,9 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
     public ItemStack getDropItem() {
         ItemStack rocket = new ItemStack(GCItems.ROCKET);
         rocket.applyComponents(this.getRocketData().asPatch());
+        if (this.isCreative()) {
+            rocket.set(GCDataComponents.CREATIVE, true);
+        }
         return rocket;
     }
 
@@ -315,6 +333,15 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
     @Override
     public Storage<FluidVariant> getFuelTank() {
         return this.tank;
+    }
+
+    public int getReturnCargoSlotCount() {
+        int slots = GCServerPlayer.RESERVED_RETURN_STACKS;
+        Holder<RocketUpgrade<?, ?>> upgrade = this.upgrade();
+        if (upgrade != null && upgrade.value().type() instanceof StorageUpgradeType storageType && upgrade.value().config() instanceof StorageUpgradeConfig config) {
+            slots += storageType.getSlots(config);
+        }
+        return slots;
     }
 
     @Override
@@ -378,6 +405,7 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
         builder.define(TIME_AS_STATE, 0);
         builder.define(ROCKET_DATA, RocketPrefabs.TIER_1);
         builder.define(FUEL, 0L);
+        builder.define(CREATIVE, false);
     }
 
     @Override
@@ -644,9 +672,11 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
                 return;
             }
 
-            try (Transaction t = Transaction.openOuter()) {
-                this.getTank().extract(FluidVariant.of(GCFluids.FUEL), FluidConstants.NUGGET, t);
-                t.commit();
+            if (!this.isCreative()) {
+                try (Transaction t = Transaction.openOuter()) {
+                    this.getTank().extract(FluidVariant.of(GCFluids.FUEL), FluidConstants.NUGGET, t);
+                    t.commit();
+                }
             }
 
             if (getTimeAsState() >= getPreLaunchWait()) {
@@ -664,7 +694,7 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
                     if (passenger instanceof ServerPlayer player) {
                         GCServerPlayer gcPlayer = GCServerPlayer.get(player);
                         gcPlayer.setRocketData(this.getRocketData());
-                        gcPlayer.setLaunchpadStack(new ItemStack(GCBlocks.ROCKET_LAUNCH_PAD, 9));
+                        gcPlayer.setLaunchpadStack(new ItemStack(GCBlocks.ROCKET_LAUNCH_PAD, ROCKET_LAUNCH_PAD_BLOCKS));
                     }
 
                     this.linkedPad.setDockedEntity(null);
@@ -677,12 +707,14 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
             }
 
         } else if (getLaunchStage() == LaunchStage.LAUNCHED) {
-            if (!debugMode && (isTankEmpty() || !this.getTank().getResource().getFluid().is(GCFluidTags.FUEL))) {
+            if (!this.isCreative() && !debugMode && (isTankEmpty() || !this.getTank().getResource().getFluid().is(GCFluidTags.FUEL))) {
                 this.setLaunchStage(LaunchStage.FAILED);
             } else {
-                try (Transaction t = Transaction.openOuter()) {
-                    this.getTank().extract(FluidVariant.of(GCFluids.FUEL), FluidConstants.NUGGET, t);
-                    t.commit();
+                if (!this.isCreative()) {
+                    try (Transaction t = Transaction.openOuter()) {
+                        this.getTank().extract(FluidVariant.of(GCFluids.FUEL), FluidConstants.NUGGET, t);
+                        t.commit();
+                    }
                 }
 
                 this.setThrust(this.getThrust() + 0.005F);
@@ -698,12 +730,15 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
                 for (Entity entity : getPassengers()) {
                     if (entity instanceof ServerPlayer serverPlayer) {
                         GCServerPlayer gcPlayer = GCServerPlayer.get(serverPlayer);
-                        gcPlayer.setRocketStacks(NonNullList.withSize(2, ItemStack.EMPTY)); // TODO un-hardcode this
+                        gcPlayer.setRocketStacks(NonNullList.withSize(this.getReturnCargoSlotCount(), ItemStack.EMPTY));
                         gcPlayer.setFuel(this.tank.getAmount());
 
                         var rocket = new ItemStack(GCItems.ROCKET);
                         RocketData d = this.getRocketData();
                         rocket.applyComponents(d.asPatch());
+                        if (this.isCreative()) {
+                            rocket.set(GCDataComponents.CREATIVE, true);
+                        }
                         gcPlayer.setRocketItem(rocket);
 
                         serverPlayer.galacticraft$openCelestialScreen(d);
@@ -834,6 +869,7 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
         if (tag.contains("ZRot")) this.setZRot(tag.getFloat("ZRot"));
         if (tag.contains("InitialYRot")) this.setInitialYRot(tag.getFloat("InitialYRot"));
         if (tag.contains("Fuel")) this.setFuel(tag.getLong("Fuel"));
+        if (tag.contains("Creative")) this.setCreative(tag.getBoolean("Creative"));
 
         if (tag.contains("CrashArmTimer")) this.crashArmTimer = tag.getInt("CrashArmTimer");
         if (tag.contains("Crashed")) this.crashed = tag.getBoolean("Crashed");
@@ -852,6 +888,7 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
         tag.putFloat("ZRot", this.getZRot());
         tag.putFloat("InitialYRot", this.getInitialYRot());
         tag.putLong("Fuel", this.getFuel());
+        tag.putBoolean("Creative", this.isCreative());
 
         tag.putInt("CrashArmTimer", this.crashArmTimer);
         tag.putBoolean("Crashed", this.crashed);

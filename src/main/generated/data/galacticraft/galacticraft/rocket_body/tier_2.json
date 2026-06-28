@@ -1,29 +1,30 @@
 {
   "type": "galacticraft:basic",
   "config": {
+    "max_passengers": 1,
     "predicate": {
       "type": "galacticraft:access_weight",
       "config": {
-        "weight": 1
+        "weight": 2
       }
     },
     "recipe": {
-      "type": "galacticraft:centered_patterned",
+      "type": "galacticraft:wrap_patterned",
       "config": {
         "height": 72,
-        "slots": [
+        "left": [
           {
             "ingredient": {
-              "item": "minecraft:redstone_torch"
+              "item": "galacticraft:heavy_plating_t2"
             },
-            "x": -9,
+            "x": -18,
             "y": 0
           },
           {
             "ingredient": {
               "item": "galacticraft:heavy_plating_t2"
             },
-            "x": -9,
+            "x": -18,
             "y": 18
           },
           {
@@ -37,15 +38,31 @@
             "ingredient": {
               "item": "galacticraft:heavy_plating_t2"
             },
+            "x": -18,
+            "y": 54
+          }
+        ],
+        "right": [
+          {
+            "ingredient": {
+              "item": "galacticraft:heavy_plating_t2"
+            },
             "x": 0,
-            "y": 36
+            "y": 0
           },
           {
             "ingredient": {
               "item": "galacticraft:heavy_plating_t2"
             },
-            "x": -18,
-            "y": 54
+            "x": 0,
+            "y": 18
+          },
+          {
+            "ingredient": {
+              "item": "galacticraft:heavy_plating_t2"
+            },
+            "x": 0,
+            "y": 36
           },
           {
             "ingredient": {

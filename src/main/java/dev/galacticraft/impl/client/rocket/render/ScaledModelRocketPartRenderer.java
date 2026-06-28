@@ -45,7 +45,7 @@ import net.minecraft.resources.ResourceLocation;
  *
  * <p>{@code yOffset} is applied in entity space and must also absorb the fixed translation the
  * {@code RocketEntityRenderer} accumulates before the body slot is drawn (currently +1.9375).
- * Both constants are visual tuning values — adjust them in-game if the model sits wrong.
+ * Both constants are visual tuning values; adjust them in-game if the model sits wrong.
  */
 @Environment(EnvType.CLIENT)
 public record ScaledModelRocketPartRenderer(ResourceLocation model, float scale,

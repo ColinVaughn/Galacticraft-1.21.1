@@ -53,11 +53,14 @@ public class CenteredPatternedRocketPartRecipeType extends RocketPartRecipeType<
 
     @Override
     public void place(@NotNull SlotConsumer consumer, int leftEdge, int rightEdge, int bottomEdge, CenteredPatternedRocketPartRecipeConfig config) {
-        if (leftEdge != rightEdge) throw new UnsupportedOperationException();
+        // Slots in a centered recipe are positioned relative to the horizontal centre of the
+        // available area; collapse the two edges to their midpoint (identical to leftEdge when
+        // the caller passes an already-centred edge pair).
+        int center = (leftEdge + rightEdge) / 2;
         List<RocketPartRecipeSlot> slots = config.slots();
         for (int i = 0; i < slots.size(); i++) {
             RocketPartRecipeSlot slot = slots.get(i);
-            consumer.createSlot(i, leftEdge + slot.x(), bottomEdge - this.height(config) + slot.y(), (item, tag) -> {
+            consumer.createSlot(i, center + slot.x(), bottomEdge - this.height(config) + slot.y(), (item, tag) -> {
                 if (item == null) return true;
 
                 ItemStack stack = new ItemStack(item, 1);

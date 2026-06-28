@@ -1,0 +1,28 @@
+{
+  "type": "galacticraft:rocket",
+  "body": {
+    "item": "galacticraft:heavy_plating_t2"
+  },
+  "body_height": 4,
+  "cone": {
+    "item": "galacticraft:nose_cone"
+  },
+  "engine": {
+    "item": "galacticraft:rocket_engine"
+  },
+  "fins": {
+    "item": "galacticraft:rocket_fin"
+  },
+  "result": {
+    "components": {
+      "galacticraft:rocket_data": {
+        "body": "galacticraft:tier_2",
+        "cone": "galacticraft:tier_2",
+        "engine": "galacticraft:tier_2",
+        "fin": "galacticraft:tier_2"
+      }
+    },
+    "count": 1,
+    "id": "galacticraft:rocket"
+  }
+}
