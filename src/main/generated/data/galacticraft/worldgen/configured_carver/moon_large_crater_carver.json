@@ -17,11 +17,11 @@
         }
       }
     },
-    "depth_scale": 2.0,
-    "ideal_range_offset": 8,
-    "max_radius": 34,
-    "min_radius": 10,
-    "probability": 0.055,
+    "depth_scale": 2.6,
+    "ideal_range_offset": 6,
+    "max_radius": 44,
+    "min_radius": 20,
+    "probability": 0.012,
     "y": {
       "absolute": 128
     },

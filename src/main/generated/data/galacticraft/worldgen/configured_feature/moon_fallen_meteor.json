@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:forest_rock",
+  "config": {
+    "state": {
+      "Name": "galacticraft:fallen_meteor",
+      "Properties": {
+        "heat": "0",
+        "waterlogged": "false"
+      }
+    }
+  }
+}

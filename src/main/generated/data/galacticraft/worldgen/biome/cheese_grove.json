@@ -7,7 +7,7 @@
   },
   "downfall": 0.0,
   "effects": {
-    "fog_color": 4872774,
+    "fog_color": 9075280,
     "mood_sound": {
       "block_search_extent": 8,
       "offset": 2.0,
@@ -29,10 +29,7 @@
     [],
     [],
     [],
-    [
-      "galacticraft:moon_olivine_spire",
-      "galacticraft:moon_boulder_sparse"
-    ],
+    [],
     [],
     [
       "galacticraft:ore_copper_moon",
@@ -43,6 +40,12 @@
       "galacticraft:ore_cheese_moon",
       "galacticraft:ore_cheese_large_moon",
       "galacticraft:ore_lunar_sapphire_moon"
+    ],
+    [],
+    [],
+    [
+      "galacticraft:moon_cheese_tree",
+      "galacticraft:moon_cheese_flora"
     ]
   ],
   "has_precipitation": false,
@@ -63,13 +66,13 @@
         "type": "galacticraft:evolved_zombie",
         "maxCount": 4,
         "minCount": 4,
-        "weight": 95
+        "weight": 60
       },
       {
         "type": "galacticraft:evolved_skeleton",
         "maxCount": 4,
         "minCount": 4,
-        "weight": 100
+        "weight": 60
       },
       {
         "type": "galacticraft:evolved_creeper",

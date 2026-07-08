@@ -26,7 +26,6 @@ import com.mojang.serialization.MapCodec;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.content.GCBlocks;
 import dev.galacticraft.mod.world.biome.GCBiomes;
-import dev.galacticraft.mod.world.gen.GCNoiseData;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
@@ -41,55 +40,54 @@ import net.minecraft.world.level.levelgen.VerticalAnchor;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Per-biome Moon surface materials.
+ * Keep this aligned with {@code data/galacticraft/worldgen/noise_settings/moon.json}, which is the runtime source of truth.
+ */
 public class MoonSurfaceRules {
-    private static final ConditionSource IS_MARE = biome(GCBiomes.Moon.BASALTIC_MARE);
-    private static final ConditionSource IS_HIGHLANDS = biome();
-
     private static final RuleSource BEDROCK = block(Blocks.BEDROCK);
     private static final RuleSource LUNASLATE = block(GCBlocks.LUNASLATE);
     private static final RuleSource MOON_DIRT = block(GCBlocks.MOON_DIRT);
     private static final RuleSource MOON_ROCK = block(GCBlocks.MOON_ROCK);
     private static final RuleSource MOON_TURF = block(GCBlocks.MOON_TURF);
     private static final RuleSource MOON_BASALT = block(GCBlocks.MOON_BASALT);
-    private static final RuleSource DEBUG_STATE = block(GCBlocks.ALUMINUM_DECORATION.block());
+    private static final RuleSource MOON_SURFACE_ROCK = block(GCBlocks.MOON_SURFACE_ROCK);
+    private static final RuleSource MOON_MOSS = block(GCBlocks.MOON_MOSS);
+    private static final RuleSource OLIVINE_BASALT = block(GCBlocks.OLIVINE_BASALT);
+    private static final RuleSource DENSE_ICE = block(GCBlocks.DENSE_ICE);
+    private static final RuleSource PACKED_ICE = block(Blocks.PACKED_ICE);
 
-    private static final RuleSource SECONDARY_MATERIAL = SurfaceRules.sequence(
-            SurfaceRules.ifTrue(IS_MARE, MOON_BASALT),
-            SurfaceRules.ifTrue(IS_HIGHLANDS, MOON_DIRT)
-    );
-    private static final RuleSource SURFACE_MATERIAL = SurfaceRules.sequence(
-            SurfaceRules.ifTrue(IS_MARE, MOON_BASALT),
-            SurfaceRules.ifTrue(IS_HIGHLANDS, MOON_TURF)
-    );
+    // Shadowed basins freeze near the surface.
+    private static final ConditionSource ICE_LINE_SURFACE = SurfaceRules.verticalGradient("moon_ice_line", VerticalAnchor.absolute(70), VerticalAnchor.absolute(80));
+    private static final ConditionSource ICE_LINE_SUB = SurfaceRules.verticalGradient("moon_ice_sub", VerticalAnchor.absolute(68), VerticalAnchor.absolute(78));
+
+    private static RuleSource biomeSurface(ResourceKey<Biome> biome, RuleSource onFloor, RuleSource subSurface) {
+        return SurfaceRules.ifTrue(SurfaceRules.isBiome(biome),
+                SurfaceRules.sequence(SurfaceRules.ifTrue(SurfaceRules.ON_FLOOR, onFloor), subSurface));
+    }
+
     private static final RuleSource SURFACE_GENERATION = SurfaceRules.sequence(
-            SurfaceRules.ifTrue(SurfaceRules.ON_FLOOR, SURFACE_MATERIAL),
-            SurfaceRules.ifTrue(SurfaceRules.UNDER_FLOOR, SECONDARY_MATERIAL)
+            biomeSurface(GCBiomes.Moon.BASALTIC_MARE, MOON_BASALT, MOON_BASALT),
+            SurfaceRules.ifTrue(SurfaceRules.isBiome(GCBiomes.Moon.COMET_TUNDRA), SurfaceRules.sequence(
+                    SurfaceRules.ifTrue(SurfaceRules.ON_FLOOR, SurfaceRules.sequence(
+                            SurfaceRules.ifTrue(ICE_LINE_SURFACE, PACKED_ICE),
+                            MOON_TURF)),
+                    SurfaceRules.ifTrue(ICE_LINE_SUB, DENSE_ICE),
+                    MOON_DIRT)),
+            biomeSurface(GCBiomes.Moon.OLIVINE_SPIKES, OLIVINE_BASALT, MOON_ROCK),
+            biomeSurface(GCBiomes.Moon.RAY_CRATER_FIELD, MOON_SURFACE_ROCK, MOON_ROCK),
+            biomeSurface(GCBiomes.Moon.CHEESE_GROVE, MOON_MOSS, MOON_DIRT),
+            biomeSurface(GCBiomes.Moon.LUNAR_HIGHLANDS, MOON_SURFACE_ROCK, MOON_DIRT),
+            // Default to regolith over dirt.
+            SurfaceRules.sequence(SurfaceRules.ifTrue(SurfaceRules.ON_FLOOR, MOON_TURF), MOON_DIRT)
     );
 
     public static final RuleSource MOON = createDefaultRule();
 
     public static @NotNull RuleSource createDefaultRule() {
         return SurfaceRules.sequence(
-                SurfaceRules.ifTrue(
-                        SurfaceRules.isBiome(GCBiomes.Moon.BASALTIC_MARE, GCBiomes.Moon.LUNAR_LOWLANDS),
-                        SurfaceRules.sequence(
-                                SurfaceRules.ifTrue(
-                                        SurfaceRules.noiseCondition(GCNoiseData.EROSION, 0.035, 0.0465),
-                                        MOON_TURF
-                                ),
-                                SurfaceRules.ifTrue(
-                                        SurfaceRules.noiseCondition(GCNoiseData.EROSION, 0.039, 0.0545),
-                                        MOON_ROCK
-                                ),
-                                SurfaceRules.ifTrue(
-                                        SurfaceRules.noiseCondition(GCNoiseData.EROSION, 0.0545, 0.069),
-                                        MOON_BASALT
-                                )
-                        )
-                ),
-
                 SurfaceRules.ifTrue(SurfaceRules.verticalGradient("bedrock_floor", VerticalAnchor.bottom(), VerticalAnchor.aboveBottom(5)), BEDROCK),
-                SurfaceRules.ifTrue(SurfaceRules.abovePreliminarySurface(), SURFACE_GENERATION),
+                SurfaceRules.ifTrue(SurfaceRules.abovePreliminarySurface(), SurfaceRules.ifTrue(SurfaceRules.UNDER_FLOOR, SURFACE_GENERATION)),
                 SurfaceRules.ifTrue(SurfaceRules.verticalGradient("lunaslate", VerticalAnchor.absolute(-4), VerticalAnchor.absolute(4)), LUNASLATE)
         );
     }

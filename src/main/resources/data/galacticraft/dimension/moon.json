@@ -5,93 +5,213 @@
       "biomes": [
         {
           "parameters": {
-            "weirdness": [
-              -1,
-              1
-            ],
-            "continentalness": [
-              -1.2,
-              1
-            ],
-            "erosion": [
-              -1,
-              -0.375
-            ],
             "temperature": [
-              -1,
-              1
+              -1.0,
+              1.0
             ],
             "humidity": [
-              -1,
-              1
+              -1.0,
+              1.0
+            ],
+            "continentalness": [
+              -1.05,
+              -0.11
+            ],
+            "erosion": [
+              -1.0,
+              1.0
+            ],
+            "weirdness": [
+              -1.0,
+              0.0
             ],
             "depth": [
-              0,
-              0
+              0.0,
+              0.0
             ],
-            "offset": 0
+            "offset": 0.0
           },
-          "biome": "galacticraft:lunar_highlands"
+          "biome": "galacticraft:basaltic_mare"
         },
         {
           "parameters": {
-            "weirdness": [
-              -1,
-              1
-            ],
-            "continentalness": [
-              -1.2,
-              1
-            ],
-            "erosion": [
-              -0.375,
-              0.05
-            ],
             "temperature": [
-              -1,
-              1
+              -1.0,
+              1.0
             ],
             "humidity": [
-              -1,
-              1
+              -1.0,
+              1.0
+            ],
+            "continentalness": [
+              -1.05,
+              -0.11
+            ],
+            "erosion": [
+              -1.0,
+              1.0
+            ],
+            "weirdness": [
+              0.0,
+              1.0
             ],
             "depth": [
-              0,
-              0
+              0.0,
+              0.0
             ],
-            "offset": 0
+            "offset": 0.0
+          },
+          "biome": "galacticraft:comet_tundra"
+        },
+        {
+          "parameters": {
+            "temperature": [
+              -1.0,
+              1.0
+            ],
+            "humidity": [
+              -1.0,
+              1.0
+            ],
+            "continentalness": [
+              -0.11,
+              0.3
+            ],
+            "erosion": [
+              -1.0,
+              1.0
+            ],
+            "weirdness": [
+              -1.0,
+              0.0
+            ],
+            "depth": [
+              0.0,
+              0.0
+            ],
+            "offset": 0.0
           },
           "biome": "galacticraft:lunar_lowlands"
         },
         {
           "parameters": {
+            "temperature": [
+              -1.0,
+              1.0
+            ],
+            "humidity": [
+              -1.0,
+              1.0
+            ],
+            "continentalness": [
+              -0.11,
+              0.3
+            ],
+            "erosion": [
+              -1.0,
+              1.0
+            ],
             "weirdness": [
-              -1,
-              1
+              0.0,
+              1.0
+            ],
+            "depth": [
+              0.0,
+              0.0
+            ],
+            "offset": 0.0
+          },
+          "biome": "galacticraft:ray_crater_field"
+        },
+        {
+          "parameters": {
+            "temperature": [
+              -1.0,
+              1.0
+            ],
+            "humidity": [
+              -1.0,
+              1.0
+            ],
+            "continentalness": [
+              0.3,
+              1.0
+            ],
+            "erosion": [
+              -1.0,
+              1.0
+            ],
+            "weirdness": [
+              -1.0,
+              0.0
+            ],
+            "depth": [
+              0.0,
+              0.0
+            ],
+            "offset": 0.0
+          },
+          "biome": "galacticraft:lunar_highlands"
+        },
+        {
+          "parameters": {
+            "temperature": [
+              -1.0,
+              1.0
+            ],
+            "humidity": [
+              -1.0,
+              1.0
+            ],
+            "continentalness": [
+              0.3,
+              1.0
+            ],
+            "erosion": [
+              -1.0,
+              1.0
+            ],
+            "weirdness": [
+              0.0,
+              1.0
+            ],
+            "depth": [
+              0.0,
+              0.0
+            ],
+            "offset": 0.0
+          },
+          "biome": "galacticraft:olivine_spikes"
+        },
+        {
+          "parameters": {
+            "temperature": [
+              -1.0,
+              1.0
+            ],
+            "humidity": [
+              -1.0,
+              1.0
             ],
             "continentalness": [
               -1.2,
-              1
+              -1.05
             ],
             "erosion": [
-              0.05,
-              1
+              -1.0,
+              1.0
             ],
-            "temperature": [
-              -1,
-              1
-            ],
-            "humidity": [
-              -1,
-              1
+            "weirdness": [
+              -1.0,
+              1.0
             ],
             "depth": [
-              0,
-              0
+              0.0,
+              0.0
             ],
-            "offset": 0
+            "offset": 0.0
           },
-          "biome": "galacticraft:basaltic_mare"
+          "biome": "galacticraft:cheese_grove"
         }
       ],
       "type": "minecraft:multi_noise"
