@@ -33,8 +33,10 @@ import java.util.List;
 import java.util.Optional;
 
 public class GCServerPlayer {
+    public static final int RESERVED_RETURN_STACKS = 2;
+
     private RocketData rocketData;
-    public NonNullList<ItemStack> stacks = NonNullList.withSize(2, ItemStack.EMPTY);
+    public NonNullList<ItemStack> stacks = NonNullList.withSize(RESERVED_RETURN_STACKS, ItemStack.EMPTY);
     public long fuel;
 
     public static final Codec<GCServerPlayer> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -55,6 +57,7 @@ public class GCServerPlayer {
         this.rocketData = data;
         this.fuel = fuel;
         this.stacks = NonNullList.of(ItemStack.EMPTY, stacks.toArray(ItemStack[]::new));
+        this.ensureReturnStackSlots();
     }
 
     public RocketData getRocketData() {
@@ -71,6 +74,7 @@ public class GCServerPlayer {
 
     public void setRocketStacks(NonNullList<ItemStack> rocketStacks) {
         this.stacks = rocketStacks;
+        this.ensureReturnStackSlots();
     }
 
     public long getFuel() {
@@ -82,6 +86,7 @@ public class GCServerPlayer {
     }
 
     public void setRocketItem(ItemStack rocketItem) {
+        this.ensureReturnStackSlots();
         for (int stack = 0; stack < getRocketStacks().size(); stack++)
             if (getRocketStacks().get(stack).isEmpty())
                 if (stack == getRocketStacks().size() - 1)
@@ -89,9 +94,22 @@ public class GCServerPlayer {
     }
 
     public void setLaunchpadStack(ItemStack launchpad) {
+        this.ensureReturnStackSlots();
         for (int stack = 0; stack < getRocketStacks().size(); stack++)
             if (getRocketStacks().get(stack).isEmpty())
                 if (stack == getRocketStacks().size() - 2)
                     getRocketStacks().set(stack, launchpad == null ? ItemStack.EMPTY : launchpad);
+    }
+
+    private void ensureReturnStackSlots() {
+        if (this.stacks.size() >= RESERVED_RETURN_STACKS) {
+            return;
+        }
+
+        NonNullList<ItemStack> expanded = NonNullList.withSize(RESERVED_RETURN_STACKS, ItemStack.EMPTY);
+        for (int i = 0; i < this.stacks.size(); i++) {
+            expanded.set(i, this.stacks.get(i));
+        }
+        this.stacks = expanded;
     }
 }

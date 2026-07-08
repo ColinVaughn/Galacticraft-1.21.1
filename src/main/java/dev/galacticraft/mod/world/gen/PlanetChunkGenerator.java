@@ -23,6 +23,7 @@
 package dev.galacticraft.mod.world.gen;
 
 import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.server.level.WorldGenRegion;
@@ -35,75 +36,98 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator;
 import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.blending.Blender;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Empty for now, possibly future replacement for {@link net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator}
+ * Galacticraft planet generator wrapper for dimensions that use vanilla noise settings.
  */
 public class PlanetChunkGenerator extends ChunkGenerator {
-    private final Holder<NoiseGeneratorSettings> settings = null;
+    public static final MapCodec<PlanetChunkGenerator> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+            BiomeSource.CODEC.fieldOf("biomeSource").forGetter(PlanetChunkGenerator::getBiomeSource),
+            NoiseGeneratorSettings.CODEC.fieldOf("settings").forGetter(PlanetChunkGenerator::generatorSettings)
+    ).apply(instance, PlanetChunkGenerator::new));
+
+    private final Holder<NoiseGeneratorSettings> settings;
+    private final NoiseBasedChunkGenerator delegate;
 
     public PlanetChunkGenerator(BiomeSource biomeSource) {
+        this(biomeSource, Holder.direct(NoiseGeneratorSettings.dummy()));
+    }
+
+    public PlanetChunkGenerator(BiomeSource biomeSource, Holder<NoiseGeneratorSettings> settings) {
         super(biomeSource);
+        this.settings = settings;
+        this.delegate = new NoiseBasedChunkGenerator(biomeSource, settings);
+    }
+
+    public Holder<NoiseGeneratorSettings> generatorSettings() {
+        return this.settings;
     }
 
     @Override
-    protected MapCodec<? extends ChunkGenerator> codec() {
-        return null;
+    protected @NotNull MapCodec<? extends ChunkGenerator> codec() {
+        return CODEC;
+    }
+
+    @Override
+    public CompletableFuture<ChunkAccess> createBiomes(RandomState randomState, Blender blender, StructureManager structureManager, ChunkAccess chunkAccess) {
+        return this.delegate.createBiomes(randomState, blender, structureManager, chunkAccess);
     }
 
     @Override
     public void applyCarvers(WorldGenRegion region, long seed, RandomState randomState, BiomeManager biomeManager, StructureManager structureManager, ChunkAccess chunkAccess, GenerationStep.Carving carving) {
-
+        this.delegate.applyCarvers(region, seed, randomState, biomeManager, structureManager, chunkAccess, carving);
     }
 
     @Override
     public void buildSurface(WorldGenRegion region, StructureManager structureManager, RandomState randomState, ChunkAccess chunkAccess) {
-
+        this.delegate.buildSurface(region, structureManager, randomState, chunkAccess);
     }
 
     @Override
     public void spawnOriginalMobs(WorldGenRegion region) {
-
+        this.delegate.spawnOriginalMobs(region);
     }
 
     @Override
     public int getGenDepth() {
-        return 0;
+        return this.delegate.getGenDepth();
     }
 
     @Override
-    public CompletableFuture<ChunkAccess> fillFromNoise(Blender blender, RandomState noiseConfig, StructureManager structureAccessor, ChunkAccess chunk) {
-        return CompletableFuture.completedFuture(chunk);
+    public CompletableFuture<ChunkAccess> fillFromNoise(Blender blender, RandomState randomState, StructureManager structureManager, ChunkAccess chunkAccess) {
+        return this.delegate.fillFromNoise(blender, randomState, structureManager, chunkAccess);
     }
 
     @Override
     public int getSeaLevel() {
-        return 0;
+        return this.delegate.getSeaLevel();
     }
 
     @Override
     public int getMinY() {
-        return 0;
+        return this.delegate.getMinY();
     }
 
     @Override
-    public int getBaseHeight(int i, int j, Heightmap.Types types, LevelHeightAccessor levelHeightAccessor, RandomState randomState) {
-        return 0;
+    public int getBaseHeight(int x, int z, Heightmap.Types types, LevelHeightAccessor levelHeightAccessor, RandomState randomState) {
+        return this.delegate.getBaseHeight(x, z, types, levelHeightAccessor, randomState);
     }
 
     @Override
-    public NoiseColumn getBaseColumn(int i, int j, LevelHeightAccessor levelHeightAccessor, RandomState randomState) {
-        return null;
+    public NoiseColumn getBaseColumn(int x, int z, LevelHeightAccessor levelHeightAccessor, RandomState randomState) {
+        return this.delegate.getBaseColumn(x, z, levelHeightAccessor, randomState);
     }
 
     @Override
     public void addDebugScreenInfo(List<String> list, RandomState randomState, BlockPos blockPos) {
-
+        this.delegate.addDebugScreenInfo(list, randomState, blockPos);
     }
 }

@@ -29,6 +29,7 @@ import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.content.block.entity.machine.*;
 import dev.galacticraft.mod.recipe.CompressingRecipe;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -59,8 +60,15 @@ public class GCMenuTypes {
 
     public static final MenuType<MachineMenu<OxygenStorageModuleBlockEntity>> OXYGEN_STORAGE_MODULE = SynchronizedMenuType.createSimple(MachineMenu::new);
     public static final MenuType<MachineMenu<EnergyStorageModuleBlockEntity>> ENERGY_STORAGE_MODULE = SynchronizedMenuType.createSimple(MachineMenu::new);
+    public static final MenuType<MachineMenu<EnergyStorageClusterBlockEntity>> ENERGY_STORAGE_CLUSTER = SynchronizedMenuType.createSimple(MachineMenu::new);
 
     public static final MenuType<FuelLoaderMenu> FUEL_LOADER = SynchronizedMenuType.create(FuelLoaderMenu::new);
+
+    public static final MenuType<MachineMenu<CargoLoaderBlockEntity>> CARGO_LOADER = SynchronizedMenuType.createSimple(MachineMenu::new);
+    public static final MenuType<MachineMenu<CargoUnloaderBlockEntity>> CARGO_UNLOADER = SynchronizedMenuType.createSimple(MachineMenu::new);
+    public static final MenuType<MachineMenu<FluidTankBlockEntity>> FLUID_TANK = SynchronizedMenuType.createSimple(MachineMenu::new);
+    public static final MenuType<MachineMenu<PainterBlockEntity>> PAINTER = SynchronizedMenuType.createSimple(MachineMenu::new);
+    public static final MenuType<MachineMenu<DeconstructorBlockEntity>> DECONSTRUCTOR = SynchronizedMenuType.createSimple(MachineMenu::new);
 
     public static final MenuType<FoodCannerMenu> FOOD_CANNER = SynchronizedMenuType.create(FoodCannerMenu::new);
 
@@ -71,6 +79,8 @@ public class GCMenuTypes {
     public static final MenuType<RocketWorkbenchMenu> ROCKET_WORKBENCH = new ExtendedScreenHandlerType<>(RocketWorkbenchMenu::new, RocketWorkbenchMenu.OpeningData.CODEC);
     public static final MenuType<RocketMenu> ROCKET = new ExtendedScreenHandlerType<>(RocketMenu::new, ByteBufCodecs.INT);
     public static final MenuType<ParachestMenu> PARACHEST = new ExtendedScreenHandlerType<>(ParachestMenu::new, ParachestMenu.OpeningData.STREAM_CODEC);
+    public static final MenuType<VehicleInventoryMenu> VEHICLE_INVENTORY = new ExtendedScreenHandlerType<>(VehicleInventoryMenu::new, ByteBufCodecs.VAR_INT);
+    public static final MenuType<AstroMinerBaseMenu> ASTRO_MINER_BASE = new ExtendedScreenHandlerType<>(AstroMinerBaseMenu::new, BlockPos.STREAM_CODEC);
 
     public static void register() {
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.PLAYER_INVENTORY_MENU), PLAYER_INV_GC);
@@ -94,9 +104,15 @@ public class GCMenuTypes {
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.OXYGEN_SEALER_MENU), OXYGEN_SEALER);
 
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.ENERGY_STORAGE_MODULE_MENU), ENERGY_STORAGE_MODULE);
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.ENERGY_STORAGE_CLUSTER_MENU), ENERGY_STORAGE_CLUSTER);
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.OXYGEN_STORAGE_MODULE_MENU), OXYGEN_STORAGE_MODULE);
 
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.FUEL_LOADER_MENU), FUEL_LOADER);
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.CARGO_LOADER_MENU), CARGO_LOADER);
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.CARGO_UNLOADER_MENU), CARGO_UNLOADER);
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.FLUID_TANK_MENU), FLUID_TANK);
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.PAINTER_MENU), PAINTER);
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.DECONSTRUCTOR_MENU), DECONSTRUCTOR);
 
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.FOOD_CANNER_MENU), FOOD_CANNER);
 
@@ -104,5 +120,7 @@ public class GCMenuTypes {
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.ROCKET_WORKBENCH_MENU), ROCKET_WORKBENCH);
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.ROCKET), ROCKET);
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.PARACHEST), PARACHEST);
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.VEHICLE_INVENTORY), VEHICLE_INVENTORY);
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.ASTRO_MINER_BASE_MENU), ASTRO_MINER_BASE);
     }
 }

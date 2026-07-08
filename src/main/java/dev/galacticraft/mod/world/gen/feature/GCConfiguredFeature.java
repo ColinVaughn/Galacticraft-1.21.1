@@ -27,7 +27,9 @@ import dev.galacticraft.mod.content.GCBlocks;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.util.random.SimpleWeightedRandomList;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import java.util.List;
 
 import net.minecraft.util.valueproviders.UniformInt;
@@ -41,6 +43,7 @@ import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConf
 import net.minecraft.world.level.levelgen.feature.configurations.SimpleBlockConfiguration;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 import net.minecraft.world.level.levelgen.feature.stateproviders.RuleBasedBlockStateProvider;
+import net.minecraft.world.level.levelgen.feature.stateproviders.WeightedStateProvider;
 
 public class GCConfiguredFeature {
     public static final ResourceKey<ConfiguredFeature<?, ?>> OIL_LAKE = ResourceKey.create(Registries.CONFIGURED_FEATURE, Constant.id("oil_lake"));
@@ -58,6 +61,20 @@ public class GCConfiguredFeature {
     // Venus surface decoration
     public static final ResourceKey<ConfiguredFeature<?, ?>> VENUS_VOLCANIC_BOULDER = key("venus_volcanic_boulder");
     public static final ResourceKey<ConfiguredFeature<?, ?>> VENUS_PUMICE_BOULDER = key("venus_pumice_boulder");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> VENUS_VOLCANO = key("venus_volcano");
+
+    // Mercury underground decoration
+    public static final ResourceKey<ConfiguredFeature<?, ?>> MERCURY_LAVA_LAKE = key("mercury_lava_lake");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> MERCURY_CRYSTAL_SCATTER = key("mercury_crystal_scatter");
+
+    // Moon surface decoration
+    public static final ResourceKey<ConfiguredFeature<?, ?>> MOON_BOULDER = key("moon_boulder");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> MOON_OLIVINE_SPIRE = key("moon_olivine_spire");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> MOON_ICE_PATCH = key("moon_ice_patch");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> MOON_ICE_BOULDER = key("moon_ice_boulder");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> MOON_FALLEN_METEOR = key("moon_fallen_meteor");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> MOON_CHEESE_TREE = key("moon_cheese_tree");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> MOON_CHEESE_FLORA = key("moon_cheese_flora");
 
     private static ResourceKey<ConfiguredFeature<?, ?>> key(String id) {
         return ResourceKey.create(Registries.CONFIGURED_FEATURE, Constant.id(id));
@@ -71,21 +88,16 @@ public class GCConfiguredFeature {
         context.register(VENUS_VAPOR_SPOUT, new ConfiguredFeature<>(Feature.SIMPLE_BLOCK,
                 new SimpleBlockConfiguration(BlockStateProvider.simple(GCBlocks.VAPOR_SPOUT))));
 
-        // Scattered rock outcrops (Martian cobble boulders).
+        // Mars
         context.register(MARS_BOULDER, new ConfiguredFeature<>(Feature.FOREST_ROCK,
                 new BlockStateConfiguration(GCBlocks.MARS_COBBLESTONE.defaultBlockState())));
-        // Surface hematite ("blueberry" iron concretion) deposits.
         context.register(MARS_HEMATITE_DEPOSIT, new ConfiguredFeature<>(Feature.FOREST_ROCK,
                 new BlockStateConfiguration(Blocks.RAW_IRON_BLOCK.defaultBlockState())));
-        // Polar packed-ice spikes.
         context.register(MARS_ICE_SPIKE, new ConfiguredFeature<>(Feature.ICE_SPIKE, NoneFeatureConfiguration.INSTANCE));
-        // Mineable water-ice chunks at the poles.
         context.register(MARS_ICE_BOULDER, new ConfiguredFeature<>(Feature.FOREST_ROCK,
                 new BlockStateConfiguration(Blocks.BLUE_ICE.defaultBlockState())));
-        // Frozen brine seeps on canyon floors.
         context.register(MARS_FROZEN_BRINE, new ConfiguredFeature<>(Feature.FOREST_ROCK,
                 new BlockStateConfiguration(Blocks.PACKED_ICE.defaultBlockState())));
-        // Giant flat frozen lake beds — broad sheets of packed ice pooled on the surface.
         context.register(MARS_FROZEN_LAKE, new ConfiguredFeature<>(Feature.DISK,
                 new DiskConfiguration(
                         RuleBasedBlockStateProvider.simple(BlockStateProvider.simple(Blocks.PACKED_ICE)),
@@ -95,11 +107,42 @@ public class GCConfiguredFeature {
                         UniformInt.of(6, 8),
                         2)));
 
-        // Scattered volcanic-rock outcrops.
+        // Venus
         context.register(VENUS_VOLCANIC_BOULDER, new ConfiguredFeature<>(Feature.FOREST_ROCK,
                 new BlockStateConfiguration(GCBlocks.VOLCANIC_ROCK.defaultBlockState())));
-        // Pumice mounds around the shield volcano.
         context.register(VENUS_PUMICE_BOULDER, new ConfiguredFeature<>(Feature.FOREST_ROCK,
                 new BlockStateConfiguration(GCBlocks.PUMICE.defaultBlockState())));
+        context.register(VENUS_VOLCANO, new ConfiguredFeature<>(GCFeatures.VOLCANO, NoneFeatureConfiguration.INSTANCE));
+
+        // Mercury
+        context.register(MERCURY_LAVA_LAKE, new ConfiguredFeature<>(Feature.LAKE,
+                new LakeFeature.Configuration(BlockStateProvider.simple(Blocks.LAVA), BlockStateProvider.simple(GCBlocks.MERCURY_SCARP_ROCK))));
+        context.register(MERCURY_CRYSTAL_SCATTER, new ConfiguredFeature<>(Feature.SIMPLE_BLOCK,
+                new SimpleBlockConfiguration(BlockStateProvider.simple(GCBlocks.MERCURY_CRYSTAL_CLUSTER))));
+
+        // Moon
+        context.register(MOON_BOULDER, new ConfiguredFeature<>(Feature.FOREST_ROCK,
+                new BlockStateConfiguration(GCBlocks.MOON_ROCK.defaultBlockState())));
+        context.register(MOON_OLIVINE_SPIRE, new ConfiguredFeature<>(GCFeatures.OLIVINE_SPIRE, NoneFeatureConfiguration.INSTANCE));
+        context.register(MOON_ICE_PATCH, new ConfiguredFeature<>(Feature.DISK,
+                new DiskConfiguration(
+                        RuleBasedBlockStateProvider.simple(BlockStateProvider.simple(Blocks.PACKED_ICE)),
+                        BlockPredicate.matchesBlocks(List.of(
+                                GCBlocks.MOON_TURF, GCBlocks.MOON_DIRT, GCBlocks.MOON_ROCK, GCBlocks.MOON_BASALT,
+                                GCBlocks.DENSE_ICE, Blocks.PACKED_ICE, Blocks.ICE)),
+                        UniformInt.of(4, 7),
+                        2)));
+        context.register(MOON_ICE_BOULDER, new ConfiguredFeature<>(Feature.FOREST_ROCK,
+                new BlockStateConfiguration(GCBlocks.DENSE_ICE.defaultBlockState())));
+        context.register(MOON_FALLEN_METEOR, new ConfiguredFeature<>(Feature.FOREST_ROCK,
+                new BlockStateConfiguration(GCBlocks.FALLEN_METEOR.defaultBlockState())));
+        context.register(MOON_CHEESE_TREE, new ConfiguredFeature<>(GCFeatures.CHEESE_TREE, NoneFeatureConfiguration.INSTANCE));
+        context.register(MOON_CHEESE_FLORA, new ConfiguredFeature<>(Feature.SIMPLE_BLOCK,
+                new SimpleBlockConfiguration(new WeightedStateProvider(
+                        SimpleWeightedRandomList.<BlockState>builder()
+                                .add(GCBlocks.MOON_SHRUBS.defaultBlockState(), 3)
+                                .add(GCBlocks.MOON_WEED.defaultBlockState(), 2)
+                                .add(GCBlocks.MOON_TANGLE.defaultBlockState(), 2)
+                                .build()))));
     }
 }

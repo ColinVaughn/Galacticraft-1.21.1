@@ -30,6 +30,7 @@ import dev.galacticraft.api.satellite.Satellite;
 import dev.galacticraft.api.satellite.SatelliteOwnershipData;
 import dev.galacticraft.api.universe.celestialbody.CelestialBody;
 import dev.galacticraft.api.universe.celestialbody.CelestialBodyType;
+import dev.galacticraft.api.universe.celestialbody.SurfaceEnvironment;
 import dev.galacticraft.api.universe.celestialbody.Tiered;
 import dev.galacticraft.api.universe.celestialbody.landable.teleporter.CelestialTeleporter;
 import dev.galacticraft.api.universe.display.CelestialDisplay;
@@ -48,28 +49,36 @@ import dev.galacticraft.impl.universe.position.config.OrbitalCelestialPositionCo
 import dev.galacticraft.impl.universe.position.config.SatelliteConfig;
 import dev.galacticraft.impl.universe.position.type.OrbitalCelestialPositionType;
 import dev.galacticraft.mod.Constant;
+import dev.galacticraft.mod.Galacticraft;
 import dev.galacticraft.mod.data.gen.SatelliteChunkGenerator;
 import dev.galacticraft.mod.tag.GCBlockTags;
 import dev.galacticraft.mod.util.Translations;
 import dev.galacticraft.mod.world.biome.GCBiomes;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.progress.ChunkProgressListener;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.dimension.LevelStem;
+import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -113,6 +122,12 @@ public class SatelliteType extends CelestialBodyType<SatelliteConfig> implements
     @ApiStatus.Internal
     public static CelestialBody<SatelliteConfig, SatelliteType> registerSatellite(@NotNull MinecraftServer server, @NotNull ServerPlayer player, ResourceKey<CelestialBody<?, ?>> parent, StructureTemplate structure, Registry<CelestialBody<?, ?>> celestialBodyRegistry) {
         ResourceLocation id = ResourceLocation.parse(parent.location() + "_" + player.getScoreboardName().toLowerCase(Locale.ROOT));
+
+        boolean shared = Galacticraft.CONFIG.isSpaceStationShared(parent.location());
+        ResourceLocation dimId = shared ? ResourceLocation.parse(parent.location() + "_station") : id;
+        ResourceKey<Level> worldKey = ResourceKey.create(Registries.DIMENSION, dimId);
+        boolean dimensionExists = DynamicDimensionRegistry.from(server).anyDimensionExists(dimId);
+
         DimensionType type = new DimensionType(
                 OptionalLong.empty(), // fixedTime
                 true, // hasSkyLight
@@ -130,33 +145,80 @@ public class SatelliteType extends CelestialBodyType<SatelliteConfig> implements
                 0, // ambientLight
                 new DimensionType.MonsterSettings(false, false, UniformInt.of(0, 7), 0)
         );
-        SatelliteChunkGenerator chunkGenerator = new SatelliteChunkGenerator(server.registryAccess().registryOrThrow(Registries.BIOME).getHolderOrThrow(GCBiomes.SPACE), structure);
+        // Shared stations are placed at per-player anchors after the level exists.
+        SatelliteChunkGenerator chunkGenerator = new SatelliteChunkGenerator(server.registryAccess().registryOrThrow(Registries.BIOME).getHolderOrThrow(GCBiomes.SPACE), structure, !shared);
         SatelliteOwnershipData ownershipData = SatelliteOwnershipData.create(player.getUUID(), player.getScoreboardName(), new LinkedList<>(), false);
         CelestialPosition<?, ?> position = new CelestialPosition<>(OrbitalCelestialPositionType.INSTANCE, new OrbitalCelestialPositionConfig(1550, 10.0f, 0.0F, false));
         CelestialDisplay<?, ?> display = new CelestialDisplay<>(IconCelestialDisplayType.INSTANCE, new IconCelestialDisplayConfig(Constant.CelestialBody.SPACE_STATION, 0, 0, 16, 16));
         CelestialRingDisplay<?, ?> ring = new CelestialRingDisplay<>(DefaultCelestialRingDisplayType.INSTANCE, new DefaultCelestialRingDisplayConfig());
-        ResourceKey<Level> key = ResourceKey.create(Registries.DIMENSION, id);
-        DynamicDimensionRegistry registry = DynamicDimensionRegistry.from(server);
-        assert server.getLevel(key) == null : "World already registered?!";
-        assert registry.anyDimensionExists(id) : "Dimension Type already registered?!";
-        return create(id, server, parent, position, display, ring, chunkGenerator, type, ownershipData, "", celestialBodyRegistry, key);
+
+        BlockPos stationPos = shared ? computeSharedStationPos(server, worldKey) : SatelliteConfig.DEFAULT_STATION_POS;
+
+        // createDynamicDimension returns the live level before server.getLevel can see it.
+        ServerLevel level = dimensionExists
+                ? server.getLevel(worldKey)
+                : DynamicDimensionRegistry.from(server).createDynamicDimension(dimId, chunkGenerator, type);
+
+        CelestialBody<SatelliteConfig, SatelliteType> satellite = create(id, server, parent, position, display, ring, chunkGenerator, type, ownershipData, "", celestialBodyRegistry, worldKey, stationPos);
+
+        if (shared) {
+            if (level != null) {
+                placeStationStructure(level, structure, stationPos);
+            } else {
+                Constant.LOGGER.error("Shared station dimension {} was not available for structure placement", dimId);
+            }
+        }
+        return satellite;
     }
 
+    /** Choose a spaced anchor for a station in a shared dimension. */
+    private static BlockPos computeSharedStationPos(MinecraftServer server, ResourceKey<Level> worldKey) {
+        int index = 0;
+        for (CelestialBody<SatelliteConfig, SatelliteType> sat : ((SatelliteAccessor) server).galacticraft$getSatellites().values()) {
+            if (sat.config().getWorld().equals(worldKey)) {
+                index++;
+            }
+        }
+        final double spacing = 1024.0;
+        double angle = index * 2.399963229728653; // golden angle
+        double radius = spacing * Math.sqrt(index);
+        RandomSource random = server.overworld().getRandom();
+        int jitter = 128;
+        int x = (int) Math.round(Math.cos(angle) * radius) + random.nextInt(jitter * 2 + 1) - jitter;
+        int z = (int) Math.round(Math.sin(angle) * radius) + random.nextInt(jitter * 2 + 1) - jitter;
+        return new BlockPos(x, 60, z);
+    }
+
+    /** Places the station structure at a shared anchor. */
+    private static void placeStationStructure(ServerLevel level, StructureTemplate structure, BlockPos anchor) {
+        Vec3i size = structure.getSize();
+        // Load every structure chunk before placement.
+        for (int cx = anchor.getX() >> 4; cx <= (anchor.getX() + size.getX()) >> 4; cx++) {
+            for (int cz = anchor.getZ() >> 4; cz <= (anchor.getZ() + size.getZ()) >> 4; cz++) {
+                level.getChunk(cx, cz);
+            }
+        }
+        StructurePlaceSettings settings = new StructurePlaceSettings()
+                .setIgnoreEntities(true)
+                .setLiquidSettings(LiquidSettings.APPLY_WATERLOGGING);
+        structure.placeInWorld(level, anchor, anchor, settings, level.getRandom(), Block.UPDATE_CLIENTS);
+    }
+
+    /** Registers the satellite body after its backing dimension has been prepared. */
     @ApiStatus.Internal
     public static CelestialBody<SatelliteConfig, SatelliteType> create(ResourceLocation id, MinecraftServer server, ResourceKey<CelestialBody<?, ?>> parentResourceKey, CelestialPosition<?, ?> position, CelestialDisplay<?, ?> display, CelestialRingDisplay<?, ?> ring,
-                                                                       ChunkGenerator generator, DimensionType type, SatelliteOwnershipData ownershipData, String name, Registry<CelestialBody<?, ?>> celestialBodyRegistry, ResourceKey<Level> key) {
-        Constant.LOGGER.debug("Attempting to create a world dynamically ({})", id);
+                                                                       ChunkGenerator generator, DimensionType type, SatelliteOwnershipData ownershipData, String name, Registry<CelestialBody<?, ?>> celestialBodyRegistry, ResourceKey<Level> worldKey, BlockPos stationPos) {
+        Constant.LOGGER.debug("Registering a satellite ({}) in dimension ({})", id, worldKey.location());
 
         Holder<CelestialTeleporter<?, ?>> direct = server.registryAccess().registryOrThrow(AddonRegistries.CELESTIAL_TELEPORTER).getHolderOrThrow(BuiltinObjects.DIRECT_CELESTIAL_TELEPORTER);
 
         CelestialBody<?, ?> parent = celestialBodyRegistry.get(parentResourceKey);
 
         assert parent != null;
-        SatelliteConfig config = new SatelliteConfig(id, name, Optional.of(parentResourceKey), position, display, ring, ownershipData, ResourceKey.create(Registries.DIMENSION, id), direct, EMPTY_GAS_COMPOSITION, 1.0f, parent.type() instanceof Tiered<?> ? ((Tiered) parent.type()).accessWeight(parent.config()) : 1, new LevelStem(Holder.direct(type), generator));
+        SatelliteConfig config = new SatelliteConfig(id, name, Optional.of(parentResourceKey), position, display, ring, ownershipData, worldKey, direct, EMPTY_GAS_COMPOSITION, 1.0f, parent.type() instanceof Tiered<?> ? ((Tiered) parent.type()).accessWeight(parent.config()) : 1, new LevelStem(Holder.direct(type), generator), stationPos);
         CelestialBody<SatelliteConfig, SatelliteType> satellite = INSTANCE.configure(config);
 
         ((SatelliteAccessor) server).galacticraft$addSatellite(satellite, true);
-        DynamicDimensionRegistry.from(server).createDynamicDimension(id, generator, type);
 
         server.getPlayerList().broadcastAll(ServerPlayNetworking.createS2CPacket(new AddSatellitePayload(satellite.config(), true)));
         return satellite;
@@ -250,6 +312,6 @@ public class SatelliteType extends CelestialBodyType<SatelliteConfig> implements
 
     @Override
     public int temperature(RegistryAccess access, long time, SatelliteConfig config) {
-        return time % 24000 < 12000 ? 121 : -157; //todo: gradual temperature change
+        return SurfaceEnvironment.gradualTemperature(time, 24000L, 121, -157);
     }
 }

@@ -34,4 +34,16 @@ public interface SurfaceEnvironment<C extends CelestialBodyConfig> {
      * @return the approximate temperature on this celestial body
      */
     int temperature(RegistryAccess access, long time, C config);
+
+    /** Interpolates day and night temperatures across a full local day cycle. */
+    static int gradualTemperature(long time, long dayLength, int dayTemperature, int nightTemperature) {
+        if (dayLength <= 0L) {
+            return dayTemperature;
+        }
+        double phase = Math.floorMod(time, dayLength) / (double) dayLength;
+        double curve = Math.cos((phase - 0.25) * 2.0 * Math.PI);
+        double mid = (dayTemperature + nightTemperature) / 2.0;
+        double amplitude = (dayTemperature - nightTemperature) / 2.0;
+        return (int) Math.round(mid + amplitude * curve);
+    }
 }

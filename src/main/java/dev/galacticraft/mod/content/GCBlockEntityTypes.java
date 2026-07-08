@@ -63,14 +63,22 @@ public class GCBlockEntityTypes {
     public static final BlockEntityType<OxygenDecompressorBlockEntity> OXYGEN_DECOMPRESSOR = register(Constant.Block.OXYGEN_DECOMPRESSOR, OxygenDecompressorBlockEntity::new, GCBlocks.OXYGEN_DECOMPRESSOR);
     public static final BlockEntityType<OxygenSealerBlockEntity> OXYGEN_SEALER = register(Constant.Block.OXYGEN_SEALER, OxygenSealerBlockEntity::new, GCBlocks.OXYGEN_SEALER);
     public static final BlockEntityType<OxygenBubbleDistributorBlockEntity> OXYGEN_BUBBLE_DISTRIBUTOR = register(Constant.Block.OXYGEN_BUBBLE_DISTRIBUTOR, OxygenBubbleDistributorBlockEntity::new, GCBlocks.OXYGEN_BUBBLE_DISTRIBUTOR);
+    public static final BlockEntityType<OxygenDetectorBlockEntity> OXYGEN_DETECTOR = register(Constant.Block.OXYGEN_DETECTOR, OxygenDetectorBlockEntity::new, GCBlocks.OXYGEN_DETECTOR);
 
     // RESOURCE STORAGE
     public static final BlockEntityType<EnergyStorageModuleBlockEntity> ENERGY_STORAGE_MODULE = register(Constant.Block.ENERGY_STORAGE_MODULE, EnergyStorageModuleBlockEntity::new, GCBlocks.ENERGY_STORAGE_MODULE);
+    public static final BlockEntityType<EnergyStorageClusterBlockEntity> ENERGY_STORAGE_CLUSTER = register(Constant.Block.ENERGY_STORAGE_CLUSTER, EnergyStorageClusterBlockEntity::new, GCBlocks.ENERGY_STORAGE_CLUSTER);
     public static final BlockEntityType<OxygenStorageModuleBlockEntity> OXYGEN_STORAGE_MODULE = register(Constant.Block.OXYGEN_STORAGE_MODULE, OxygenStorageModuleBlockEntity::new, GCBlocks.OXYGEN_STORAGE_MODULE);
 
     // ROCKETS
     public static final BlockEntityType<LaunchPadBlockEntity> LAUNCH_PAD = register(Constant.Block.ROCKET_LAUNCH_PAD, LaunchPadBlockEntity::new, GCBlocks.ROCKET_LAUNCH_PAD, GCBlocks.FUELING_PAD);
     public static final BlockEntityType<FuelLoaderBlockEntity> FUEL_LOADER = register(Constant.Block.FUEL_LOADER, FuelLoaderBlockEntity::new, GCBlocks.FUEL_LOADER);
+    public static final BlockEntityType<CargoLoaderBlockEntity> CARGO_LOADER = register(Constant.Block.CARGO_LOADER, CargoLoaderBlockEntity::new, GCBlocks.CARGO_LOADER);
+    public static final BlockEntityType<CargoUnloaderBlockEntity> CARGO_UNLOADER = register(Constant.Block.CARGO_UNLOADER, CargoUnloaderBlockEntity::new, GCBlocks.CARGO_UNLOADER);
+    public static final BlockEntityType<AstroMinerBaseBlockEntity> ASTRO_MINER_BASE = register(Constant.Block.ASTRO_MINER_BASE, AstroMinerBaseBlockEntity::new, GCBlocks.ASTRO_MINER_BASE);
+    public static final BlockEntityType<FluidTankBlockEntity> FLUID_TANK = register(Constant.Block.FLUID_TANK, FluidTankBlockEntity::new, GCBlocks.FLUID_TANK);
+    public static final BlockEntityType<PainterBlockEntity> PAINTER = register(Constant.Block.PAINTER, PainterBlockEntity::new, GCBlocks.PAINTER);
+    public static final BlockEntityType<DeconstructorBlockEntity> DECONSTRUCTOR = register(Constant.Block.DECONSTRUCTOR, DeconstructorBlockEntity::new, GCBlocks.DECONSTRUCTOR);
     public static final BlockEntityType<ParachestBlockEntity> PARACHEST = register(Constant.Block.PARACHEST, ParachestBlockEntity::new, GCBlocks.PARACHEST);
 
     // MISC
@@ -78,6 +86,7 @@ public class GCBlockEntityTypes {
     public static final BlockEntityType<CryogenicChamberBlockEntity> CRYOGENIC_CHAMBER = register(Constant.Block.CRYOGENIC_CHAMBER, CryogenicChamberBlockEntity::new, GCBlocks.CRYOGENIC_CHAMBER);
     public static final BlockEntityType<CryogenicChamberPartBlockEntity> CRYOGENIC_CHAMBER_PART = register(Constant.Block.CRYOGENIC_CHAMBER_PART, CryogenicChamberPartBlockEntity::new, GCBlocks.CRYOGENIC_CHAMBER_PART);
     public static final BlockEntityType<DungeonSpawnerBlockEntity> DUNGEON_BOSS_SPAWNER = register(Constant.Block.BOSS_SPAWNER, DungeonSpawnerBlockEntity::new, GCBlocks.BOSS_SPAWNER);
+    public static final BlockEntityType<VolcanoVentBlockEntity> VOLCANO_VENT = register(Constant.Block.VOLCANO_VENT, VolcanoVentBlockEntity::new, GCBlocks.VOLCANO_VENT);
 
     // DECORATION
     public static final BlockEntityType<CannedFoodBlockEntity> CANNED_FOOD = register(Constant.Block.CANNED_FOOD, CannedFoodBlockEntity::new, GCBlocks.CANNED_FOOD);

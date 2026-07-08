@@ -24,6 +24,7 @@ package dev.galacticraft.mod.content;
 
 import com.mojang.serialization.MapCodec;
 import dev.galacticraft.mod.Constant;
+import dev.galacticraft.mod.world.gen.PlanetChunkGenerator;
 import dev.galacticraft.mod.world.gen.custom.AsteroidChunkGenerator;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -35,6 +36,7 @@ public class GCChunkGenerator {
 
 
     public static final MapCodec<AsteroidChunkGenerator> ASTEROID = CHUNK_GENERATOR.register("asteroid_chunk_generator", AsteroidChunkGenerator.CODEC);
+    public static final MapCodec<PlanetChunkGenerator> PLANET = CHUNK_GENERATOR.register("planet_chunk_generator", PlanetChunkGenerator.CODEC);
 
     public static <T extends ChunkGenerator> MapCodec<T> register(String id, MapCodec<T> codec) {
         return Registry.register(BuiltInRegistries.CHUNK_GENERATOR, Constant.id(id), codec);

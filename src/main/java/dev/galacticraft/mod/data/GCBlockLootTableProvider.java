@@ -181,6 +181,12 @@ public class GCBlockLootTableProvider extends FabricBlockLootTableProvider {
         this.dropSelf(GCBlocks.PUMICE);
         this.add(GCBlocks.VAPOR_SPOUT, this.createSingleItemTableWithSilkTouch(GCBlocks.VAPOR_SPOUT, GCBlocks.SOFT_VENUS_ROCK));
 
+        this.dropSelf(GCBlocks.MERCURY_SURFACE_ROCK);
+        this.dropSelf(GCBlocks.MERCURY_SUB_SURFACE_ROCK);
+        this.dropSelf(GCBlocks.MERCURY_STONE);
+        this.dropSelf(GCBlocks.MERCURY_SCARP_ROCK);
+        this.dropSelf(GCBlocks.MERCURY_CRYSTAL_CLUSTER);
+
         this.dropSelf(GCBlocks.WALKWAY);
         this.dropSelf(GCBlocks.FLUID_PIPE_WALKWAY);
         this.dropSelf(GCBlocks.WIRE_WALKWAY);
@@ -334,6 +340,8 @@ public class GCBlockLootTableProvider extends FabricBlockLootTableProvider {
         this.dropSelf(GCBlocks.BASIC_SOLAR_PANEL);
         this.dropSelf(GCBlocks.ADVANCED_SOLAR_PANEL);
         this.dropSelf(GCBlocks.ENERGY_STORAGE_MODULE);
+        this.dropSelf(GCBlocks.ENERGY_STORAGE_CLUSTER);
+        this.dropSelf(GCBlocks.OXYGEN_DETECTOR);
         this.dropSelf(GCBlocks.ELECTRIC_FURNACE);
         this.dropSelf(GCBlocks.ELECTRIC_ARC_FURNACE);
         this.dropSelf(GCBlocks.REFINERY);
@@ -344,7 +352,13 @@ public class GCBlockLootTableProvider extends FabricBlockLootTableProvider {
         this.dropSelf(GCBlocks.OXYGEN_COMPRESSOR);
         this.dropSelf(GCBlocks.OXYGEN_STORAGE_MODULE);
         this.dropSelf(GCBlocks.FUEL_LOADER);
+        this.dropSelf(GCBlocks.CARGO_LOADER);
+        this.dropSelf(GCBlocks.CARGO_UNLOADER);
+        this.dropSelf(GCBlocks.ASTRO_MINER_BASE);
         this.dropSelf(GCBlocks.FOOD_CANNER);
+        this.dropSelf(GCBlocks.FLUID_TANK);
+        this.dropSelf(GCBlocks.PAINTER);
+        this.dropSelf(GCBlocks.DECONSTRUCTOR);
 
         this.dropSelf(GCBlocks.PLAYER_TRANSPORT_TUBE);
         this.dropSelf(GCBlocks.ROCKET_WORKBENCH);

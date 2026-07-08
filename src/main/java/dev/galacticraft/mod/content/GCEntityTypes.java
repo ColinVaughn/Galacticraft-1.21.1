@@ -26,7 +26,11 @@ import dev.galacticraft.api.entity.attribute.GcApiEntityAttributes;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.Constant.Entity;
 import dev.galacticraft.mod.content.entity.*;
+import dev.galacticraft.mod.content.entity.boss.CreeperBoss;
 import dev.galacticraft.mod.content.entity.boss.SkeletonBoss;
+import dev.galacticraft.mod.content.entity.boss.SpiderBoss;
+import dev.galacticraft.mod.content.entity.vehicle.AstroMinerEntity;
+import dev.galacticraft.mod.content.entity.vehicle.CargoRocketEntity;
 import dev.galacticraft.mod.content.entity.vehicle.Buggy;
 import dev.galacticraft.mod.content.entity.vehicle.RocketEntity;
 import dev.galacticraft.mod.content.entity.vehicle.LanderEntity;
@@ -160,6 +164,20 @@ public class GCEntityTypes {
             .sized(1.4F, 0.6F)
             .fireImmune()
             .build());
+    public static final EntityType<AstroMinerEntity> ASTRO_MINER = ENTITIES.register(Entity.ASTRO_MINER, EntityType.Builder.of(AstroMinerEntity::new, MobCategory.MISC)
+            .clientTrackingRange(150)
+            .updateInterval(5)
+            .alwaysUpdateVelocity(true)
+            .sized(3.0F, 3.0F)
+            .fireImmune()
+            .build());
+    public static final EntityType<CargoRocketEntity> CARGO_ROCKET = ENTITIES.register(Entity.CARGO_ROCKET, EntityType.Builder.of(CargoRocketEntity::new, MobCategory.MISC)
+            .clientTrackingRange(150)
+            .updateInterval(5)
+            .alwaysUpdateVelocity(true)
+            .sized(1.2F, 5.0F)
+            .fireImmune()
+            .build());
     public static final EntityType<ParachestEntity> PARACHEST = ENTITIES.register(Entity.PARACHEST, EntityType.Builder.<ParachestEntity>of(ParachestEntity::new, MobCategory.MISC)
             .clientTrackingRange(150)
             .updateInterval(5)
@@ -172,6 +190,20 @@ public class GCEntityTypes {
     // Bosses
     public static final EntityType<SkeletonBoss> SKELETON_BOSS = ENTITIES.register(Entity.EVOLVED_SKELETON_BOSS, EntityType.Builder.of(SkeletonBoss::new, MobCategory.MONSTER)
             .sized(1.5F, 4.0F)
+            .fireImmune()
+            .clientTrackingRange(80)
+            .updateInterval(3)
+            .alwaysUpdateVelocity(true)
+            .build());
+    public static final EntityType<CreeperBoss> CREEPER_BOSS = ENTITIES.register(Entity.CREEPER_BOSS, EntityType.Builder.of(CreeperBoss::new, MobCategory.MONSTER)
+            .sized(2.0F, 5.1F)
+            .fireImmune()
+            .clientTrackingRange(80)
+            .updateInterval(3)
+            .alwaysUpdateVelocity(true)
+            .build());
+    public static final EntityType<SpiderBoss> SPIDER_BOSS = ENTITIES.register(Entity.SPIDER_BOSS, EntityType.Builder.of(SpiderBoss::new, MobCategory.MONSTER)
+            .sized(3.5F, 2.25F)
             .fireImmune()
             .clientTrackingRange(80)
             .updateInterval(3)
@@ -196,5 +228,7 @@ public class GCEntityTypes {
         FabricDefaultAttributeRegistry.register(GREY, GreyEntity.createAttributes());
         FabricDefaultAttributeRegistry.register(ARCH_GREY, ArchGreyEntity.createAttributes());
         FabricDefaultAttributeRegistry.register(SKELETON_BOSS, SkeletonBoss.createAttributes().add(GcApiEntityAttributes.CAN_BREATHE_IN_SPACE, 1.0D));
+        FabricDefaultAttributeRegistry.register(CREEPER_BOSS, CreeperBoss.createAttributes().add(GcApiEntityAttributes.CAN_BREATHE_IN_SPACE, 1.0D));
+        FabricDefaultAttributeRegistry.register(SPIDER_BOSS, SpiderBoss.createAttributes().add(GcApiEntityAttributes.CAN_BREATHE_IN_SPACE, 1.0D));
     }
 }

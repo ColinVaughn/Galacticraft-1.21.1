@@ -3,13 +3,12 @@
     "air": [
       "galacticraft:moon_crater_carver",
       "galacticraft:moon_canyon_carver",
-      "galacticraft:moon_highlands_cave_carver",
       "galacticraft:moon_large_crater_carver"
     ]
   },
   "downfall": 0.0,
   "effects": {
-    "fog_color": 9079430,
+    "fog_color": 10131086,
     "mood_sound": {
       "block_search_extent": 8,
       "offset": 2.0,
@@ -32,7 +31,8 @@
     [],
     [],
     [
-      "galacticraft:moon_boulder"
+      "galacticraft:moon_boulder",
+      "galacticraft:moon_fallen_meteor"
     ],
     [],
     [

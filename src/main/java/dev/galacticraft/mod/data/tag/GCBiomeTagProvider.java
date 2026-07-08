@@ -44,7 +44,9 @@ public class GCBiomeTagProvider extends FabricTagProvider<Biome> {
                 .add(GCBiomes.Moon.BASALTIC_MARE)
                 .add(GCBiomes.Moon.LUNAR_HIGHLANDS)
                 .add(GCBiomes.Moon.LUNAR_LOWLANDS)
-                .add(GCBiomes.Moon.OLIVINE_SPIKES);
+                .add(GCBiomes.Moon.OLIVINE_SPIKES)
+                .add(GCBiomes.Moon.RAY_CRATER_FIELD)
+                .add(GCBiomes.Moon.CHEESE_GROVE);
 
         this.tag(GCBiomeTags.VENUS)
                 .add(GCBiomes.Venus.VENUS_VOLCANIC_PLAINS)
@@ -61,6 +63,11 @@ public class GCBiomeTagProvider extends FabricTagProvider<Biome> {
                 .add(GCBiomes.Mars.MARS_CANYON)
                 .add(GCBiomes.Mars.MARS_VOLCANICS)
                 .add(GCBiomes.Mars.MARS_POLAR);
+
+        this.tag(GCBiomeTags.MERCURY)
+                .add(GCBiomes.Mercury.MERCURY_PLAINS)
+                .add(GCBiomes.Mercury.MERCURY_HIGHLANDS)
+                .add(GCBiomes.Mercury.MERCURY_BASIN);
 
         this.tag(GCBiomeTags.ASTEROID)
                 .add(GCBiomes.Asteroid.ASTEROID_FIELD);

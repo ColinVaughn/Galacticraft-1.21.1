@@ -230,6 +230,13 @@ public class GCTranslationProvider extends TranslationProvider {
         this.block(GCBlocks.VAPOR_SPOUT, "Vapor Spout");
         this.block(GCBlocks.VOLCANO_VENT, "Volcano Vent");
 
+        // MERCURY NATURAL
+        this.block(GCBlocks.MERCURY_SURFACE_ROCK, "Mercury Surface Rock");
+        this.block(GCBlocks.MERCURY_SUB_SURFACE_ROCK, "Mercury Sub-Surface Rock");
+        this.block(GCBlocks.MERCURY_STONE, "Mercury Stone");
+        this.block(GCBlocks.MERCURY_SCARP_ROCK, "Mercury Scarp Rock");
+        this.block(GCBlocks.MERCURY_CRYSTAL_CLUSTER, "Mercury Crystal Cluster");
+
         // MISC DECOR
         this.block(GCBlocks.WALKWAY, "Walkway");
         this.block(GCBlocks.FLUID_PIPE_WALKWAY, "Fluid Pipe Walkway");
@@ -887,7 +894,7 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(CelestialBody.MARS, "Mars");
         this.add(CelestialBody.MARS_DESC, "");
         this.add(CelestialBody.MERCURY, "Mercury");
-        this.add(CelestialBody.MERCURY_DESC, "");
+        this.add(CelestialBody.MERCURY_DESC, "The scorched, cratered world closest to the Sun. Airless and battered by solar flares, its days sear and its nights freeze. Bring Isothermal Padding.");
         this.add(CelestialBody.MOON, "Moon");
         this.add(CelestialBody.MOON_DESC, "");
         this.add(CelestialBody.NEPTUNE, "Neptune");
@@ -909,6 +916,8 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(GCBiomes.Moon.LUNAR_HIGHLANDS, "Lunar Highlands");
         this.add(GCBiomes.Moon.LUNAR_LOWLANDS, "Lunar Lowlands");
         this.add(GCBiomes.Moon.OLIVINE_SPIKES, "Olivine Spikes");
+        this.add(GCBiomes.Moon.RAY_CRATER_FIELD, "Ray Crater Field");
+        this.add(GCBiomes.Moon.CHEESE_GROVE, "Cheese Grove");
         this.add(GCBiomes.SPACE, "Space");
         this.add(GCBiomes.Venus.VENUS_VOLCANIC_PLAINS, "Venus Volcanic Plains");
         this.add(GCBiomes.Venus.VENUS_HIGHLANDS, "Venus Highlands");
@@ -968,6 +977,8 @@ public class GCTranslationProvider extends TranslationProvider {
                 "%s burned up while trying to escape %s");
         this.deathBy(GCDamageTypes.DUST_STORM, "%s was lost in a Martian dust storm",
                 "%s was lost in a Martian dust storm while trying to escape %s");
+        this.deathBy(GCDamageTypes.SOLAR_FLARE, "%s was seared by a solar flare",
+                "%s was seared by a solar flare while trying to escape %s");
 
         this.add(Boss.SKELETON_BOSS_DESPAWN, "Boss despawned, don't leave the boss room while fighting! Re-enter room to respawn boss.");
     }
@@ -1352,6 +1363,7 @@ public class GCTranslationProvider extends TranslationProvider {
         this.advancement(Advancements.LAUNCH_ROCKET, "We Have Liftoff", "Launch your first Rocket");
         this.advancement(Advancements.MOON, "The Moon!", "Land on the Moon");
         this.advancement(Advancements.MARS, "The Red Planet", "Land on Mars in a Tier 2 Rocket");
+        this.advancement(Advancements.MERCURY, "Too Close to the Sun", "Land on Mercury in a Tier 3 Rocket");
         this.advancement(Advancements.PARROT_LANDING, "The Parrot has Landed", "Land on the Moon with a Parrot on your shoulder");
         this.advancement(Advancements.EAT_MOON_CHEESE_CURD, "Wensleydale? Stilton?", "Eat Moon Cheese Curd");
         this.advancement(Advancements.CHEESE_AND_CRACKERS, "It's Like No Cheese I've Ever Tasted...", "Eat cheese and crackers");
@@ -1362,6 +1374,8 @@ public class GCTranslationProvider extends TranslationProvider {
         this.advancement(Advancements.MOON_DUNGEON_KEY, "I Has the Key", "Kill the boss in the Moon Dungeon, and steal its key");
         this.advancement(Advancements.BUGGY_SCHEMATIC, "Glitchy Schematic", "Obtain a Moon Buggy Schematic");
         this.advancement(Advancements.BUGGY, "Buggy", "Weld a Moon Buggy together");
+        this.advancement(Advancements.TIER_2_SCHEMATIC, "Onward to Mars", "Claim the Tier 2 Rocket Schematic from the Moon dungeon boss");
+        this.advancement(Advancements.TIER_3_SCHEMATIC, "Deeper into Space", "Claim the Tier 3 Rocket Schematic from the Mars dungeon boss");
     }
 
     protected void decorationSet(DecorationSet decoSet, String translation) {

@@ -25,6 +25,8 @@ package dev.galacticraft.impl.universe.celestialbody.landable.teleporter.type;
 import dev.galacticraft.api.universe.celestialbody.CelestialBody;
 import dev.galacticraft.api.universe.celestialbody.landable.teleporter.type.CelestialTeleporterType;
 import dev.galacticraft.impl.universe.celestialbody.landable.teleporter.config.DefaultCelestialTeleporterConfig;
+import dev.galacticraft.impl.universe.position.config.SatelliteConfig;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -39,7 +41,10 @@ public class DirectCelestialTeleporterType extends CelestialTeleporterType<Defau
     @Override
     public void onEnterAtmosphere(ServerLevel level, Entity entity, CelestialBody<?, ?> body, CelestialBody<?, ?> fromBody, DefaultCelestialTeleporterConfig config) {
         if (body.isSatellite()) {
-            entity.teleportTo(level, 10.5F, 62.0F, 3.5F, NO_RELATIVE_MOVEMENT, 90.0F, 0.0F);
+            // Drop the player relative to this station's anchor. Private stations anchor at (0,60,0),
+            // reproducing the legacy fixed drop of (10.5, 62, 3.5); shared stations use their own anchor.
+            BlockPos anchor = body.config() instanceof SatelliteConfig satellite ? satellite.getStationPos() : SatelliteConfig.DEFAULT_STATION_POS;
+            entity.teleportTo(level, anchor.getX() + 10.5F, anchor.getY() + 2.0F, anchor.getZ() + 3.5F, NO_RELATIVE_MOVEMENT, 90.0F, 0.0F);
             return;
         }
 

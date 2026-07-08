@@ -176,6 +176,12 @@ public interface Constant {
         String VAPOR_SPOUT = "vapor_spout";
         String VOLCANO_VENT = "volcano_vent";
 
+        String MERCURY_SURFACE_ROCK = "mercury_surface_rock";
+        String MERCURY_SUB_SURFACE_ROCK = "mercury_sub_surface_rock";
+        String MERCURY_STONE = "mercury_stone";
+        String MERCURY_SCARP_ROCK = "mercury_scarp_rock";
+        String MERCURY_CRYSTAL_CLUSTER = "mercury_crystal_cluster";
+
         // Ore
         String MARS_IRON_ORE = "mars_iron_ore";
         String MARS_TIN_ORE = "mars_tin_ore";
@@ -1075,6 +1081,7 @@ public interface Constant {
         ResourceLocation MOON = Constant.id("textures/gui/rocket/moon_rocket_gui.png");
         ResourceLocation MARS = Constant.id("textures/gui/rocket/mars_rocket_gui.png");
         ResourceLocation VENUS = Constant.id("textures/gui/rocket/venus_rocket_gui.png");
+        ResourceLocation MERCURY = Constant.id("textures/gui/rocket/mercury_rocket_gui.png");
     }
 
     interface Skybox {
@@ -1083,6 +1090,7 @@ public interface Constant {
         ResourceLocation SUN_MOON = id("textures/environment/sun_moon.png");
         ResourceLocation SUN_VENUS = id("textures/environment/sun_venus.png");
         ResourceLocation SUN_MARS = id("textures/environment/sun_mars.png");
+        ResourceLocation SUN_MERCURY = id("textures/environment/sun_mercury.png");
         ResourceLocation EARTH = id("textures/environment/earth.png");
         ResourceLocation CLOUDS = id("textures/environment/clouds.png");
         ResourceLocation ATMOSPHERE = id("textures/environment/atmosphere.png");
@@ -1411,6 +1419,7 @@ public interface Constant {
     interface Carver {
         String MOON_CANYON_CARVER = "moon_canyon_carver";
         String MOON_CRATER_CARVER = "moon_crater_carver";
+        String MOON_LARGE_CRATER_CARVER = "moon_large_crater_carver";
         String MOON_HIGHLANDS_CAVE_CARVER = "moon_highlands_cave_carver";
         String MOON_MARE_CAVE_CARVER = "moon_mare_cave_carver";
         String MARS_CANYON_CARVER = "mars_canyon_carver";
@@ -1420,6 +1429,9 @@ public interface Constant {
         String VENUS_CAVE_CARVER = "venus_cave_carver";
         String VENUS_CRATER_CARVER = "venus_crater_carver";
         String VENUS_LAVA_CHANNEL_CARVER = "venus_lava_channel_carver";
+        String MERCURY_CAVE_CARVER = "mercury_cave_carver";
+        String MERCURY_CAVERN_CARVER = "mercury_cavern_carver";
+        String MERCURY_CANYON_CARVER = "mercury_canyon_carver";
     }
 
     interface Packet {

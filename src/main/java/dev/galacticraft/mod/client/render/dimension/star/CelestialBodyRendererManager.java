@@ -37,22 +37,24 @@ import org.joml.Vector3d;
 
 import java.util.*;
 
-/**
- * Manager class for rendering multiple celestial bodies (stars and planets) in a galaxy.
- * Uses the Composite and Factory design patterns to manage and render different types of celestial bodies.
- */
+/** Renders stars and planets in a galaxy view. */
 public class CelestialBodyRendererManager {
-    // Factory for creating different types of celestial bodies
     private final CelestialBodyFactory factory;
 
-    // Map to store celestial bodies by type
     private final Map<CelestialBodyType, List<CelestialBody>> celestialBodies;
 
-    // Renderers for different types of celestial bodies
     private final Map<CelestialBodyType, CelestialBodyRenderer> renderers;
 
-    // Geographical solar position for relative rendering of celestial bodies
     private GeographicalSolarPosition solarPosition;
+
+    // Fixed seed keeps the procedural background stars identical across clients.
+    private static final long STAR_FIELD_SEED = 27893L;
+    private static final int STAR_COUNT = 20000;
+    private static final int STAR_FIELD_RADIUS = 850;
+    private static final int WORLEY_POINT_COUNT = 32;
+    private static final float STAR_NOISE_SCALE = 0.005F;
+    private static final double WORLEY_MIN_DISTANCE = 100.0;
+    private static final double STAR_NOISE_THRESHOLD = 0.4;
 
     private CelestialBodyRendererManager() {
 
@@ -61,32 +63,24 @@ public class CelestialBodyRendererManager {
         this.renderers = new HashMap<>();
         this.solarPosition = GeographicalSolarPosition.getInstance();
 
-        // Initialize collections for each celestial body type
         for (CelestialBodyType type : CelestialBodyType.values()) {
             celestialBodies.put(type, new ArrayList<>());
         }
 
-        // Register default renderers
         renderers.put(CelestialBodyType.STAR, new StarRenderer());
         renderers.put(CelestialBodyType.PLANET2D, new PlanetRenderer2D());
         renderers.put(CelestialBodyType.PLANET3D, new PlanetRenderer3D());
 
-        // FIXME: VERY TEMPORARY, we should setup from a generated map of stars or something
         this.setStarPositions();
-        // this.add2DPlanet(10, 10, 0, 10, 0, Constant.CelestialBody.EARTH);
-
-        // Add a sample 3D planet with Earth texture and 80% opacity
-        // this.add3DPlanet(0, 0, 0, 15, 0, Constant.CelestialBody.EARTH, 1F);
     }
 
-    // TODO: temp
+    /** Rebuilds the deterministic background star field. */
     public void setStarPositions() {
-        final Random random = new Random(27893L);
-        final int starCount = 20000;
-        final int size = 850;
+        final Random random = new Random(STAR_FIELD_SEED);
+        final int starCount = STAR_COUNT;
+        final int size = STAR_FIELD_RADIUS;
 
-        // Worley noise parameters
-        int numPoints = 32;
+        int numPoints = WORLEY_POINT_COUNT;
         Vector3d[] points = new Vector3d[numPoints];
         for (int i = 0; i < numPoints; i++) {
             points[i] = new Vector3d(
@@ -97,15 +91,12 @@ public class CelestialBodyRendererManager {
         }
 
         for (int i = 0; i < starCount; i++) {
-            // Generate base position
             int x = random.nextInt((size * 2) + 1) - size;
             int y = random.nextInt((size * 2) + 1) - size;
             int z = random.nextInt((size * 2) + 1) - size;
 
-            // Perlin noise influence
-            double noise = (SimplexNoise.noise(x * 0.005F, y * 0.005F, z * 0.005F) + 1) * 0.5;
+            double noise = (SimplexNoise.noise(x * STAR_NOISE_SCALE, y * STAR_NOISE_SCALE, z * STAR_NOISE_SCALE) + 1) * 0.5;
 
-            // Find closest Worley point
             double minDist = Double.MAX_VALUE;
             for (Vector3d p : points) {
                 double dx = x - p.x;
@@ -115,8 +106,7 @@ public class CelestialBodyRendererManager {
                 minDist = Math.min(minDist, dist);
             }
 
-            // Only place stars where Worley noise is high and Perlin noise is above threshold
-            if (minDist > 100 && noise > 0.4) {
+            if (minDist > WORLEY_MIN_DISTANCE && noise > STAR_NOISE_THRESHOLD) {
                 this.addCelestialBody(
                         CelestialBodyType.STAR,
                         x, y, z,
@@ -126,70 +116,25 @@ public class CelestialBodyRendererManager {
             }
         }
     }
-    /**
-     * Adds a celestial body to the manager.
-     *
-     * @param type The type of celestial body
-     * @param x X coordinate
-     * @param y Y coordinate
-     * @param z Z coordinate
-     * @param size Size of the celestial body
-     * @param rotation Rotation of the celestial body
-     * @return The created celestial body
-     */
+
     public CelestialBody addCelestialBody(CelestialBodyType type, int x, int y, int z, double size, double rotation) {
         CelestialBody body = factory.createCelestialBody(type, x, y, z, size, rotation);
         celestialBodies.get(type).add(body);
         return body;
     }
 
-    /**
-     * Adds a planet with a specific texture to the manager.
-     *
-     * @param x X coordinate
-     * @param y Y coordinate
-     * @param z Z coordinate
-     * @param size Size of the planet
-     * @param rotation Rotation of the planet
-     * @param texture Texture to use for the planet
-     * @return The created planet
-     */
     public PlanetData add2DPlanet(int x, int y, int z, double size, double rotation, ResourceLocation texture) {
         PlanetData planet = factory.createPlanet(x, y, z, size, rotation, texture);
         celestialBodies.get(CelestialBodyType.PLANET2D).add(planet);
         return planet;
     }
 
-    /**
-     * Adds a 3D planet with the same texture for all faces and specified opacity to the manager.
-     *
-     * @param x X coordinate
-     * @param y Y coordinate
-     * @param z Z coordinate
-     * @param size Size of the planet
-     * @param rotation Rotation of the planet
-     * @param texture Texture to use for all faces of the planet
-     * @param opacity Opacity of the planet (0.0f to 1.0f)
-     * @return The created 3D planet
-     */
     public Planet3DData add3DPlanet(int x, int y, int z, double size, double rotation, ResourceLocation texture, float opacity) {
         Planet3DData planet = factory.create3DPlanet(x, y, z, size, rotation, texture, opacity);
         celestialBodies.get(CelestialBodyType.PLANET3D).add(planet);
         return planet;
     }
 
-    /**
-     * Adds a 3D planet with different textures for each face and specified opacity to the manager.
-     *
-     * @param x X coordinate
-     * @param y Y coordinate
-     * @param z Z coordinate
-     * @param size Size of the planet
-     * @param rotation Rotation of the planet
-     * @param textures Map of textures for each face of the planet
-     * @param opacity Opacity of the planet (0.0f to 1.0f)
-     * @return The created 3D planet
-     */
     public Planet3DData add3DPlanet(int x, int y, int z, double size, double rotation,
                                    java.util.Map<Planet3DData.Face, ResourceLocation> textures, float opacity) {
         Planet3DData planet = factory.create3DPlanet(x, y, z, size, rotation, textures, opacity);
@@ -197,41 +142,18 @@ public class CelestialBodyRendererManager {
         return planet;
     }
 
-    /**
-     * Removes a celestial body from the manager.
-     *
-     * @param body The celestial body to remove
-     * @return true if the body was removed, false otherwise
-     */
     public boolean removeCelestialBody(CelestialBody body) {
         return celestialBodies.get(body.getType()).remove(body);
     }
 
-    /**
-     * Registers a custom renderer for a specific celestial body type.
-     *
-     * @param type The type of celestial body
-     * @param renderer The renderer to use
-     */
     public void registerRenderer(CelestialBodyType type, CelestialBodyRenderer renderer) {
         renderers.put(type, renderer);
     }
 
-    /**
-     * Gets all celestial bodies of a specific type.
-     *
-     * @param type The type of celestial body
-     * @return List of celestial bodies of the specified type
-     */
     public List<CelestialBody> getCelestialBodiesByType(CelestialBodyType type) {
         return new ArrayList<>(celestialBodies.get(type));
     }
 
-    /**
-     * Gets all celestial bodies.
-     *
-     * @return List of all celestial bodies
-     */
     public List<CelestialBody> getAllCelestialBodies() {
         List<CelestialBody> allBodies = new ArrayList<>();
         for (List<CelestialBody> bodies : celestialBodies.values()) {
@@ -240,11 +162,7 @@ public class CelestialBodyRendererManager {
         return allBodies;
     }
 
-    /**
-     * Renders all celestial bodies.
-     */
     public void render(WorldRenderContext worldRenderContext) {
-        // Render each type of celestial body with its corresponding renderer
         for (CelestialBodyType type : CelestialBodyType.values()) {
             CelestialBodyRenderer renderer = renderers.get(type);
             if (renderer != null) {
@@ -254,39 +172,21 @@ public class CelestialBodyRendererManager {
         }
     }
 
-    /**
-     * Gets the geographical solar position used for relative rendering.
-     *
-     * @return The geographical solar position
-     */
     public GeographicalSolarPosition getSolarPosition() {
         return solarPosition;
     }
 
-    /**
-     * Sets the geographical solar position used for relative rendering.
-     *
-     * @param solarPosition The new geographical solar position
-     */
     public void setSolarPosition(GeographicalSolarPosition solarPosition) {
         this.solarPosition = solarPosition;
     }
 
-    /**
-     * Updates the geographical solar position with new coordinates.
-     *
-     * @param x The x coordinate
-     * @param y The y coordinate
-     * @param z The z coordinate
-     */
     public void updateSolarPosition(double x, double y, double z) {
         this.solarPosition.setCameraPositions(x, y, z);
     }
 
     private static final CelestialBodyRendererManager INSTANCE = new CelestialBodyRendererManager();
 
-    // TODO: we should ideally have multiple world spaces
-    //  maybe we want to render a far off solar system in a addon?
+    // TODO: support multiple world spaces for add-on solar systems.
     public static CelestialBodyRendererManager getInstance() {
         return INSTANCE;
     }

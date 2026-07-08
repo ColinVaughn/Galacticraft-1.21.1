@@ -24,6 +24,7 @@ package dev.galacticraft.mod.world.gen;
 
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.content.GCBlocks;
+import dev.galacticraft.mod.world.gen.surfacerule.MercurySurfaceRules;
 import dev.galacticraft.mod.world.gen.surfacerule.VenusSurfaceRules;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
@@ -42,6 +43,7 @@ import org.jetbrains.annotations.NotNull;
 public class GCNoiseGeneratorSettings {
     public static final ResourceKey<NoiseGeneratorSettings> MOON = key("moon");
     public static final ResourceKey<NoiseGeneratorSettings> VENUS = key("venus");
+    public static final ResourceKey<NoiseGeneratorSettings> MERCURY = key("mercury");
 
     public static void bootstrapRegistries(BootstrapContext<NoiseGeneratorSettings> context) {
         HolderGetter<DensityFunction> densityLookup = context.lookup(Registries.DENSITY_FUNCTION);
@@ -64,13 +66,27 @@ public class GCNoiseGeneratorSettings {
         context.register(VENUS, new NoiseGeneratorSettings(
                 NoiseSettings.create(-32, 256, 1, 2),
                 GCBlocks.HARD_VENUS_ROCK.defaultBlockState(),
-                // A global lava table: low basins flood into connected lava seas and carved
-                // channels become lava rivers, while highlands and volcanoes rise above it.
+                // Venus uses lava as its sea-level fluid.
                 Blocks.LAVA.defaultBlockState(),
                 GCNoiseGeneratorSettings.venus(densityLookup, noiseLookup),
                 VenusSurfaceRules.VENUS,
                 new OverworldBiomeBuilder().spawnTarget(),
                 56, // lava sea level
+                false,
+                false,
+                false,
+                false
+        ));
+
+        context.register(MERCURY, new NoiseGeneratorSettings(
+                NoiseSettings.create(-32, 256, 1, 2),
+                GCBlocks.MERCURY_STONE.defaultBlockState(),
+                // Mercury uses lava as the default fluid below y = -8.
+                Blocks.LAVA.defaultBlockState(),
+                GCNoiseGeneratorSettings.mercury(densityLookup, noiseLookup),
+                MercurySurfaceRules.MERCURY,
+                new OverworldBiomeBuilder().spawnTarget(),
+                -8, // lava sea level
                 false,
                 false,
                 false,
@@ -151,7 +167,7 @@ public class GCNoiseGeneratorSettings {
                 GCDensityFunctions.getFunction(densityLookup, NoiseRouterData.EROSION), // erosion
                 depth, // depth
                 GCDensityFunctions.getFunction(densityLookup, NoiseRouterData.RIDGES), // ridges
-                // Mars-style initial density: depth * factor shaped into rolling relief.
+                // Initial terrain follows Mars/Venus depth-factor shaping.
                 DensityFunctions.add(
                         DensityFunctions.constant(0.05),
                         DensityFunctions.mul(
@@ -163,6 +179,39 @@ public class GCNoiseGeneratorSettings {
                         )
                 ), // initialDensityWithoutJaggedness
                 DensityFunctions.blendDensity(GCDensityFunctions.getFunction(densityLookup, GCDensityFunctions.Venus.FINAL_DENSITY)), // finalDensity
+                DensityFunctions.zero(), // veinToggle
+                DensityFunctions.zero(), // veinRidged
+                DensityFunctions.zero()  // veinGap
+        );
+    }
+
+    public static NoiseRouter mercury(HolderGetter<DensityFunction> densityLookup, HolderGetter<NormalNoise.NoiseParameters> noiseLookup) {
+        DensityFunction shiftX = GCDensityFunctions.getFunction(densityLookup, NoiseRouterData.SHIFT_X);
+        DensityFunction shiftZ = GCDensityFunctions.getFunction(densityLookup, NoiseRouterData.SHIFT_Z);
+        DensityFunction depth = GCDensityFunctions.getFunction(densityLookup, NoiseRouterData.DEPTH);
+        return new NoiseRouter(
+                DensityFunctions.zero(), // barrierNoise
+                DensityFunctions.zero(), // fluidLevelFloodednessNoise
+                DensityFunctions.zero(), // fluidLevelSpreadNoise
+                DensityFunctions.zero(), // lavaNoise
+                DensityFunctions.shiftedNoise2d(shiftX, shiftZ, 0.25, noiseLookup.getOrThrow(Noises.TEMPERATURE)), // temperature
+                DensityFunctions.shiftedNoise2d(shiftX, shiftZ, 0.0, noiseLookup.getOrThrow(Noises.VEGETATION)), // vegetation
+                GCDensityFunctions.getFunction(densityLookup, NoiseRouterData.CONTINENTS), // continents
+                GCDensityFunctions.getFunction(densityLookup, NoiseRouterData.EROSION), // erosion
+                depth, // depth
+                GCDensityFunctions.getFunction(densityLookup, NoiseRouterData.RIDGES), // ridges
+                // Initial terrain follows depth-factor shaping.
+                DensityFunctions.add(
+                        DensityFunctions.constant(0.05),
+                        DensityFunctions.mul(
+                                DensityFunctions.constant(4.0),
+                                DensityFunctions.mul(
+                                        depth,
+                                        DensityFunctions.cache2d(GCDensityFunctions.getFunction(densityLookup, NoiseRouterData.FACTOR))
+                                ).quarterNegative()
+                        )
+                ), // initialDensityWithoutJaggedness
+                DensityFunctions.blendDensity(GCDensityFunctions.getFunction(densityLookup, GCDensityFunctions.Mercury.FINAL_DENSITY)), // finalDensity
                 DensityFunctions.zero(), // veinToggle
                 DensityFunctions.zero(), // veinRidged
                 DensityFunctions.zero()  // veinGap

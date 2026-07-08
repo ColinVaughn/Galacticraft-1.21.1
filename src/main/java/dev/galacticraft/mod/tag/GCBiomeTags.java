@@ -30,12 +30,17 @@ import net.minecraft.world.level.biome.Biome;
 public class GCBiomeTags {
     public static final TagKey<Biome> MOON = TagKey.create(Registries.BIOME, Constant.id("moon"));
     public static final TagKey<Biome> VENUS = TagKey.create(Registries.BIOME, Constant.id("venus"));
+    public static final TagKey<Biome> MARS = TagKey.create(Registries.BIOME, Constant.id("mars"));
+    public static final TagKey<Biome> MERCURY = TagKey.create(Registries.BIOME, Constant.id("mercury"));
     public static final TagKey<Biome> ASTEROID = TagKey.create(Registries.BIOME, Constant.id("asteroid"));
 
     public static final TagKey<Biome> MOON_PILLAGER_BASE_HAS_STRUCTURE = TagKey.create(Registries.BIOME, Constant.id("has_structure/moon_pillager_base"));
     public static final TagKey<Biome> MOON_VILLAGE_HIGHLANDS_HAS_STRUCTURE = TagKey.create(Registries.BIOME, Constant.id("has_structure/moon_village_highlands"));
     public static final TagKey<Biome> MOON_RUINS_HAS_STRUCTURE = TagKey.create(Registries.BIOME, Constant.id("has_structure/moon_ruins"));
     public static final TagKey<Biome> MOON_BOSS_HAS_STRUCTURE = TagKey.create(Registries.BIOME, Constant.id("has_structure/moon_boss"));
+    public static final TagKey<Biome> MARS_BOSS_HAS_STRUCTURE = TagKey.create(Registries.BIOME, Constant.id("has_structure/mars_boss"));
+    public static final TagKey<Biome> VENUS_BOSS_HAS_STRUCTURE = TagKey.create(Registries.BIOME, Constant.id("has_structure/venus_boss"));
+    public static final TagKey<Biome> ASTEROID_DUNGEON_HAS_STRUCTURE = TagKey.create(Registries.BIOME, Constant.id("has_structure/asteroid_dungeon"));
 
     public static void register() {
     }

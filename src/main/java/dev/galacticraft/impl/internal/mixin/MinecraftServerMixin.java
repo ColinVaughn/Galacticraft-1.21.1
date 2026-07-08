@@ -53,7 +53,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 @Mixin(MinecraftServer.class)
 public abstract class MinecraftServerMixin implements SatelliteAccessor {
@@ -123,6 +125,9 @@ public abstract class MinecraftServerMixin implements SatelliteAccessor {
                 ListTag nbt = NbtIo.readCompressed(worldFile.resolve("satellites.dat"), NbtAccounter.unlimitedHeap()).getList("satellites", Tag.TAG_COMPOUND);
                 RegistryOps<Tag> ops = RegistryOps.create(NbtOps.INSTANCE, this.registryAccess());
                 Constant.LOGGER.info("Loading {} satellites", nbt.size());
+                // Several satellites can share one communal dimension, so each dimension must be loaded exactly once,
+                // keyed by its world (not by the satellite/body id, which is unique per player).
+                Set<ResourceLocation> loadedDimensions = new HashSet<>();
                 for (Tag compound : nbt) {
                     assert compound instanceof CompoundTag : "Not a compound?!";
                     ResourceLocation id = ResourceLocation.parse(((CompoundTag) compound).getString("id"));
@@ -134,8 +139,11 @@ public abstract class MinecraftServerMixin implements SatelliteAccessor {
                     CelestialBody<SatelliteConfig, SatelliteType> satellite = new CelestialBody<>(SatelliteType.INSTANCE, decode.getOrThrow().getFirst());
                     this.galacticraft$addSatellite(satellite, false);
 
-                    LevelStem levelStem = satellite.config().getOptions();
-                    dynamicDimensionLoader.loadDynamicDimension(id, levelStem.generator(), levelStem.type().value());
+                    ResourceLocation dimensionId = satellite.config().getWorld().location();
+                    if (loadedDimensions.add(dimensionId)) {
+                        LevelStem levelStem = satellite.config().getOptions();
+                        dynamicDimensionLoader.loadDynamicDimension(dimensionId, levelStem.generator(), levelStem.type().value());
+                    }
                 }
             } catch (Throwable exception) {
                 throw new RuntimeException("Failed to read satellite data!", exception);

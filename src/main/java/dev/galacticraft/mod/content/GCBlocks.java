@@ -198,6 +198,13 @@ public class GCBlocks {
     public static final Block VAPOR_SPOUT = BLOCKS.registerWithItem(Constant.Block.VAPOR_SPOUT, new VaporSpoutBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BROWN).instrument(NoteBlockInstrument.BASEDRUM).strength(1.5F, 2.0F).requiresCorrectToolForDrops()));
     public static final Block VOLCANO_VENT = BLOCKS.registerWithItem(Constant.Block.VOLCANO_VENT, new VolcanoVentBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_ORANGE).instrument(NoteBlockInstrument.BASEDRUM).strength(50.0F, 1200.0F).requiresCorrectToolForDrops().noLootTable()));
 
+    // MERCURY NATURAL
+    public static final Block MERCURY_SURFACE_ROCK = BLOCKS.registerWithItem(Constant.Block.MERCURY_SURFACE_ROCK, new Block(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).instrument(NoteBlockInstrument.BASEDRUM).destroyTime(2.2F).requiresCorrectToolForDrops()));
+    public static final Block MERCURY_SUB_SURFACE_ROCK = BLOCKS.registerWithItem(Constant.Block.MERCURY_SUB_SURFACE_ROCK, new Block(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GRAY).instrument(NoteBlockInstrument.BASEDRUM).destroyTime(2.6F).requiresCorrectToolForDrops()));
+    public static final Block MERCURY_STONE = BLOCKS.registerWithItem(Constant.Block.MERCURY_STONE, new Block(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).instrument(NoteBlockInstrument.BASEDRUM).destroyTime(3.0F).requiresCorrectToolForDrops()));
+    public static final Block MERCURY_SCARP_ROCK = BLOCKS.registerWithItem(Constant.Block.MERCURY_SCARP_ROCK, new Block(BlockBehaviour.Properties.of().mapColor(MapColor.DEEPSLATE).instrument(NoteBlockInstrument.BASEDRUM).strength(3.4F, 6.0F).requiresCorrectToolForDrops()));
+    public static final Block MERCURY_CRYSTAL_CLUSTER = BLOCKS.registerWithItem(Constant.Block.MERCURY_CRYSTAL_CLUSTER, new MercuryCrystalClusterBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.AMETHYST_CLUSTER).mapColor(MapColor.COLOR_CYAN).lightLevel(state -> 9)));
+
     // ORES
     public static final Block SILICON_ORE = BLOCKS.registerWithItem(Constant.Block.SILICON_ORE, new DropExperienceBlock(ConstantInt.of(0), oreSettings(Blocks.STONE, 3.0F, 3.0F)));
     public static final Block DEEPSLATE_SILICON_ORE = BLOCKS.registerWithItem(Constant.Block.DEEPSLATE_SILICON_ORE, new DropExperienceBlock(ConstantInt.of(0), oreSettings(Blocks.DEEPSLATE, 4.5F, 3.0F)));

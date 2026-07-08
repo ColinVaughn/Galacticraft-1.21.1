@@ -35,6 +35,7 @@ import dev.galacticraft.mod.content.entity.FallingMeteorEntity;
 import dev.galacticraft.mod.misc.footprint.FootprintManager;
 import dev.galacticraft.mod.network.s2c.FootprintRemovedPacket;
 import dev.galacticraft.mod.world.dimension.duststorm.MarsDustStormManager;
+import dev.galacticraft.mod.world.dimension.solarflare.MercurySolarFlareManager;
 import dev.galacticraft.mod.util.Translations;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
@@ -87,6 +88,7 @@ public class GCEventHandlers {
         }
         level.galacticraft$getSealerManager().tick();
         MarsDustStormManager.tick(level);
+        MercurySolarFlareManager.tick(level);
     }
 
     public static void onServerTick(MinecraftServer server) {

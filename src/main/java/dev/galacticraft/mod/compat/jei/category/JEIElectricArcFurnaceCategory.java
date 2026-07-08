@@ -37,6 +37,7 @@ import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -90,7 +91,7 @@ public class JEIElectricArcFurnaceCategory implements IRecipeCategory<BlastingRe
                 .addIngredients(recipe.getIngredients().get(0));
         builder.addOutputSlot(OUTPUT_X_1 - JEI_X, OUTPUT_Y_1 - JEI_Y)
                 .setOutputSlotBackground()
-                .addItemStack(recipe.getResultItem(null)); //fixme
+                .addItemStack(recipe.getResultItem(Minecraft.getInstance().level.registryAccess()));
         builder.addOutputSlot(OUTPUT_X_2 - JEI_X, OUTPUT_Y_2 - JEI_Y)
                 .setOutputSlotBackground();
     }

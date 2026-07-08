@@ -37,6 +37,7 @@ public class GCClientPacketReceiver {
         register(ResetPerspectivePacket.TYPE);
         register(CapeAssignmentsPacket.TYPE);
         register(DustStormSyncPayload.TYPE);
+        register(SolarFlareSyncPayload.TYPE);
     }
 
     public static <P extends S2CPayload> void register(CustomPacketPayload.Type<P> type) {

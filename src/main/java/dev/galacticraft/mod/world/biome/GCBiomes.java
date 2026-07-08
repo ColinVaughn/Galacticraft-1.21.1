@@ -42,6 +42,8 @@ public final class GCBiomes {
         public static final ResourceKey<Biome> LUNAR_HIGHLANDS = key("lunar_highlands");
         public static final ResourceKey<Biome> LUNAR_LOWLANDS = key("lunar_lowlands");
         public static final ResourceKey<Biome> OLIVINE_SPIKES = key("olivine_spikes");
+        public static final ResourceKey<Biome> RAY_CRATER_FIELD = key("ray_crater_field");
+        public static final ResourceKey<Biome> CHEESE_GROVE = key("cheese_grove");
     }
 
     public static final class Venus {
@@ -60,6 +62,12 @@ public final class GCBiomes {
         public static final ResourceKey<Biome> MARS_CANYON = key("mars_canyon");
         public static final ResourceKey<Biome> MARS_VOLCANICS = key("mars_volcanics");
         public static final ResourceKey<Biome> MARS_POLAR = key("mars_polar");
+    }
+
+    public static final class Mercury {
+        public static final ResourceKey<Biome> MERCURY_PLAINS = key("mercury_plains");
+        public static final ResourceKey<Biome> MERCURY_HIGHLANDS = key("mercury_highlands");
+        public static final ResourceKey<Biome> MERCURY_BASIN = key("mercury_basin");
     }
 
     public static final class Asteroid {
@@ -96,6 +104,8 @@ public final class GCBiomes {
         context.register(Moon.LUNAR_HIGHLANDS, MoonBiomes.createLunarHighlands(featureLookup, carverLookup));
         context.register(Moon.LUNAR_LOWLANDS, MoonBiomes.createLunarLowlands(featureLookup, carverLookup));
         context.register(Moon.OLIVINE_SPIKES, MoonBiomes.createOlivineSpikes(featureLookup, carverLookup));
+        context.register(Moon.RAY_CRATER_FIELD, MoonBiomes.createRayCraterField(featureLookup, carverLookup));
+        context.register(Moon.CHEESE_GROVE, MoonBiomes.createCheeseGrove(featureLookup, carverLookup));
 
         context.register(Venus.VENUS_VOLCANIC_PLAINS, VenusBiomes.volcanicPlains(featureLookup, carverLookup));
         context.register(Venus.VENUS_HIGHLANDS, VenusBiomes.highlands(featureLookup, carverLookup));
@@ -110,6 +120,10 @@ public final class GCBiomes {
         context.register(Mars.MARS_CANYON, MarsBiomes.canyon(featureLookup, carverLookup));
         context.register(Mars.MARS_VOLCANICS, MarsBiomes.volcanics(featureLookup, carverLookup));
         context.register(Mars.MARS_POLAR, MarsBiomes.polar(featureLookup, carverLookup));
+
+        context.register(Mercury.MERCURY_PLAINS, MercuryBiomes.plains(featureLookup, carverLookup));
+        context.register(Mercury.MERCURY_HIGHLANDS, MercuryBiomes.highlands(featureLookup, carverLookup));
+        context.register(Mercury.MERCURY_BASIN, MercuryBiomes.basin(featureLookup, carverLookup));
 
         context.register(Asteroid.ASTEROID_FIELD, AsteroidBiomes.asteroid(featureLookup, carverLookup));
     }

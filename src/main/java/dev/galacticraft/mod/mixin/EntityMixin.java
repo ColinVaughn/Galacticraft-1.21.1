@@ -89,14 +89,6 @@ public abstract class EntityMixin implements EntityAccessor {
     @Shadow
     private Level level;
 
-//    @Inject(method = "findDimensionEntryPoint", at = @At("HEAD"), cancellable = true)
-//    private void getTeleportTargetGC(ServerLevel destination, CallbackInfoReturnable<PortalInfo> cir) {
-//        if (destination.dimension().equals(GCDimensions.MOON) || this.level.dimension().equals(GCDimensions.MOON)) { //TODO lander/parachute stuff
-//            BlockPos pos = destination.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, destination.getSharedSpawnPos());
-//            cir.setReturnValue(new PortalInfo(new Vec3((double) pos.getX() + 0.5D, pos.getY(), (double) pos.getZ() + 0.5D), this.getDeltaMovement(), this.yRot, this.xRot));
-//        }
-//    }
-
     @Shadow
     public abstract boolean updateFluidHeightAndDoFluidPushing(TagKey<Fluid> tag, double d);
 
@@ -296,8 +288,16 @@ public abstract class EntityMixin implements EntityAccessor {
             Registry<CelestialBody<?, ?>> celestialBodies = entity.level().registryAccess().registryOrThrow(AddonRegistries.CELESTIAL_BODY);
             CelestialBody body = fromBody.parentValue(celestialBodies);
             if (body.type() instanceof Landable landable) {
-                if (entity.level() instanceof ServerLevel level) {
-                    ((CelestialTeleporter) landable.teleporter(body.config()).value()).onEnterAtmosphere(level.getServer().getLevel(landable.world(body.config())), entity, body, fromBody);
+                if (!(entity.level() instanceof ServerLevel level)) {
+                    original.call(entity);
+                    return;
+                }
+
+                ServerLevel destination = level.getServer().getLevel(landable.world(body.config()));
+                if (destination != null) {
+                    ((CelestialTeleporter) landable.teleporter(body.config()).value()).onEnterAtmosphere(destination, entity, body, fromBody);
+                } else {
+                    original.call(entity);
                 }
                 return;
             }

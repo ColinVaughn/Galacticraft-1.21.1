@@ -24,9 +24,12 @@ package dev.galacticraft.impl.internal.mixin.gear;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import dev.galacticraft.api.accessor.GearInventoryProvider;
+import dev.galacticraft.api.accessor.LevelBodyAccessor;
 import dev.galacticraft.api.entity.attribute.GcApiEntityAttributes;
 import dev.galacticraft.api.gas.Gases;
 import dev.galacticraft.api.item.Accessory;
+import dev.galacticraft.api.universe.celestialbody.CelestialBody;
+import dev.galacticraft.api.universe.celestialbody.SurfaceEnvironment;
 import dev.galacticraft.impl.internal.fabric.GalacticraftAPI;
 import dev.galacticraft.impl.network.s2c.GearInvPayload;
 import dev.galacticraft.mod.Constant;
@@ -34,6 +37,7 @@ import dev.galacticraft.mod.Galacticraft;
 import dev.galacticraft.mod.content.block.special.CryogenicChamberBlock;
 import dev.galacticraft.mod.content.block.special.CryogenicChamberPart;
 import dev.galacticraft.mod.content.entity.vehicle.LanderEntity;
+import dev.galacticraft.mod.content.item.GCItems;
 import dev.galacticraft.mod.content.item.InfiniteOxygenTankItem;
 import dev.galacticraft.mod.tag.GCFluidTags;
 import dev.galacticraft.mod.tag.GCItemTags;
@@ -46,7 +50,9 @@ import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.item.InventoryStorage;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -55,8 +61,11 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.player.Player;
@@ -75,6 +84,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Collection;
 
+import static dev.galacticraft.mod.content.entity.damage.GCDamageTypes.COLD;
+import static dev.galacticraft.mod.content.entity.damage.GCDamageTypes.HEAT;
 import static dev.galacticraft.mod.content.entity.damage.GCDamageTypes.SUFFOCATION;
 
 @Mixin(LivingEntity.class)
@@ -255,6 +266,83 @@ public abstract class LivingEntityMixin extends Entity implements GearInventoryP
                 return;
             }
         }
+    }
+
+    @Unique
+    private static final int GALACTICRAFT_COLD_THRESHOLD = -30;
+    @Unique
+    private static final int GALACTICRAFT_HEAT_THRESHOLD = 60;
+    @Unique
+    private int galacticraft_lastThermalDamageTick = 0;
+
+    /** Applies heat or cold damage when an exposed entity is outside survivable limits. */
+    @Inject(method = "baseTick", at = @At("TAIL"))
+    private void galacticraft_thermalCheck(CallbackInfo ci) {
+        LivingEntity entity = (LivingEntity) (Object) this;
+        Level level = entity.level();
+        if (level.isClientSide() || entity.galacticraft$oxygenConsumptionRate() == 0) return;
+        if (entity instanceof Player player && (player.getAbilities().invulnerable || player.isSpectator())) return;
+
+        Holder<CelestialBody<?, ?>> body = ((LevelBodyAccessor) level).galacticraft$getCelestialBody();
+        if (body == null) return;
+
+        if (entity.getVehicle() instanceof LanderEntity
+                || entity.getInBlockState().getBlock() instanceof CryogenicChamberBlock
+                || entity.getInBlockState().getBlock() instanceof CryogenicChamberPart) return;
+
+        BlockPos eyePos = entity.blockPosition().relative(Direction.UP, (int) Math.floor(entity.getEyeHeight(entity.getPose())));
+        // Sealed breathable spaces suppress thermal damage.
+        if (level.isBreathable(eyePos)) return;
+
+        int temperature = galacticraft_surfaceTemperature(body.value(), level);
+        boolean cold = temperature <= GALACTICRAFT_COLD_THRESHOLD;
+        boolean hot = temperature >= GALACTICRAFT_HEAT_THRESHOLD;
+        if (!cold && !hot) return;
+
+        Container thermalArmor = this.galacticraft$getThermalArmor();
+        int protection = 0;
+        for (int slot = 0; slot < thermalArmor.getContainerSize(); slot++) {
+            if (galacticraft_protectsAgainst(thermalArmor.getItem(slot), cold)) protection++;
+        }
+        if (protection >= thermalArmor.getContainerSize()) return; // fully padded
+
+        if (this.tickCount - this.galacticraft_lastThermalDamageTick >= 20) {
+            this.galacticraft_lastThermalDamageTick = this.tickCount;
+            float damage = (thermalArmor.getContainerSize() - protection) * 0.5f;
+            entity.hurt(this.damageSources().source(cold ? COLD : HEAT), damage);
+        }
+    }
+
+    /** Keeps Sensor Glasses night vision refreshed without flicker. */
+    @Inject(method = "baseTick", at = @At("TAIL"))
+    private void galacticraft_sensorGlassesCheck(CallbackInfo ci) {
+        LivingEntity entity = (LivingEntity) (Object) this;
+        if (entity.level().isClientSide()) return;
+        if (entity.getItemBySlot(EquipmentSlot.HEAD).is(GCItems.SENSOR_GLASSES)) {
+            entity.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 300, 0, false, false, false));
+        }
+    }
+
+    @Unique
+    private static int galacticraft_surfaceTemperature(CelestialBody<?, ?> body, Level level) {
+        if (body.type() instanceof SurfaceEnvironment) {
+            try {
+                //noinspection unchecked,rawtypes
+                return ((SurfaceEnvironment) body.type()).temperature(level.registryAccess(), level.getDayTime(), body.config());
+            } catch (RuntimeException ignored) {
+            }
+        }
+        return 20;
+    }
+
+    @Unique
+    private static boolean galacticraft_protectsAgainst(ItemStack stack, boolean cold) {
+        if (cold) {
+            return stack.is(GCItems.THERMAL_PADDING_HELMET) || stack.is(GCItems.THERMAL_PADDING_CHESTPIECE)
+                    || stack.is(GCItems.THERMAL_PADDING_LEGGINGS) || stack.is(GCItems.THERMAL_PADDING_BOOTS);
+        }
+        return stack.is(GCItems.ISOTHERMAL_PADDING_HELMET) || stack.is(GCItems.ISOTHERMAL_PADDING_CHESTPIECE)
+                || stack.is(GCItems.ISOTHERMAL_PADDING_LEGGINGS) || stack.is(GCItems.ISOTHERMAL_PADDING_BOOTS);
     }
 
     @Override

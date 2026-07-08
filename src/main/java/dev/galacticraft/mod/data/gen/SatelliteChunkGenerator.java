@@ -93,17 +93,29 @@ public class SatelliteChunkGenerator extends ChunkGenerator {
     };
     public static final MapCodec<SatelliteChunkGenerator> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             Biome.CODEC.fieldOf("biome").forGetter(SatelliteChunkGenerator::getBiome),
-            STRUCTURE_CODEC.fieldOf("structure").forGetter(SatelliteChunkGenerator::getStructure)
+            STRUCTURE_CODEC.fieldOf("structure").forGetter(SatelliteChunkGenerator::getStructure),
+            Codec.BOOL.optionalFieldOf("place_structure", true).forGetter(SatelliteChunkGenerator::placesStructure)
     ).apply(instance, SatelliteChunkGenerator::new));
 
     private static final NoiseColumn EMPTY_VIEW = new NoiseColumn(0, new BlockState[0]);
     private final StructureTemplate structure;
     private final Holder<Biome> biome;
+    // Shared dimensions place stations after level creation.
+    private final boolean placeStructure;
 
     public SatelliteChunkGenerator(Holder<Biome> biome, StructureTemplate structure) {
+        this(biome, structure, true);
+    }
+
+    public SatelliteChunkGenerator(Holder<Biome> biome, StructureTemplate structure, boolean placeStructure) {
         super(new FixedBiomeSource(biome));
         this.structure = structure;
         this.biome = biome;
+        this.placeStructure = placeStructure;
+    }
+
+    public boolean placesStructure() {
+        return this.placeStructure;
     }
 
     public StructureTemplate getStructure() {
@@ -134,7 +146,7 @@ public class SatelliteChunkGenerator extends ChunkGenerator {
 
     @Override
     public void applyBiomeDecoration(WorldGenLevel world, ChunkAccess chunk, StructureManager structureAccessor) {
-        if (chunk.getPos().x == 0 && chunk.getPos().z == 0) {
+        if (this.placeStructure && chunk.getPos().x == 0 && chunk.getPos().z == 0) {
             this.structure.placeInWorld(world, new BlockPos(0, 60, 0), new BlockPos(0, 60, 0), new StructurePlaceSettings().setIgnoreEntities(true).setLiquidSettings(LiquidSettings.APPLY_WATERLOGGING).setRandom(world.getRandom()), world.getRandom(), 0);
         }
     }

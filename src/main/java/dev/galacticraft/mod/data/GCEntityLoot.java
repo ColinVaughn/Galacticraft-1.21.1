@@ -240,12 +240,23 @@ public class GCEntityLoot extends GCEntityLootSubProvider {
                         .withPool(
                                 LootPool.lootPool()
                                         .setRolls(ConstantValue.exactly(1.0F))
-                                        .add(LootItem.lootTableItem(Items.ARROW)) // Replace with key
+                                        .add(LootItem.lootTableItem(Items.WITHER_SKELETON_SKULL))
                         )
+        );
+        add(GCEntityTypes.CREEPER_BOSS,
+                LootTable.lootTable()
                         .withPool(
                                 LootPool.lootPool()
                                         .setRolls(ConstantValue.exactly(1.0F))
-                                        .add(LootItem.lootTableItem(Items.WITHER_SKELETON_SKULL))
+                                        .add(LootItem.lootTableItem(Items.CREEPER_HEAD))
+                        )
+        );
+        add(GCEntityTypes.SPIDER_BOSS,
+                LootTable.lootTable()
+                        .withPool(
+                                LootPool.lootPool()
+                                        .setRolls(ConstantValue.exactly(1.0F))
+                                        .add(LootItem.lootTableItem(Items.SPIDER_EYE))
                         )
         );
     }

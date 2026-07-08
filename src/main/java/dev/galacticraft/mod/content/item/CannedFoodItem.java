@@ -59,6 +59,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.level.gameevent.GameEvent;
 import org.jetbrains.annotations.NotNull;
 
@@ -114,6 +115,12 @@ public class CannedFoodItem extends Item implements FabricItemStack {
         BlockState newState = GCBlocks.CANNED_FOOD.defaultBlockState().setValue(CannedFoodBlock.FACING, context.getHorizontalDirection().getOpposite());
         if (level.getBlockEntity(pos) instanceof CannedFoodBlockEntity canEntity) {
             newState = newState.setValue(CannedFoodBlock.MAX, canEntity.getCanCount() + 1 == MAX_CANS);
+        }
+
+        // Don't place the can if its hitbox would overlap an entity (e.g. the player or a mob),
+        // unless we're stacking onto a can that already occupies this space.
+        if (!oldState.is(GCBlocks.CANNED_FOOD) && !level.isUnobstructed(newState, pos, CollisionContext.empty())) {
+            return InteractionResult.FAIL;
         }
 
         if (newState != oldState) {

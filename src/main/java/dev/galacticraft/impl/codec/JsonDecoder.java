@@ -33,7 +33,16 @@ import com.mojang.serialization.JsonOps;
 public interface JsonDecoder<A> extends Decoder<A> {
     @Override
     default <T> DataResult<Pair<A, T>> decode(DynamicOps<T> ops, T input) {
-        return DataResult.success(new Pair<>(apply(ops, ops.convertTo(JsonOps.INSTANCE, input)), input));
+        final A result;
+        try {
+            result = apply(ops, ops.convertTo(JsonOps.INSTANCE, input));
+        } catch (RuntimeException ex) {
+            return DataResult.error(() -> "Failed to decode JSON: " + ex.getMessage());
+        }
+        if (result == null) {
+            return DataResult.error(() -> "JsonDecoder produced a null result");
+        }
+        return DataResult.success(new Pair<>(result, input));
     }
 
     A apply(DynamicOps<?> ops, JsonElement element);

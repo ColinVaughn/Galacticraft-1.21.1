@@ -435,9 +435,16 @@ public class CelestialScreen extends Screen implements ClientSatelliteAccessor.S
         graphics.fill(0, 0, this.width, this.height, 0, BLACK);
 
         this.setIsometric(delta, matrices);
-        float gridSize = 7000.0F; // 194.4F;
-        // TODO: Add dynamic map sizing, to allow the map to be small by default and expand when more distant solar systems are added.
-        this.drawGrid(graphics, gridSize, this.height / 10.5F);
+        float gridScale = this.height / 10.5F;
+        // Keep the grid at least large enough to fill the viewport when fully zoomed out (the
+        // default floor), but expand it to encompass any bodies further out (e.g. additional
+        // solar systems) so they are never rendered beyond the edge of the grid.
+        float gridSize = 7000.0F;
+        for (CelestialBody<?, ?> body : this.bodiesToRender) {
+            Vector3f bodyPos = this.getCelestialBodyPosition(body, delta);
+            gridSize = Math.max(gridSize, Math.max(Math.abs(bodyPos.x), Math.abs(bodyPos.y)) + 2.0F * gridScale);
+        }
+        this.drawGrid(graphics, gridSize, gridScale);
         RenderSystem.depthMask(true);
 
         RenderSystem.enableBlend();

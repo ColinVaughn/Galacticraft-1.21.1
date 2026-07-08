@@ -67,6 +67,10 @@ public class GCOrePlacedFeatures {
 
     public static final ResourceKey<PlacedFeature> ORE_LUNAR_SAPPHIRE_MOON = key("ore_lunar_sapphire_moon");
 
+    // Mare-only bonus passes use distinct keys to avoid duplicate feature entries.
+    public static final ResourceKey<PlacedFeature> ORE_TIN_MARE_BONUS = key("ore_tin_mare_bonus");
+    public static final ResourceKey<PlacedFeature> ORE_LUNAR_SAPPHIRE_MARE_BONUS = key("ore_lunar_sapphire_mare_bonus");
+
     // MARS
     public static final ResourceKey<PlacedFeature> ORE_IRON_MARS = key("ore_iron_mars");
     public static final ResourceKey<PlacedFeature> ORE_COPPER_MARS = key("ore_copper_mars");
@@ -116,6 +120,9 @@ public class GCOrePlacedFeatures {
         context.register(ORE_CHEESE_MOON, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.ORE_CHEESE_SMALL_MOON), modifiersWithCount(10, HeightRangePlacement.uniform(VerticalAnchor.absolute(0), VerticalAnchor.absolute(112)))));
         context.register(ORE_CHEESE_LARGE_MOON, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.ORE_CHEESE_LARGE_MOON), modifiersWithCount(5, HeightRangePlacement.uniform(VerticalAnchor.absolute(0), VerticalAnchor.absolute(112)))));
         context.register(ORE_LUNAR_SAPPHIRE_MOON, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.ORE_LUNAR_SAPPHIRE_MOON), modifiersWithCount(18, HeightRangePlacement.triangle(VerticalAnchor.absolute(0), VerticalAnchor.absolute(112)))));
+        // Extra deeper ore pass for basaltic maria.
+        context.register(ORE_TIN_MARE_BONUS, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.ORE_TIN_MOON), modifiersWithCount(8, HeightRangePlacement.triangle(VerticalAnchor.absolute(-16), VerticalAnchor.absolute(56)))));
+        context.register(ORE_LUNAR_SAPPHIRE_MARE_BONUS, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.ORE_LUNAR_SAPPHIRE_MOON), modifiersWithCount(10, HeightRangePlacement.triangle(VerticalAnchor.absolute(0), VerticalAnchor.absolute(112)))));
 
         // MARS
         context.register(ORE_IRON_MARS, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.ORE_IRON_MARS), modifiersWithCount(10, HeightRangePlacement.triangle(VerticalAnchor.bottom(), VerticalAnchor.absolute(112)))));

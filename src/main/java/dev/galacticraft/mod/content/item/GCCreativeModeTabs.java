@@ -133,6 +133,9 @@ public class GCCreativeModeTabs {
                 output.accept(MARS_SURFACE_ROCK);
                 output.accept(MARS_SUB_SURFACE_ROCK);
                 output.accept(MARS_STONE);
+                output.accept(MARS_STONE_STAIRS);
+                output.accept(MARS_STONE_SLAB);
+                output.accept(MARS_STONE_WALL);
                 output.accept(MARS_COBBLESTONE);
                 output.accept(MARS_COBBLESTONE_STAIRS);
                 output.accept(MARS_COBBLESTONE_SLAB);
@@ -142,6 +145,7 @@ public class GCCreativeModeTabs {
                 output.accept(ASTEROID_ROCK);
                 output.accept(ASTEROID_ROCK_1);
                 output.accept(ASTEROID_ROCK_2);
+                output.accept(DENSE_ICE);
 
                 // VENUS NATURAL
                 output.accept(SOFT_VENUS_ROCK);
@@ -150,6 +154,14 @@ public class GCCreativeModeTabs {
                 output.accept(VOLCANIC_ROCK);
                 output.accept(PUMICE);
                 output.accept(VAPOR_SPOUT);
+                output.accept(VOLCANO_VENT);
+
+                // MERCURY NATURAL
+                output.accept(MERCURY_SURFACE_ROCK);
+                output.accept(MERCURY_SUB_SURFACE_ROCK);
+                output.accept(MERCURY_STONE);
+                output.accept(MERCURY_SCARP_ROCK);
+                output.accept(MERCURY_CRYSTAL_CLUSTER);
 
                 // ORES
                 output.accept(SILICON_ORE);
@@ -177,6 +189,7 @@ public class GCCreativeModeTabs {
                 output.accept(ASTEROID_IRON_ORE);
                 output.accept(ASTEROID_ALUMINUM_ORE);
                 output.accept(ILMENITE_ORE);
+                output.accept(ASTEROID_SILICON_ORE);
 
                 output.accept(VENUS_COPPER_ORE);
                 output.accept(VENUS_TIN_ORE);
@@ -286,17 +299,25 @@ public class GCCreativeModeTabs {
                 output.accept(BASIC_SOLAR_PANEL);
                 output.accept(ADVANCED_SOLAR_PANEL);
                 output.accept(ENERGY_STORAGE_MODULE);
+                output.accept(ENERGY_STORAGE_CLUSTER);
                 output.accept(ELECTRIC_FURNACE);
                 output.accept(ELECTRIC_ARC_FURNACE);
                 output.accept(REFINERY);
                 output.accept(FUEL_LOADER);
+                output.accept(CARGO_LOADER);
+                output.accept(CARGO_UNLOADER);
+                output.accept(ASTRO_MINER_BASE);
                 output.accept(OXYGEN_COLLECTOR);
                 output.accept(OXYGEN_SEALER);
                 output.accept(OXYGEN_BUBBLE_DISTRIBUTOR);
+                output.accept(OXYGEN_DETECTOR);
                 output.accept(OXYGEN_DECOMPRESSOR);
                 output.accept(OXYGEN_COMPRESSOR);
                 output.accept(OXYGEN_STORAGE_MODULE);
                 output.accept(FOOD_CANNER);
+                output.accept(FLUID_TANK);
+                output.accept(PAINTER);
+                output.accept(DECONSTRUCTOR);
                 output.accept(AIR_LOCK_FRAME);
                 output.accept(AIR_LOCK_CONTROLLER);
             }).build();
@@ -445,12 +466,41 @@ public class GCCreativeModeTabs {
                 tier1.set(GCDataComponents.ROCKET_DATA, RocketPrefabs.TIER_1);
                 output.accept(tier1);
 
-                var creativeRocket = new ItemStack(ROCKET);
-                creativeRocket.set(GCDataComponents.CREATIVE, true);
-                creativeRocket.set(GCDataComponents.ROCKET_DATA, RocketPrefabs.TIER_1);
-                output.accept(creativeRocket);
+                var tier2 = new ItemStack(ROCKET);
+                tier2.set(GCDataComponents.ROCKET_DATA, RocketPrefabs.TIER_2);
+                output.accept(tier2);
+
+                var tier3 = new ItemStack(ROCKET);
+                tier3.set(GCDataComponents.ROCKET_DATA, RocketPrefabs.TIER_3);
+                output.accept(tier3);
+
+                // CREATIVE ROCKETS (infinite fuel)
+                var creativeTier1 = new ItemStack(ROCKET);
+                creativeTier1.set(GCDataComponents.CREATIVE, true);
+                creativeTier1.set(GCDataComponents.ROCKET_DATA, RocketPrefabs.TIER_1);
+                output.accept(creativeTier1);
+
+                var creativeTier2 = new ItemStack(ROCKET);
+                creativeTier2.set(GCDataComponents.CREATIVE, true);
+                creativeTier2.set(GCDataComponents.ROCKET_DATA, RocketPrefabs.TIER_2);
+                output.accept(creativeTier2);
+
+                var creativeTier3 = new ItemStack(ROCKET);
+                creativeTier3.set(GCDataComponents.CREATIVE, true);
+                creativeTier3.set(GCDataComponents.ROCKET_DATA, RocketPrefabs.TIER_3);
+                output.accept(creativeTier3);
+
+                // ASTRO MINER
+                output.accept(ASTRO_MINER);
+
+                // CARGO ROCKET
+                output.accept(CARGO_ROCKET);
 
                 // SCHEMATICS
+                output.accept(BASIC_ROCKET_CONE_SCHEMATIC);
+                output.accept(BASIC_ROCKET_BODY_SCHEMATIC);
+                output.accept(BASIC_ROCKET_FINS_SCHEMATIC);
+                output.accept(BASIC_ROCKET_ENGINE_SCHEMATIC);
                 output.accept(TIER_2_ROCKET_SCHEMATIC);
                 output.accept(CARGO_ROCKET_SCHEMATIC);
                 output.accept(MOON_BUGGY_SCHEMATIC);

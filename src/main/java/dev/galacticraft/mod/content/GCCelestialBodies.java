@@ -172,18 +172,25 @@ public class GCCelestialBodies {
                 null
         )));
 
-        context.register(MERCURY, DecorativePlanetType.INSTANCE.configure(new DecorativePlanetConfig(
+        context.register(MERCURY, PlanetType.INSTANCE.configure(new PlanetConfig(
                 Component.translatable(Translations.CelestialBody.MERCURY),
                 Component.translatable(Translations.CelestialBody.MERCURY_DESC),
                 Optional.of(SOL),
                 OrbitalCelestialPositionType.INSTANCE.configure(new OrbitalCelestialPositionConfig(0.24096385542168674698795180722892F, 0.5F, 1.45F, true)),
-                IconCelestialDisplayType.INSTANCE.configure(new IconCelestialDisplayConfig(Constant.CelestialBody.MERCURY, 0, 0, 16, 16)),
+                IconCelestialDisplayType.INSTANCE.configure(new IconCelestialDisplayConfig(Constant.CelestialBody.MERCURY, 0, 0, 16, 16, Constant.CelestialOverlay.MERCURY)),
                 DefaultCelestialRingDisplayType.INSTANCE.configure(new DefaultCelestialRingDisplayConfig()),
+                GCDimensions.MERCURY,
+                teleporters.getOrThrow(GCTeleporterTypes.LANDER_CELESTIAL_TELEPORTER),
                 new GasComposition.Builder()
-                        .temperature(23.0)
-                        .pressure(3.0E-15F)
+                        .temperature(167.0)
+                        .pressure(1.0E-14F)
                         .build(),
-                0.166F,
+                0.38F,
+                GCCelestialHandlers.DEFAULT,
+                3, // access tier
+                430, // day temperature
+                -20, // night temperature
+                96000L, // day length
                 null
         )));
 
@@ -202,25 +209,37 @@ public class GCCelestialBodies {
                         .build(),
                 0.91F,
                 GCCelestialHandlers.DEFAULT,
-                1,
+                2,
                 105,
                 -180,
                 720000L, // 30 times longer than earth
                 null
         )));
 
-        context.register(MARS, DecorativePlanetType.INSTANCE.configure(new DecorativePlanetConfig(
+        context.register(MARS, PlanetType.INSTANCE.configure(new PlanetConfig(
                 Component.translatable(Translations.CelestialBody.MARS),
                 Component.translatable(Translations.CelestialBody.MARS_DESC),
                 Optional.of(SOL),
                 OrbitalCelestialPositionType.INSTANCE.configure(new OrbitalCelestialPositionConfig(1.8811610076670317634173055859803F, 1.25F, 0.1667F, true)),
                 IconCelestialDisplayType.INSTANCE.configure(new IconCelestialDisplayConfig(Constant.CelestialBody.MARS, 0, 0, 16, 16, Constant.CelestialOverlay.MARS)),
                 DefaultCelestialRingDisplayType.INSTANCE.configure(new DefaultCelestialRingDisplayConfig()),
+                GCDimensions.MARS,
+                teleporters.getOrThrow(GCTeleporterTypes.LANDER_CELESTIAL_TELEPORTER),
                 new GasComposition.Builder()
-                        .temperature(23.0)
-                        .pressure(3.0E-15F)
+                        .temperature(-63.0)
+                        .pressure(0.006F)
+                        .gas(Gases.CARBON_DIOXIDE_ID, 949000.000)
+                        .gas(Gases.NITROGEN_ID, 26000.000)
+                        .gas(Gases.ARGON_ID, 19000.000)
+                        .gas(Gases.OXYGEN_ID, 1400.000)
+                        .gas(Gases.CARBON_MONOXIDE_ID, 800.000)
                         .build(),
-                0.166F,
+                0.38F,
+                GCCelestialHandlers.DEFAULT,
+                2,
+                20,
+                -73,
+                24600L,
                 null
         )));
 
@@ -239,7 +258,7 @@ public class GCCelestialBodies {
                         .build(),
                 0.1f,
                 GCCelestialHandlers.DEFAULT,
-                2,
+                3,
                 -2,
                 -2,
                 99999999L, // 30 times longer than earth

@@ -42,14 +42,16 @@ public class GCDensityFunctions {
     }
 
     public static final class Venus {
-        // Sloped cheese drives the dramatic volcanic relief (mirrors mars/sloped_cheese).
         public static final ResourceKey<DensityFunction> SLOPED_CHEESE = createKey("venus/sloped_cheese");
-        // Final Density handles overall terrain shape
         public static final ResourceKey<DensityFunction> FINAL_DENSITY = createKey("venus/final_density");
     }
 
+    public static final class Mercury {
+        public static final ResourceKey<DensityFunction> SLOPED_CHEESE = createKey("mercury/sloped_cheese");
+        public static final ResourceKey<DensityFunction> FINAL_DENSITY = createKey("mercury/final_density");
+    }
+
     public static final class Asteroid {
-        // Final Density handles overall terrain shape
         public static final ResourceKey<DensityFunction> FINAL_DENSITY = createKey("asteroid/final_density");
     }
 
@@ -133,13 +135,10 @@ public class GCDensityFunctions {
 //            )
 //        );
 
-        // Dramatic volcanic terrain, mirroring mars/sloped_cheese: the overworld
-        // depth/jaggedness/factor/base-3d chain gives real highlands, basins and ridges
-        // for the multi-noise biome source to differentiate.
+        // Reuse the overworld sloped-cheese chain for Venus terrain.
         DensityFunction venusDepth = getFunction(vanillaRegistry, NoiseRouterData.DEPTH);
         DensityFunction venusFactor = getFunction(vanillaRegistry, NoiseRouterData.FACTOR);
         DensityFunction venusJaggedness = getFunction(vanillaRegistry, NoiseRouterData.JAGGEDNESS);
-        // Overworld base-3d-noise (old_blended_noise) with the vanilla overworld parameters.
         DensityFunction venusBase3d = BlendedNoise.createUnseeded(0.25, 0.375, 80.0, 160.0, 8.0);
         DensityFunction venusJaggedNoise = DensityFunctions.noise(noiseRegistry.getOrThrow(Noises.JAGGED), 1500.0, 0.0);
         DensityFunction venusSlopedCheese = registerAndWrap(context, Venus.SLOPED_CHEESE, DensityFunctions.add(
@@ -153,6 +152,83 @@ public class GCDensityFunctions {
                 venusBase3d.squeeze().clamp(-0.2, 0.2)
         ));
         context.register(Venus.FINAL_DENSITY, DensityFunctions.interpolated(DensityFunctions.blendDensity(venusSlopedCheese)));
+
+        // Mercury uses the same chain with stronger jaggedness for scarps and ridges.
+        DensityFunction mercuryDepth = getFunction(vanillaRegistry, NoiseRouterData.DEPTH);
+        DensityFunction mercuryFactor = getFunction(vanillaRegistry, NoiseRouterData.FACTOR);
+        DensityFunction mercuryJaggedness = getFunction(vanillaRegistry, NoiseRouterData.JAGGEDNESS);
+        DensityFunction mercuryBase3d = BlendedNoise.createUnseeded(0.25, 0.375, 80.0, 160.0, 8.0);
+        DensityFunction mercuryJaggedNoise = DensityFunctions.noise(noiseRegistry.getOrThrow(Noises.JAGGED), 1500.0, 0.0);
+        DensityFunction mercurySlopedCheese = registerAndWrap(context, Mercury.SLOPED_CHEESE, DensityFunctions.add(
+                DensityFunctions.mul(
+                        DensityFunctions.constant(4.0),
+                        DensityFunctions.mul(
+                                DensityFunctions.add(mercuryDepth, DensityFunctions.mul(
+                                        DensityFunctions.mul(mercuryJaggedness, DensityFunctions.constant(1.8)),
+                                        mercuryJaggedNoise.halfNegative()
+                                )),
+                                mercuryFactor
+                        ).quarterNegative()
+                ),
+                mercuryBase3d.squeeze().clamp(-0.22, 0.22)
+        ));
+        // Inline the vanilla noodle cave function so Mercury stays self-contained.
+        DensityFunction mercuryNoodles = DensityFunctions.rangeChoice(
+                DensityFunctions.interpolated(
+                        DensityFunctions.rangeChoice(
+                                y, -25, 45,
+                                DensityFunctions.noise(noiseRegistry.getOrThrow(Noises.NOODLE), 1, 1),
+                                DensityFunctions.constant(-1)
+                        )
+                ),
+                -1000000, 0, DensityFunctions.constant(64),
+                DensityFunctions.add(
+                        DensityFunctions.interpolated(
+                                DensityFunctions.rangeChoice(
+                                        y, -25, 45,
+                                        DensityFunctions.add(
+                                                DensityFunctions.constant(-0.07500000000000001),
+                                                DensityFunctions.mul(
+                                                        DensityFunctions.constant(-0.025),
+                                                        DensityFunctions.noise(noiseRegistry.getOrThrow(Noises.NOODLE_THICKNESS), 1, 1)
+                                                )
+                                        ),
+                                        DensityFunctions.constant(0)
+                                )
+                        ),
+                        DensityFunctions.mul(
+                                DensityFunctions.constant(1.5),
+                                DensityFunctions.max(
+                                        DensityFunctions.interpolated(
+                                                DensityFunctions.rangeChoice(
+                                                        y, -25, 45,
+                                                        DensityFunctions.noise(noiseRegistry.getOrThrow(Noises.NOODLE_RIDGE_A), 2.6666666666666665, 2.6666666666666665),
+                                                        DensityFunctions.zero()
+                                                )
+                                        ).abs(),
+                                        DensityFunctions.interpolated(
+                                                DensityFunctions.rangeChoice(
+                                                        y, -25, 45,
+                                                        DensityFunctions.noise(noiseRegistry.getOrThrow(Noises.NOODLE_RIDGE_B), 2.6666666666666665, 2.6666666666666665),
+                                                        DensityFunctions.zero()
+                                                )
+                                        ).abs()
+                                )
+                        )
+                )
+        );
+        // Carve out the deep interior so the aquifer can form a lava sea below y = -8.
+        DensityFunction mercuryDeepSea = DensityFunctions.mul(
+                DensityFunctions.constant(-8.0),
+                DensityFunctions.min(
+                        DensityFunctions.yClampedGradient(-26, -22, 0.0, 1.0), // solid below -26 (floor/bedrock)
+                        DensityFunctions.yClampedGradient(-12, -6, 1.0, 0.0)   // solid crust above -6
+                )
+        );
+        context.register(Mercury.FINAL_DENSITY, DensityFunctions.min(
+                DensityFunctions.interpolated(DensityFunctions.blendDensity(
+                        DensityFunctions.add(mercurySlopedCheese, mercuryDeepSea))),
+                mercuryNoodles));
 
         context.register(Asteroid.FINAL_DENSITY, DensityFunctions.add(
                 DensityFunctions.yClampedGradient(0, 90, 1, -1),

@@ -35,6 +35,7 @@ import dev.galacticraft.api.universe.celestialbody.landable.Landable;
 import dev.galacticraft.api.universe.celestialbody.satellite.Orbitable;
 import dev.galacticraft.impl.universe.celestialbody.type.SatelliteType;
 import dev.galacticraft.impl.universe.position.config.SatelliteConfig;
+import dev.galacticraft.mod.Galacticraft;
 import dev.galacticraft.mod.client.util.Graphics;
 import dev.galacticraft.mod.network.c2s.PlanetTeleportPayload;
 import dev.galacticraft.mod.network.c2s.SatelliteCreationPayload;
@@ -104,8 +105,12 @@ public class CelestialSelectionScreen extends CelestialScreen {
 
     protected Component grandparentName() {
         CelestialBody<?, ?> body = this.selectedBody;
-        if (body == null || body == this.celestialBodies.get(SOL)) {
-            return Component.translatable(Translations.Galaxy.MILKY_WAY); //fixme
+        if (body == null) {
+            // Nothing selected: default to the home galaxy of the star at the centre of the map.
+            return Component.translatable(Translations.Galaxy.MILKY_WAY);
+        }
+        if (body == this.celestialBodies.get(SOL)) {
+            return body.galaxyValue(this.galaxies, this.celestialBodies).name();
         }
         if (body.parent().isPresent()) {
             if (body.parentValue(this.celestialBodies).parent().isPresent()) {
@@ -119,8 +124,8 @@ public class CelestialSelectionScreen extends CelestialScreen {
     }
 
     protected Component parentName() {
-        if (this.selectedBody == null) return Component.translatable(Translations.CelestialBody.SOL); //fixme
-        if (this.selectedBody == this.celestialBodies.get(SOL))
+        // Nothing selected, or the star itself is selected: show the central star's name.
+        if (this.selectedBody == null || this.selectedBody == this.celestialBodies.get(SOL))
             return Component.translatable(Translations.CelestialBody.SOL);
         if (this.selectedBody.parent().isPresent())
             return this.selectedBody.parentValue(this.celestialBodies).name();
@@ -207,7 +212,8 @@ public class CelestialSelectionScreen extends CelestialScreen {
         if (recipe == null) {
             return false;
         }
-        if (this.mapMode/* || ConfigManagerCore.disableSpaceStationCreation.get()*/ || !this.canCreateStations) //todo SSconfig
+        net.minecraft.resources.ResourceLocation bodyId = this.celestialBodies.getKey(atBody);
+        if (this.mapMode || !this.canCreateStations || bodyId == null || !Galacticraft.CONFIG.isSpaceStationCreationAllowed(bodyId))
         {
             return false;
         }

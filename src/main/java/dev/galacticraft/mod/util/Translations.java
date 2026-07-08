@@ -49,6 +49,7 @@ public interface Translations {
         String LAUNCH_ROCKET = "advancement.galacticraft.launch_rocket";
         String MOON = "advancement.galacticraft.moon";
         String MARS = "advancement.galacticraft.mars";
+        String MERCURY = "advancement.galacticraft.mercury";
         String PARROT_LANDING = "advancement.galacticraft.parrot_landing";
         String EAT_MOON_CHEESE_CURD = "advancement.galacticraft.eat_moon_cheese_curd";
         String CHEESE_AND_CRACKERS = "advancement.galacticraft.cheese_and_crackers";
@@ -59,6 +60,8 @@ public interface Translations {
         String MOON_DUNGEON_KEY = "advancement.galacticraft.moon_dungeon_key";
         String BUGGY_SCHEMATIC = "advancement.galacticraft.buggy_schematic";
         String BUGGY = "advancement.galacticraft.buggy";
+        String TIER_2_SCHEMATIC = "advancement.galacticraft.tier_2_schematic";
+        String TIER_3_SCHEMATIC = "advancement.galacticraft.tier_3_schematic";
     }
 
     interface ItemGroup {

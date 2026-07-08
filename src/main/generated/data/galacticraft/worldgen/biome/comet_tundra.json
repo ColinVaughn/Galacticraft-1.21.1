@@ -7,7 +7,7 @@
   },
   "downfall": 0.0,
   "effects": {
-    "fog_color": 10518688,
+    "fog_color": 1975344,
     "mood_sound": {
       "block_search_extent": 8,
       "offset": 2.0,
@@ -27,9 +27,14 @@
   "features": [
     [],
     [],
+    [
+      "galacticraft:moon_ice_patch"
+    ],
     [],
-    [],
-    [],
+    [
+      "galacticraft:moon_ice_boulder",
+      "galacticraft:moon_boulder_sparse"
+    ],
     [],
     [
       "galacticraft:ore_copper_moon",
@@ -60,13 +65,13 @@
         "type": "galacticraft:evolved_zombie",
         "maxCount": 4,
         "minCount": 4,
-        "weight": 95
+        "weight": 70
       },
       {
         "type": "galacticraft:evolved_skeleton",
         "maxCount": 4,
         "minCount": 4,
-        "weight": 100
+        "weight": 80
       },
       {
         "type": "galacticraft:evolved_creeper",

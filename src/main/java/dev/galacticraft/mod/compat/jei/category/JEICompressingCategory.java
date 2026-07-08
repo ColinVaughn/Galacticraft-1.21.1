@@ -41,6 +41,7 @@ import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
@@ -108,7 +109,7 @@ public class JEICompressingCategory implements IRecipeCategory<CompressingRecipe
 
         builder.addOutputSlot(OUTPUT_X - RECIPE_VIEWER_X, OUTPUT_Y - RECIPE_VIEWER_Y)
                 .setOutputSlotBackground()
-                .addItemStack(recipe.getResultItem(null)); //fixme
+                .addItemStack(recipe.getResultItem(Minecraft.getInstance().level.registryAccess()));
     }
 
     @Override

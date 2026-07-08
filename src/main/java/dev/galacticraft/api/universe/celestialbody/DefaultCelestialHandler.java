@@ -31,11 +31,14 @@ import org.jetbrains.annotations.Nullable;
 public class DefaultCelestialHandler implements CelestialHandler {
     @Override
     public @Nullable Vec3 getParachestSpawnLocation(Level world, Player player, RandomSource rand) {
-        return null;
+        final double x = (rand.nextDouble() * 2 - 1.0D) * 5.0D;
+        final double z = (rand.nextDouble() * 2 - 1.0D) * 5.0D;
+
+        return new Vec3(player.getX() + x, world.getMaxBuildHeight() + 30.0, player.getZ() + z);
     }
 
     @Override
     public boolean useParachute() {
-        return false;
+        return true;
     }
 }

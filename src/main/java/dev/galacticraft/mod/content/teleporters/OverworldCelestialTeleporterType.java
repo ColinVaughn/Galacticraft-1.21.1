@@ -50,8 +50,9 @@ public class OverworldCelestialTeleporterType<Config extends CelestialTeleporter
 
     @Override
     public void onEnterAtmosphere(ServerLevel level, Entity entity, CelestialBody<?, ?> body, CelestialBody<?, ?> fromBody, Config config) {
+        boolean useParachute = false;
         if (entity instanceof ServerPlayer player && body.config() instanceof PlanetConfig planetConfig) {
-            Vec3 chestSpawn = planetConfig.celestialHandler().getParachestSpawnLocation(player.serverLevel(), player, player.getRandom());
+            Vec3 chestSpawn = planetConfig.celestialHandler().getParachestSpawnLocation(level, player, player.getRandom());
             if (chestSpawn != null) {
                 GCServerPlayer gcPlayer = GCServerPlayer.get(player);
                 NonNullList<ItemStack> rocketInv = gcPlayer.getRocketStacks();
@@ -81,7 +82,13 @@ public class OverworldCelestialTeleporterType<Config extends CelestialTeleporter
                     level.addFreshEntity(chest);
                 }
             }
+
+            useParachute = planetConfig.celestialHandler().useParachute();
         }
         entity.teleportTo(level, entity.getX(), level.getMaxBuildHeight() + 20.0, entity.getZ(), NO_RELATIVE_MOVEMENT, entity.getYRot(), entity.getXRot());
+        if (useParachute) {
+            entity.setDeltaMovement(0.0, -0.25, 0.0);
+            entity.fallDistance = 0.0F;
+        }
     }
 }

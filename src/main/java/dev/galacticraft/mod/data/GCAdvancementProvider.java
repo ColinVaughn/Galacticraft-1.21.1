@@ -23,8 +23,10 @@
 package dev.galacticraft.mod.data;
 
 import dev.galacticraft.api.component.GCItemSubPredicates;
+import dev.galacticraft.impl.internal.accessor.AdvancementRewardsAccessor;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.content.GCBlocks;
+import dev.galacticraft.mod.content.GCRocketParts;
 import dev.galacticraft.mod.content.advancements.critereon.*;
 import dev.galacticraft.mod.content.item.GCItems;
 import dev.galacticraft.mod.tag.GCDamageTypeTags;
@@ -49,10 +51,14 @@ import net.minecraft.advancements.critereon.TagPredicate;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ItemLike;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -348,6 +354,12 @@ public class GCAdvancementProvider extends FabricAdvancementProvider {
                         true,
                         false
                 )
+                .rewards(rocketPartRewards(
+                        GCRocketParts.TIER_1_CONE,
+                        GCRocketParts.TIER_1_BODY,
+                        GCRocketParts.TIER_1_FIN,
+                        GCRocketParts.TIER_1_ENGINE
+                ))
                 .addCriterion("craft_rocket_workbench", InventoryChangeTrigger.TriggerInstance.hasItems(GCBlocks.ROCKET_WORKBENCH))
                 .save(consumer, Constant.MOD_ID + "/rocket_workbench");
 
@@ -362,6 +374,10 @@ public class GCAdvancementProvider extends FabricAdvancementProvider {
                         true,
                         false
                 )
+                .rewards(rocketPartRewards(
+                        GCRocketParts.TIER_1_BOOSTER,
+                        GCRocketParts.STORAGE_UPGRADE
+                ))
                 .addCriterion("craft_rocket", InventoryChangeTrigger.TriggerInstance.hasItems(GCItems.ROCKET))
                 .save(consumer, Constant.MOD_ID + "/rocket");
 
@@ -418,10 +434,46 @@ public class GCAdvancementProvider extends FabricAdvancementProvider {
                         true,
                         false
                 )
+                // Landing is now a milestone only; tier-2 part unlocks move to the
+                // Tier 2 schematic advancement (earned from the Moon dungeon boss).
                 .addCriterion("moon_landing", SafeLandingTrigger.TriggerInstance.landed(
                         LocationPredicate.Builder.inDimension(GCDimensions.MOON)
                 ))
                 .save(consumer, Constant.MOD_ID + "/moon");
+
+        AdvancementHolder marsAdvancement = Advancement.Builder.advancement().parent(moonAdvancement)
+                .display(
+                        GCBlocks.MARS_STONE,
+                        title(MARS),
+                        description(MARS),
+                        null,
+                        AdvancementType.CHALLENGE,
+                        true,
+                        true,
+                        false
+                )
+                // Landing is now a milestone only; tier-3 part unlocks move to the
+                // Tier 3 schematic advancement (earned from the Mars dungeon boss).
+                .addCriterion("mars_landing", SafeLandingTrigger.TriggerInstance.landed(
+                        LocationPredicate.Builder.inDimension(GCDimensions.MARS)
+                ))
+                .save(consumer, Constant.MOD_ID + "/mars");
+
+        AdvancementHolder mercuryAdvancement = Advancement.Builder.advancement().parent(marsAdvancement)
+                .display(
+                        GCBlocks.MERCURY_STONE,
+                        title(MERCURY),
+                        description(MERCURY),
+                        null,
+                        AdvancementType.CHALLENGE,
+                        true,
+                        true,
+                        false
+                )
+                .addCriterion("mercury_landing", SafeLandingTrigger.TriggerInstance.landed(
+                        LocationPredicate.Builder.inDimension(GCDimensions.MERCURY)
+                ))
+                .save(consumer, Constant.MOD_ID + "/mercury");
 
         AdvancementHolder parrotLandingAdvancement = Advancement.Builder.advancement().parent(moonAdvancement)
                 .display(
@@ -545,7 +597,7 @@ public class GCAdvancementProvider extends FabricAdvancementProvider {
                         true,
                         false
                 )
-                .addCriterion("moon_dungeon_key", InventoryChangeTrigger.TriggerInstance.hasItems(GCBlocks.BOSS_SPAWNER))
+                .addCriterion("moon_dungeon_key", InventoryChangeTrigger.TriggerInstance.hasItems(Items.TRIAL_KEY))
                 .save(consumer, Constant.MOD_ID + "/moon_dungeon_key");
 
         AdvancementHolder buggySchematicAdvancement = Advancement.Builder.advancement().parent(moonDungeonKeyAdvancement)
@@ -575,6 +627,54 @@ public class GCAdvancementProvider extends FabricAdvancementProvider {
                 )
                 .addCriterion("crafted_buggy", InventoryChangeTrigger.TriggerInstance.hasItems(GCItems.BUGGY))
                 .save(consumer, Constant.MOD_ID + "/buggy");
+
+        // Obtaining the Tier 2 rocket schematic (dropped by the Moon dungeon boss) is what
+        // unlocks the tier-2 rocket parts, so defeating the boss gates travel to Mars/Venus.
+        AdvancementHolder tier2SchematicAdvancement = Advancement.Builder.advancement().parent(moonDungeonKeyAdvancement)
+                .display(
+                        GCItems.TIER_2_ROCKET_SCHEMATIC,
+                        title(TIER_2_SCHEMATIC),
+                        description(TIER_2_SCHEMATIC),
+                        null,
+                        AdvancementType.TASK,
+                        true,
+                        true,
+                        false
+                )
+                .rewards(rocketPartRewards(
+                        GCRocketParts.SLOPED_CONE,
+                        GCRocketParts.ADVANCED_CONE,
+                        GCRocketParts.TIER_2_BOOSTER,
+                        GCRocketParts.EXPLOSIVE_UPGRADE,
+                        GCRocketParts.TIER_2_CONE,
+                        GCRocketParts.TIER_2_BODY,
+                        GCRocketParts.TIER_2_FIN,
+                        GCRocketParts.TIER_2_ENGINE
+                ))
+                .addCriterion("tier_2_rocket_schematic", InventoryChangeTrigger.TriggerInstance.hasItems(GCItems.TIER_2_ROCKET_SCHEMATIC))
+                .save(consumer, Constant.MOD_ID + "/tier_2_rocket_schematic");
+
+        // The Tier 3 rocket schematic (dropped by the Mars dungeon boss) unlocks the tier-3
+        // rocket parts, gating travel to the asteroids and Mercury.
+        AdvancementHolder tier3SchematicAdvancement = Advancement.Builder.advancement().parent(tier2SchematicAdvancement)
+                .display(
+                        GCItems.TIER_3_ROCKET_SCHEMATIC,
+                        title(TIER_3_SCHEMATIC),
+                        description(TIER_3_SCHEMATIC),
+                        null,
+                        AdvancementType.TASK,
+                        true,
+                        true,
+                        false
+                )
+                .rewards(rocketPartRewards(
+                        GCRocketParts.TIER_3_CONE,
+                        GCRocketParts.TIER_3_BODY,
+                        GCRocketParts.TIER_3_FIN,
+                        GCRocketParts.TIER_3_ENGINE
+                ))
+                .addCriterion("tier_3_rocket_schematic", InventoryChangeTrigger.TriggerInstance.hasItems(GCItems.TIER_3_ROCKET_SCHEMATIC))
+                .save(consumer, Constant.MOD_ID + "/tier_3_rocket_schematic");
     }
 
     private static Component title(String translationKey) {
@@ -591,5 +691,15 @@ public class GCAdvancementProvider extends FabricAdvancementProvider {
                         GCItemSubPredicates.FULL_TANK,
                         ItemFullTankPredicate.any()
                 );
+    }
+
+    @SafeVarargs
+    private static AdvancementRewards rocketPartRewards(ResourceKey<?>... parts) {
+        AdvancementRewards rewards = new AdvancementRewards(0, List.of(), List.of(), Optional.empty());
+        ResourceLocation[] ids = Arrays.stream(parts)
+                .map(GCRocketParts::recipeId)
+                .toArray(ResourceLocation[]::new);
+        ((AdvancementRewardsAccessor) (Object) rewards).setRocketPartRecipeRewards(ids);
+        return rewards;
     }
 }

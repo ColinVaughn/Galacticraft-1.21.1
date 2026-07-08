@@ -118,6 +118,8 @@ public class GCBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                 .add(GCBlocks.MOON_BASALT_BRICK);
         this.tag(GCBlockTags.INFINIBURN_MARS)
                 .add(GCBlocks.MARS_COBBLESTONE);
+        this.tag(GCBlockTags.INFINIBURN_MERCURY)
+                .add(GCBlocks.MERCURY_STONE);
         this.tag(GCBlockTags.BASE_STONE_MOON)
                 .add(GCBlocks.MOON_ROCK);
         this.tag(GCBlockTags.MOON_CARVER_REPLACEABLES)
@@ -160,6 +162,15 @@ public class GCBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                 .add(GCBlocks.SCORCHED_VENUS_ROCK)
                 .add(GCBlocks.VOLCANIC_ROCK)
                 .add(GCBlocks.PUMICE)
+                .add(Blocks.BASALT)
+                .add(Blocks.BLACKSTONE)
+                .add(Blocks.MAGMA_BLOCK);
+
+        this.tag(GCBlockTags.MERCURY_CARVER_REPLACEABLES)
+                .add(GCBlocks.MERCURY_STONE)
+                .add(GCBlocks.MERCURY_SURFACE_ROCK)
+                .add(GCBlocks.MERCURY_SUB_SURFACE_ROCK)
+                .add(GCBlocks.MERCURY_SCARP_ROCK)
                 .add(Blocks.BASALT)
                 .add(Blocks.BLACKSTONE)
                 .add(Blocks.MAGMA_BLOCK);
@@ -391,7 +402,11 @@ public class GCBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                 .add(GCBlocks.MARS_SUB_SURFACE_ROCK)
                 .add(GCBlocks.MARS_STONE)
                 .add(GCBlocks.SOFT_VENUS_ROCK)
-                .add(GCBlocks.HARD_VENUS_ROCK);
+                .add(GCBlocks.HARD_VENUS_ROCK)
+                .add(GCBlocks.MERCURY_SURFACE_ROCK)
+                .add(GCBlocks.MERCURY_SUB_SURFACE_ROCK)
+                .add(GCBlocks.MERCURY_STONE)
+                .add(GCBlocks.MERCURY_SCARP_ROCK);
 
         this.tag(GCBlockTags.MOON_COBBLESTONES)
                 .add(GCBlocks.COBBLED_MOON_ROCK);
@@ -431,6 +446,7 @@ public class GCBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                 GCBlocks.FUEL_LOADER,
                 GCBlocks.CARGO_LOADER,
                 GCBlocks.CARGO_UNLOADER,
+                GCBlocks.ASTRO_MINER_BASE,
                 GCBlocks.OXYGEN_COLLECTOR,
                 GCBlocks.OXYGEN_SEALER,
                 GCBlocks.OXYGEN_BUBBLE_DISTRIBUTOR,
@@ -632,6 +648,7 @@ public class GCBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                         GCBlocks.SOLAR_ORE,
 
                         GCBlocks.OLIVINE_CLUSTER,
+                        GCBlocks.MERCURY_CRYSTAL_CLUSTER,
                         GCBlocks.TIN_LADDER,
                         GCBlocks.FUELING_PAD,
                         GCBlocks.ROCKET_LAUNCH_PAD,
@@ -719,7 +736,12 @@ public class GCBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                         GCBlocks.MOON_BASALT_BRICK,
                         GCBlocks.CRACKED_MOON_BASALT_BRICK,
                         GCBlocks.MARS_STONE,
-                        GCBlocks.MARS_COBBLESTONE
+                        GCBlocks.MARS_COBBLESTONE,
+
+                        GCBlocks.MERCURY_SURFACE_ROCK,
+                        GCBlocks.MERCURY_SUB_SURFACE_ROCK,
+                        GCBlocks.MERCURY_STONE,
+                        GCBlocks.MERCURY_SCARP_ROCK
                 );
 
         this.tag(BlockTags.MINEABLE_WITH_AXE)

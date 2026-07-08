@@ -40,6 +40,7 @@ import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -101,7 +102,7 @@ public class JEIElectricCompressingCategory implements IRecipeCategory<Compressi
 
         builder.addOutputSlot(OUTPUT_X_1 - RECIPE_VIEWER_X, OUTPUT_Y_1 - RECIPE_VIEWER_Y)
                 .setOutputSlotBackground()
-                .addItemStack(recipe.getResultItem(null)); //fixme
+                .addItemStack(recipe.getResultItem(Minecraft.getInstance().level.registryAccess()));
         builder.addOutputSlot(OUTPUT_X_2 - RECIPE_VIEWER_X, OUTPUT_Y_2 - RECIPE_VIEWER_Y)
                 .setOutputSlotBackground();
     }

@@ -30,6 +30,8 @@ import net.minecraft.resources.ResourceLocation;
 public class GCDimensionEffects {
     public static final ResourceLocation MOON = Constant.id("moon");
     public static final ResourceLocation VENUS = Constant.id("venus");
+    public static final ResourceLocation MARS = Constant.id("mars");
+    public static final ResourceLocation MERCURY = Constant.id("mercury");
     public static final ResourceLocation ASTEROID = Constant.id("asteroid");
     public static final ResourceLocation SATELLITE = Constant.id("satellite");
 
@@ -43,6 +45,16 @@ public class GCDimensionEffects {
         DimensionRenderingRegistry.registerCloudRenderer(GCDimensions.VENUS, EmptyCloudRenderer.INSTANCE);
         DimensionRenderingRegistry.registerWeatherRenderer(GCDimensions.VENUS, VenusWeatherRenderer.INSTANCE);
         DimensionRenderingRegistry.registerSkyRenderer(GCDimensions.VENUS, VenusSkyRenderer.INSTANCE);
+
+        DimensionRenderingRegistry.registerDimensionEffects(MARS, MarsDimensionEffects.INSTANCE);
+        DimensionRenderingRegistry.registerCloudRenderer(GCDimensions.MARS, EmptyCloudRenderer.INSTANCE);
+        DimensionRenderingRegistry.registerWeatherRenderer(GCDimensions.MARS, EmptyWeatherRenderer.INSTANCE);
+        DimensionRenderingRegistry.registerSkyRenderer(GCDimensions.MARS, MarsSkyRenderer.INSTANCE);
+
+        DimensionRenderingRegistry.registerDimensionEffects(MERCURY, MercuryDimensionEffects.INSTANCE);
+        DimensionRenderingRegistry.registerCloudRenderer(GCDimensions.MERCURY, EmptyCloudRenderer.INSTANCE);
+        DimensionRenderingRegistry.registerWeatherRenderer(GCDimensions.MERCURY, EmptyWeatherRenderer.INSTANCE);
+        DimensionRenderingRegistry.registerSkyRenderer(GCDimensions.MERCURY, MercurySkyRenderer.INSTANCE);
 
         DimensionRenderingRegistry.registerDimensionEffects(ASTEROID, AsteroidDimensionEffects.INSTANCE);
         DimensionRenderingRegistry.registerCloudRenderer(GCDimensions.ASTEROID, EmptyCloudRenderer.INSTANCE);

@@ -56,7 +56,7 @@ public class SealerManager {
     private final Level level;
     private final Map<BlockPos, OxygenSealerBlockEntity> sealers = new HashMap<>();
     private final Set<BlockPos> sealedBlocks = new HashSet<>();
-    private int sealCheckTimer = SEAL_CHECK_TIME;
+    private boolean sealUpdateQueued = false;
 
     public SealerManager(Level level) {
         this.level = level;
@@ -66,7 +66,7 @@ public class SealerManager {
 
     public void tick() {
         // Update sealing status periodically
-        if (this.level.getGameTime() % SEAL_CHECK_TIME == 0) {
+        if (this.sealUpdateQueued || this.level.getGameTime() % SEAL_CHECK_TIME == 0) {
             updateSealedBlocks();
         }
     }
@@ -82,9 +82,8 @@ public class SealerManager {
             return;
         }
 
-        // Reset all sealed blocks from the previous update to not be breathable
-        for (BlockPos pos : sealedBlocks) level.setBreathable(pos, false);
-        sealedBlocks.clear();
+        this.sealUpdateQueued = false;
+        this.clearSealedBlocks();
 
         Set<SpaceToSeal> spacesToSeal = new HashSet<>();
         for (Map.Entry<BlockPos, OxygenSealerBlockEntity> entry : this.sealers.entrySet()) {
@@ -98,13 +97,16 @@ public class SealerManager {
             while (!spaceToSeal.floodFillQueue.isEmpty()) {
                 BlockPos pos = spaceToSeal.floodFillQueue.pollFirst();
                 if (spaceToSeal.blocksToSeal.contains(pos)) continue;
-                // TODO: Better check to account for non-full blocks
                 BlockState blockState = this.level.getBlockState(pos);
-                if (blockState.is(GCBlockTags.SEALABLE)) continue;
-                if (blockState.isCollisionShapeFullBlock(this.level, pos) && !blockState.is(GCBlockTags.UNSEALABLE)) continue;
+                if (this.isFullySealedBlock(blockState, pos)) continue;
 
                 spaceToSeal.blocksToSeal.add(pos);
-                for (Direction direction : Direction.values()) spaceToSeal.floodFillQueue.add(pos.relative(direction));
+                for (Direction direction : Direction.values()) {
+                    BlockPos adjacent = pos.relative(direction);
+                    if (!this.isSealedBetween(pos, blockState, adjacent, this.level.getBlockState(adjacent), direction)) {
+                        spaceToSeal.floodFillQueue.add(adjacent);
+                    }
+                }
 
                 boolean willAlreadySeal = false;
                 for (SpaceToSeal otherSpace : spacesToSeal) {
@@ -137,6 +139,43 @@ public class SealerManager {
                 level.setBreathable(pos, true);
             }
         }
+    }
+
+    public void onBlockChanged(BlockPos pos, BlockState oldState, BlockState newState) {
+        if (this.level.isClientSide || this.level.getDefaultBreathable() || this.sealers.isEmpty()) return;
+        if (oldState.equals(newState)) return;
+
+        this.sealUpdateQueued = true;
+        this.clearSealedBlocks();
+    }
+
+    private void clearSealedBlocks() {
+        for (BlockPos pos : this.sealedBlocks) this.level.setBreathable(pos, false);
+        this.sealedBlocks.clear();
+        for (OxygenSealerBlockEntity sealer : this.sealers.values()) {
+            sealer.setSealed(false);
+        }
+    }
+
+    private boolean isFullySealedBlock(BlockState state, BlockPos pos) {
+        if (state.is(GCBlockTags.UNSEALABLE)) return false;
+        if (state.is(GCBlockTags.SEALABLE)) return true;
+
+        for (Direction direction : Direction.values()) {
+            if (!state.isFaceSturdy(this.level, pos, direction)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean isSealedBetween(BlockPos pos, BlockState state, BlockPos adjacent, BlockState adjacentState, Direction direction) {
+        return this.isSealedFace(state, pos, direction) || this.isSealedFace(adjacentState, adjacent, direction.getOpposite());
+    }
+
+    private boolean isSealedFace(BlockState state, BlockPos pos, Direction direction) {
+        if (state.is(GCBlockTags.UNSEALABLE)) return false;
+        return state.is(GCBlockTags.SEALABLE) || state.isFaceSturdy(this.level, pos, direction);
     }
 
     public void addSealer(OxygenSealerBlockEntity sealer) {

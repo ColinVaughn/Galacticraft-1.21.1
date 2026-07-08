@@ -33,6 +33,8 @@ import dev.galacticraft.mod.content.item.OxygenTankItem;
 import dev.galacticraft.mod.storage.CanisterFluidStorage;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.item.InventoryStorage;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import team.reborn.energy.api.EnergyStorage;
 
@@ -49,14 +51,20 @@ public class GCApiLookupProviders {
             GCBlockEntityTypes.ELECTRIC_ARC_FURNACE,
             GCBlockEntityTypes.REFINERY,
             GCBlockEntityTypes.FUEL_LOADER,
+            GCBlockEntityTypes.CARGO_LOADER,
+            GCBlockEntityTypes.CARGO_UNLOADER,
             GCBlockEntityTypes.OXYGEN_COLLECTOR,
             GCBlockEntityTypes.OXYGEN_COMPRESSOR,
             GCBlockEntityTypes.OXYGEN_DECOMPRESSOR,
             GCBlockEntityTypes.OXYGEN_SEALER,
             GCBlockEntityTypes.OXYGEN_BUBBLE_DISTRIBUTOR,
             GCBlockEntityTypes.ENERGY_STORAGE_MODULE,
+            GCBlockEntityTypes.ENERGY_STORAGE_CLUSTER,
             GCBlockEntityTypes.FOOD_CANNER,
-            GCBlockEntityTypes.OXYGEN_STORAGE_MODULE
+            GCBlockEntityTypes.OXYGEN_STORAGE_MODULE,
+            GCBlockEntityTypes.FLUID_TANK,
+            GCBlockEntityTypes.PAINTER,
+            GCBlockEntityTypes.DECONSTRUCTOR
     };
     @SuppressWarnings("rawtypes")
     private static final BlockEntityType[] WIRE_TYPES = new BlockEntityType[]{
@@ -81,6 +89,10 @@ public class GCApiLookupProviders {
             if (direction == null || !((Wire) blockEntity).canConnect(direction)) return null;
             return ((Wire) blockEntity).getInsertable();
         }, WIRE_TYPES);
+
+        // Astro Miner Base: adjacent cables charge the base; hoppers can pull mined ore from the hold.
+        EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.getEnergyStorage(), GCBlockEntityTypes.ASTRO_MINER_BASE);
+        ItemStorage.SIDED.registerForBlockEntity((be, direction) -> InventoryStorage.of(be.getHold(), direction), GCBlockEntityTypes.ASTRO_MINER_BASE);
 
         FluidStorage.ITEM.registerForItems((itemStack, context) -> {
             long capacity = ((OxygenTankItem) itemStack.getItem()).capacity;

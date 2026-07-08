@@ -26,6 +26,7 @@ import dev.galacticraft.api.gas.GasComposition;
 import dev.galacticraft.api.satellite.SatelliteRecipe;
 import dev.galacticraft.api.universe.celestialbody.CelestialBody;
 import dev.galacticraft.api.universe.celestialbody.CelestialBodyType;
+import dev.galacticraft.api.universe.celestialbody.SurfaceEnvironment;
 import dev.galacticraft.api.universe.celestialbody.Tiered;
 import dev.galacticraft.api.universe.celestialbody.landable.teleporter.CelestialTeleporter;
 import dev.galacticraft.api.universe.celestialbody.satellite.Orbitable;
@@ -126,7 +127,7 @@ public class PlanetType extends CelestialBodyType<PlanetConfig> implements Tiere
 
     @Override
     public int temperature(RegistryAccess access, long time, PlanetConfig config) {
-        return time % config.dayLength() < config.dayLength() / 2 ? config.dayTemperature() : config.nightTemperature(); //todo: temperature providers?
+        return SurfaceEnvironment.gradualTemperature(time, config.dayLength(), config.dayTemperature(), config.nightTemperature());
     }
 
     @Override

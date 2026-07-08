@@ -111,6 +111,18 @@ public interface Config {
 
     float dustStormSolarPenalty();
 
+    boolean solarFlaresEnabled();
+
+    int solarFlareMeanInterval();
+
+    int solarFlareMinDuration();
+
+    int solarFlareMaxDuration();
+
+    float solarFlareIntensity();
+
+    boolean solarFlareDamage();
+
     boolean machineDustEnabled();
 
     boolean terrainDustEnabled();

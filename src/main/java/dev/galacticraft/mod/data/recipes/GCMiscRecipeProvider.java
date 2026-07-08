@@ -417,6 +417,30 @@ public class GCMiscRecipeProvider extends FabricRecipeProvider {
                 .emiDefaultRecipe(true)
                 .save(output);
 
+        GCShapedRecipeBuilder.crafting(RecipeCategory.TRANSPORTATION, GCItems.ASTRO_MINER)
+                .define('P', GCItems.TIER_1_HEAVY_DUTY_PLATE)
+                .define('S', GCItems.COMPRESSED_STEEL)
+                .define('I', GCItems.COMPRESSED_IRON)
+                .define('D', GCItems.DESH_INGOT)
+                .pattern("PSP")
+                .pattern("IDI")
+                .pattern("PSP")
+                .unlockedBy(getHasName(GCItems.TIER_1_HEAVY_DUTY_PLATE), has(GCItems.TIER_1_HEAVY_DUTY_PLATE))
+                .emiDefaultRecipe(true)
+                .save(output);
+
+        GCShapedRecipeBuilder.crafting(RecipeCategory.TRANSPORTATION, GCItems.CARGO_ROCKET)
+                .define('P', GCItems.TIER_1_HEAVY_DUTY_PLATE)
+                .define('C', ConventionalItemTags.WOODEN_CHESTS)
+                .define('F', GCItems.ROCKET_FIN)
+                .define('E', GCItems.ROCKET_ENGINE)
+                .pattern("P P")
+                .pattern("PCP")
+                .pattern("FEF")
+                .unlockedBy(getHasName(GCItems.TIER_1_HEAVY_DUTY_PLATE), has(GCItems.TIER_1_HEAVY_DUTY_PLATE))
+                .emiDefaultRecipe(true)
+                .save(output);
+
         // Food
         cookingRecipes(output, GCItems.GROUND_BEEF, GCItems.BEEF_PATTY, 0.35F, 100, true);
 

@@ -51,6 +51,7 @@ import dev.galacticraft.mod.village.MoonVillagerTypes;
 import dev.galacticraft.mod.world.biome.source.GCMultiNoiseBiomeSourceParameterLists;
 import dev.galacticraft.mod.world.gen.carver.GCCarvers;
 import dev.galacticraft.mod.world.gen.feature.GCOrePlacedFeatures;
+import dev.galacticraft.mod.world.gen.feature.GCFeatures;
 import dev.galacticraft.mod.world.gen.feature.GCPlacedFeatures;
 import dev.galacticraft.mod.world.gen.structure.GCStructureTypes;
 import dev.galacticraft.mod.world.gen.surfacerule.MoonSurfaceRules;
@@ -93,6 +94,7 @@ public class Galacticraft implements ModInitializer {
         GCStructurePieceTypes.register();
         GCStructureTypes.register();
         GCCarvers.register();
+        GCFeatures.register();
         MoonSurfaceRules.register();
         GCMultiNoiseBiomeSourceParameterLists.register();
         GCAccessorySlots.register();

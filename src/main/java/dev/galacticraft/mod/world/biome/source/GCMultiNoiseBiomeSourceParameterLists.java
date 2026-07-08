@@ -86,6 +86,7 @@ public class GCMultiNoiseBiomeSourceParameterLists {
 
     public static final ResourceLocation MOON_PRESET_ID = Constant.id("moon");
     public static final ResourceLocation VENUS_PRESET_ID = Constant.id("venus");
+    public static final ResourceLocation MERCURY_PRESET_ID = Constant.id("mercury");
     public static final ResourceLocation ASTEROID_PRESET_ID = Constant.id("asteroid");
     public static final MultiNoiseBiomeSourceParameterList.Preset MOON_PRESET = new MultiNoiseBiomeSourceParameterList.Preset(
             MOON_PRESET_ID, GCMultiNoiseBiomeSourceParameterLists::generateMoon
@@ -93,60 +94,53 @@ public class GCMultiNoiseBiomeSourceParameterLists {
     public static final MultiNoiseBiomeSourceParameterList.Preset VENUS_PRESET = new MultiNoiseBiomeSourceParameterList.Preset(
             VENUS_PRESET_ID, GCMultiNoiseBiomeSourceParameterLists::generateVenus
     );
+    public static final MultiNoiseBiomeSourceParameterList.Preset MERCURY_PRESET = new MultiNoiseBiomeSourceParameterList.Preset(
+            MERCURY_PRESET_ID, GCMultiNoiseBiomeSourceParameterLists::generateMercury
+    );
     public static final MultiNoiseBiomeSourceParameterList.Preset ASTEROID_PRESET = new MultiNoiseBiomeSourceParameterList.Preset(
             ASTEROID_PRESET_ID, GCMultiNoiseBiomeSourceParameterLists::generateAsteroid
     );
 
     public static final ResourceKey<MultiNoiseBiomeSourceParameterList> MOON = Constant.key(Registries.MULTI_NOISE_BIOME_SOURCE_PARAMETER_LIST, "moon");
     public static final ResourceKey<MultiNoiseBiomeSourceParameterList> VENUS = Constant.key(Registries.MULTI_NOISE_BIOME_SOURCE_PARAMETER_LIST, "venus");
+    public static final ResourceKey<MultiNoiseBiomeSourceParameterList> MERCURY = Constant.key(Registries.MULTI_NOISE_BIOME_SOURCE_PARAMETER_LIST, "mercury");
     public static final ResourceKey<MultiNoiseBiomeSourceParameterList> ASTEROID = Constant.key(Registries.MULTI_NOISE_BIOME_SOURCE_PARAMETER_LIST, "asteroid");
+
+      // Moon placement varies only by continentalness and weirdness.
+    private static final Parameter MOON_C_LOW = Parameter.span(-1.05F, -0.11F); // ocean/coast-equivalent basins
+    private static final Parameter MOON_C_MID = Parameter.span(-0.11F, 0.3F);   // near/mid inland
+    private static final Parameter MOON_C_HIGH = Parameter.span(0.3F, 1.0F);    // far inland uplands
+    private static final Parameter MOON_W_LOW = Parameter.span(-1.0F, 0.0F);    // smoother terrain
+    private static final Parameter MOON_W_HIGH = Parameter.span(0.0F, 1.0F);    // ridged/rugged terrain
 
     @Contract("_ -> new")
     private static <T> Climate.@NotNull ParameterList<T> generateMoon(Function<ResourceKey<Biome>, T> biomeRegistry) {
         ImmutableList.Builder<Pair<Climate.ParameterPoint, T>> builder = ImmutableList.builder();
+          writeMoon(builder::add, MOON_C_LOW, MOON_W_LOW, biomeRegistry.apply(GCBiomes.Moon.BASALTIC_MARE));
+          writeMoon(builder::add, MOON_C_LOW, MOON_W_HIGH, biomeRegistry.apply(GCBiomes.Moon.COMET_TUNDRA));
+          writeMoon(builder::add, MOON_C_MID, MOON_W_LOW, biomeRegistry.apply(GCBiomes.Moon.LUNAR_LOWLANDS));
+          writeMoon(builder::add, MOON_C_MID, MOON_W_HIGH, biomeRegistry.apply(GCBiomes.Moon.RAY_CRATER_FIELD));
+          writeMoon(builder::add, MOON_C_HIGH, MOON_W_LOW, biomeRegistry.apply(GCBiomes.Moon.LUNAR_HIGHLANDS));
+          writeMoon(builder::add, MOON_C_HIGH, MOON_W_HIGH, biomeRegistry.apply(GCBiomes.Moon.OLIVINE_SPIKES));
+          // Reserve the extreme low-continentalness corner for the cheese grove.
         writeBiomeParameters(builder::add,
-                HOT,
-                DRY,
-                Parameter.span(SHORE_CONTINENTALNESS, MID_INLAND_CONTINENTALNESS),
-                MIN_EROSION,
-                WEIRDNESS_H_MIXED,
-                0.0F,
-                biomeRegistry.apply(GCBiomes.Moon.LUNAR_HIGHLANDS));
-        writeBiomeParameters(builder::add,
-                HOT,
-                DRY,
-                Parameter.span(SHORE_CONTINENTALNESS, MID_INLAND_CONTINENTALNESS),
-                MIN_EROSION,
-                WEIRDNESS_L_MIXED,
-                0.0F,
-                biomeRegistry.apply(GCBiomes.Moon.BASALTIC_MARE));
-        writeBiomeParameters(builder::add,
-                HOT,
-                DRY,
-                Parameter.span(SHORE_CONTINENTALNESS, MID_INLAND_CONTINENTALNESS),
-                MIN_EROSION,
-                WEIRDNESS_L_MIXED,
-                0.0F,
-                biomeRegistry.apply(GCBiomes.Moon.COMET_TUNDRA));
-        writeBiomeParameters(builder::add,
-                FULL_RANGE,
-                FULL_RANGE,
-                Climate.Parameter.span(-1.2F, -1.05F),
-                FULL_RANGE,
-                FULL_RANGE,
-                0.0F,
-                biomeRegistry.apply(GCBiomes.Moon.OLIVINE_SPIKES)
-        );
+                FULL_RANGE, FULL_RANGE, Parameter.span(-1.2F, -1.05F), FULL_RANGE, FULL_RANGE,
+                0.0F, biomeRegistry.apply(GCBiomes.Moon.CHEESE_GROVE));
 
         return new Climate.ParameterList<>(builder.build());
+    }
+
+      /** Moon biome placement uses only continentalness and weirdness. */
+    private static <T> void writeMoon(Consumer<Pair<Climate.ParameterPoint, T>> parameters,
+                                      Parameter continentalness, Parameter weirdness, T biome) {
+        writeBiomeParameters(parameters, FULL_RANGE, FULL_RANGE, continentalness, FULL_RANGE, weirdness, 0.0F, biome);
     }
 
     @Contract("_ -> new")
     private static <T> Climate.@NotNull ParameterList<T> generateVenus(Function<ResourceKey<Biome>, T> biomeRegistry) {
         ImmutableList.Builder<Pair<Climate.ParameterPoint, T>> builder = ImmutableList.builder();
-        // All biomes HOT/DRY (hot prevents snow); differentiated by continentalness/erosion/weirdness.
-        // Volcanic plains — the calm default: mid inland, flat, low-mixed weirdness.
-        writeBiomeParameters(builder::add,
+          // Venus stays hot/dry; placement varies by continentalness, erosion, and weirdness.
+          writeBiomeParameters(builder::add,
                 HOT,
                 DRY,
                 Parameter.span(NEAR_INLAND_CONTINENTALNESS, MID_INLAND_CONTINENTALNESS),
@@ -154,8 +148,7 @@ public class GCMultiNoiseBiomeSourceParameterLists {
                 WEIRDNESS_L_MIXED,
                 0.0F,
                 biomeRegistry.apply(GCBiomes.Venus.VENUS_VOLCANIC_PLAINS));
-        // Highland tesserae — far inland, flat erosion (tall rough plateaus), high-mixed weirdness.
-        writeBiomeParameters(builder::add,
+          writeBiomeParameters(builder::add,
                 HOT,
                 DRY,
                 FAR_INLAND_CONTINENTALNESS,
@@ -163,8 +156,7 @@ public class GCMultiNoiseBiomeSourceParameterLists {
                 WEIRDNESS_H_MIXED,
                 0.0F,
                 biomeRegistry.apply(GCBiomes.Venus.VENUS_HIGHLANDS));
-        // Lava channels — river weirdness carves the winding valleys.
-        writeBiomeParameters(builder::add,
+          writeBiomeParameters(builder::add,
                 HOT,
                 DRY,
                 Parameter.span(SHORE_CONTINENTALNESS, MID_INLAND_CONTINENTALNESS),
@@ -172,8 +164,7 @@ public class GCMultiNoiseBiomeSourceParameterLists {
                 WEIRDNESS_RIVER,
                 0.0F,
                 biomeRegistry.apply(GCBiomes.Venus.VENUS_LAVA_CHANNELS));
-        // Shield volcano — far inland, mountainous weirdness (towering peaks).
-        writeBiomeParameters(builder::add,
+          writeBiomeParameters(builder::add,
                 HOT,
                 DRY,
                 FAR_INLAND_CONTINENTALNESS,
@@ -181,8 +172,7 @@ public class GCMultiNoiseBiomeSourceParameterLists {
                 WEIRDNESS_H_MOUNTAINS,
                 0.0F,
                 biomeRegistry.apply(GCBiomes.Venus.VENUS_SHIELD_VOLCANO));
-        // Sulfur flats — shore/near-inland, eroded lowlands, low-plains weirdness.
-        writeBiomeParameters(builder::add,
+          writeBiomeParameters(builder::add,
                 HOT,
                 DRY,
                 Parameter.span(SHORE_CONTINENTALNESS, NEAR_INLAND_CONTINENTALNESS),
@@ -190,8 +180,7 @@ public class GCMultiNoiseBiomeSourceParameterLists {
                 WEIRDNESS_L_PLAINS,
                 0.0F,
                 biomeRegistry.apply(GCBiomes.Venus.VENUS_SULFUR_FLATS));
-        // Lava sea — low shore basins, eroded, low-mountains weirdness (broad depressions).
-        writeBiomeParameters(builder::add,
+          writeBiomeParameters(builder::add,
                 HOT,
                 DRY,
                 SHORE_CONTINENTALNESS,
@@ -199,6 +188,38 @@ public class GCMultiNoiseBiomeSourceParameterLists {
                 WEIRDNESS_L_MOUNTAINS,
                 0.0F,
                 biomeRegistry.apply(GCBiomes.Venus.VENUS_LAVA_SEA));
+
+        return new Climate.ParameterList<>(builder.build());
+    }
+
+    @Contract("_ -> new")
+    private static <T> Climate.@NotNull ParameterList<T> generateMercury(Function<ResourceKey<Biome>, T> biomeRegistry) {
+        ImmutableList.Builder<Pair<Climate.ParameterPoint, T>> builder = ImmutableList.builder();
+          // Mercury stays hot/dry; placement varies by continentalness, erosion, and weirdness.
+          writeBiomeParameters(builder::add,
+                HOT,
+                DRY,
+                Parameter.span(NEAR_INLAND_CONTINENTALNESS, MID_INLAND_CONTINENTALNESS),
+                MIN_EROSION,
+                WEIRDNESS_L_MIXED,
+                0.0F,
+                biomeRegistry.apply(GCBiomes.Mercury.MERCURY_PLAINS));
+          writeBiomeParameters(builder::add,
+                HOT,
+                DRY,
+                FAR_INLAND_CONTINENTALNESS,
+                MIN_EROSION,
+                WEIRDNESS_H_MOUNTAINS,
+                0.0F,
+                biomeRegistry.apply(GCBiomes.Mercury.MERCURY_HIGHLANDS));
+          writeBiomeParameters(builder::add,
+                HOT,
+                DRY,
+                SHORE_CONTINENTALNESS,
+                ERODED,
+                WEIRDNESS_L_MOUNTAINS,
+                0.0F,
+                biomeRegistry.apply(GCBiomes.Mercury.MERCURY_BASIN));
 
         return new Climate.ParameterList<>(builder.build());
     }
@@ -245,6 +266,7 @@ public class GCMultiNoiseBiomeSourceParameterLists {
     public static void register() {
         MultiNoiseBiomeSourceParameterListPresetAccessor.getByName().put(MOON_PRESET_ID, MOON_PRESET);
         MultiNoiseBiomeSourceParameterListPresetAccessor.getByName().put(VENUS_PRESET_ID, VENUS_PRESET);
+        MultiNoiseBiomeSourceParameterListPresetAccessor.getByName().put(MERCURY_PRESET_ID, MERCURY_PRESET);
         MultiNoiseBiomeSourceParameterListPresetAccessor.getByName().put(ASTEROID_PRESET_ID, ASTEROID_PRESET);
     }
 
@@ -252,6 +274,7 @@ public class GCMultiNoiseBiomeSourceParameterLists {
         HolderGetter<Biome> lookup = context.lookup(Registries.BIOME);
         context.register(MOON, new MultiNoiseBiomeSourceParameterList(MOON_PRESET, lookup));
         context.register(VENUS, new MultiNoiseBiomeSourceParameterList(VENUS_PRESET, lookup));
+        context.register(MERCURY, new MultiNoiseBiomeSourceParameterList(MERCURY_PRESET, lookup));
         context.register(ASTEROID, new MultiNoiseBiomeSourceParameterList(ASTEROID_PRESET, lookup));
     }
 }

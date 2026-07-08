@@ -98,6 +98,12 @@ public class ConfigImpl implements Config {
     private float dustStormIntensity = 1.0f;
     private boolean dustStormDamage = true;
     private float dustStormSolarPenalty = 0.9f;
+    private boolean solarFlaresEnabled = true;
+    private int solarFlareMeanInterval = 36000;
+    private int solarFlareMinDuration = 2400;
+    private int solarFlareMaxDuration = 6000;
+    private float solarFlareIntensity = 1.0f;
+    private boolean solarFlareDamage = true;
     private boolean machineDustEnabled = true;
     private boolean terrainDustEnabled = true;
     private double bossHealthMultiplier = 1.0;
@@ -500,6 +506,60 @@ public class ConfigImpl implements Config {
 
     public void setDustStormSolarPenalty(float dustStormSolarPenalty) {
         this.dustStormSolarPenalty = dustStormSolarPenalty;
+    }
+
+    @Override
+    public boolean solarFlaresEnabled() {
+        return this.solarFlaresEnabled;
+    }
+
+    public void setSolarFlaresEnabled(boolean solarFlaresEnabled) {
+        this.solarFlaresEnabled = solarFlaresEnabled;
+    }
+
+    @Override
+    public int solarFlareMeanInterval() {
+        return this.solarFlareMeanInterval;
+    }
+
+    public void setSolarFlareMeanInterval(int solarFlareMeanInterval) {
+        this.solarFlareMeanInterval = solarFlareMeanInterval;
+    }
+
+    @Override
+    public int solarFlareMinDuration() {
+        return this.solarFlareMinDuration;
+    }
+
+    public void setSolarFlareMinDuration(int solarFlareMinDuration) {
+        this.solarFlareMinDuration = solarFlareMinDuration;
+    }
+
+    @Override
+    public int solarFlareMaxDuration() {
+        return this.solarFlareMaxDuration;
+    }
+
+    public void setSolarFlareMaxDuration(int solarFlareMaxDuration) {
+        this.solarFlareMaxDuration = solarFlareMaxDuration;
+    }
+
+    @Override
+    public float solarFlareIntensity() {
+        return this.solarFlareIntensity;
+    }
+
+    public void setSolarFlareIntensity(float solarFlareIntensity) {
+        this.solarFlareIntensity = solarFlareIntensity;
+    }
+
+    @Override
+    public boolean solarFlareDamage() {
+        return this.solarFlareDamage;
+    }
+
+    public void setSolarFlareDamage(boolean solarFlareDamage) {
+        this.solarFlareDamage = solarFlareDamage;
     }
 
     @Override

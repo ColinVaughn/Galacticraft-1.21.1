@@ -29,6 +29,7 @@ import dev.galacticraft.api.universe.celestialbody.satellite.Orbitable;
 import dev.galacticraft.impl.network.c2s.C2SPayload;
 import dev.galacticraft.impl.universe.celestialbody.type.SatelliteType;
 import dev.galacticraft.mod.Constant;
+import dev.galacticraft.mod.Galacticraft;
 import dev.galacticraft.mod.content.advancements.GCTriggers;
 import dev.galacticraft.mod.util.StreamCodecs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -52,6 +53,12 @@ public record SatelliteCreationPayload(ResourceKey<CelestialBody<?, ?>> body) im
     public void handle(ServerPlayNetworking.@NotNull Context context) {
         try {
             Registry<CelestialBody<?, ?>> celestialBodies = context.server().registryAccess().registryOrThrow(AddonRegistries.CELESTIAL_BODY);
+
+            // Server-authoritative gate: reject creation on bodies the config disallows, before any ingredients are consumed.
+            if (!Galacticraft.CONFIG.isSpaceStationCreationAllowed(this.body.location())) {
+                Constant.LOGGER.warn("Rejecting space station creation by {} at disallowed body {}", context.player().getScoreboardName(), this.body.location());
+                return;
+            }
 
             if (!context.player().hasInfiniteMaterials()) {
                 CelestialBody parentBody = celestialBodies.getOrThrow(body);

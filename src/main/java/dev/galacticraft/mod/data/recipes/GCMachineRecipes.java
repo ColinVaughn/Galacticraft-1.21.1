@@ -127,6 +127,17 @@ public class GCMachineRecipes extends FabricRecipeProvider {
                 .emiDefaultRecipe(true)
                 .save(output);
 
+        GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.ASTRO_MINER_BASE)
+                .define('H', GCItems.TIER_2_HEAVY_DUTY_PLATE)
+                .define('D', GCItems.COMPRESSED_DESH)
+                .define('W', GCBlocks.ALUMINUM_WIRE)
+                .pattern("HDH")
+                .pattern("DWD")
+                .pattern("HDH")
+                .unlockedBy(getHasName(GCItems.COMPRESSED_DESH), has(GCItems.COMPRESSED_DESH))
+                .emiDefaultRecipe(true)
+                .save(output);
+
         GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.ELECTRIC_COMPRESSOR)
                 .define('S', GCItems.COMPRESSED_STEEL)
                 .define('A', Items.ANVIL)
@@ -169,6 +180,29 @@ public class GCMachineRecipes extends FabricRecipeProvider {
                 .pattern("BBB")
                 .pattern("SSS")
                 .unlockedBy(getHasName(GCItems.BATTERY), has(GCItems.BATTERY))
+                .emiDefaultRecipe(true)
+                .save(output);
+
+        GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.ENERGY_STORAGE_CLUSTER)
+                .define('S', GCItems.COMPRESSED_STEEL)
+                .define('M', GCBlocks.ENERGY_STORAGE_MODULE)
+                .pattern("SSS")
+                .pattern("MMM")
+                .pattern("SSS")
+                .unlockedBy(getHasName(GCBlocks.ENERGY_STORAGE_MODULE), has(GCBlocks.ENERGY_STORAGE_MODULE))
+                .emiDefaultRecipe(true)
+                .save(output);
+
+        GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.OXYGEN_DETECTOR)
+                .define('S', GCItems.COMPRESSED_STEEL)
+                .define('V', GCItems.OXYGEN_VENT)
+                .define('W', GCItems.BASIC_WAFER)
+                .define('A', GCItems.COMPRESSED_ALUMINUM)
+                .define('R', Items.REDSTONE)
+                .pattern("SSS")
+                .pattern("VWV")
+                .pattern("RAR")
+                .unlockedBy(getHasName(GCItems.BASIC_WAFER), has(GCItems.BASIC_WAFER))
                 .emiDefaultRecipe(true)
                 .save(output);
 
@@ -278,6 +312,60 @@ public class GCMachineRecipes extends FabricRecipeProvider {
                 .pattern("UCU")
                 .pattern("TWT")
                 .unlockedBy(getHasName(GCItems.FUEL_BUCKET), has(GCItems.FUEL_BUCKET))
+                .emiDefaultRecipe(true)
+                .save(output);
+
+        GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.CARGO_LOADER)
+                .define('S', GCItems.COMPRESSED_STEEL)
+                .define('C', Items.CHEST)
+                .define('W', GCItems.BASIC_WAFER)
+                .pattern("SWS")
+                .pattern("SCS")
+                .pattern("SWS")
+                .unlockedBy(getHasName(GCItems.BASIC_WAFER), has(GCItems.BASIC_WAFER))
+                .emiDefaultRecipe(true)
+                .save(output);
+
+        GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.CARGO_UNLOADER)
+                .define('S', GCItems.COMPRESSED_STEEL)
+                .define('C', Items.CHEST)
+                .define('W', GCItems.BASIC_WAFER)
+                .pattern("WSW")
+                .pattern("SCS")
+                .pattern("WSW")
+                .unlockedBy(getHasName(GCItems.BASIC_WAFER), has(GCItems.BASIC_WAFER))
+                .emiDefaultRecipe(true)
+                .save(output);
+
+        GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.FLUID_TANK)
+                .define('S', GCItems.COMPRESSED_STEEL)
+                .define('G', Items.GLASS)
+                .pattern("SGS")
+                .pattern("G G")
+                .pattern("SGS")
+                .unlockedBy(getHasName(GCItems.COMPRESSED_STEEL), has(GCItems.COMPRESSED_STEEL))
+                .emiDefaultRecipe(true)
+                .save(output);
+
+        GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.PAINTER)
+                .define('S', GCItems.COMPRESSED_STEEL)
+                .define('A', GCItems.COMPRESSED_ALUMINUM)
+                .define('W', GCItems.BASIC_WAFER)
+                .pattern("SAS")
+                .pattern("AWA")
+                .pattern("SAS")
+                .unlockedBy(getHasName(GCItems.BASIC_WAFER), has(GCItems.BASIC_WAFER))
+                .emiDefaultRecipe(true)
+                .save(output);
+
+        GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.DECONSTRUCTOR)
+                .define('S', GCItems.COMPRESSED_STEEL)
+                .define('W', GCItems.BASIC_WAFER)
+                .define('P', Items.IRON_PICKAXE)
+                .pattern("SPS")
+                .pattern("SWS")
+                .pattern("SSS")
+                .unlockedBy(getHasName(GCItems.BASIC_WAFER), has(GCItems.BASIC_WAFER))
                 .emiDefaultRecipe(true)
                 .save(output);
 

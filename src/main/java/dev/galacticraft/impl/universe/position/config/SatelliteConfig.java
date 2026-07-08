@@ -33,6 +33,7 @@ import dev.galacticraft.api.universe.display.CelestialDisplay;
 import dev.galacticraft.api.universe.display.ring.CelestialRingDisplay;
 import dev.galacticraft.api.universe.position.CelestialPosition;
 import dev.galacticraft.mod.util.StreamCodecs;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -57,6 +58,10 @@ public class SatelliteConfig implements CelestialBodyConfig {
     private float gravity;
     private int accessWeight;
     private LevelStem options;
+    private BlockPos stationPos;
+
+    /** Default station anchor for private (non-shared) stations, matching legacy fixed placement. */
+    public static final BlockPos DEFAULT_STATION_POS = new BlockPos(0, 60, 0);
 
     public static final Codec<SatelliteConfig> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             ResourceLocation.CODEC.fieldOf("id").forGetter(SatelliteConfig::getId),
@@ -71,7 +76,8 @@ public class SatelliteConfig implements CelestialBodyConfig {
             GasComposition.CODEC.fieldOf("atmosphere").forGetter(SatelliteConfig::getAtmosphere),
             Codec.FLOAT.fieldOf("gravity").forGetter(SatelliteConfig::getGravity),
             Codec.INT.fieldOf("access_weight").forGetter(SatelliteConfig::getAccessWeight),
-            LevelStem.CODEC.fieldOf("options").forGetter(SatelliteConfig::getOptions)
+            LevelStem.CODEC.fieldOf("options").forGetter(SatelliteConfig::getOptions),
+            BlockPos.CODEC.optionalFieldOf("station_pos", DEFAULT_STATION_POS).forGetter(SatelliteConfig::getStationPos)
     ).apply(instance, SatelliteConfig::new));
     public static final StreamCodec<RegistryFriendlyByteBuf, SatelliteConfig> STREAM_CODEC = StreamCodecs.wrapCodec(CODEC);
 
@@ -88,7 +94,8 @@ public class SatelliteConfig implements CelestialBodyConfig {
             GasComposition atmosphere,
             float gravity,
             int accessWeight,
-            LevelStem options) {
+            LevelStem options,
+            BlockPos stationPos) {
         this.id = id;
         this.customName = customName;
         this.parent = parent;
@@ -102,6 +109,7 @@ public class SatelliteConfig implements CelestialBodyConfig {
         this.gravity = gravity;
         this.accessWeight = accessWeight;
         this.options = options;
+        this.stationPos = stationPos;
     }
 
     // Getters
@@ -118,6 +126,7 @@ public class SatelliteConfig implements CelestialBodyConfig {
     public float getGravity() { return gravity; }
     public int getAccessWeight() { return accessWeight; }
     public LevelStem getOptions() { return options; }
+    public BlockPos getStationPos() { return stationPos != null ? stationPos : DEFAULT_STATION_POS; }
 
     // Setters (optional, use as needed)
     public void setId(ResourceLocation id) { this.id = id; }
@@ -133,4 +142,5 @@ public class SatelliteConfig implements CelestialBodyConfig {
     public void setGravity(float gravity) { this.gravity = gravity; }
     public void setAccessWeight(int accessWeight) { this.accessWeight = accessWeight; }
     public void setOptions(LevelStem options) { this.options = options; }
+    public void setStationPos(BlockPos stationPos) { this.stationPos = stationPos; }
 }

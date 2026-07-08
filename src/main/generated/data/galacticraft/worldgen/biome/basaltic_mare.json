@@ -1,14 +1,14 @@
 {
   "carvers": {
     "air": [
-      "galacticraft:moon_mare_cave_carver",
       "galacticraft:moon_crater_carver",
-      "galacticraft:moon_canyon_carver"
+      "galacticraft:moon_canyon_carver",
+      "galacticraft:moon_mare_cave_carver"
     ]
   },
   "downfall": 0.0,
   "effects": {
-    "fog_color": 10518688,
+    "fog_color": 3816000,
     "mood_sound": {
       "block_search_extent": 8,
       "offset": 2.0,
@@ -30,7 +30,9 @@
     [],
     [],
     [],
-    [],
+    [
+      "galacticraft:moon_boulder_sparse"
+    ],
     [],
     [
       "galacticraft:ore_copper_moon",
@@ -40,7 +42,9 @@
       "galacticraft:ore_tin_upper_moon",
       "galacticraft:ore_cheese_moon",
       "galacticraft:ore_cheese_large_moon",
-      "galacticraft:ore_lunar_sapphire_moon"
+      "galacticraft:ore_lunar_sapphire_moon",
+      "galacticraft:ore_tin_mare_bonus",
+      "galacticraft:ore_lunar_sapphire_mare_bonus"
     ]
   ],
   "has_precipitation": false,

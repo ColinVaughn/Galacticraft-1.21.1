@@ -7,10 +7,15 @@
     "galacticraft:basic_solar_panel",
     "galacticraft:advanced_solar_panel",
     "galacticraft:energy_storage_module",
+    "galacticraft:energy_storage_cluster",
+    "galacticraft:oxygen_detector",
     "galacticraft:electric_furnace",
     "galacticraft:electric_arc_furnace",
     "galacticraft:refinery",
     "galacticraft:fuel_loader",
+    "galacticraft:cargo_loader",
+    "galacticraft:cargo_unloader",
+    "galacticraft:astro_miner_base",
     "galacticraft:oxygen_collector",
     "galacticraft:oxygen_sealer",
     "galacticraft:oxygen_bubble_distributor",
@@ -18,6 +23,9 @@
     "galacticraft:oxygen_compressor",
     "galacticraft:oxygen_storage_module",
     "galacticraft:food_canner",
+    "galacticraft:fluid_tank",
+    "galacticraft:painter",
+    "galacticraft:deconstructor",
     "galacticraft:rocket_workbench"
   ]
 }

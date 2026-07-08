@@ -102,6 +102,7 @@
     "galacticraft:galena_ore",
     "galacticraft:solar_ore",
     "galacticraft:olivine_cluster",
+    "galacticraft:mercury_crystal_cluster",
     "galacticraft:tin_ladder",
     "galacticraft:fueling_pad",
     "galacticraft:rocket_launch_pad",
@@ -186,6 +187,10 @@
     "galacticraft:moon_basalt_brick",
     "galacticraft:cracked_moon_basalt_brick",
     "galacticraft:mars_stone",
-    "galacticraft:mars_cobblestone"
+    "galacticraft:mars_cobblestone",
+    "galacticraft:mercury_surface_rock",
+    "galacticraft:mercury_sub_surface_rock",
+    "galacticraft:mercury_stone",
+    "galacticraft:mercury_scarp_rock"
   ]
 }

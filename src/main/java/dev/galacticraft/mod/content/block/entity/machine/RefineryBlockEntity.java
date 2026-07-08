@@ -41,6 +41,7 @@ import dev.galacticraft.mod.Galacticraft;
 import dev.galacticraft.mod.content.GCBlockEntityTypes;
 import dev.galacticraft.mod.content.GCFluids;
 import dev.galacticraft.mod.machine.GCMachineStatuses;
+import dev.galacticraft.mod.tag.GCFluidTags;
 import dev.galacticraft.mod.screen.GCMenuTypes;
 import dev.galacticraft.mod.util.FluidUtil;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
@@ -75,12 +76,12 @@ public class RefineryBlockEntity extends MachineBlockEntity {
                     ItemResourceSlot.builder(TransferType.PROCESSING)
                             .pos(125, 62)
                             .capacity(1)
-                            .filter(ResourceFilters.canExtractFluid(GCFluids.CRUDE_OIL)) // fixme: tag?,
+                            .filter(ResourceFilters.canExtractFluid(GCFluidTags.OIL))
                             .icon(Pair.of(InventoryMenu.BLOCK_ATLAS, Constant.SlotSprite.BUCKET)),
                     ItemResourceSlot.builder(TransferType.PROCESSING)
                             .pos(152, 62)
                             .capacity(1)
-                            .filter(ResourceFilters.canInsertFluid(GCFluids.FUEL)) // fixme: tag?
+                            .filter(ResourceFilters.canInsertFluid(GCFluids.FUEL))
                             .icon(Pair.of(InventoryMenu.BLOCK_ATLAS, Constant.SlotSprite.BUCKET))
             ),
             MachineEnergyStorage.spec(
@@ -92,7 +93,7 @@ public class RefineryBlockEntity extends MachineBlockEntity {
                     FluidResourceSlot.builder(TransferType.INPUT)
                             .pos(125, 8)
                             .capacity(RefineryBlockEntity.MAX_CAPACITY)
-                            .filter(ResourceFilters.ofResource(GCFluids.CRUDE_OIL)),
+                            .filter(ResourceFilters.fluidTag(GCFluidTags.OIL)),
                     FluidResourceSlot.builder(TransferType.OUTPUT)
                             .pos(152, 8)
                             .capacity(RefineryBlockEntity.MAX_CAPACITY)

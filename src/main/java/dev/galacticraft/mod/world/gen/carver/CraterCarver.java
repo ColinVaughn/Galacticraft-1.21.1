@@ -68,7 +68,7 @@ public class CraterCarver extends WorldCarver<CraterCarverConfig> {
 
                 double xDev = Math.abs((chunk.getPos().getBlockX(innerChunkX)) - craterCenter.getX());
                 double zDev = Math.abs((chunk.getPos().getBlockZ(innerChunkZ)) - craterCenter.getZ());
-                if (xDev >= 0 && xDev < 32 && zDev >= 0 && zDev < 32) {
+                if (xDev >= 0 && xDev < 64 && zDev >= 0 && zDev < 64) { // reach cap; must exceed max crater radius
                     if (xDev * xDev + zDev * zDev < radius * radius) { //distance to crater and depth
                         xDev /= radius;
                         zDev /= radius;
@@ -76,6 +76,7 @@ public class CraterCarver extends WorldCarver<CraterCarverConfig> {
                         double yDev = sqrtY * sqrtY * 6;
                         double craterDepth = 5 - yDev;
                         craterDepth *= depthMultiplier;
+                        craterDepth *= config.depthScale; // scale bowl depth (massive craters)
                         if (craterDepth > 0.0) {
                             toDig = craterDepth;
                         }

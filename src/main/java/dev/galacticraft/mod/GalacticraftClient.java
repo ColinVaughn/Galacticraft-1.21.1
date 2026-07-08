@@ -44,6 +44,8 @@ import dev.galacticraft.mod.client.render.entity.feature.PetOxygenMaskRenderLaye
 import dev.galacticraft.mod.client.render.entity.feature.PetOxygenTanksRenderLayer;
 import dev.galacticraft.mod.client.render.entity.model.GCEntityModelLayer;
 import dev.galacticraft.mod.client.render.entity.rocket.RocketEntityRenderer;
+import dev.galacticraft.mod.client.render.item.AstroMinerItemRenderer;
+import dev.galacticraft.mod.client.render.item.CargoRocketItemRenderer;
 import dev.galacticraft.mod.client.render.item.FlagItemRenderer;
 import dev.galacticraft.mod.client.render.item.RocketItemRenderer;
 import dev.galacticraft.mod.client.render.rocket.GalacticraftRocketPartRenderers;
@@ -130,6 +132,7 @@ public class GalacticraftClient implements ClientModInitializer {
         MenuScreens.register(GCMenuTypes.COMPRESSOR, CompressorScreen::new);
         MenuScreens.register(GCMenuTypes.ELECTRIC_COMPRESSOR, ElectricCompressorScreen::new);
         MenuScreens.register(GCMenuTypes.ENERGY_STORAGE_MODULE, EnergyStorageModuleScreen::new);
+        MenuScreens.register(GCMenuTypes.ENERGY_STORAGE_CLUSTER, EnergyStorageClusterScreen::new);
         MenuScreens.register(GCMenuTypes.OXYGEN_COLLECTOR, OxygenCollectorScreen::new);
         MenuScreens.register(GCMenuTypes.OXYGEN_COMPRESSOR, OxygenCompressorScreen::new);
         MenuScreens.register(GCMenuTypes.FOOD_CANNER, FoodCannerScreen::new);
@@ -140,10 +143,17 @@ public class GalacticraftClient implements ClientModInitializer {
         MenuScreens.register(GCMenuTypes.OXYGEN_STORAGE_MODULE, OxygenStorageModuleScreen::new);
         MenuScreens.register(GCMenuTypes.OXYGEN_SEALER, OxygenSealerScreen::new);
         MenuScreens.register(GCMenuTypes.FUEL_LOADER, FuelLoaderScreen::new);
+        MenuScreens.register(GCMenuTypes.CARGO_LOADER, CargoLoaderScreen::new);
+        MenuScreens.register(GCMenuTypes.CARGO_UNLOADER, CargoUnloaderScreen::new);
+        MenuScreens.register(GCMenuTypes.FLUID_TANK, FluidTankScreen::new);
+        MenuScreens.register(GCMenuTypes.PAINTER, PainterScreen::new);
+        MenuScreens.register(GCMenuTypes.DECONSTRUCTOR, DeconstructorScreen::new);
         MenuScreens.register(GCMenuTypes.AIRLOCK_CONTROLLER_MENU, AirlockControllerScreen::new);
         MenuScreens.register(GCMenuTypes.ROCKET_WORKBENCH, RocketWorkbenchScreen::new);
         MenuScreens.register(GCMenuTypes.ROCKET, RocketInventoryScreen::new);
         MenuScreens.register(GCMenuTypes.PARACHEST, ParachestScreen::new);
+        MenuScreens.register(GCMenuTypes.VEHICLE_INVENTORY, VehicleInventoryScreen::new);
+        MenuScreens.register(GCMenuTypes.ASTRO_MINER_BASE, AstroMinerBaseScreen::new);
 
         EntityRendererRegistry.register(GCEntityTypes.MOON_VILLAGER, MoonVillagerRenderer::new);
         EntityRendererRegistry.register(GCEntityTypes.EVOLVED_ZOMBIE, EvolvedZombieEntityRenderer::new);
@@ -166,9 +176,13 @@ public class GalacticraftClient implements ClientModInitializer {
         EntityRendererRegistry.register(GCEntityTypes.ROCKET, RocketEntityRenderer::new);
         EntityRendererRegistry.register(GCEntityTypes.LANDER, LanderEntityRenderer::new);
         EntityRendererRegistry.register(GCEntityTypes.BUGGY, BuggyRenderer::new);
+        EntityRendererRegistry.register(GCEntityTypes.ASTRO_MINER, AstroMinerRenderer::new);
+        EntityRendererRegistry.register(GCEntityTypes.CARGO_ROCKET, CargoRocketRenderer::new);
         EntityRendererRegistry.register(GCEntityTypes.PARACHEST, ParachestRenderer::new);
         EntityRendererRegistry.register(GCEntityTypes.THROWABLE_METEOR_CHUNK, ThrownItemRenderer::new);
         EntityRendererRegistry.register(GCEntityTypes.SKELETON_BOSS, EvolvedSkeletonBossRenderer::new);
+        EntityRendererRegistry.register(GCEntityTypes.CREEPER_BOSS, CreeperBossRenderer::new);
+        EntityRendererRegistry.register(GCEntityTypes.SPIDER_BOSS, SpiderBossRenderer::new);
 
         GCBlockEntityRenderer.register();
         GCClientPacketReceiver.register();
@@ -196,6 +210,7 @@ public class GalacticraftClient implements ClientModInitializer {
         BlockRenderLayerMap.INSTANCE.putBlock(GCBlocks.CAVERNOUS_VINES, RenderType.cutout());
         BlockRenderLayerMap.INSTANCE.putBlock(GCBlocks.CAVERNOUS_VINES_PLANT, RenderType.cutout());
         BlockRenderLayerMap.INSTANCE.putBlock(GCBlocks.OLIVINE_CLUSTER, RenderType.cutout());
+        BlockRenderLayerMap.INSTANCE.putBlock(GCBlocks.MERCURY_CRYSTAL_CLUSTER, RenderType.cutout());
         BlockRenderLayerMap.INSTANCE.putBlock(GCBlocks.MOON_CHEESE_LEAVES, RenderType.cutoutMipped());
         BlockRenderLayerMap.INSTANCE.putBlocks(RenderType.translucent(), GCBlocks.VACUUM_GLASS, GCBlocks.CLEAR_VACUUM_GLASS, GCBlocks.STRONG_VACUUM_GLASS);
         BlockRenderLayerMap.INSTANCE.putBlocks(RenderType.translucent(), GCBlocks.CRYOGENIC_CHAMBER, GCBlocks.CRYOGENIC_CHAMBER_PART, GCBlocks.PLAYER_TRANSPORT_TUBE);
@@ -284,6 +299,8 @@ public class GalacticraftClient implements ClientModInitializer {
         });
 
         BuiltinItemRendererRegistry.INSTANCE.register(GCItems.ROCKET, new RocketItemRenderer());
+        BuiltinItemRendererRegistry.INSTANCE.register(GCItems.ASTRO_MINER, new AstroMinerItemRenderer());
+        BuiltinItemRendererRegistry.INSTANCE.register(GCItems.CARGO_ROCKET, new CargoRocketItemRenderer());
         for (Item flag : GCItems.FLAGS.colorMap().values()) {
             BuiltinItemRendererRegistry.INSTANCE.register(flag, new FlagItemRenderer());
         }
