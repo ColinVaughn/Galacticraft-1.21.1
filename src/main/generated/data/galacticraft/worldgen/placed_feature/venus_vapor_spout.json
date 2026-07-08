@@ -17,6 +17,26 @@
       "heightmap": "WORLD_SURFACE_WG"
     },
     {
+      "type": "minecraft:block_predicate_filter",
+      "predicate": {
+        "type": "minecraft:all_of",
+        "predicates": [
+          {
+            "type": "minecraft:replaceable"
+          },
+          {
+            "type": "minecraft:matching_block_tag",
+            "offset": [
+              0,
+              -1,
+              0
+            ],
+            "tag": "galacticraft:venus_carver_replaceables"
+          }
+        ]
+      }
+    },
+    {
       "type": "minecraft:biome"
     }
   ]

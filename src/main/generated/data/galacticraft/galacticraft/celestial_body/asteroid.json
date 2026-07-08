@@ -2,7 +2,7 @@
   "type": "galacticraft:planet",
   "config": {
     "parent": "galacticraft:sol",
-    "access_weight": 2,
+    "access_weight": 3,
     "atmosphere": {
       "composition": {},
       "pressure": 0.0,

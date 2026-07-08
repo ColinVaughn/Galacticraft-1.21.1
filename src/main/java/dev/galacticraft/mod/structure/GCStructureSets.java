@@ -43,6 +43,19 @@ public class GCStructureSets {
         public static final ResourceKey<StructureSet> PILLAGER_BASE = ResourceKey.create(Registries.STRUCTURE_SET, Constant.id("moon_pillager_bases"));
         public static final ResourceKey<StructureSet> RUINS = ResourceKey.create(Registries.STRUCTURE_SET, Constant.id("moon_ruins"));
         public static final ResourceKey<StructureSet> BOSS = ResourceKey.create(Registries.STRUCTURE_SET, Constant.id("moon_boss"));
+        public static final ResourceKey<StructureSet> VILLAGE = ResourceKey.create(Registries.STRUCTURE_SET, Constant.id("moon_village"));
+    }
+
+    public static final class Mars {
+        public static final ResourceKey<StructureSet> BOSS = ResourceKey.create(Registries.STRUCTURE_SET, Constant.id("mars_boss"));
+    }
+
+    public static final class Venus {
+        public static final ResourceKey<StructureSet> BOSS = ResourceKey.create(Registries.STRUCTURE_SET, Constant.id("venus_boss"));
+    }
+
+    public static final class Asteroid {
+        public static final ResourceKey<StructureSet> DUNGEON = ResourceKey.create(Registries.STRUCTURE_SET, Constant.id("asteroid_dungeon"));
     }
 
     public static void bootstrapRegistries(BootstrapContext<StructureSet> context) {
@@ -53,9 +66,25 @@ public class GCStructureSets {
                 structureLookup.getOrThrow(GCStructures.Moon.BOSS),
                 new RandomSpreadStructurePlacement(32, 8, RandomSpreadType.LINEAR, 52532672)
         ));
+        context.register(Asteroid.DUNGEON, new StructureSet(
+                structureLookup.getOrThrow(GCStructures.Asteroid.DUNGEON),
+                new RandomSpreadStructurePlacement(32, 8, RandomSpreadType.LINEAR, 52532673)
+        ));
+        context.register(Mars.BOSS, new StructureSet(
+                structureLookup.getOrThrow(GCStructures.Mars.BOSS),
+                new RandomSpreadStructurePlacement(32, 8, RandomSpreadType.LINEAR, 52532674)
+        ));
+        context.register(Venus.BOSS, new StructureSet(
+                structureLookup.getOrThrow(GCStructures.Venus.BOSS),
+                new RandomSpreadStructurePlacement(32, 8, RandomSpreadType.LINEAR, 52532675)
+        ));
         context.register(Moon.RUINS, new StructureSet(
                 structureLookup.getOrThrow(GCStructures.Moon.RUINS),
                 new RandomSpreadStructurePlacement(32, 8, RandomSpreadType.LINEAR, 38245864)
+        ));
+        context.register(Moon.VILLAGE, new StructureSet(
+                structureLookup.getOrThrow(GCStructures.Moon.VILLAGE),
+                new RandomSpreadStructurePlacement(34, 8, RandomSpreadType.LINEAR, 10387313)
         ));
         context.register(Moon.PILLAGER_BASE, new StructureSet(structureLookup.getOrThrow(GCStructures.Moon.PILLAGER_BASE), new RandomSpreadStructurePlacement(
                 Vec3i.ZERO,

@@ -43,6 +43,8 @@ public class GCStructurePieceTypes {
     public static final StructurePieceType EMPTY = setPieceId(RoomEmpty::new, "MoonDungeonEmptyRoom");
     public static final StructurePieceType ROOM_SPAWNER = setPieceId(RoomSpawner::new, "MoonDungeonSpawnerRoom");
     public static final StructurePieceType ROOM_BOSS = setGCPieceId(RoomBoss::new, RoomBoss::new, RoomBoss::new, "MoonDungeonBossRoom");
+    public static final StructurePieceType MARS_ROOM_BOSS = setGCPieceId(MarsRoomBoss::new, MarsRoomBoss::new, MarsRoomBoss::new, "MarsDungeonBossRoom");
+    public static final StructurePieceType VENUS_ROOM_BOSS = setGCPieceId(VenusRoomBoss::new, VenusRoomBoss::new, VenusRoomBoss::new, "VenusDungeonBossRoom");
     public static final StructurePieceType ROOM_CHEST = setPieceId(RoomChest::new, "MoonDungeonChestRoom");
     public static final StructurePieceType ROOM_TREASURE = setGCPieceId(RoomTreasure::new, RoomTreasure::new, RoomTreasure::new, "MoonDungeonTreasureRoom");
 

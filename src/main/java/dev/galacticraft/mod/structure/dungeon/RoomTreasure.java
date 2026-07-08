@@ -34,6 +34,8 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.ChestBlock;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
@@ -95,15 +97,10 @@ public class RoomTreasure extends SizedPiece {
                     } else if (x == this.sizeX / 2 && y == 1 && z == this.sizeZ / 2) {
                         BlockPos blockpos = new BlockPos(this.getWorldX(x, z), this.getWorldY(y), this.getWorldZ(x, z));
                         if (chunkBox.isInside(blockpos)) {
-//                            worldIn.setBlock(blockpos, GCBlocks.treasureChestTier1.getDefaultState().withProperty(BlockTier1TreasureChest.FACING, this.getDirection().getOpposite()), Block.UPDATE_CLIENTS);
-//                            TileEntityTreasureChest treasureChest = (TileEntityTreasureChest) worldIn.getTileEntity(blockpos);
-//                            if (treasureChest != null) {
-//                                ResourceLocation chesttype = TABLE_TIER_1_DUNGEON;
-//                                if (worldIn.provider instanceof IGalacticraftWorldProvider) {
-//                                    chesttype = ((IGalacticraftWorldProvider) worldIn.provider).getDungeonChestType();
-//                                }
-//                                treasureChest.setLootTable(chesttype, random.nextLong());
-//                            }
+                            worldIn.setBlock(blockpos, Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, this.getDirection().getOpposite()), 2);
+                            if (worldIn.getBlockEntity(blockpos) instanceof ChestBlockEntity treasureChest) {
+                                treasureChest.setLootTable(MOONCHEST, random.nextLong());
+                            }
                         }
                     } else {
                         this.placeBlock(worldIn, Blocks.AIR.defaultBlockState(), x, y, z, chunkBox);

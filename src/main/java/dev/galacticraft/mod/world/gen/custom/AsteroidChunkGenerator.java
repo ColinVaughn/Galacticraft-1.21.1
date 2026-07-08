@@ -30,10 +30,7 @@ import dev.galacticraft.api.perlin.generator.Billowed;
 import dev.galacticraft.api.perlin.generator.Gradient;
 import dev.galacticraft.api.vector.BlockVec3;
 import dev.galacticraft.mod.content.GCBlocks;
-import dev.galacticraft.mod.world.gen.base.MapGenAbandonedBase;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtIo;
@@ -42,8 +39,10 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelHeightAccessor;
+import net.minecraft.world.level.NaturalSpawner;
 import net.minecraft.world.level.NoiseColumn;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.biome.BiomeManager;
@@ -55,7 +54,6 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.blending.Blender;
 import net.minecraft.world.level.storage.DimensionDataStorage;
@@ -80,6 +78,7 @@ public class AsteroidChunkGenerator extends ChunkGenerator {
     private double solarMultiplier = -1D;
 
     private int largeCount = 0;
+    private final long seed;
     private final Random rand;
     private final NoiseModule asteroidDensity;
     private final NoiseModule asteroidTurbulance;
@@ -95,6 +94,7 @@ public class AsteroidChunkGenerator extends ChunkGenerator {
     private static final int CHUNK_SIZE_X = 16;
     private static final int CHUNK_SIZE_Y = 384;
     private static final int CHUNK_SIZE_Z = 16;
+    private static final int MIN_Y = -64;
 
     private static final int MAX_ASTEROID_RADIUS = 25;
     private static final int MIN_ASTEROID_RADIUS = 5;
@@ -121,23 +121,24 @@ public class AsteroidChunkGenerator extends ChunkGenerator {
     private static final int FADE_BLOCK_CHANCE = 5; //1 / n chance of a block being in the fade zone
 
     private static final int NOISE_OFFSET_SIZE = 256;
+    private static final BlockState AIR = Blocks.AIR.defaultBlockState();
+    private static final BlockState BASE_ASTEROID_STATE = GCBlocks.ASTEROID_ROCK.defaultBlockState();
 
     private static HashSet<BlockVec3> chunksDone = new HashSet<BlockVec3>();
     private int largeAsteroidsLastChunkX;
     private int largeAsteroidsLastChunkZ;
-    private final MapGenAbandonedBase dungeonGenerator = new MapGenAbandonedBase();
 
     public static final MapCodec<AsteroidChunkGenerator> CODEC = RecordCodecBuilder.mapCodec(instance ->
             instance.group(
                     BiomeSource.CODEC.fieldOf("biomeSource").forGetter(generator -> generator.biomeSource),
                     ServerLevel.RESOURCE_KEY_CODEC.fieldOf("dimensionKey").forGetter(generator -> generator.dimensionKey),
-                    Codec.LONG.fieldOf("par2").forGetter(generator -> 1000L)
+                    Codec.LONG.fieldOf("par2").forGetter(generator -> generator.seed)
             ).apply(instance, AsteroidChunkGenerator::new));
-    private final Holder<NoiseGeneratorSettings> settings = null;
 
     public AsteroidChunkGenerator(BiomeSource biomeSource, ResourceKey<Level> dimensionKey, long par2) {
         super(biomeSource);
         this.dimensionKey = dimensionKey;
+        this.seed = par2;
         this.rand = new Random(par2);
 
         this.asteroidDensity = new Billowed(this.rand.nextLong(), 2, 0.25F);
@@ -189,7 +190,7 @@ public class AsteroidChunkGenerator extends ChunkGenerator {
         this.shellHandler.addBlock(new SpecialAsteroidBlock(GCBlocks.DENSE_ICE, 1, 0.15));
     }
 
-    private ChunkAccess generateChunkData(Blender blender, RandomState randomState, StructureManager structureManager, ChunkAccess chunkAccess) {
+    private synchronized ChunkAccess generateChunkData(Blender blender, RandomState randomState, StructureManager structureManager, ChunkAccess chunkAccess) {
         int heightLimit = chunkAccess.getHeight();
         int chunkX = chunkAccess.getPos().x;
         int chunkZ = chunkAccess.getPos().z;
@@ -384,7 +385,7 @@ public class AsteroidChunkGenerator extends ChunkGenerator {
     }
 
     @Override
-    public void applyCarvers(WorldGenRegion region, long seed, RandomState randomState, BiomeManager biomeManager, StructureManager structureManager, ChunkAccess chunkAccess, GenerationStep.Carving carving) {
+    public synchronized void applyCarvers(WorldGenRegion region, long seed, RandomState randomState, BiomeManager biomeManager, StructureManager structureManager, ChunkAccess chunkAccess, GenerationStep.Carving carving) {
         int chunkX = chunkAccess.getPos().x;
         int chunkZ = chunkAccess.getPos().z;
 
@@ -466,7 +467,6 @@ public class AsteroidChunkGenerator extends ChunkGenerator {
 //             }
 //         }
 
-        //this.dungeonGenerator.generateStructure(chunkAccess, this.rand, new ChunkPos(chunkX, chunkZ));
     }
 
     @Override
@@ -476,33 +476,18 @@ public class AsteroidChunkGenerator extends ChunkGenerator {
 
     @Override
     public void spawnOriginalMobs(WorldGenRegion region) {
-
+        ChunkPos chunkPos = region.getCenter();
+        NaturalSpawner.spawnMobsForChunkGeneration(region, region.getBiome(chunkPos.getMiddleBlockPosition(this.getSeaLevel())), chunkPos, region.getRandom());
     }
 
     @Override
     public int getGenDepth() {
-        return 0;
+        return CHUNK_SIZE_Y;
     }
 
     @Override
     public CompletableFuture<ChunkAccess> fillFromNoise(Blender blender, RandomState noiseConfig, StructureManager structureAccessor, ChunkAccess chunk) {
-        CompletableFuture<ChunkAccess> future = new CompletableFuture<>();
-
-        Minecraft.getInstance().submit(() -> {
-            try {
-                // This operation will now run on Minecraft's main thread
-                ChunkAccess result = generateChunkData(blender, noiseConfig, structureAccessor, chunk);
-                future.complete(result);
-            } catch (Exception e) {
-                future.completeExceptionally(e);
-            }
-        });
-
-        return future;
-    }
-
-    public void resetBase() {
-        //this.dungeonGenerator.reset();
+        return CompletableFuture.completedFuture(this.generateChunkData(blender, noiseConfig, structureAccessor, chunk));
     }
 
 
@@ -513,22 +498,110 @@ public class AsteroidChunkGenerator extends ChunkGenerator {
 
     @Override
     public int getMinY() {
-        return 0;
+        return MIN_Y;
     }
 
     @Override
-    public int getBaseHeight(int i, int j, Heightmap.Types types, LevelHeightAccessor levelHeightAccessor, RandomState randomState) {
-        return 0;
+    public int getBaseHeight(int x, int z, Heightmap.Types types, LevelHeightAccessor levelHeightAccessor, RandomState randomState) {
+        BlockState[] column = this.buildBaseColumn(x, z, levelHeightAccessor);
+        int minY = levelHeightAccessor.getMinBuildHeight();
+
+        for (int index = column.length - 1; index >= 0; index--) {
+            if (types.isOpaque().test(column[index])) {
+                return minY + index + 1;
+            }
+        }
+
+        return minY;
     }
 
     @Override
-    public NoiseColumn getBaseColumn(int i, int j, LevelHeightAccessor levelHeightAccessor, RandomState randomState) {
-        return null;
+    public NoiseColumn getBaseColumn(int x, int z, LevelHeightAccessor levelHeightAccessor, RandomState randomState) {
+        return new NoiseColumn(levelHeightAccessor.getMinBuildHeight(), this.buildBaseColumn(x, z, levelHeightAccessor));
     }
 
     @Override
     public void addDebugScreenInfo(List<String> list, RandomState randomState, BlockPos blockPos) {
 
+    }
+
+    private synchronized BlockState[] buildBaseColumn(int blockX, int blockZ, LevelHeightAccessor levelHeightAccessor) {
+        int minY = levelHeightAccessor.getMinBuildHeight();
+        BlockState[] states = new BlockState[levelHeightAccessor.getHeight()];
+        Arrays.fill(states, AIR);
+        this.fillLargeAsteroidColumn(blockX, blockZ, minY, minY + states.length, states);
+        return states;
+    }
+
+    private void fillLargeAsteroidColumn(int blockX, int blockZ, int minY, int maxY, BlockState[] states) {
+        int chunkX = blockX >> 4;
+        int chunkZ = blockZ >> 4;
+        Random random = new Random();
+        int rangeY = AsteroidChunkGenerator.MAX_ASTEROID_Y - AsteroidChunkGenerator.MIN_ASTEROID_Y;
+        int rangeSize = AsteroidChunkGenerator.MAX_ASTEROID_RADIUS - AsteroidChunkGenerator.MIN_ASTEROID_RADIUS;
+
+        for (int i = chunkX - 3; i < chunkX + 3; i++) {
+            int minX = i * 16;
+            int maxX = minX + AsteroidChunkGenerator.CHUNK_SIZE_X;
+            for (int k = chunkZ - 3; k < chunkZ + 3; k++) {
+                int minZ = k * 16;
+                int maxZ = minZ + AsteroidChunkGenerator.CHUNK_SIZE_Z;
+
+                for (int asteroidX = minX; asteroidX < maxX; asteroidX += 2) {
+                    for (int asteroidZ = minZ; asteroidZ < maxZ; asteroidZ += 2) {
+                        if (this.shouldGenerateLargeAsteroid(asteroidX, asteroidZ)) {
+                            random.setSeed(asteroidX + asteroidZ * 3067);
+                            int asteroidY = random.nextInt(rangeY) + AsteroidChunkGenerator.MIN_ASTEROID_Y;
+                            int size = random.nextInt(rangeSize) + AsteroidChunkGenerator.MIN_ASTEROID_RADIUS;
+                            this.fillAsteroidColumn(blockX, blockZ, minY, maxY, states, asteroidX, asteroidY, asteroidZ, size);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private boolean shouldGenerateLargeAsteroid(int x, int z) {
+        return this.randFromPointPos(x, z) < (this.asteroidDensity.getNoise(x, z) + 0.4) / AsteroidChunkGenerator.ASTEROID_CHANCE;
+    }
+
+    private void fillAsteroidColumn(int blockX, int blockZ, int minY, int maxY, BlockState[] states, int asteroidX, int asteroidY, int asteroidZ, int size) {
+        int reach = size + AsteroidChunkGenerator.MAX_ASTEROID_SKEW + 2;
+        if (blockX < asteroidX - reach || blockX >= asteroidX + reach || blockZ < asteroidZ - reach || blockZ >= asteroidZ + reach) {
+            return;
+        }
+
+        int yMin = Math.max(minY, asteroidY - reach);
+        int yMax = Math.min(maxY, asteroidY + reach);
+        if (yMin >= yMax) {
+            return;
+        }
+
+        float noiseOffsetX = this.randFromPoint(asteroidX, asteroidY, asteroidZ) * AsteroidChunkGenerator.NOISE_OFFSET_SIZE;
+        float noiseOffsetY = this.randFromPoint(asteroidX * 7, asteroidY * 11, asteroidZ * 13) * AsteroidChunkGenerator.NOISE_OFFSET_SIZE;
+        float noiseOffsetZ = this.randFromPoint(asteroidX * 17, asteroidY * 23, asteroidZ * 29) * AsteroidChunkGenerator.NOISE_OFFSET_SIZE;
+        this.setOtherAxisFrequency(1.0F / size);
+
+        float sizeY = size + this.asteroidSkewY.getNoise(blockX + noiseOffsetX, blockZ + noiseOffsetZ);
+        sizeY *= sizeY;
+        int distanceX = asteroidX - blockX;
+        int distanceZ = asteroidZ - blockZ;
+
+        for (int y = yMin; y < yMax; y++) {
+            float dSizeX = distanceX / (size + this.asteroidSkewX.getNoise(y + noiseOffsetY, blockZ + noiseOffsetZ));
+            float dSizeZ = distanceZ / (size + this.asteroidSkewZ.getNoise(blockX + noiseOffsetX, y + noiseOffsetY));
+            dSizeX *= dSizeX;
+            dSizeZ *= dSizeZ;
+
+            int distanceY = asteroidY - y;
+            distanceY *= distanceY;
+            float distance = dSizeX + distanceY / sizeY + dSizeZ;
+            distance += this.asteroidTurbulance.getNoise(blockX, y, blockZ);
+
+            if (distance <= 1) {
+                states[y - minY] = BASE_ASTEROID_STATE;
+            }
+        }
     }
 
     private float randFromPointPos(int x, int z) {

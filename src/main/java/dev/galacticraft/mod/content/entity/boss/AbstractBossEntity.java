@@ -24,9 +24,12 @@ package dev.galacticraft.mod.content.entity.boss;
 
 import dev.galacticraft.mod.content.block.entity.DungeonSpawnerBlockEntity;
 import dev.galacticraft.mod.util.Translations;
+import net.minecraft.Util;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityEvent;
@@ -35,9 +38,9 @@ import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
 
 import java.util.List;
-import java.util.Random;
 
 public abstract class AbstractBossEntity extends Monster {
     protected DungeonSpawnerBlockEntity spawner;
@@ -53,7 +56,7 @@ public abstract class AbstractBossEntity extends Monster {
 
     public abstract int getChestTier();
 
-    public abstract ItemStack getGuaranteedLoot(Random rand);
+    public abstract List<ItemStack> getGuaranteedLoot(RandomSource rand);
 
     public abstract void dropKey();
 
@@ -105,62 +108,75 @@ public abstract class AbstractBossEntity extends Monster {
 //                this.world.spawnEntity(new EntityXPOrb(this.world, this.posX, this.posY, this.posZ, j));
 //            }
 //
-//            TileEntityTreasureChest chest = null;
-//
-//            if (this.spawner != null && this.spawner.getChestPos() != null) {
-//                TileEntity chestTest = this.world.getTileEntity(this.spawner.getChestPos());
-//
-//                if (chestTest != null && chestTest instanceof TileEntityTreasureChest) {
-//                    chest = (TileEntityTreasureChest) chestTest;
-//                }
-//            }
-//
-//            if (chest == null) {
-//                // Fallback to finding closest chest
-//                chest = TileEntityTreasureChest.findClosest(this, this.getChestTier());
-//            }
-//
-//            if (chest != null) {
-//                double dist = this.getDistanceSq(chest.getPos().getX() + 0.5, chest.getPos().getY() + 0.5, chest.getPos().getZ() + 0.5);
-//                if (dist < 1000 * 1000) {
-//                    if (!chest.locked) {
-//                        chest.locked = true;
-//                    }
-//
-//                    for (int k = 0; k < chest.getSizeInventory(); k++) {
-//                        chest.setInventorySlotContents(k, ItemStack.EMPTY);
-//                    }
-//
-//                    chest.fillWithLoot(null);
-//
-////                    ChestGenHooks info = ChestGenHooks.getInfo(ChestGenHooks.DUNGEON_CHEST);
-////
-////                    // Generate twice, since it's an extra special chest
-////                    WeightedRandomChestContent.generateChestContents(this.rand, info.getItems(this.rand), chest, info.getCount(this.rand));
-////                    WeightedRandomChestContent.generateChestContents(this.rand, info.getItems(this.rand), chest, info.getCount(this.rand));
-//
-//                    ItemStack schematic = this.getGuaranteedLoot(this.rand);
-//                    int slot = this.rand.nextInt(chest.getSizeInventory());
-//                    chest.setInventorySlotContents(slot, schematic);
-//                }
-//            }
-//
-//            this.dropKey();
+            this.fillRewardChest();
+            this.dropKey();
 
             this.level().broadcastEntityEvent(this, EntityEvent.POOF);
             this.remove(Entity.RemovalReason.KILLED);
 
-//            if (this.spawner != null) {
-//                // Note: spawner.isBossDefeated is true, so it's properly dead
-//                this.spawner.isBossDefeated = true;
-//                this.spawner.boss = null;
-//                this.spawner.spawned = false;
-//
-//                if (!this.world.isRemote) {
-//                    this.spawner.lastKillTime = MinecraftServer.getCurrentTimeMillis();
-//                }
-//            }
+            if (this.spawner != null) {
+                this.spawner.isBossDefeated = true;
+                this.spawner.boss = null;
+                this.spawner.spawned = false;
+                this.spawner.lastKillTime = Util.getMillis();
+                this.spawner.setChanged();
+            }
        }
+    }
+
+    private void fillRewardChest() {
+        List<ItemStack> rewards = this.getGuaranteedLoot(this.random);
+        if (rewards.isEmpty()) {
+            return;
+        }
+
+        ChestBlockEntity chest = this.getRewardChest();
+        if (chest == null) {
+            for (ItemStack reward : rewards) {
+                if (!reward.isEmpty()) {
+                    this.spawnAtLocation(reward, 0.5F);
+                }
+            }
+            return;
+        }
+
+        chest.unpackLootTable(null);
+        boolean changed = false;
+        for (ItemStack reward : rewards) {
+            if (reward.isEmpty()) {
+                continue;
+            }
+            int slot = getRandomEmptySlot(chest, this.random);
+            if (slot >= 0) {
+                chest.setItem(slot, reward);
+                changed = true;
+            } else {
+                this.spawnAtLocation(reward, 0.5F);
+            }
+        }
+        if (changed) {
+            chest.setChanged();
+        }
+    }
+
+    private ChestBlockEntity getRewardChest() {
+        BlockPos chestPos = this.spawner == null ? null : this.spawner.getChestPos();
+        if (chestPos == null || !(this.level().getBlockEntity(chestPos) instanceof ChestBlockEntity chest)) {
+            return null;
+        }
+
+        return this.distanceToSqr(chestPos.getX() + 0.5D, chestPos.getY() + 0.5D, chestPos.getZ() + 0.5D) < 1000.0D * 1000.0D ? chest : null;
+    }
+
+    private static int getRandomEmptySlot(ChestBlockEntity chest, RandomSource random) {
+        int start = random.nextInt(chest.getContainerSize());
+        for (int i = 0; i < chest.getContainerSize(); i++) {
+            int slot = (start + i) % chest.getContainerSize();
+            if (chest.getItem(slot).isEmpty()) {
+                return slot;
+            }
+        }
+        return -1;
     }
 
     @Override

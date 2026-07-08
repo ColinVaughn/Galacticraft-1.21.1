@@ -25,12 +25,14 @@ package dev.galacticraft.mod.structure.dungeon;
 import dev.galacticraft.mod.content.GCBlocks;
 import dev.galacticraft.mod.content.GCEntityTypes;
 import dev.galacticraft.mod.content.block.entity.DungeonSpawnerBlockEntity;
+import dev.galacticraft.mod.content.entity.boss.AbstractBossEntity;
 import dev.galacticraft.mod.structure.GCStructurePieceTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
@@ -39,24 +41,45 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
+import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
 
 public class RoomBoss extends SizedPiece {
     private BlockPos chestPos;
 
     public RoomBoss(CompoundTag tag) {
-        super(GCStructurePieceTypes.ROOM_BOSS, tag);
+        this(GCStructurePieceTypes.ROOM_BOSS, tag);
+    }
+
+    protected RoomBoss(StructurePieceType type, CompoundTag tag) {
+        super(type, tag);
     }
 
     public RoomBoss(DungeonConfiguration configuration, RandomSource rand, int blockPosX, int blockPosZ, Direction entranceDir, int genDepth) {
-        this(configuration, rand, blockPosX, blockPosZ, rand.nextInt(6) + 14, rand.nextInt(2) + 8, rand.nextInt(6) + 14, entranceDir, genDepth);
+        this(GCStructurePieceTypes.ROOM_BOSS, configuration, rand, blockPosX, blockPosZ, entranceDir, genDepth);
+    }
+
+    protected RoomBoss(StructurePieceType type, DungeonConfiguration configuration, RandomSource rand, int blockPosX, int blockPosZ, Direction entranceDir, int genDepth) {
+        this(type, configuration, rand, blockPosX, blockPosZ, rand.nextInt(6) + 14, rand.nextInt(2) + 8, rand.nextInt(6) + 14, entranceDir, genDepth);
     }
 
     public RoomBoss(DungeonConfiguration configuration, RandomSource rand, int blockPosX, int blockPosZ, int sizeX, int sizeY, int sizeZ, Direction entranceDir, int genDepth) {
-        super(GCStructurePieceTypes.ROOM_BOSS, configuration, sizeX, sizeY, sizeZ, entranceDir.getOpposite(), genDepth, new BoundingBox(blockPosX, configuration.getYPosition(), blockPosZ, blockPosX + sizeX, configuration.getYPosition() + sizeY, blockPosZ + sizeZ));
+        this(GCStructurePieceTypes.ROOM_BOSS, configuration, rand, blockPosX, blockPosZ, sizeX, sizeY, sizeZ, entranceDir, genDepth);
+    }
+
+    protected RoomBoss(StructurePieceType type, DungeonConfiguration configuration, RandomSource rand, int blockPosX, int blockPosZ, int sizeX, int sizeY, int sizeZ, Direction entranceDir, int genDepth) {
+        super(type, configuration, sizeX, sizeY, sizeZ, entranceDir.getOpposite(), genDepth, new BoundingBox(blockPosX, configuration.getYPosition(), blockPosZ, blockPosX + sizeX, configuration.getYPosition() + sizeY, blockPosZ + sizeZ));
         this.setOrientation(Direction.SOUTH);
         this.sizeX = sizeX;
         this.sizeZ = sizeZ;
         this.sizeY = sizeY;
+    }
+
+    /**
+     * The boss entity spawned by this room's {@link DungeonSpawnerBlockEntity}.
+     * Overridden by planet-specific subclasses to spawn a different boss.
+     */
+    protected EntityType<? extends AbstractBossEntity> getBossType() {
+        return GCEntityTypes.SKELETON_BOSS;
     }
 
     @Override
@@ -119,7 +142,7 @@ public class RoomBoss extends SizedPiece {
             worldIn.setBlock(blockpos, GCBlocks.BOSS_SPAWNER.defaultBlockState(), Block.UPDATE_CLIENTS);
             DungeonSpawnerBlockEntity spawner = (DungeonSpawnerBlockEntity) worldIn.getBlockEntity(blockpos);
             if (spawner != null) {
-                spawner.setEntityId(GCEntityTypes.SKELETON_BOSS, random);
+                spawner.setEntityId(this.getBossType(), random);
                 spawner.setRoom(new Vec3i(this.boundingBox.minX() + 1, this.boundingBox.minY() + 1, this.boundingBox.minZ() + 1), new Vec3i(this.sizeX - 1, this.sizeY - 1, this.sizeZ - 1));
                 spawner.setChestPos(this.chestPos);
             }

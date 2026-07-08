@@ -40,14 +40,13 @@ import org.joml.Vector3f;
 
 @Environment(EnvType.CLIENT)
 public class MarsDimensionEffects extends GalacticDimensionEffects {
-    // Mars has a thin, dusty reddish atmosphere (unlike the airless Moon, which is pure black).
+    // Thin, dusty atmosphere unlike the airless Moon.
     private static final Vec3 MARS_FOG = new Vec3(0.52D, 0.29D, 0.20D);
     private static final Vec3 MARS_SKY = new Vec3(0.776D, 0.478D, 0.329D);
-    // Inside a storm the whole sky becomes a churning wall of warm dust — near-uniform fog and sky
-    // so it reads as being *inside* a dust cloud rather than a dark orange tint.
+    // Storm fog and sky stay close so the player appears inside the dust cloud.
     private static final Vec3 STORM_FOG = new Vec3(0.60D, 0.43D, 0.30D);
     private static final Vec3 STORM_SKY = new Vec3(0.55D, 0.39D, 0.27D);
-    // Warm rust-tan blowing dust motes.
+    // Blowing dust particle.
     private static final DustParticleOptions DUST = new DustParticleOptions(new Vector3f(0.64F, 0.44F, 0.29F), 1.4F);
 
     public static final MarsDimensionEffects INSTANCE = new MarsDimensionEffects();
@@ -108,7 +107,7 @@ public class MarsDimensionEffects extends GalacticDimensionEffects {
         if (particles == ParticleStatus.MINIMAL) return true;
         if (particles == ParticleStatus.DECREASED) count /= 2;
 
-        // Fast, downwind-streaking dust concentrated close to the camera so it whips past the view.
+        // Keep dust close to the camera so streaks remain visible.
         double wind = 0.7D + intensity * 0.9D;
         for (int i = 0; i < count; i++) {
             double px = cam.x + (random.nextDouble() - 0.5D) * 22.0D;

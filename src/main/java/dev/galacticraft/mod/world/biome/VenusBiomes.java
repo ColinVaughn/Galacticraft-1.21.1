@@ -74,7 +74,6 @@ public class VenusBiomes {
         return generation;
     }
 
-    /** Volcanic plains — scorched-rock flats dipping into lava at the low points, dotted with vapor spouts. The calm default. */
     public static Biome volcanicPlains(HolderGetter<PlacedFeature> featureGetter, HolderGetter<ConfiguredWorldCarver<?>> carverGetter) {
         BiomeGenerationSettings.Builder generation = baseGeneration(featureGetter, carverGetter);
         generation.addFeature(GenerationStep.Decoration.SURFACE_STRUCTURES, GCPlacedFeatures.VENUS_VOLCANIC_BOULDER_SPARSE);
@@ -82,7 +81,6 @@ public class VenusBiomes {
         return venus(generation, 0xC97A3D, 0xE0A050, ParticleTypes.ASH);
     }
 
-    /** Highland tesserae — rough, ridged, cratered highlands (Ishtar/Aphrodite Terra). */
     public static Biome highlands(HolderGetter<PlacedFeature> featureGetter, HolderGetter<ConfiguredWorldCarver<?>> carverGetter) {
         BiomeGenerationSettings.Builder generation = baseGeneration(featureGetter, carverGetter);
         generation.addCarver(GenerationStep.Carving.AIR, GCConfiguredCarvers.VENUS_CRATER_CARVER);
@@ -90,7 +88,6 @@ public class VenusBiomes {
         return venus(generation, 0xA85A38, 0xD08850, ParticleTypes.WHITE_ASH);
     }
 
-    /** Lava channels — winding valleys running with rivers of lava (Baltis Vallis). */
     public static Biome lavaChannels(HolderGetter<PlacedFeature> featureGetter, HolderGetter<ConfiguredWorldCarver<?>> carverGetter) {
         BiomeGenerationSettings.Builder generation = baseGeneration(featureGetter, carverGetter);
         generation.addCarver(GenerationStep.Carving.AIR, GCConfiguredCarvers.VENUS_LAVA_CHANNEL_CARVER);
@@ -98,16 +95,15 @@ public class VenusBiomes {
         return venus(generation, 0xC85028, 0xE87038, ParticleTypes.ASH);
     }
 
-    /** Shield volcano — towering volcanic-rock peaks with pumice mounds and concentrated galena (Maat/Sapas Mons). */
     public static Biome shieldVolcano(HolderGetter<PlacedFeature> featureGetter, HolderGetter<ConfiguredWorldCarver<?>> carverGetter) {
         BiomeGenerationSettings.Builder generation = baseGeneration(featureGetter, carverGetter);
         generation.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, GCOrePlacedFeatures.ORE_GALENA_VENUS_VOLCANIC);
+        generation.addFeature(GenerationStep.Decoration.SURFACE_STRUCTURES, GCPlacedFeatures.VENUS_VOLCANO);
         generation.addFeature(GenerationStep.Decoration.SURFACE_STRUCTURES, GCPlacedFeatures.VENUS_PUMICE_BOULDER);
         generation.addFeature(GenerationStep.Decoration.SURFACE_STRUCTURES, GCPlacedFeatures.VENUS_VOLCANIC_BOULDER);
         return venus(generation, 0x8C3A20, 0xC85830, ParticleTypes.WHITE_ASH);
     }
 
-    /** Sulfur flats — corrosive soft-rock lowlands pooled with sulfuric acid and hissing vapor spouts. */
     public static Biome sulfurFlats(HolderGetter<PlacedFeature> featureGetter, HolderGetter<ConfiguredWorldCarver<?>> carverGetter) {
         BiomeGenerationSettings.Builder generation = baseGeneration(featureGetter, carverGetter);
         generation.addFeature(GenerationStep.Decoration.LAKES, GCPlacedFeatures.SULFURIC_ACID_LAKE);
@@ -115,7 +111,6 @@ public class VenusBiomes {
         return venus(generation, 0xC9C24E, 0xD8D060, null);
     }
 
-    /** Lava sea — vast low basins flooded with connected lava over a magma floor. */
     public static Biome lavaSea(HolderGetter<PlacedFeature> featureGetter, HolderGetter<ConfiguredWorldCarver<?>> carverGetter) {
         BiomeGenerationSettings.Builder generation = baseGeneration(featureGetter, carverGetter);
         generation.addCarver(GenerationStep.Carving.AIR, GCConfiguredCarvers.VENUS_LAVA_CHANNEL_CARVER);

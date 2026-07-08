@@ -27,11 +27,13 @@ import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.Galacticraft;
 import dev.galacticraft.mod.content.GCSounds;
 import dev.galacticraft.mod.content.advancements.GCTriggers;
+import dev.galacticraft.mod.content.item.GCItems;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -54,7 +56,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.Random;
+import java.util.List;
 
 public class SkeletonBoss extends AbstractBossEntity implements RangedAttackMob, IgnoreShift {
 
@@ -309,9 +311,13 @@ public class SkeletonBoss extends AbstractBossEntity implements RangedAttackMob,
     }
 
     @Override
-    public ItemStack getGuaranteedLoot(Random rand) {
-//        List<ItemStack> stackList = GalacticraftRegistry.getDungeonLoot(1);
-        return null;//stackList.get(rand.nextInt(stackList.size())).copy();
+    public List<ItemStack> getGuaranteedLoot(RandomSource rand) {
+        // Moon dungeon boss: grants the Tier 2 rocket schematic (unlocks tier-2 parts)
+        // and the Moon Buggy schematic, matching Legacy's Moon dungeon rewards.
+        return List.of(
+                new ItemStack(GCItems.TIER_2_ROCKET_SCHEMATIC),
+                new ItemStack(GCItems.MOON_BUGGY_SCHEMATIC)
+        );
     }
 
     @Override
@@ -321,7 +327,7 @@ public class SkeletonBoss extends AbstractBossEntity implements RangedAttackMob,
 
     @Override
     public void dropKey() {
-//        this.entityDropItem(new ItemStack(GCItems.key, 1, 0), 0.5F);
+        this.spawnAtLocation(new ItemStack(Items.TRIAL_KEY), 0.5F);
     }
 
     @Override

@@ -28,4 +28,6 @@ import org.jetbrains.annotations.Nullable;
 
 public interface AdvancementRewardsAccessor {
     void setRocketPartRecipeRewards(@NotNull ResourceLocation @Nullable [] recipes);
+
+    @NotNull ResourceLocation @Nullable [] getRocketPartRecipeRewards();
 }

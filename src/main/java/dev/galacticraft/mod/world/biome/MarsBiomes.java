@@ -57,7 +57,6 @@ public class MarsBiomes {
         return generation;
     }
 
-    /** Vastitas Borealis — smooth, dust-covered northern lowlands. The calm default region. */
     public static Biome vastitas(HolderGetter<PlacedFeature> featureGetter, HolderGetter<ConfiguredWorldCarver<?>> carverGetter) {
         BiomeGenerationSettings.Builder generation = baseGeneration(featureGetter, carverGetter);
         generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, GCPlacedFeatures.MARS_HEMATITE_DEPOSIT);
@@ -65,7 +64,6 @@ public class MarsBiomes {
         return mars(generation, 2.0F, 0x8C4E36, 0xC67A54, false);
     }
 
-    /** Noachis highlands — rough, heavily cratered southern highlands. */
     public static Biome highlands(HolderGetter<PlacedFeature> featureGetter, HolderGetter<ConfiguredWorldCarver<?>> carverGetter) {
         BiomeGenerationSettings.Builder generation = baseGeneration(featureGetter, carverGetter);
         generation.addCarver(GenerationStep.Carving.AIR, GCConfiguredCarvers.MARS_CRATER_CARVER);
@@ -73,13 +71,11 @@ public class MarsBiomes {
         return mars(generation, 2.0F, 0x7A4230, 0xB56A48, true);
     }
 
-    /** Bagnold dune sea — rolling fields of fine red sand. */
     public static Biome dunes(HolderGetter<PlacedFeature> featureGetter, HolderGetter<ConfiguredWorldCarver<?>> carverGetter) {
         BiomeGenerationSettings.Builder generation = baseGeneration(featureGetter, carverGetter);
         return mars(generation, 2.0F, 0x9C5A3C, 0xD08A60, true);
     }
 
-    /** Valles Marineris — deep rift canyons cut into the plateaus. */
     public static Biome canyon(HolderGetter<PlacedFeature> featureGetter, HolderGetter<ConfiguredWorldCarver<?>> carverGetter) {
         BiomeGenerationSettings.Builder generation = baseGeneration(featureGetter, carverGetter);
         generation.addCarver(GenerationStep.Carving.AIR, GCConfiguredCarvers.MARS_CANYON_CARVER);
@@ -90,24 +86,21 @@ public class MarsBiomes {
         return mars(generation, 2.0F, 0x6E3B2A, 0xA85E40, false);
     }
 
-    /** Tharsis volcanics — towering dark basalt shield-mountains, rich in desh. */
     public static Biome volcanics(HolderGetter<PlacedFeature> featureGetter, HolderGetter<ConfiguredWorldCarver<?>> carverGetter) {
         BiomeGenerationSettings.Builder generation = baseGeneration(featureGetter, carverGetter);
-        // Concentrated desh in the volcanic highlands (distinct, denser placement from the default pass
-        // to avoid a duplicate feature in the same step, which would create a FeatureSorter cycle).
+        // Use a denser desh pass with a unique key to avoid FeatureSorter cycles.
         generation.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, GCOrePlacedFeatures.ORE_DESH_MARS_VOLCANIC);
         generation.addFeature(GenerationStep.Decoration.SURFACE_STRUCTURES, GCPlacedFeatures.MARS_BOULDER);
         return mars(generation, 2.0F, 0x5A3428, 0x8C4E36, true);
     }
 
-    /** Planum Boreum — polar ice fields, frost, and packed-ice spikes. */
     public static Biome polar(HolderGetter<PlacedFeature> featureGetter, HolderGetter<ConfiguredWorldCarver<?>> carverGetter) {
         BiomeGenerationSettings.Builder generation = baseGeneration(featureGetter, carverGetter);
         generation.addCarver(GenerationStep.Carving.AIR, GCConfiguredCarvers.MARS_CHANNEL_CARVER);
         generation.addFeature(GenerationStep.Decoration.LOCAL_MODIFICATIONS, GCPlacedFeatures.MARS_FROZEN_LAKE);
         generation.addFeature(GenerationStep.Decoration.SURFACE_STRUCTURES, GCPlacedFeatures.MARS_ICE_SPIKE);
         generation.addFeature(GenerationStep.Decoration.SURFACE_STRUCTURES, GCPlacedFeatures.MARS_ICE_BOULDER);
-        // Cold, pale-blue haze. Precipitation stays off (thin atmosphere), so no snow layer forms.
+        // Precipitation stays off, so no snow layer forms.
         return mars(generation, 0.0F, 0xB0A8B8, 0xC8C0D0, false);
     }
 

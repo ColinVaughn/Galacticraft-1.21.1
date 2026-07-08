@@ -6,11 +6,11 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "minecraft:wither_skeleton_skull"
+          "name": "minecraft:creeper_head"
         }
       ],
       "rolls": 1.0
     }
   ],
-  "random_sequence": "galacticraft:entities/evolved_skeleton_boss"
+  "random_sequence": "galacticraft:entities/creeper_boss"
 }
