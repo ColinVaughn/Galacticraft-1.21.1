@@ -2,16 +2,22 @@
   "schemaVersion": 1,
   "id": "galacticraft",
   "version": "$version",
-  "name": "Galacticraft",
+  "name": "Galacticraft - Boobcat Edition",
   "icon": "assets/galacticraft/icon.png",
-  "description": "FabricMC port of Galacticraft, written from the ground up by a new team.",
+  "description": "Galacticraft - Boobcat Edition: a fork by Boobcat, based on Team Galacticraft's 1.21.1 branch. Upstream: FabricMC port of Galacticraft, written from the ground up by a new team.",
   "license": "MIT",
   "contact": {
     "homepage": "https://galacticraft.team/",
-    "sources": "https://github.com/TeamGalacticraft/Galacticraft/",
+    "sources": "https://github.com/ColinVaughn/Galacticraft-1.21.1",
     "issues": "https://github.com/TeamGalacticraft/Galacticraft/issues/"
   },
   "authors": [
+    {
+      "name": "Boobcat",
+      "contact": {
+        "homepage": "https://github.com/ColinVaughn"
+      }
+    },
     {
       "name": "Team Galacticraft",
       "contact": {

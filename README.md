@@ -4,6 +4,18 @@
 [![](https://img.shields.io/discord/775251052517523467.svg?colorB=5865F2&label=discord&style=flat-square&logo=discord&logoColor=azure)][discord]
 [![](https://img.shields.io/twitch/status/galacticraftdev.svg?style=flat-square&logo=twitch&logoColor=azure)][twitch]
 
+# Galacticraft - Boobcat Edition
+
+> **A fork by [Boobcat](https://github.com/ColinVaughn), based on [Team Galacticraft's](https://github.com/TeamGalacticraft/Galacticraft) 1.21.1 branch.**
+>
+> This fork layers extra content and tweaks on top of upstream Galacticraft for Minecraft 1.21.1 — including a landable Mercury dimension, a multi-biome Moon overhaul, Mars dust storms, distinct tier-2/tier-3 rockets, and the autonomous astro miner / cargo rocket.
+>
+> All credit for Galacticraft itself belongs to Team Galacticraft. This fork is unofficial and is not affiliated with or endorsed by them. Fork source: <https://github.com/ColinVaughn/Galacticraft-1.21.1>.
+
+---
+
+*The upstream Galacticraft README follows.*
+
 # Galacticraft 5
 The classic Minecraft space mod, rewritten from the ground up for modern versions of the game.
 

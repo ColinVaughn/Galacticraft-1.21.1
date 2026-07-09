@@ -84,9 +84,9 @@ public class GCTranslationProvider extends TranslationProvider {
         this.generateAdvancementsTranslations();
 
         // Tabs in the creative inventory
-        this.add(ItemGroup.BLOCKS, "Galacticraft Blocks");
-        this.add(ItemGroup.ITEMS, "Galacticraft Items");
-        this.add(ItemGroup.MACHINES, "Galacticraft Machines");
+        this.add(ItemGroup.BLOCKS, "Galacticraft - Boobcat Edition Blocks");
+        this.add(ItemGroup.ITEMS, "Galacticraft - Boobcat Edition Items");
+        this.add(ItemGroup.MACHINES, "Galacticraft - Boobcat Edition Machines");
         this.add(ItemGroup.CANNED_FOOD, "Canned Food");
 
         this.add(RecipeCategory.CIRCUIT_FABRICATOR, "Circuit Fabrication");
@@ -1079,7 +1079,7 @@ public class GCTranslationProvider extends TranslationProvider {
     }
 
     protected void generateConfigTranslations() {
-        this.add(Config.TITLE, "Galacticraft Config");
+        this.add(Config.TITLE, "Galacticraft - Boobcat Edition Config");
         this.add(Config.RESET, "Reset");
 
         this.add(Config.CLIENT, "Client");
@@ -1263,7 +1263,7 @@ public class GCTranslationProvider extends TranslationProvider {
 
         this.add(Ui.AIRLOCK_REDSTONE_SIGNAL, "Opens on Redstone Signal");
         this.add(Ui.AIRLOCK_OWNER, "%s's Airlock Controller");
-        this.add(Ui.ALPHA_WARNING_1, "Galacticraft is currently in ALPHA.");
+        this.add(Ui.ALPHA_WARNING_1, "Galacticraft - Boobcat Edition is currently in ALPHA.");
         this.add(Ui.ALPHA_WARNING_2, "Please report all issues you find.");
         this.add(Ui.ALPHA_WARNING_3, "Press [ESC] or click to continue.");
         this.add(Ui.ALPHA_WARNING_HEADER, "WARNING");
@@ -1302,7 +1302,7 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(Ui.CAPE_BUTTON, "Cape");
         this.add(Ui.CAPES_TITLE, "Capes");
         this.add(Ui.CAPES_STATE + "vanilla", "Vanilla");
-        this.add(Ui.CAPES_STATE + "gc", "Galacticraft");
+        this.add(Ui.CAPES_STATE + "gc", "Galacticraft - Boobcat Edition");
         this.add(Ui.CAPES_STATE + "off", "Off");
 
         this.cape(Cape.EARTH, "Earth");
@@ -1322,7 +1322,7 @@ public class GCTranslationProvider extends TranslationProvider {
     }
 
     protected void generateWailaTranslations() {
-        this.add(Waila.PLUGIN_GALACTICRAFT, "Galacticraft");
+        this.add(Waila.PLUGIN_GALACTICRAFT, "Galacticraft - Boobcat Edition");
         this.add(Waila.SHOW_OXYGEN_LEVEL, "Show Oxygen Tank Levels");
         this.add(Waila.OXYGEN_TANK_LABEL, "O₂ Tank %s");
     }
@@ -1339,7 +1339,7 @@ public class GCTranslationProvider extends TranslationProvider {
     }
 
     protected void generateAdvancementsTranslations() {
-        this.advancement(Advancements.ROOT, "Galacticraft", "Explore the Moon... and beyond!");
+        this.advancement(Advancements.ROOT, "Galacticraft - Boobcat Edition", "Explore the Moon... and beyond!");
         this.advancement(Advancements.COAL_GENERATOR, "Coal Power", "Craft a Coal Generator");
         this.advancement(Advancements.CIRCUIT_FABRICATOR, "Fabricated", "Craft a Circuit Fabricator to make Wafers");
         this.advancement(Advancements.BASIC_WAFER, "Tasty Wafers", "Craft a Basic Wafer (it's Silicon so please don't eat it!)");
