@@ -53,5 +53,5 @@ If you are interested in helping to translate Galacticraft into different langua
 [actions]: https://github.com/TeamGalacticraft/Galacticraft/actions/workflows/build.yml
 [contributing]: https://github.com/TeamGalacticraft/Galacticraft/blob/main/.github/CONTRIBUTING.md
 [translations]: https://github.com/TeamGalacticraft/Galacticraft/blob/main/.github/CONTRIBUTING.md#translations
-[discord]: https://discord.gg/n3QqhMYyFK
+[discord]: https://discord.gg/dPY6zmHtr5
 [twitch]: https://twitch.tv/galacticraftdev
