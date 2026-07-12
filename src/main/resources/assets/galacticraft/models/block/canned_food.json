@@ -1,7 +1,0 @@
-{
-  "parent": "block/block",
-  "textures": {
-    "particle": "galacticraft:item/empty_can"
-  },
-  "elements": []
-}

@@ -1,0 +1,117 @@
+/*
+ * Copyright (c) 2019-2026 Team Galacticraft
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+package dev.galacticraft.mod;
+
+import dev.architectury.platform.Platform;
+import dev.galacticraft.api.component.GCItemSubPredicates;
+import dev.galacticraft.mod.attachments.GCAttachments;
+import dev.galacticraft.mod.api.config.Config;
+import dev.galacticraft.mod.command.GCCommands;
+import dev.galacticraft.mod.config.ConfigImpl;
+import dev.galacticraft.mod.content.*;
+import dev.galacticraft.mod.content.advancements.GCTriggers;
+import dev.galacticraft.mod.content.entity.data.GCEntityDataSerializers;
+import dev.galacticraft.mod.content.item.GCCreativeModeTabs;
+import dev.galacticraft.mod.content.item.GCItems;
+import dev.galacticraft.mod.events.GCCauldronInteraction;
+import dev.galacticraft.mod.events.GCEventHandlers;
+import dev.galacticraft.mod.events.GCExtinguishable;
+import dev.galacticraft.mod.events.GCSulfuricAcidHandlers;
+import dev.galacticraft.mod.lookup.GCApiLookupProviders;
+import dev.galacticraft.mod.machine.GCMachineStatuses;
+import dev.galacticraft.mod.network.GCPackets;
+import dev.galacticraft.mod.network.GCServerPacketReceivers;
+import dev.galacticraft.mod.particle.GCParticleTypes;
+import dev.galacticraft.mod.recipe.GCRecipes;
+import dev.galacticraft.mod.screen.GCMenuTypes;
+import dev.galacticraft.mod.structure.GCStructurePieceTypes;
+import dev.galacticraft.mod.tag.*;
+import dev.galacticraft.mod.village.GCVillagerProfessions;
+import dev.galacticraft.mod.village.MoonVillagerTypes;
+import dev.galacticraft.mod.world.biome.source.GCMultiNoiseBiomeSourceParameterLists;
+import dev.galacticraft.mod.world.gen.carver.GCCarvers;
+import dev.galacticraft.mod.world.gen.feature.GCOrePlacedFeatures;
+import dev.galacticraft.mod.world.gen.feature.GCFeatures;
+import dev.galacticraft.mod.world.gen.feature.GCPlacedFeatures;
+import dev.galacticraft.mod.world.gen.structure.GCStructureTypes;
+import dev.galacticraft.mod.world.gen.surfacerule.MoonSurfaceRules;
+import dev.galacticraft.mod.world.poi.GCPointOfInterestTypes;
+
+public class Galacticraft {
+    public static final Config CONFIG = new ConfigImpl(Platform.getConfigFolder().resolve("galacticraft.json").toFile());
+
+    public void onInitialize() {
+        long startInitTime = System.currentTimeMillis();
+        Constant.LOGGER.info("Starting initialization.");
+        GCChunkGenerator.register();
+        GCBiomeTags.register();
+        GCBlockTags.register();
+        GCDamageTypeTags.register();
+        GCDimensionTypeTags.register();
+        GCEntityTypeTags.register();
+        GCFluidTags.register();
+        GCItemTags.register();
+        GCStructureTags.register();
+        GCFluids.register();
+        GCBlocks.register();
+        GCFluids.registerFluidVariantAttributes(); // Must be called after GCBlocks.register() so that grates can work
+        GCItems.register();
+        GCItemSubPredicates.init();
+        GCTriggers.register();
+        GCCreativeModeTabs.register();
+        GCApiLookupProviders.register();
+        GCRecipes.register();
+        GCEntityDataSerializers.register();
+        GCEntityTypes.register();
+        GCAttachments.init();
+        GCOrePlacedFeatures.register();
+        GCPlacedFeatures.register();
+        GCStructurePieceTypes.register();
+        GCStructureTypes.register();
+        GCCarvers.register();
+        GCFeatures.register();
+        MoonSurfaceRules.register();
+        GCMultiNoiseBiomeSourceParameterLists.register();
+        GCAccessorySlots.register();
+        GCMenuTypes.register();
+        GCParticleTypes.register();
+        GCCommands.register();
+        GCLightSources.register();
+        GCPackets.register();
+        GCServerPacketReceivers.register();
+        GCSounds.register();
+        GCPointOfInterestTypes.register();
+        MoonVillagerTypes.register();
+        GCVillagerProfessions.register();
+        GCMachineStatuses.register();
+        GCSolarPanelStates.register();
+        GCTeleporterTypes.register();
+        GCStats.register();
+        GCCelestialHandlers.register();
+        GCEventHandlers.init();
+        GCCauldronInteraction.init();
+        GCExtinguishable.register();
+        GCSulfuricAcidHandlers.register();
+        Constant.LOGGER.info("Initialization complete. (Took {}ms).", System.currentTimeMillis() - startInitTime);
+    }
+}

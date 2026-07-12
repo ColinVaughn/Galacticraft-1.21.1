@@ -1,0 +1,93 @@
+/*
+ * Copyright (c) 2019-2026 Team Galacticraft
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+package dev.galacticraft.mod.data.tag;
+
+import dev.galacticraft.mod.tag.GCBiomeTags;
+import dev.galacticraft.mod.world.biome.GCBiomes;
+import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.level.biome.Biome;
+
+import java.util.concurrent.CompletableFuture;
+
+public class GCBiomeTagProvider extends FabricTagProvider<Biome> {
+    public GCBiomeTagProvider(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> future) {
+        super(output, Registries.BIOME, future);
+    }
+
+    @Override
+    protected void addTags(HolderLookup.Provider arg) {
+        this.tag(GCBiomeTags.MOON)
+                .add(GCBiomes.Moon.COMET_TUNDRA)
+                .add(GCBiomes.Moon.BASALTIC_MARE)
+                .add(GCBiomes.Moon.LUNAR_HIGHLANDS)
+                .add(GCBiomes.Moon.LUNAR_LOWLANDS)
+                .add(GCBiomes.Moon.OLIVINE_SPIKES)
+                .add(GCBiomes.Moon.RAY_CRATER_FIELD)
+                .add(GCBiomes.Moon.CHEESE_GROVE);
+
+        this.tag(GCBiomeTags.VENUS)
+                .add(GCBiomes.Venus.VENUS_VOLCANIC_PLAINS)
+                .add(GCBiomes.Venus.VENUS_HIGHLANDS)
+                .add(GCBiomes.Venus.VENUS_LAVA_CHANNELS)
+                .add(GCBiomes.Venus.VENUS_SHIELD_VOLCANO)
+                .add(GCBiomes.Venus.VENUS_SULFUR_FLATS)
+                .add(GCBiomes.Venus.VENUS_LAVA_SEA);
+
+        this.tag(GCBiomeTags.MARS)
+                .add(GCBiomes.Mars.MARS)
+                .add(GCBiomes.Mars.MARS_HIGHLANDS)
+                .add(GCBiomes.Mars.MARS_DUNES)
+                .add(GCBiomes.Mars.MARS_CANYON)
+                .add(GCBiomes.Mars.MARS_VOLCANICS)
+                .add(GCBiomes.Mars.MARS_POLAR);
+
+        this.tag(GCBiomeTags.MERCURY)
+                .add(GCBiomes.Mercury.MERCURY_PLAINS)
+                .add(GCBiomes.Mercury.MERCURY_HIGHLANDS)
+                .add(GCBiomes.Mercury.MERCURY_BASIN);
+
+        this.tag(GCBiomeTags.ASTEROID)
+                .add(GCBiomes.Asteroid.ASTEROID_FIELD)
+                .add(GCBiomes.Asteroid.CARBONACEOUS_FIELD)
+                .add(GCBiomes.Asteroid.METALLIC_BELT)
+                .add(GCBiomes.Asteroid.FROZEN_CLUSTER);
+
+        this.tag(GCBiomeTags.MOON_PILLAGER_BASE_HAS_STRUCTURE)
+                .add(GCBiomes.Moon.BASALTIC_MARE);
+        this.tag(GCBiomeTags.MOON_VILLAGE_HIGHLANDS_HAS_STRUCTURE)
+                .add(GCBiomes.Moon.LUNAR_HIGHLANDS);
+        this.tag(GCBiomeTags.MOON_RUINS_HAS_STRUCTURE)
+                .add(GCBiomes.Moon.BASALTIC_MARE);
+        this.tag(GCBiomeTags.MOON_BOSS_HAS_STRUCTURE)
+                .addTag(GCBiomeTags.MOON);
+        this.tag(GCBiomeTags.MARS_BOSS_HAS_STRUCTURE)
+                .addTag(GCBiomeTags.MARS);
+        this.tag(GCBiomeTags.VENUS_BOSS_HAS_STRUCTURE)
+                .addTag(GCBiomeTags.VENUS);
+        this.tag(GCBiomeTags.ASTEROID_DUNGEON_HAS_STRUCTURE)
+                .addTag(GCBiomeTags.ASTEROID);
+    }
+}

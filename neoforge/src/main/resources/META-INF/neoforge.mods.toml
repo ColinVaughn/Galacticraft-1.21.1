@@ -1,0 +1,60 @@
+modLoader = "javafml"
+loaderVersion = "[4,)"
+license = "MIT"
+
+[[mods]]
+modId = "galacticraft"
+version = "${version}"
+displayName = "Galacticraft - Boobcat Edition"
+description = '''
+Galacticraft - Boobcat Edition: a fork by Boobcat, based on Team Galacticraft's 1.21.1 branch.
+'''
+authors = "Boobcat, Team Galacticraft"
+
+[[dependencies.galacticraft]]
+modId = "neoforge"
+type = "required"
+versionRange = "[${neoForgeVersion},)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.galacticraft]]
+modId = "minecraft"
+type = "required"
+versionRange = "[${minecraftVersion}]"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.galacticraft]]
+modId = "architectury"
+type = "required"
+versionRange = "[${architecturyVersion},)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.galacticraft]]
+modId = "machinelib"
+type = "required"
+versionRange = "[${machineLibVersion},)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.galacticraft]]
+modId = "dynamicdimensions"
+type = "required"
+versionRange = "[${dynamicDimensionsVersion},)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.galacticraft]]
+modId = "badpackets"
+type = "required"
+versionRange = "[${badPacketsVersion},)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[mixins]]
+config = "galacticraft-neoforge.mixins.json"
+
+[[mixins]]
+config = "galacticraft-api-neoforge.mixins.json"

@@ -1,0 +1,117 @@
+/*
+ * Copyright (c) 2019-2026 Team Galacticraft
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+package dev.galacticraft.mod.content.block.entity.decoration;
+
+import dev.galacticraft.api.component.GCDataComponents;
+import dev.galacticraft.mod.Constant;
+import dev.galacticraft.mod.content.GCBlockEntityTypes;
+import dev.galacticraft.mod.content.item.CannedFoodItem;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static dev.galacticraft.mod.content.item.GCItems.EMPTY_CAN;
+
+/** Native counterpart without Fabric's render-attachment marker interface. */
+public class CannedFoodBlockEntity extends BlockEntity {
+    private final List<ItemStack> canContents = new ArrayList<>();
+
+    public CannedFoodBlockEntity(BlockPos pos, BlockState state) {
+        super(GCBlockEntityTypes.CANNED_FOOD, pos, state);
+    }
+
+    public int getCanCount() { return canContents.size(); }
+    public List<ItemStack> getCanContents() { return canContents; }
+    public List<ItemStack> getRenderAttachmentData() { return List.copyOf(canContents); }
+
+    public void addCanItem(ItemStack stack) {
+        if (canContents.size() >= 8) return;
+        ItemStack copy = stack.copyWithCount(1);
+        if (!stack.has(GCDataComponents.COLOR)) copy.set(GCDataComponents.COLOR, 0xFFFFFF);
+        canContents.add(copy);
+        setChanged();
+        if (level != null) {
+            BlockState state = getBlockState();
+            level.sendBlockUpdated(worldPosition, state, state, Block.UPDATE_CLIENTS);
+            level.setBlocksDirty(worldPosition, state, state);
+        }
+    }
+
+    public void dropStoredCans(Level level, BlockPos pos) {
+        for (ItemStack stack : canContents) {
+            Block.popResource(level, pos, CannedFoodItem.getSize(stack) > 0
+                    ? stack : EMPTY_CAN.getDefaultInstance());
+        }
+    }
+
+    @Override
+    public void loadAdditional(CompoundTag tag, HolderLookup.Provider lookup) {
+        super.loadAdditional(tag, lookup);
+        canContents.clear();
+        for (Tag entry : tag.getList(Constant.Nbt.CAN_CONTENTS, Tag.TAG_COMPOUND)) {
+            ItemStack stack = ItemStack.parseOptional(lookup, (CompoundTag) entry);
+            if (!stack.isEmpty()) canContents.add(stack);
+        }
+    }
+
+    @Override
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider lookup) {
+        super.saveAdditional(tag, lookup);
+        writeContents(tag, lookup);
+    }
+
+    @Override
+    public @NotNull CompoundTag getUpdateTag(HolderLookup.Provider lookup) {
+        CompoundTag tag = super.getUpdateTag(lookup);
+        writeContents(tag, lookup);
+        return tag;
+    }
+
+    private void writeContents(CompoundTag tag, HolderLookup.Provider lookup) {
+        tag.putInt(Constant.Nbt.CAN_COUNT, getCanCount());
+        ListTag list = new ListTag();
+        for (ItemStack stack : canContents) {
+            if (!stack.isEmpty()) list.add(stack.save(lookup, new CompoundTag()));
+        }
+        tag.put(Constant.Nbt.CAN_CONTENTS, list);
+    }
+
+    @Override
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+}
