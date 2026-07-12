@@ -1,0 +1,126 @@
+/*
+ * Copyright (c) 2019-2026 Team Galacticraft
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+package dev.galacticraft.mod.screen;
+
+import dev.galacticraft.machinelib.api.menu.MachineMenu;
+import dev.galacticraft.machinelib.api.menu.RecipeMachineMenu;
+import dev.galacticraft.machinelib.api.menu.SynchronizedMenuType;
+import dev.architectury.registry.menu.MenuRegistry;
+import dev.galacticraft.mod.Constant;
+import dev.galacticraft.mod.content.block.entity.machine.*;
+import dev.galacticraft.mod.recipe.CompressingRecipe;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.world.flag.FeatureFlags;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.crafting.*;
+
+public class GCMenuTypes {
+    public static final MenuType<CoalGeneratorMenu> COAL_GENERATOR = SynchronizedMenuType.create((type, id, inventory, pos) -> new CoalGeneratorMenu(id, inventory, pos));
+    public static final MenuType<SolarPanelMenu<BasicSolarPanelBlockEntity>> BASIC_SOLAR_PANEL = SynchronizedMenuType.create(SolarPanelMenu::new);
+    public static final MenuType<SolarPanelMenu<AdvancedSolarPanelBlockEntity>> ADVANCED_SOLAR_PANEL = SynchronizedMenuType.create(SolarPanelMenu::new);
+
+    public static final MenuType<CircuitFabricatorMenu> CIRCUIT_FABRICATOR = SynchronizedMenuType.create((type, id, inventory, pos) -> new CircuitFabricatorMenu(id, inventory, pos));
+    public static final MenuType<CompressorMenu> COMPRESSOR = SynchronizedMenuType.create((type, id, inventory, pos) -> new CompressorMenu(id, inventory, pos));
+
+    public static final MenuType<RecipeMachineMenu<CraftingInput, CompressingRecipe, ElectricCompressorBlockEntity>> ELECTRIC_COMPRESSOR = SynchronizedMenuType.createSimple(RecipeMachineMenu::new);
+    public static final MenuType<RecipeMachineMenu<SingleRecipeInput, SmeltingRecipe, ElectricFurnaceBlockEntity>> ELECTRIC_FURNACE = SynchronizedMenuType.createSimple(RecipeMachineMenu::new);
+    public static final MenuType<RecipeMachineMenu<SingleRecipeInput, BlastingRecipe, ElectricArcFurnaceBlockEntity>> ELECTRIC_ARC_FURNACE = SynchronizedMenuType.createSimple(RecipeMachineMenu::new);
+
+    public static final MenuType<MachineMenu<RefineryBlockEntity>> REFINERY = SynchronizedMenuType.create(MachineMenu::new, 84);
+
+    public static final MenuType<OxygenCollectorMenu> OXYGEN_COLLECTOR = SynchronizedMenuType.create((type, id, inventory, pos) -> new OxygenCollectorMenu(id, inventory, pos));
+
+    public static final MenuType<MachineMenu<OxygenCompressorBlockEntity>> OXYGEN_COMPRESSOR = SynchronizedMenuType.createSimple(MachineMenu::new);
+    public static final MenuType<MachineMenu<OxygenDecompressorBlockEntity>> OXYGEN_DECOMPRESSOR = SynchronizedMenuType.createSimple(MachineMenu::new);
+    public static final MenuType<OxygenSealerMenu> OXYGEN_SEALER = SynchronizedMenuType.create((type, id, inventory, pos) -> new OxygenSealerMenu(id, inventory, pos));
+    public static final MenuType<OxygenBubbleDistributorMenu> OXYGEN_BUBBLE_DISTRIBUTOR = SynchronizedMenuType.create((type, id, inventory, pos) -> new OxygenBubbleDistributorMenu(id, inventory, pos));
+
+    public static final MenuType<MachineMenu<OxygenStorageModuleBlockEntity>> OXYGEN_STORAGE_MODULE = SynchronizedMenuType.createSimple(MachineMenu::new);
+    public static final MenuType<MachineMenu<EnergyStorageModuleBlockEntity>> ENERGY_STORAGE_MODULE = SynchronizedMenuType.createSimple(MachineMenu::new);
+    public static final MenuType<MachineMenu<EnergyStorageClusterBlockEntity>> ENERGY_STORAGE_CLUSTER = SynchronizedMenuType.createSimple(MachineMenu::new);
+
+    public static final MenuType<FuelLoaderMenu> FUEL_LOADER = SynchronizedMenuType.create((type, id, inventory, pos) -> new FuelLoaderMenu(id, inventory, pos));
+
+    public static final MenuType<MachineMenu<CargoLoaderBlockEntity>> CARGO_LOADER = SynchronizedMenuType.createSimple(MachineMenu::new);
+    public static final MenuType<MachineMenu<CargoUnloaderBlockEntity>> CARGO_UNLOADER = SynchronizedMenuType.createSimple(MachineMenu::new);
+    public static final MenuType<MachineMenu<FluidTankBlockEntity>> FLUID_TANK = SynchronizedMenuType.createSimple(MachineMenu::new);
+    public static final MenuType<MachineMenu<PainterBlockEntity>> PAINTER = SynchronizedMenuType.createSimple(MachineMenu::new);
+    public static final MenuType<MachineMenu<DeconstructorBlockEntity>> DECONSTRUCTOR = SynchronizedMenuType.createSimple(MachineMenu::new);
+
+    public static final MenuType<FoodCannerMenu> FOOD_CANNER = SynchronizedMenuType.create((type, id, inventory, pos) -> new FoodCannerMenu(id, inventory, pos));
+
+    public static final MenuType<GCPlayerInventoryMenu> PLAYER_INV_GC = new MenuType<>(GCPlayerInventoryMenu::new, FeatureFlags.VANILLA_SET);
+    public static final MenuType<GCPetInventoryMenu> PET_INV_GC = MenuRegistry.ofExtended((id, inventory, buf) -> new GCPetInventoryMenu(id, inventory, ByteBufCodecs.INT.decode(buf)));
+
+    public static final MenuType<AirlockControllerMenu> AIRLOCK_CONTROLLER_MENU = new MenuType<>(AirlockControllerMenu::new, FeatureFlags.VANILLA_SET);
+    public static final MenuType<RocketWorkbenchMenu> ROCKET_WORKBENCH = MenuRegistry.ofExtended((id, inventory, buf) -> new RocketWorkbenchMenu(id, inventory, RocketWorkbenchMenu.OpeningData.CODEC.decode(buf)));
+    public static final MenuType<RocketMenu> ROCKET = MenuRegistry.ofExtended((id, inventory, buf) -> new RocketMenu(id, inventory, ByteBufCodecs.INT.decode(buf)));
+    public static final MenuType<ParachestMenu> PARACHEST = MenuRegistry.ofExtended((id, inventory, buf) -> new ParachestMenu(id, inventory, ParachestMenu.OpeningData.STREAM_CODEC.decode(buf)));
+    public static final MenuType<VehicleInventoryMenu> VEHICLE_INVENTORY = MenuRegistry.ofExtended((id, inventory, buf) -> new VehicleInventoryMenu(id, inventory, ByteBufCodecs.VAR_INT.decode(buf)));
+    public static final MenuType<AstroMinerBaseMenu> ASTRO_MINER_BASE = MenuRegistry.ofExtended((id, inventory, buf) -> new AstroMinerBaseMenu(id, inventory, BlockPos.STREAM_CODEC.decode(buf)));
+
+    public static void register() {
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.PLAYER_INVENTORY_MENU), PLAYER_INV_GC);
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.PET_INVENTORY_MENU), PET_INV_GC);
+
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.COAL_GENERATOR_MENU), COAL_GENERATOR);
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.BASIC_SOLAR_PANEL_MENU), BASIC_SOLAR_PANEL);
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.ADVANCED_SOLAR_PANEL_MENU), ADVANCED_SOLAR_PANEL);
+
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.CIRCUIT_FABRICATOR_MENU), CIRCUIT_FABRICATOR);
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.COMPRESSOR_MENU), COMPRESSOR);
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.ELECTRIC_COMPRESSOR_MENU), ELECTRIC_COMPRESSOR);
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.ELECTRIC_FURNACE_MENU), ELECTRIC_FURNACE);
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.ELECTRIC_ARC_FURNACE_MENU), ELECTRIC_ARC_FURNACE);
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.REFINERY_MENU), REFINERY);
+
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.OXYGEN_COLLECTOR_MENU), OXYGEN_COLLECTOR);
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.OXYGEN_COMPRESSOR_MENU), OXYGEN_COMPRESSOR);
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.OXYGEN_DECOMPRESSOR_MENU), OXYGEN_DECOMPRESSOR);
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.BUBBLE_DISTRIBUTOR_MENU), OXYGEN_BUBBLE_DISTRIBUTOR);
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.OXYGEN_SEALER_MENU), OXYGEN_SEALER);
+
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.ENERGY_STORAGE_MODULE_MENU), ENERGY_STORAGE_MODULE);
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.ENERGY_STORAGE_CLUSTER_MENU), ENERGY_STORAGE_CLUSTER);
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.OXYGEN_STORAGE_MODULE_MENU), OXYGEN_STORAGE_MODULE);
+
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.FUEL_LOADER_MENU), FUEL_LOADER);
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.CARGO_LOADER_MENU), CARGO_LOADER);
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.CARGO_UNLOADER_MENU), CARGO_UNLOADER);
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.FLUID_TANK_MENU), FLUID_TANK);
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.PAINTER_MENU), PAINTER);
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.DECONSTRUCTOR_MENU), DECONSTRUCTOR);
+
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.FOOD_CANNER_MENU), FOOD_CANNER);
+
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.AIR_LOCK_CONTROLLER_MENU), AIRLOCK_CONTROLLER_MENU);
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.ROCKET_WORKBENCH_MENU), ROCKET_WORKBENCH);
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.ROCKET), ROCKET);
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.PARACHEST), PARACHEST);
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.VEHICLE_INVENTORY), VEHICLE_INVENTORY);
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.ASTRO_MINER_BASE_MENU), ASTRO_MINER_BASE);
+    }
+}

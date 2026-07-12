@@ -1,0 +1,117 @@
+/*
+ * Copyright (c) 2019-2026 Team Galacticraft
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+package dev.galacticraft.mod.client.gui.overlay;
+
+import com.mojang.blaze3d.platform.Window;
+import dev.galacticraft.machinelib.client.api.util.GraphicsUtil;
+import dev.galacticraft.mod.Constant;
+import dev.galacticraft.mod.content.entity.vehicle.LanderEntity;
+import dev.galacticraft.mod.content.item.OxygenTankItem;
+import dev.galacticraft.mod.util.Translations;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.FastColor;
+import net.minecraft.world.Container;
+
+public class OxygenOverlay {
+    private static long tickCount;
+    private static final Component WARNING_TEXT = Component.translatable(Translations.Ui.OXYGEN_WARNING);
+    private static final Component INVALID_SETUP = Component.translatable(Translations.Ui.OXYGEN_SETUP_INVALID);
+
+    public static void onHudRender(GuiGraphics graphics, DeltaTracker delta) {
+        Minecraft mc = Minecraft.getInstance();
+        if (!mc.options.hideGui && mc.level != null && mc.player != null && !(mc.player.isSpectator() || mc.player.isCreative())) {
+            if (mc.player.getVehicle() instanceof LanderEntity) {
+                return;
+            }
+
+            boolean nonBreathable = !mc.level.getDefaultBreathable();
+            boolean hasMaskAndGear = mc.player.galacticraft$hasMaskAndGear();
+            if (nonBreathable || hasMaskAndGear) {
+                boolean hasOxygen = false;
+                Container inv = mc.player.galacticraft$getOxygenTanks();
+                final int outline = 0x99FFFFFF;
+                final int y = 4;
+                final int n = inv.getContainerSize();
+                for (int i = n; i > 0; i--) {
+                    int x = mc.getWindow().getGuiScaledWidth() - ((Constant.ScreenTexture.OXYGEN_TANK_WIDTH + y) * i);
+
+                    long amount = 0;
+                    long capacity = 1;
+
+                    var stack = inv.getItem(n - i);
+                    if (stack.getItem() instanceof OxygenTankItem) {
+                        var storage = OxygenTankItem.getStorage(stack);
+                        amount = storage.getAmount();
+                        capacity = storage.getCapacity();
+                    }
+                    hasOxygen = hasOxygen || amount > 0;
+
+                    graphics.fill(x - 1, y - 1, x + Constant.ScreenTexture.OXYGEN_TANK_WIDTH + 1, y + Constant.ScreenTexture.OXYGEN_TANK_HEIGHT + 1, outline);
+                    GraphicsUtil.drawCapacitor(graphics, x, y, capacity, amount, true);
+                }
+
+                if (nonBreathable && !((hasMaskAndGear && hasOxygen) || mc.level.isBreathable(mc.player.blockPosition().above()))) {
+                    final Window scaledresolution = mc.getWindow();
+                    final int width = scaledresolution.getGuiScaledWidth();
+                    final int height = scaledresolution.getGuiScaledHeight();
+                    final int textWidth = mc.font.width(WARNING_TEXT);
+                    final int topY = height / 8 - 16;
+                    final float offset = 0.25F * (float) (width - 2 * textWidth + 2);
+
+                    graphics.pose().pushPose();
+                    graphics.pose().scale(2.0F, 2.0F, 0.0F);
+                    graphics.pose().translate(offset, 0.0F, 0.0F);
+
+                    graphics.blit(Constant.ScreenTexture.WARNING_SIGN, -11, topY, 0.0F, 0.0F, 7, 7, 8, 8);
+                    graphics.drawString(mc.font, WARNING_TEXT, 0, topY, FastColor.ARGB32.color(255, 255, 0, 0), false);
+                    graphics.blit(Constant.ScreenTexture.WARNING_SIGN, textWidth + 3, topY, 0.0F, 0.0F, 7, 7, 8, 8);
+
+                    if (mc.player.isAlive()) {
+                        graphics.pose().translate(-offset, 0.0F, 0.0F);
+
+                        final int alpha = (int) (200 * (Math.sin(tickCount) * 0.5F + 0.5F)) + 5;
+                        graphics.drawString(mc.font, INVALID_SETUP, width / 4 - mc.font.width(INVALID_SETUP) / 2, height / 8,
+                                FastColor.ARGB32.color(alpha, alpha, alpha, alpha), false);
+                    }
+
+                    graphics.pose().popPose();
+                } else if (nonBreathable && (!hasMaskAndGear || !hasOxygen)) {
+                    // Less obtrusive warning for if the player currently has oxygen, but has an invalid oxygen setup
+                    graphics.pose().pushPose();
+                    graphics.pose().scale(2.0F, 2.0F, 0.0F);
+                    int x = mc.getWindow().getGuiScaledWidth() - Constant.ScreenTexture.OXYGEN_TANK_WIDTH - 13;
+                    graphics.pose().translate(0.5F * x, 0.5F * y + 0.25F * (Constant.ScreenTexture.OXYGEN_TANK_HEIGHT - 14), 0.0F);
+                    graphics.blit(Constant.ScreenTexture.WARNING_SIGN, 0, 0, 0.0F, 0.0F, 7, 7, 8, 8);
+                    graphics.pose().popPose();
+                }
+            }
+        }
+    }
+
+    public static void clientTick() {
+        tickCount++;
+    }
+}

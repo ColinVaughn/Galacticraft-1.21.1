@@ -6,6 +6,8 @@
 
 # Galacticraft - Boobcat Edition
 
+> Multi-loader port in progress: the project now has Architectury `common`, `fabric`, and `neoforge` modules. Fabric remains the playable implementation while subsystems are migrated to common code. See [the multi-loader port plan](docs/multiloader-port.md) for status and build commands.
+
 > **A fork by [Boobcat](https://github.com/ColinVaughn), based on [Team Galacticraft's](https://github.com/TeamGalacticraft/Galacticraft) 1.21.1 branch.**
 >
 > This fork layers extra content and tweaks on top of upstream Galacticraft for Minecraft 1.21.1 — including a landable Mercury dimension, a multi-biome Moon overhaul, Mars dust storms, distinct tier-2/tier-3 rockets, and the autonomous astro miner / cargo rocket.

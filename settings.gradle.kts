@@ -1,28 +1,14 @@
 pluginManagement {
     repositories {
-        mavenLocal {
-            content {
-                includeGroup("dev.galacticraft")
-                includeGroup("dev.galacticraft.mojarn")
-            }
-        }
-        maven("https://maven.fabricmc.net/") {
-            name = "Fabric"
-            content {
-                includeGroup("net.fabricmc")
-                includeGroup("net.fabricmc.fabric-api")
-                includeGroup("fabric-loom")
-            }
-        }
-        maven("https://repo.terradevelopment.net/repository/maven-releases/") {
-            // https://maven.galacticraft.net/repository/maven-releases
-            content {
-                includeGroup("dev.galacticraft")
-                includeGroup("dev.galacticraft.mojarn")
-            }
-        }
+        maven("https://maven.fabricmc.net/") { name = "Fabric" }
+        maven("https://maven.architectury.dev/") { name = "Architectury" }
+        maven("https://maven.neoforged.net/releases/") { name = "NeoForged" }
         gradlePluginPortal()
     }
 }
 
 rootProject.name = "Galacticraft"
+
+include("common")
+include("fabric")
+include("neoforge")

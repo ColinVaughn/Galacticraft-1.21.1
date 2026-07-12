@@ -1,0 +1,41 @@
+{
+  "parent": "minecraft:galacticraft/compressor",
+  "criteria": {
+    "craft_rocket_workbench": {
+      "conditions": {
+        "items": [
+          {
+            "items": "galacticraft:rocket_workbench"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.galacticraft.rocket_workbench.description"
+    },
+    "icon": {
+      "count": 1,
+      "id": "galacticraft:rocket_workbench"
+    },
+    "title": {
+      "translate": "advancement.galacticraft.rocket_workbench.title"
+    }
+  },
+  "requirements": [
+    [
+      "craft_rocket_workbench"
+    ]
+  ],
+  "rewards": {
+    "rocket_parts": [
+      "galacticraft:rocket_cone/tier_1",
+      "galacticraft:rocket_body/tier_1",
+      "galacticraft:rocket_fin/tier_1",
+      "galacticraft:rocket_engine/tier_1"
+    ]
+  },
+  "sends_telemetry_event": true
+}

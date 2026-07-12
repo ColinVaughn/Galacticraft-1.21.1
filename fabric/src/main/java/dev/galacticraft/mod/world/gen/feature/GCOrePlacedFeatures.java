@@ -1,0 +1,149 @@
+/*
+ * Copyright (c) 2019-2026 Team Galacticraft
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+package dev.galacticraft.mod.world.gen.feature;
+
+import dev.galacticraft.mod.Constant;
+import dev.galacticraft.mod.world.gen.WorldgenPlatformHooks;
+import net.minecraft.core.HolderGetter;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.levelgen.VerticalAnchor;
+import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.levelgen.placement.*;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Unmodifiable;
+
+import java.util.List;
+
+public class GCOrePlacedFeatures {
+    // OVERWORLD
+    public static final ResourceKey<PlacedFeature> ORE_SILICON = key("ore_silicon"); //todo actual ore numbers
+    public static final ResourceKey<PlacedFeature> ORE_SILICON_LARGE = key("ore_silicon_large");
+
+    public static final ResourceKey<PlacedFeature> ORE_TIN_UPPER = key("ore_tin_upper");
+    public static final ResourceKey<PlacedFeature> ORE_TIN_MIDDLE = key("ore_tin_middle");
+    public static final ResourceKey<PlacedFeature> ORE_TIN_SMALL = key("ore_tin_small");
+
+    public static final ResourceKey<PlacedFeature> ORE_ALUMINUM_MIDDLE = key("ore_aluminum_middle");
+    public static final ResourceKey<PlacedFeature> ORE_ALUMINUM_SMALL = key("ore_aluminum_small");
+
+    // MOON
+    public static final ResourceKey<PlacedFeature> BASALT_DISK_MOON = key("disk_basalt_moon");
+
+    public static final ResourceKey<PlacedFeature> ORE_COPPER_MOON = key("ore_copper_moon");
+    public static final ResourceKey<PlacedFeature> ORE_COPPER_LARGE_MOON = key("ore_copper_large_moon");
+
+    public static final ResourceKey<PlacedFeature> ORE_TIN_UPPER_MOON = key("ore_tin_upper_moon");
+    public static final ResourceKey<PlacedFeature> ORE_TIN_MIDDLE_MOON = key("ore_tin_middle_moon");
+    public static final ResourceKey<PlacedFeature> ORE_TIN_SMALL_MOON = key("ore_tin_small_moon");
+
+    public static final ResourceKey<PlacedFeature> ORE_CHEESE_MOON = key("ore_cheese_moon");
+    public static final ResourceKey<PlacedFeature> ORE_CHEESE_LARGE_MOON = key("ore_cheese_large_moon");
+
+    public static final ResourceKey<PlacedFeature> ORE_LUNAR_SAPPHIRE_MOON = key("ore_lunar_sapphire_moon");
+
+    // Mare-only bonus passes use distinct keys to avoid duplicate feature entries.
+    public static final ResourceKey<PlacedFeature> ORE_TIN_MARE_BONUS = key("ore_tin_mare_bonus");
+    public static final ResourceKey<PlacedFeature> ORE_LUNAR_SAPPHIRE_MARE_BONUS = key("ore_lunar_sapphire_mare_bonus");
+
+    // MARS
+    public static final ResourceKey<PlacedFeature> ORE_IRON_MARS = key("ore_iron_mars");
+    public static final ResourceKey<PlacedFeature> ORE_COPPER_MARS = key("ore_copper_mars");
+    public static final ResourceKey<PlacedFeature> ORE_TIN_MARS = key("ore_tin_mars");
+    public static final ResourceKey<PlacedFeature> ORE_DESH_MARS = key("ore_desh_mars");
+    public static final ResourceKey<PlacedFeature> ORE_DESH_MARS_VOLCANIC = key("ore_desh_mars_volcanic");
+
+    // VENUS
+    public static final ResourceKey<PlacedFeature> ORE_COPPER_VENUS = key("ore_copper_venus");
+    public static final ResourceKey<PlacedFeature> ORE_TIN_VENUS = key("ore_tin_venus");
+    public static final ResourceKey<PlacedFeature> ORE_ALUMINUM_VENUS = key("ore_aluminum_venus");
+    public static final ResourceKey<PlacedFeature> ORE_SOLAR_VENUS = key("ore_solar_venus");
+    public static final ResourceKey<PlacedFeature> ORE_GALENA_VENUS = key("ore_galena_venus");
+    public static final ResourceKey<PlacedFeature> ORE_GALENA_VENUS_VOLCANIC = key("ore_galena_venus_volcanic");
+
+    public static void register() {
+        WorldgenPlatformHooks.registerOverworldOres();
+    }
+
+    public static void bootstrapRegistries(BootstrapContext<PlacedFeature> context) {
+        HolderGetter<ConfiguredFeature<?, ?>> lookup = context.lookup(Registries.CONFIGURED_FEATURE);
+
+        // OVERWORLD
+        context.register(ORE_SILICON, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.ORE_SILICON_SMALL), modifiersWithCount(5, HeightRangePlacement.triangle(VerticalAnchor.aboveBottom(-80), VerticalAnchor.aboveBottom(80)))));
+        context.register(ORE_SILICON_LARGE, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.ORE_SILICON_LARGE), modifiersWithRarity(11, HeightRangePlacement.triangle(VerticalAnchor.aboveBottom(-80), VerticalAnchor.aboveBottom(80)))));
+        context.register(ORE_TIN_UPPER, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.ORE_TIN), modifiersWithCount(99, HeightRangePlacement.triangle(VerticalAnchor.absolute(90), VerticalAnchor.absolute(384)))));
+        context.register(ORE_TIN_MIDDLE, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.ORE_TIN), modifiersWithCount(11, HeightRangePlacement.triangle(VerticalAnchor.absolute(-16), VerticalAnchor.absolute(56)))));
+        context.register(ORE_TIN_SMALL, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.ORE_TIN_SMALL), modifiersWithCount(11, HeightRangePlacement.uniform(VerticalAnchor.bottom(), VerticalAnchor.absolute(80)))));
+        context.register(ORE_ALUMINUM_MIDDLE, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.ORE_ALUMINUM), modifiersWithCount(9, HeightRangePlacement.triangle(VerticalAnchor.aboveBottom(-32), VerticalAnchor.absolute(0)))));
+        context.register(ORE_ALUMINUM_SMALL, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.ORE_ALUMINUM_SMALL), modifiersWithCount(30, HeightRangePlacement.uniform(VerticalAnchor.bottom(), VerticalAnchor.absolute(32)))));
+
+        // MOON
+        context.register(BASALT_DISK_MOON, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.BASALT_DISK_MOON), modifiersWithCount(14, HeightRangePlacement.uniform(VerticalAnchor.bottom(), VerticalAnchor.top()))));
+        context.register(ORE_COPPER_MOON, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.ORE_COPPER_SMALL_MOON), modifiersWithCount(18, HeightRangePlacement.triangle(VerticalAnchor.bottom(), VerticalAnchor.absolute(112)))));
+        context.register(ORE_COPPER_LARGE_MOON, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.ORE_COPPER_LARGE_MOON), modifiersWithCount(17, HeightRangePlacement.triangle(VerticalAnchor.bottom(), VerticalAnchor.absolute(112)))));
+        context.register(ORE_TIN_UPPER_MOON, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.ORE_TIN_MOON), modifiersWithCount(54, HeightRangePlacement.triangle(VerticalAnchor.absolute(90), VerticalAnchor.absolute(384)))));
+        context.register(ORE_TIN_MIDDLE_MOON, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.ORE_TIN_MOON), modifiersWithCount(6, HeightRangePlacement.triangle(VerticalAnchor.absolute(-16), VerticalAnchor.absolute(56)))));
+        context.register(ORE_TIN_SMALL_MOON, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.ORE_TIN_SMALL_MOON), modifiersWithCount(6, HeightRangePlacement.uniform(VerticalAnchor.bottom(), VerticalAnchor.absolute(80)))));
+        context.register(ORE_CHEESE_MOON, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.ORE_CHEESE_SMALL_MOON), modifiersWithCount(10, HeightRangePlacement.uniform(VerticalAnchor.absolute(0), VerticalAnchor.absolute(112)))));
+        context.register(ORE_CHEESE_LARGE_MOON, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.ORE_CHEESE_LARGE_MOON), modifiersWithCount(5, HeightRangePlacement.uniform(VerticalAnchor.absolute(0), VerticalAnchor.absolute(112)))));
+        context.register(ORE_LUNAR_SAPPHIRE_MOON, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.ORE_LUNAR_SAPPHIRE_MOON), modifiersWithCount(18, HeightRangePlacement.triangle(VerticalAnchor.absolute(0), VerticalAnchor.absolute(112)))));
+        // Extra deeper ore pass for basaltic maria.
+        context.register(ORE_TIN_MARE_BONUS, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.ORE_TIN_MOON), modifiersWithCount(8, HeightRangePlacement.triangle(VerticalAnchor.absolute(-16), VerticalAnchor.absolute(56)))));
+        context.register(ORE_LUNAR_SAPPHIRE_MARE_BONUS, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.ORE_LUNAR_SAPPHIRE_MOON), modifiersWithCount(10, HeightRangePlacement.triangle(VerticalAnchor.absolute(0), VerticalAnchor.absolute(112)))));
+
+        // MARS
+        context.register(ORE_IRON_MARS, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.ORE_IRON_MARS), modifiersWithCount(10, HeightRangePlacement.triangle(VerticalAnchor.bottom(), VerticalAnchor.absolute(112)))));
+        context.register(ORE_COPPER_MARS, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.ORE_COPPER_MARS), modifiersWithCount(16, HeightRangePlacement.triangle(VerticalAnchor.bottom(), VerticalAnchor.absolute(112)))));
+        context.register(ORE_TIN_MARS, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.ORE_TIN_MARS), modifiersWithCount(8, HeightRangePlacement.uniform(VerticalAnchor.bottom(), VerticalAnchor.absolute(80)))));
+        context.register(ORE_DESH_MARS, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.ORE_DESH_MARS), modifiersWithCount(6, HeightRangePlacement.triangle(VerticalAnchor.absolute(0), VerticalAnchor.absolute(64)))));
+        context.register(ORE_DESH_MARS_VOLCANIC, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.ORE_DESH_MARS), modifiersWithCount(10, HeightRangePlacement.triangle(VerticalAnchor.absolute(0), VerticalAnchor.absolute(96)))));
+
+        // VENUS
+        context.register(ORE_COPPER_VENUS, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.ORE_COPPER_VENUS), modifiersWithCount(16, HeightRangePlacement.triangle(VerticalAnchor.bottom(), VerticalAnchor.absolute(112)))));
+        context.register(ORE_TIN_VENUS, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.ORE_TIN_VENUS), modifiersWithCount(8, HeightRangePlacement.uniform(VerticalAnchor.bottom(), VerticalAnchor.absolute(80)))));
+        context.register(ORE_ALUMINUM_VENUS, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.ORE_ALUMINUM_VENUS), modifiersWithCount(9, HeightRangePlacement.triangle(VerticalAnchor.bottom(), VerticalAnchor.absolute(96)))));
+        context.register(ORE_SOLAR_VENUS, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.ORE_SOLAR_VENUS), modifiersWithCount(6, HeightRangePlacement.triangle(VerticalAnchor.absolute(0), VerticalAnchor.absolute(64)))));
+        context.register(ORE_GALENA_VENUS, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.ORE_GALENA_VENUS), modifiersWithCount(7, HeightRangePlacement.triangle(VerticalAnchor.bottom(), VerticalAnchor.absolute(72)))));
+        // Concentrated galena in the shield volcano (denser, distinct placement to avoid a FeatureSorter cycle).
+        context.register(ORE_GALENA_VENUS_VOLCANIC, new PlacedFeature(lookup.getOrThrow(GCOreConfiguredFeature.ORE_GALENA_VENUS), modifiersWithCount(12, HeightRangePlacement.triangle(VerticalAnchor.bottom(), VerticalAnchor.absolute(112)))));
+    }
+
+    @Contract(pure = true)
+    private static @NotNull ResourceKey<PlacedFeature> key(String id) {
+        return Constant.key(Registries.PLACED_FEATURE, id);
+    }
+
+    private static @Unmodifiable List<PlacementModifier> modifiers(PlacementModifier countModifier, PlacementModifier heightModifier) {
+        return List.of(countModifier, InSquarePlacement.spread(), heightModifier, BiomeFilter.biome());
+    }
+
+    private static @Unmodifiable List<PlacementModifier> modifiersWithCount(int count, PlacementModifier heightModfier) {
+        return modifiers(CountPlacement.of(count), heightModfier);
+    }
+
+    private static @Unmodifiable List<PlacementModifier> modifiersWithRarity(int chance, PlacementModifier heightModifier) {
+        return modifiers(RarityFilter.onAverageOnceEvery(chance), heightModifier);
+    }
+}
