@@ -122,7 +122,10 @@ public final class MercurySolarFlareManager {
 
         // Blinding glare at higher intensities, unless the sensor glasses cut through it.
         if (intensity > 0.5f && !glasses) {
-            player.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 40, 0, false, false, true));
+            MobEffectInstance current = player.getEffect(MobEffects.BLINDNESS);
+            if (current == null || current.endsWithin(20)) {
+                player.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 40, 0, false, false, true));
+            }
         }
 
         // Searing radiation burst chips away at anyone caught without a full Isothermal Padding set at peak.

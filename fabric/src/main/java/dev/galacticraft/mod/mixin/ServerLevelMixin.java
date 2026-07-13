@@ -41,7 +41,6 @@ import net.minecraft.world.RandomSequences;
 import net.minecraft.world.level.CustomSpawner;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.storage.LevelStorageSource;
@@ -91,14 +90,6 @@ public abstract class ServerLevelMixin extends Level implements GCLevelAccessor 
         if (newState.is(BlockTags.LEAVES)) {
             // Oxygen collector code update (if needed)
         }
-    }
-
-    @Inject(method = "tickChunk", at = @At("HEAD"))
-    private void tickFootprints(LevelChunk chunk, int randomTickSpeed, CallbackInfo ci) {
-        var profiler = getProfiler();
-        profiler.push("footprints");
-        footprintManager.tick((ServerLevel) (Object) this, chunk.getPos().toLong());
-        profiler.pop();
     }
 
     @Override

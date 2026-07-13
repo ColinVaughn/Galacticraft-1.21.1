@@ -139,7 +139,7 @@ public class AsteroidChunkGenerator extends ChunkGenerator {
     private static final BlockState AIR = Blocks.AIR.defaultBlockState();
     private static final BlockState BASE_ASTEROID_STATE = GCBlocks.ASTEROID_ROCK.defaultBlockState();
 
-    private static HashSet<BlockVec3> chunksDone = new HashSet<BlockVec3>();
+    private static HashSet<BlockVec3> chunksDone = new HashSet<>();
     private int largeAsteroidsLastChunkX;
     private int largeAsteroidsLastChunkZ;
 
@@ -250,7 +250,7 @@ public class AsteroidChunkGenerator extends ChunkGenerator {
                     for (int z = minZ; z < maxZ; z += 2) {
                         //the next line is called 3136 times per chunk generated apparently? saying something about slow getNoise
                         if (this.randFromPointPos(x, z) < (this.asteroidDensity.getNoise(x, z) + 0.4) / asteroidChance) {
-                            random.setSeed(x + z * 3067);
+                            random.setSeed(x + z * 3067L);
                             int y = random.nextInt(rangeY) + AsteroidChunkGenerator.MIN_ASTEROID_Y;
                             int size = random.nextInt(rangeSize) + AsteroidChunkGenerator.MIN_ASTEROID_RADIUS;
 

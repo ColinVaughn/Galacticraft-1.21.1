@@ -20,22 +20,31 @@
  * SOFTWARE.
  */
 
-package dev.galacticraft.api.component;
+package dev.galacticraft.mod.util;
 
-import com.mojang.serialization.Codec;
-import dev.galacticraft.mod.Constant;
-import dev.galacticraft.mod.content.advancements.critereon.ItemFullTankPredicate;
-import net.minecraft.advancements.critereon.ItemSubPredicate;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.phys.Vec3;
 
-public class GCItemSubPredicates {
-    public static final ItemSubPredicate.Type<ItemFullTankPredicate> FULL_TANK = register("full_tank", ItemFullTankPredicate.CODEC);
+/**
+ * @author colinvaughn
+ */
+public final class CustomFluidPush {
+    private static final double STATIONARY_MOVEMENT_THRESHOLD = 0.003D;
+    private static final double MINIMUM_PUSH = 0.0045000000000000005D;
 
-    private static <T extends ItemSubPredicate> ItemSubPredicate.Type<T> register(String string, Codec<T> codec) {
-        return Registry.register(BuiltInRegistries.ITEM_SUB_PREDICATE_TYPE, Constant.id(string), new ItemSubPredicate.Type<>(codec));
+    private CustomFluidPush() {
     }
 
-    public static void init() {
+    public static Vec3 calculate(Vec3 flow, int samples, boolean player, Vec3 movement, double pushScale) {
+        if (flow.length() <= 0.0D) return Vec3.ZERO;
+        if (samples > 0) flow = flow.scale(1.0D / samples);
+        if (!player) flow = flow.normalize();
+
+        flow = flow.scale(pushScale);
+        if (Math.abs(movement.x) < STATIONARY_MOVEMENT_THRESHOLD
+                && Math.abs(movement.z) < STATIONARY_MOVEMENT_THRESHOLD
+                && flow.length() < MINIMUM_PUSH) {
+            flow = flow.normalize().scale(MINIMUM_PUSH);
+        }
+        return flow;
     }
 }

@@ -73,6 +73,7 @@ public class GCEventHandlers {
 
     public static void onWorldTick(ServerLevel level) {
         FootprintManager footprintManager = level.galacticraft$getFootprintManager();
+        footprintManager.tick(level);
         if (!footprintManager.footprintBlockChanges.isEmpty()) {
             for (GlobalPos targetPoint : footprintManager.footprintBlockChanges) {
                 if (level.dimension().location().equals(targetPoint.dimension().location())) {

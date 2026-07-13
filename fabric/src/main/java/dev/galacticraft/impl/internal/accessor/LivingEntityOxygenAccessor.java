@@ -20,22 +20,11 @@
  * SOFTWARE.
  */
 
-package dev.galacticraft.api.component;
+package dev.galacticraft.impl.internal.accessor;
 
-import com.mojang.serialization.Codec;
-import dev.galacticraft.mod.Constant;
-import dev.galacticraft.mod.content.advancements.critereon.ItemFullTankPredicate;
-import net.minecraft.advancements.critereon.ItemSubPredicate;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
-
-public class GCItemSubPredicates {
-    public static final ItemSubPredicate.Type<ItemFullTankPredicate> FULL_TANK = register("full_tank", ItemFullTankPredicate.CODEC);
-
-    private static <T extends ItemSubPredicate> ItemSubPredicate.Type<T> register(String string, Codec<T> codec) {
-        return Registry.register(BuiltInRegistries.ITEM_SUB_PREDICATE_TYPE, Constant.id(string), new ItemSubPredicate.Type<>(codec));
-    }
-
-    public static void init() {
-    }
+/**
+ * @author colinvaughn
+ */
+public interface LivingEntityOxygenAccessor {
+    boolean galacticraft$isEyePositionBreathable();
 }

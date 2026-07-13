@@ -161,13 +161,19 @@ public final class MarsDustStormManager {
 
         // Vision loss in thick dust unless the sensor glasses cut through it.
         if (intensity > 0.65f && !glasses) {
-            player.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 40, 0, false, false, true));
+            MobEffectInstance current = player.getEffect(MobEffects.DARKNESS);
+            if (current == null || current.endsWithin(20)) {
+                player.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 40, 0, false, false, true));
+            }
         }
 
         // Trudging through blowing dust slows you unless the suit seals it out.
         if (intensity > 0.40f && !sealed) {
             int amplifier = intensity > 0.75f ? 1 : 0;
-            player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, amplifier, false, false, true));
+            MobEffectInstance current = player.getEffect(MobEffects.MOVEMENT_SLOWDOWN);
+            if (current == null || current.endsWithin(20) || current.getAmplifier() < amplifier) {
+                player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, amplifier, false, false, true));
+            }
         }
 
         // Gusts nudge exposed players around.

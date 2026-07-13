@@ -26,9 +26,11 @@ import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class FootprintManager {
@@ -37,31 +39,37 @@ public class FootprintManager {
 
     public void tick(Level level, long packedPos) {
         if (level.getGameTime() % 20 == 0) {
-
-            Long2ObjectMap<List<Footprint>> footprintMap = globalFootprints;
-            if (footprintMap != null) {
-                List<Footprint> footprints = footprintMap.get(packedPos);
-
-                if (footprints != null) {
-                    List<Footprint> toRemove = new ArrayList<>();
-
-                    for (Footprint footprint : footprints) {
-                        footprint.age += (short) 20;
-
-                        if (footprint.age >= Footprint.MAX_AGE) {
-                            toRemove.add(footprint);
-                        }
-                    }
-
-                    if (!toRemove.isEmpty()) {
-                        footprints.removeAll(toRemove);
-                    }
-
-                    footprintMap.put(packedPos, footprints);
-
-                    onChange(level, packedPos, footprints);
-                }
+            List<Footprint> footprints = globalFootprints.get(packedPos);
+            if (footprints != null) {
+                ageFootprints(footprints);
+                onChange(level, packedPos, footprints);
             }
+        }
+    }
+
+    public void tick(ServerLevel level) {
+        if (level.getGameTime() % 20 != 0 || this.globalFootprints.isEmpty()) return;
+
+        Iterator<Long2ObjectMap.Entry<List<Footprint>>> iterator =
+                this.globalFootprints.long2ObjectEntrySet().iterator();
+        while (iterator.hasNext()) {
+            Long2ObjectMap.Entry<List<Footprint>> entry = iterator.next();
+            long packedPos = entry.getLongKey();
+            if (!level.shouldTickBlocksAt(packedPos)) continue;
+
+            List<Footprint> footprints = entry.getValue();
+            ageFootprints(footprints);
+            onChange(level, packedPos, footprints);
+            if (footprints.isEmpty()) iterator.remove();
+        }
+    }
+
+    private static void ageFootprints(List<Footprint> footprints) {
+        Iterator<Footprint> iterator = footprints.iterator();
+        while (iterator.hasNext()) {
+            Footprint footprint = iterator.next();
+            footprint.age += (short) 20;
+            if (footprint.age >= Footprint.MAX_AGE) iterator.remove();
         }
     }
 

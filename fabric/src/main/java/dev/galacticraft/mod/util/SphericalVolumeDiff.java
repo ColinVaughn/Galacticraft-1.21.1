@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2026 colinvaughn
+ * Copyright (c) 2019-2026 Team Galacticraft
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,11 @@
 
 package dev.galacticraft.mod.util;
 
-/** Iterates only the blocks that differ between two integer-radius spheres. */
+/**
+ * Iterates only the blocks that differ between two integer-radius spheres.
+ *
+ * @author colinvaughn
+ */
 public final class SphericalVolumeDiff {
     private SphericalVolumeDiff() {
     }

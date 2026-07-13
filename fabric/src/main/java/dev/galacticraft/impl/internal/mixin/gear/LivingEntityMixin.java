@@ -30,6 +30,7 @@ import dev.galacticraft.impl.internal.gear.OxygenTankExtractor;
 import dev.galacticraft.api.item.Accessory;
 import dev.galacticraft.api.universe.celestialbody.CelestialBody;
 import dev.galacticraft.api.universe.celestialbody.SurfaceEnvironment;
+import dev.galacticraft.impl.internal.accessor.LivingEntityOxygenAccessor;
 import dev.galacticraft.impl.internal.fabric.GalacticraftAPI;
 import dev.galacticraft.impl.network.s2c.GearInvPayload;
 import dev.galacticraft.mod.Constant;
@@ -43,8 +44,6 @@ import dev.galacticraft.mod.tag.GCFluidTags;
 import dev.galacticraft.mod.tag.GCItemTags;
 import dev.galacticraft.mod.world.inventory.GearInventory;
 import dev.architectury.networking.NetworkManager;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -82,7 +81,7 @@ import static dev.galacticraft.mod.content.entity.damage.GCDamageTypes.HEAT;
 import static dev.galacticraft.mod.content.entity.damage.GCDamageTypes.SUFFOCATION;
 
 @Mixin(LivingEntity.class)
-public abstract class LivingEntityMixin extends Entity implements GearInventoryProvider {
+public abstract class LivingEntityMixin extends Entity implements GearInventoryProvider, LivingEntityOxygenAccessor {
 
     @Unique
     @SuppressWarnings("WrongEntityDataParameterClass")
@@ -113,6 +112,11 @@ public abstract class LivingEntityMixin extends Entity implements GearInventoryP
     }
 
     private int lastHurtBySuffocationTimestamp;
+
+    @Unique
+    private int galacticraft$breathabilityCacheTick = Integer.MIN_VALUE;
+    @Unique
+    private boolean galacticraft$cachedEyePositionBreathable;
 
     @Shadow
     protected abstract int increaseAirSupply(int air);
@@ -149,7 +153,7 @@ public abstract class LivingEntityMixin extends Entity implements GearInventoryP
         LivingEntity entity = ((LivingEntity) (Object) this);
         if (entity.galacticraft$oxygenConsumptionRate() == 0) return;
         AttributeInstance attribute = entity.getAttribute(GcApiEntityAttributes.CAN_BREATHE_IN_SPACE);
-        if (!entity.level().isBreathable(entity.blockPosition().relative(Direction.UP, (int) Math.floor(entity.getEyeHeight(entity.getPose())))) && !(attribute != null && attribute.getValue() >= 0.99D)) {
+        if (!this.galacticraft$isEyePositionBreathable() && !(attribute != null && attribute.getValue() >= 0.99D)) {
             if (!entity.isEyeInFluid(GCFluidTags.NON_BREATHABLE) && !(entity instanceof Player player && player.getAbilities().invulnerable)) {
                 entity.setAirSupply(this.decreaseAirSupply(entity.getAirSupply()));
                 if (entity.getAirSupply() == -20) {
@@ -173,7 +177,7 @@ public abstract class LivingEntityMixin extends Entity implements GearInventoryP
             this.lastHurtBySuffocationTimestamp = this.tickCount;
             return false;
         }
-        return original || this.isEyeInFluid(GCFluidTags.NON_BREATHABLE) || !entity.level().isBreathable(entity.blockPosition().relative(Direction.UP, (int) Math.floor(this.getEyeHeight(entity.getPose()))));
+        return original || this.isEyeInFluid(GCFluidTags.NON_BREATHABLE) || !this.galacticraft$isEyePositionBreathable();
     }
 
     @ModifyExpressionValue(method = "baseTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;canBreatheUnderwater()Z"), require = 0)
@@ -190,7 +194,7 @@ public abstract class LivingEntityMixin extends Entity implements GearInventoryP
         AttributeInstance attribute = entity.getAttribute(GcApiEntityAttributes.CAN_BREATHE_IN_SPACE);
         if (!this.isEyeInFluid(GCFluidTags.NON_BREATHABLE) && (
                 (attribute != null && attribute.getValue() >= 0.99D) ||
-                entity.level().isBreathable(entity.blockPosition().relative(Direction.UP, (int) Math.floor(entity.getEyeHeight(entity.getPose()))))
+                this.galacticraft$isEyePositionBreathable()
         )) {
             this.lastHurtBySuffocationTimestamp = this.tickCount;
             cir.setReturnValue(this.increaseAirSupply(air));
@@ -269,6 +273,8 @@ public abstract class LivingEntityMixin extends Entity implements GearInventoryP
         Level level = entity.level();
         if (level.isClientSide() || entity.galacticraft$oxygenConsumptionRate() == 0) return;
         if (entity instanceof Player player && (player.getAbilities().invulnerable || player.isSpectator())) return;
+        if (entity.tickCount - this.galacticraft_lastThermalDamageTick < 20
+                || (entity.tickCount + entity.getId()) % 20 != 0) return;
 
         Holder<CelestialBody<?, ?>> body = ((LevelBodyAccessor) level).galacticraft$getCelestialBody();
         if (body == null) return;
@@ -277,9 +283,8 @@ public abstract class LivingEntityMixin extends Entity implements GearInventoryP
                 || entity.getInBlockState().getBlock() instanceof CryogenicChamberBlock
                 || entity.getInBlockState().getBlock() instanceof CryogenicChamberPart) return;
 
-        BlockPos eyePos = entity.blockPosition().relative(Direction.UP, (int) Math.floor(entity.getEyeHeight(entity.getPose())));
         // Sealed breathable spaces suppress thermal damage.
-        if (level.isBreathable(eyePos)) return;
+        if (this.galacticraft$isEyePositionBreathable()) return;
 
         int temperature = galacticraft_surfaceTemperature(body.value(), level);
         boolean cold = temperature <= GALACTICRAFT_COLD_THRESHOLD;
@@ -293,11 +298,9 @@ public abstract class LivingEntityMixin extends Entity implements GearInventoryP
         }
         if (protection >= thermalArmor.getContainerSize()) return; // fully padded
 
-        if (this.tickCount - this.galacticraft_lastThermalDamageTick >= 20) {
-            this.galacticraft_lastThermalDamageTick = this.tickCount;
-            float damage = (thermalArmor.getContainerSize() - protection) * 0.5f;
-            entity.hurt(this.damageSources().source(cold ? COLD : HEAT), damage);
-        }
+        this.galacticraft_lastThermalDamageTick = this.tickCount;
+        float damage = (thermalArmor.getContainerSize() - protection) * 0.5f;
+        entity.hurt(this.damageSources().source(cold ? COLD : HEAT), damage);
     }
 
     /** Keeps Sensor Glasses night vision refreshed without flicker. */
@@ -306,8 +309,23 @@ public abstract class LivingEntityMixin extends Entity implements GearInventoryP
         LivingEntity entity = (LivingEntity) (Object) this;
         if (entity.level().isClientSide()) return;
         if (entity.getItemBySlot(EquipmentSlot.HEAD).is(GCItems.SENSOR_GLASSES)) {
-            entity.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 300, 0, false, false, false));
+            MobEffectInstance current = entity.getEffect(MobEffects.NIGHT_VISION);
+            if (current == null || current.endsWithin(200)) {
+                entity.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 300, 0, false, false, false));
+            }
         }
+    }
+
+    @Override
+    public boolean galacticraft$isEyePositionBreathable() {
+        if (this.galacticraft$breathabilityCacheTick != this.tickCount) {
+            LivingEntity entity = (LivingEntity) (Object) this;
+            int eyeY = entity.getBlockY() + (int) Math.floor(entity.getEyeHeight(entity.getPose()));
+            this.galacticraft$cachedEyePositionBreathable =
+                    entity.level().isBreathable(entity.getBlockX(), eyeY, entity.getBlockZ());
+            this.galacticraft$breathabilityCacheTick = this.tickCount;
+        }
+        return this.galacticraft$cachedEyePositionBreathable;
     }
 
     @Unique

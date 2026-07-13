@@ -23,9 +23,9 @@
 package dev.galacticraft.impl.internal.mixin.gear;
 
 import dev.galacticraft.api.entity.attribute.GcApiEntityAttributes;
+import dev.galacticraft.impl.internal.accessor.LivingEntityOxygenAccessor;
 import dev.galacticraft.mod.content.entity.damage.GCDamageTypes;
 import dev.galacticraft.mod.tag.GCFluidTags;
-import net.minecraft.core.Direction;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.player.Player;
@@ -60,9 +60,7 @@ abstract class NeoLivingEntityMixin {
 
         AttributeInstance attribute = entity.getAttribute(GcApiEntityAttributes.CAN_BREATHE_IN_SPACE);
         boolean canBreathe = attribute != null && attribute.getValue() >= 0.99D;
-        boolean breathable = entity.level().isBreathable(entity.blockPosition().relative(
-                Direction.UP, (int) Math.floor(entity.getEyeHeight(entity.getPose()))
-        ));
+        boolean breathable = ((LivingEntityOxygenAccessor) entity).galacticraft$isEyePositionBreathable();
         if (breathable || canBreathe || entity.isEyeInFluid(GCFluidTags.NON_BREATHABLE)
                 || entity instanceof Player player && player.getAbilities().invulnerable) {
             return;
