@@ -56,6 +56,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class OxygenCollectorBlockEntity extends MachineBlockEntity {
+    private static final int COLLECTION_SCAN_INTERVAL = 20;
+
     public static final int CHARGE_SLOT = 0;
     public static final int OXYGEN_TANK = 0;
 
@@ -84,6 +86,7 @@ public class OxygenCollectorBlockEntity extends MachineBlockEntity {
 
     private final FluidSource fluidSource = new FluidSource(this);
     public int collectionAmount = 0;
+    private boolean collectionScanInitialized;
     private boolean oxygenWorld = false;
 
     public OxygenCollectorBlockEntity(BlockPos pos, BlockState state) {
@@ -135,12 +138,19 @@ public class OxygenCollectorBlockEntity extends MachineBlockEntity {
         profiler.push("transfer");
         this.fluidSource.trySpreadFluids(level, pos, state);
 
-        if (this.fluidStorage().slot(OXYGEN_TANK).isFull()) return GCMachineStatuses.OXYGEN_TANK_FULL;
+        if (this.fluidStorage().slot(OXYGEN_TANK).isFull()) {
+            profiler.pop();
+            return GCMachineStatuses.OXYGEN_TANK_FULL;
+        }
         profiler.popPush("transaction");
         try {
             if (this.energyStorage().canExtract(Galacticraft.CONFIG.oxygenCollectorEnergyConsumptionRate())) {
                 profiler.push("collect");
-                this.collectionAmount = this.collectOxygen(level, pos);
+                if (!this.collectionScanInitialized
+                        || (level.getGameTime() + pos.asLong()) % COLLECTION_SCAN_INTERVAL == 0) {
+                    this.collectionAmount = this.collectOxygen(level, pos);
+                    this.collectionScanInitialized = true;
+                }
                 profiler.pop();
                 if (this.collectionAmount > 0) {
                     this.energyStorage().extract(Galacticraft.CONFIG.oxygenCollectorEnergyConsumptionRate());

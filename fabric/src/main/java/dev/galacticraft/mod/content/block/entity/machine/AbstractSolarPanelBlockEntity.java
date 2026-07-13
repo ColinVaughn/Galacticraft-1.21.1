@@ -46,6 +46,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class AbstractSolarPanelBlockEntity extends MachineBlockEntity implements SolarPanel, Dustable {
+    private static final int BLOCKAGE_SCAN_INTERVAL = 20;
+
     public static final float SPEED = Mth.DEG_TO_RAD * 0.5F;
     public static final float DAWN = 4.0F * Mth.PI / 3.0F;
     public static final float SUNRISE = 1.5F * Mth.PI;
@@ -59,6 +61,7 @@ public abstract class AbstractSolarPanelBlockEntity extends MachineBlockEntity i
     public static final int CHARGE_SLOT = 0;
     protected final boolean[] blockage = new boolean[9];
     protected int blocked = 0;
+    private boolean blockageScanInitialized;
     private final EnergySource energySource = new EnergySource(this);
     public long currentEnergyGeneration = 0;
     private long dayLength = 24000;
@@ -84,14 +87,18 @@ public abstract class AbstractSolarPanelBlockEntity extends MachineBlockEntity i
         profiler.push("charge");
         this.drainPowerToSlot(CHARGE_SLOT);
         profiler.popPush("blockage");
-        this.blocked = 0;
-        for (int x = -1; x < 2; x++) { //todo: cache?
-            for (int z = -1; z < 2; z++) {
-                //noinspection AssignmentUsedAsCondition
-                if (this.blockage[(z + 1) * 3 + (x + 1)] = !level.canSeeSky(pos.offset(x, 2, z))) {
-                    this.blocked++;
+        if (!this.blockageScanInitialized
+                || (level.getGameTime() + pos.asLong()) % BLOCKAGE_SCAN_INTERVAL == 0) {
+            this.blocked = 0;
+            for (int x = -1; x < 2; x++) {
+                for (int z = -1; z < 2; z++) {
+                    //noinspection AssignmentUsedAsCondition
+                    if (this.blockage[(z + 1) * 3 + (x + 1)] = !level.canSeeSky(pos.offset(x, 2, z))) {
+                        this.blocked++;
+                    }
                 }
             }
+            this.blockageScanInitialized = true;
         }
         profiler.popPush("dust");
         if (Galacticraft.CONFIG.machineDustEnabled()) {
