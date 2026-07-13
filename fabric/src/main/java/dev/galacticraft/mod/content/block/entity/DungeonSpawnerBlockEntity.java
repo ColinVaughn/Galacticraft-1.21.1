@@ -50,10 +50,17 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class DungeonSpawnerBlockEntity extends BlockEntity implements Spawner {
+    private static final int SCAN_INTERVAL = 10;
+    private static final Set<Class<? extends Mob>> DISABLED_CREATURES = Set.of(
+            EvolvedSkeletonEntity.class,
+            EvolvedCreeperEntity.class,
+            EvolvedZombieEntity.class,
+            EvolvedSpiderEntity.class
+    );
     public EntityType<? extends AbstractBossEntity> bossType;
     public AbstractBossEntity boss;
     public boolean spawned;
@@ -88,6 +95,8 @@ public class DungeonSpawnerBlockEntity extends BlockEntity implements Spawner {
             return;
         }
 
+        if ((level.getGameTime() + pos.asLong()) % SCAN_INTERVAL != 0) return;
+
         if (this.range15 == null) {
             final Vec3 thisVec = new Vec3(pos.getX(), pos.getY(), pos.getZ());
             this.range15 = new AABB(thisVec.x - 15, thisVec.y - 15, thisVec.z - 15, thisVec.x + 15, thisVec.y + 15, thisVec.z + 15);
@@ -116,7 +125,7 @@ public class DungeonSpawnerBlockEntity extends BlockEntity implements Spawner {
         List<Monster> entitiesWithin = level.getEntitiesOfClass(Monster.class, this.rangeBoundsPlus3);
 
         for (Entity mob : entitiesWithin) {
-            if (this.getDisabledCreatures().contains(mob.getClass())) {
+            if (DISABLED_CREATURES.contains(mob.getClass())) {
                 mob.remove(Entity.RemovalReason.KILLED);
             }
         }
@@ -148,15 +157,6 @@ public class DungeonSpawnerBlockEntity extends BlockEntity implements Spawner {
 
     public void playSpawnSound(Entity entity) {
 
-    }
-
-    public List<Class<? extends Mob>> getDisabledCreatures() {
-        List<Class<? extends Mob>> list = new ArrayList<>();
-        list.add(EvolvedSkeletonEntity.class);
-        list.add(EvolvedCreeperEntity.class);
-        list.add(EvolvedZombieEntity.class);
-        list.add(EvolvedSpiderEntity.class);
-        return list;
     }
 
     public void setRoom(Vec3i coords, Vec3i size) {

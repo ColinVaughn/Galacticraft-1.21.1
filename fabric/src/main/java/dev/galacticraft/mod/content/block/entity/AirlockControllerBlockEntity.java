@@ -40,7 +40,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -77,7 +76,7 @@ public class AirlockControllerBlockEntity extends BlockEntity implements MenuPro
 
     public void tick() {
         ticks++;
-        if (!this.level.isClientSide()) {
+        if (!this.level.isClientSide() && this.ticks % 5 == 0) {
             this.active = false;
 
             if (this.redstoneActivation) {
@@ -93,9 +92,15 @@ public class AirlockControllerBlockEntity extends BlockEntity implements MenuPro
                     default -> 0D;
                 };
 
-                Vec3 minPos = new Vec3(getBlockPos().getX() + 0.5D - distance, getBlockPos().getY() + 0.5D - distance, getBlockPos().getZ() + 0.5D - distance);
-                Vec3 maxPos = new Vec3(getBlockPos().getX() + 0.5D + distance, getBlockPos().getY() + 0.5D + distance, getBlockPos().getZ() + 0.5D + distance);
-                AABB matchingRegion = new AABB(minPos.x, minPos.y, minPos.z, maxPos.x, maxPos.y, maxPos.z);
+                BlockPos pos = this.getBlockPos();
+                AABB matchingRegion = new AABB(
+                        pos.getX() + 0.5D - distance,
+                        pos.getY() + 0.5D - distance,
+                        pos.getZ() + 0.5D - distance,
+                        pos.getX() + 0.5D + distance,
+                        pos.getY() + 0.5D + distance,
+                        pos.getZ() + 0.5D + distance
+                );
                 List<Player> playersWithin = this.level.getEntitiesOfClass(Player.class, matchingRegion);
 
                 if (this.playerNameMatches) {
@@ -120,36 +125,32 @@ public class AirlockControllerBlockEntity extends BlockEntity implements MenuPro
                 this.protocol = this.lastProtocol = new AirLockProtocol(this);
             }
 
-            if (this.ticks % 5 == 0) {
-                if (this.horizontalModeEnabled != this.lastHorizontalModeEnabled) {
-                    this.unsealAirLock();
-                } else if (this.active || this.lastActive) {
-                    this.lastOtherAirLocks = this.otherAirLocks;
-                    this.otherAirLocks = this.protocol.calculate(this.horizontalModeEnabled);
+            if (this.horizontalModeEnabled != this.lastHorizontalModeEnabled) {
+                this.unsealAirLock();
+            } else if (this.active || this.lastActive) {
+                this.lastOtherAirLocks = this.otherAirLocks;
+                this.otherAirLocks = this.protocol.calculate(this.horizontalModeEnabled);
 
-                    if (this.active) {
-                        if (this.otherAirLocks != this.lastOtherAirLocks || !this.lastActive) {
-                            this.unsealAirLock();
-                            if (this.otherAirLocks >= 0) {
-                                this.sealAirLock();
-                            }
-                        }
-                    } else {
-                        if (this.lastActive) {
-                            this.unsealAirLock();
+                if (this.active) {
+                    if (this.otherAirLocks != this.lastOtherAirLocks || !this.lastActive) {
+                        this.unsealAirLock();
+                        if (this.otherAirLocks >= 0) {
+                            this.sealAirLock();
                         }
                     }
+                } else if (this.lastActive) {
+                    this.unsealAirLock();
                 }
-
-                if (this.active != this.lastActive) {
-                    BlockState state = this.level.getBlockState(this.getBlockPos());
-                    this.level.sendBlockUpdated(this.getBlockPos(), state, state, 3);
-                }
-
-                this.lastActive = this.active;
-                this.lastProtocol = this.protocol;
-                this.lastHorizontalModeEnabled = this.horizontalModeEnabled;
             }
+
+            if (this.active != this.lastActive) {
+                BlockState state = this.level.getBlockState(this.getBlockPos());
+                this.level.sendBlockUpdated(this.getBlockPos(), state, state, 3);
+            }
+
+            this.lastActive = this.active;
+            this.lastProtocol = this.protocol;
+            this.lastHorizontalModeEnabled = this.horizontalModeEnabled;
         }
     }
 

@@ -44,6 +44,7 @@ import dev.galacticraft.mod.network.s2c.BubbleSizePayload;
 import dev.galacticraft.mod.network.s2c.BubbleUpdatePayload;
 import dev.galacticraft.mod.screen.OxygenBubbleDistributorMenu;
 import dev.galacticraft.mod.util.FluidUtil;
+import dev.galacticraft.mod.util.SphericalVolumeDiff;
 import dev.architectury.networking.NetworkManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -51,7 +52,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Mth;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -63,6 +63,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class OxygenBubbleDistributorBlockEntity extends MachineBlockEntity {
+    private static final int SIZE_SYNC_INTERVAL = 10;
+
     public static final int CHARGE_SLOT = 0;
     public static final int OXYGEN_INPUT_SLOT = 1; // REVIEW: should this be 0 or 1?
     public static final int OXYGEN_TANK = 0;
@@ -98,7 +100,9 @@ public class OxygenBubbleDistributorBlockEntity extends MachineBlockEntity {
     private double size = 0;
     private byte targetSize = 1;
     private int players = 0;
-    private double prevSize;
+    private double lastSyncedSize = Double.NaN;
+    private long lastSizeSyncTick = -SIZE_SYNC_INTERVAL;
+    private int appliedBubbleRadiusSquared = -1;
     private boolean oxygenUnloaded = true;
     private boolean oxygenWorld = true;
 
@@ -196,10 +200,13 @@ public class OxygenBubbleDistributorBlockEntity extends MachineBlockEntity {
     }
 
     private void trySyncSize(@NotNull ServerLevel level, @NotNull BlockPos pos, @NotNull ProfilerFiller profiler) {
-        // Could maybe get away with running this 1 in 10 ticks to reduce network traffic
-        if (this.prevSize != this.size || this.players != level.players().size()) {
+        long gameTime = level.getGameTime();
+        boolean playerCountChanged = this.players != level.players().size();
+        if ((playerCountChanged || gameTime >= this.lastSizeSyncTick + SIZE_SYNC_INTERVAL)
+                && (this.lastSyncedSize != this.size || playerCountChanged)) {
             this.players = level.players().size();
-            this.prevSize = this.size;
+            this.lastSyncedSize = this.size;
+            this.lastSizeSyncTick = gameTime;
             profiler.push("network");
             for (ServerPlayer player : level.players()) {
                 if (this.size < 0) this.size = 0;
@@ -209,28 +216,15 @@ public class OxygenBubbleDistributorBlockEntity extends MachineBlockEntity {
         }
     }
 
-    public int getDistanceFromDistributor(int par1, int par3, int par5) {
-        final int d3 = this.getBlockPos().getX() - par1;
-        final int d4 = this.getBlockPos().getY() - par3;
-        final int d5 = this.getBlockPos().getZ() - par5;
-        return d3 * d3 + d4 * d4 + d5 * d5;
-    }
-
     public void distributeOxygenToArea(double size, boolean oxygenated) {
-        int radius = Mth.floor(Math.max(size, this.prevSize)) + 4;
-        int bubbleR2 = (int) (size * size);
+        int bubbleRadiusSquared = oxygenated == this.oxygenWorld ? -1 : (int) (size * size);
+        if (bubbleRadiusSquared == this.appliedBubbleRadiusSquared) return;
+
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-        for (int x = this.getBlockPos().getX() - radius; x <= this.getBlockPos().getX() + radius; x++) {
-            for (int y = this.getBlockPos().getY() - radius; y <= this.getBlockPos().getY() + radius; y++) {
-                for (int z = this.getBlockPos().getZ() - radius; z <= this.getBlockPos().getZ() + radius; z++) {
-                    if (this.getDistanceFromDistributor(x, y, z) <= bubbleR2) {
-                        this.level.setBreathable(pos.set(x, y, z), oxygenated);
-                    } else {
-                        this.level.setBreathable(pos.set(x, y, z), this.oxygenWorld);
-                    }
-                }
-            }
-        }
+        BlockPos origin = this.getBlockPos();
+        SphericalVolumeDiff.forEach(this.appliedBubbleRadiusSquared, bubbleRadiusSquared, (x, y, z, added) ->
+                this.level.setBreathable(pos.setWithOffset(origin, x, y, z), added ? oxygenated : this.oxygenWorld));
+        this.appliedBubbleRadiusSquared = bubbleRadiusSquared;
     }
 
     public byte getTargetSize() {
