@@ -25,7 +25,6 @@ package dev.galacticraft.mod.world.gen.carver;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.tag.GCBlockTags;
 import dev.galacticraft.mod.world.gen.carver.config.CraterCarverConfig;
-import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
@@ -45,7 +44,7 @@ public class GCConfiguredCarvers {
     public static final ResourceKey<ConfiguredWorldCarver<?>> MOON_CRATER_CARVER = key(Constant.Carver.MOON_CRATER_CARVER);
     public static final ResourceKey<ConfiguredWorldCarver<?>> MOON_LARGE_CRATER_CARVER = key(Constant.Carver.MOON_LARGE_CRATER_CARVER);
     public static final ResourceKey<ConfiguredWorldCarver<?>> MOON_HIGHLANDS_CAVE_CARVER = key(Constant.Carver.MOON_HIGHLANDS_CAVE_CARVER);
-    public static final ResourceKey<ConfiguredWorldCarver<?>> MOON_MARE_CAVE_CARVER = key(Constant.Carver.MOON_MARE_CAVE_CARVER);
+    public static final ResourceKey<ConfiguredWorldCarver<?>> MOON_MARE_LAVA_TUBE_CARVER = key(Constant.Carver.MOON_MARE_LAVA_TUBE_CARVER);
     public static final ResourceKey<ConfiguredWorldCarver<?>> MARS_CANYON_CARVER = key(Constant.Carver.MARS_CANYON_CARVER);
     public static final ResourceKey<ConfiguredWorldCarver<?>> MARS_CRATER_CARVER = key(Constant.Carver.MARS_CRATER_CARVER);
     public static final ResourceKey<ConfiguredWorldCarver<?>> MARS_CAVE_CARVER = key(Constant.Carver.MARS_CAVE_CARVER);
@@ -63,17 +62,19 @@ public class GCConfiguredCarvers {
     }
 
     public static void bootstrapRegistries(BootstrapContext<ConfiguredWorldCarver<?>> context) {
+        // Sparse impact fractures in old highland crust. These are deliberately narrow and deep,
+        // unlike the enormous terrestrial-style ravines previously applied to every Moon biome.
         context.register(MOON_CANYON_CARVER, WorldCarver.CANYON.configured(new CanyonCarverConfiguration(
-                0.05f,
-                UniformHeight.of(VerticalAnchor.absolute(10), VerticalAnchor.absolute(67)),
-                ConstantFloat.of(3.0f),
+                0.012f,
+                UniformHeight.of(VerticalAnchor.absolute(4), VerticalAnchor.absolute(48)),
+                ConstantFloat.of(1.2f),
                 VerticalAnchor.aboveBottom(8),
                 CarverDebugSettings.DEFAULT,
                 BuiltInRegistries.BLOCK.getOrCreateTag(GCBlockTags.MOON_CARVER_REPLACEABLES),
                 UniformFloat.of(-0.125f, 0.125f),
                 new CanyonCarverConfiguration.CanyonShapeConfiguration(
                         UniformFloat.of(0.75f, 1.0f),
-                        TrapezoidFloat.of(0, 6, 2),
+                        TrapezoidFloat.of(0.35f, 2.2f, 0.5f),
                         3,
                         UniformFloat.of(0.75f, 1.0f),
                         1.0f,
@@ -101,25 +102,25 @@ public class GCConfiguredCarvers {
                 6,
                 2.6f
         )));
-        context.register(MOON_HIGHLANDS_CAVE_CARVER, GCCarvers.LUNAR_CAVE.configured(new CaveCarverConfiguration(
-                0.15f,
-                UniformHeight.of(VerticalAnchor.aboveBottom(8), VerticalAnchor.absolute(180)),
-                UniformFloat.of(0.1f, 0.9f),
+        context.register(MOON_HIGHLANDS_CAVE_CARVER, GCCarvers.LUNAR_IMPACT_CAVERN.configured(new CaveCarverConfiguration(
+                0.032f,
+                UniformHeight.of(VerticalAnchor.absolute(-8), VerticalAnchor.absolute(44)),
+                UniformFloat.of(0.82f, 1.12f),
                 VerticalAnchor.aboveBottom(-64),
-                HolderSet.direct(),
-                UniformFloat.of(0.7f, 1.4f),
-                UniformFloat.of(0.8f, 1.3f),
-                UniformFloat.of(-1.0f, -0.4f)
+                BuiltInRegistries.BLOCK.getOrCreateTag(GCBlockTags.MOON_CARVER_REPLACEABLES),
+                UniformFloat.of(0.85f, 1.15f),
+                UniformFloat.of(0.72f, 1.0f),
+                UniformFloat.of(-0.95f, -0.65f)
         )));
-        context.register(MOON_MARE_CAVE_CARVER, GCCarvers.LUNAR_CAVE.configured(new CaveCarverConfiguration(
-                0.18f,
-                UniformHeight.of(VerticalAnchor.aboveBottom(8), VerticalAnchor.absolute(180)),
-                UniformFloat.of(0.1f, 0.9f),
+        context.register(MOON_MARE_LAVA_TUBE_CARVER, GCCarvers.LUNAR_LAVA_TUBE.configured(new CaveCarverConfiguration(
+                0.045f,
+                UniformHeight.of(VerticalAnchor.absolute(24), VerticalAnchor.absolute(58)),
+                UniformFloat.of(0.85f, 1.15f),
                 VerticalAnchor.aboveBottom(-64),
-                HolderSet.direct(),
-                UniformFloat.of(0.7f, 1.4f),
-                UniformFloat.of(0.8f, 1.3f),
-                UniformFloat.of(-1.0f, -0.4f)
+                BuiltInRegistries.BLOCK.getOrCreateTag(GCBlockTags.MOON_CARVER_REPLACEABLES),
+                UniformFloat.of(0.9f, 1.2f),
+                UniformFloat.of(0.62f, 0.82f),
+                UniformFloat.of(-0.95f, -0.65f)
         )));
 
         // Valles Marineris: deep, wide rift canyons cut into the Martian plateaus.

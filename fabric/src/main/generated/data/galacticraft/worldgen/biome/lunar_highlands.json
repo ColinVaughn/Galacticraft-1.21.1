@@ -2,8 +2,8 @@
   "carvers": {
     "air": [
       "galacticraft:moon_crater_carver",
-      "galacticraft:moon_canyon_carver",
       "galacticraft:moon_highlands_cave_carver",
+      "galacticraft:moon_canyon_carver",
       "galacticraft:moon_large_crater_carver"
     ]
   },
@@ -44,6 +44,9 @@
       "galacticraft:ore_cheese_moon",
       "galacticraft:ore_cheese_large_moon",
       "galacticraft:ore_lunar_sapphire_moon"
+    ],
+    [
+      "galacticraft:moon_cave_landmark"
     ]
   ],
   "has_precipitation": false,

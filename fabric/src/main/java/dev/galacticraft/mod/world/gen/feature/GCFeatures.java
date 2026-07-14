@@ -33,10 +33,12 @@ public class GCFeatures {
     public static final Feature<NoneFeatureConfiguration> VOLCANO = new VolcanoFeature(NoneFeatureConfiguration.CODEC);
     public static final Feature<NoneFeatureConfiguration> OLIVINE_SPIRE = new OlivineSpireFeature(NoneFeatureConfiguration.CODEC);
     public static final Feature<NoneFeatureConfiguration> CHEESE_TREE = new CheeseTreeFeature(NoneFeatureConfiguration.CODEC);
+    public static final Feature<NoneFeatureConfiguration> LUNAR_CAVE_LANDMARK = new LunarCaveLandmarkFeature(NoneFeatureConfiguration.CODEC);
 
     public static void register() {
         Registry.register(BuiltInRegistries.FEATURE, Constant.id("volcano"), VOLCANO);
         Registry.register(BuiltInRegistries.FEATURE, Constant.id("olivine_spire"), OLIVINE_SPIRE);
         Registry.register(BuiltInRegistries.FEATURE, Constant.id("cheese_tree"), CHEESE_TREE);
+        Registry.register(BuiltInRegistries.FEATURE, Constant.id("lunar_cave_landmark"), LUNAR_CAVE_LANDMARK);
     }
 }

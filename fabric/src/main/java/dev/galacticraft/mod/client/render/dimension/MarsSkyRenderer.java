@@ -27,11 +27,13 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Axis;
 import dev.galacticraft.mod.Constant;
+import dev.galacticraft.mod.client.render.dimension.duststorm.ClientDustStorms;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.ShaderInstance;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
@@ -152,8 +154,6 @@ public class MarsSkyRenderer {
         float f1 = (float) vec3.x;
         float f2 = (float) vec3.y;
         float f3 = (float) vec3.z;
-        float f6;
-
         RenderSystem.depthMask(false);
         FogRenderer.levelFogColor();
         RenderSystem.setShaderColor(f1, f2, f3, 1.0F);
@@ -183,74 +183,39 @@ public class MarsSkyRenderer {
             poseStack.popPose();
         }
 
-        float[] afloat = new float[4];
+        float timeOfDay = level.getTimeOfDay(partialTicks);
         poseStack.pushPose();
         poseStack.mulPose(Axis.YN.rotationDegrees(90.0F));
-        poseStack.mulPose(Axis.XN.rotationDegrees(level.getTimeOfDay(partialTicks) * 360.0F));
-        afloat[0] = 230 / 255.0F;
-        afloat[1] = 160 / 255.0F;
-        afloat[2] = 110 / 255.0F;
-        afloat[3] = 0.3F;
-        f6 = afloat[0];
-        f7 = afloat[1];
-        f8 = afloat[2];
+        poseStack.mulPose(Axis.XN.rotationDegrees(timeOfDay * 360.0F));
 
-        starBrightness = 1.0F - starBrightness;
+        // Martian dust scatters blue light forward, concentrating a cool halo
+        // around the low Sun while the rest of the daylight sky remains rusty.
+        float sunHeight = Mth.cos(timeOfDay * Mth.TWO_PI);
+        float heightRange = Mth.clamp((Math.abs(sunHeight) - 0.12F) / 0.43F, 0.0F, 1.0F);
+        heightRange = heightRange * heightRange * (3.0F - 2.0F * heightRange);
+        float lowSun = 1.0F - heightRange;
+        float sunVisibility = Mth.clamp((sunHeight + 0.18F) / 0.32F, 0.0F, 1.0F);
+        float dustVisibility = 1.0F - ClientDustStorms.intensity(partialTicks) * 0.85F;
+        float haloVisibility = sunVisibility * dustVisibility;
 
+        float haloRed = Mth.lerp(lowSun, 0.90F, 0.38F);
+        float haloGreen = Mth.lerp(lowSun, 0.63F, 0.58F);
+        float haloBlue = Mth.lerp(lowSun, 0.43F, 0.95F);
+        // Star rendering changes the global shader color. Leaving it in place
+        // multiplies the halo toward black and can erase it entirely in daylight.
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
-        float r = f6 * starBrightness;
-        float g = f7 * starBrightness;
-        float b = f8 * starBrightness;
-        float a = afloat[3] * 2 / starBrightness;
-        buffer.addVertex(poseStack.last().pose(), 0.0F, 100.0F, 0.0F).setColor(r, g, b, a);
-        r = afloat[0] * starBrightness;
-        g = afloat[1] * starBrightness;
-        b = afloat[2] * starBrightness / 20.0F;
-        a = 0.0F;
-
-        // Render sun aura
-        f10 = 20.0F;
         Matrix4f last = poseStack.last().pose();
-        buffer.addVertex(last, -f10, 100.0F, -f10).setColor(r, g, b, a)
-                .addVertex(last, 0, 100.0F, -f10 * 1.5F).setColor(r, g, b, a)
-                .addVertex(last, f10, 100.0F, -f10).setColor(r, g, b, a)
-                .addVertex(last, f10 * 1.5F, 100.0F, 0).setColor(r, g, b, a)
-                .addVertex(last, f10, 100.0F, f10).setColor(r, g, b, a)
-                .addVertex(last, 0, 100.0F, f10 * 1.5F).setColor(r, g, b, a)
-                .addVertex(last, -f10, 100.0F, f10).setColor(r, g, b, a)
-                .addVertex(last, -f10 * 1.5F, 100.0F, 0).setColor(r, g, b, a)
-                .addVertex(last, -f10, 100.0F, -f10).setColor(r, g, b, a);
-
-        BufferUploader.drawWithShader(buffer.buildOrThrow());
-        buffer = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
-
-        r = f6 * starBrightness;
-        g = f7 * starBrightness;
-        b = f8 * starBrightness;
-        a = afloat[3] * starBrightness;
-        buffer.addVertex(last, 0.0F, 100.0F, 0.0F).setColor(r, g, b, a);
-        r = afloat[0] * starBrightness;
-        g = afloat[1] * starBrightness;
-        b = afloat[2] * starBrightness;
-        a = 0.0F;
-
-        // Render larger sun aura
-        f10 = 40.0F;
-        buffer.addVertex(last, -f10, 100.0F, -f10).setColor(r, g, b, a)
-                .addVertex(last, 0, 100.0F, -f10 * 1.5F).setColor(r, g, b, a)
-                .addVertex(last, f10, 100.0F, -f10).setColor(r, g, b, a)
-                .addVertex(last, f10 * 1.5F, 100.0F, 0).setColor(r, g, b, a)
-                .addVertex(last, f10, 100.0F, f10).setColor(r, g, b, a)
-                .addVertex(last, 0, 100.0F, f10 * 1.5F).setColor(r, g, b, a)
-                .addVertex(last, -f10, 100.0F, f10).setColor(r, g, b, a)
-                .addVertex(last, -f10 * 1.5F, 100.0F, 0).setColor(r, g, b, a)
-                .addVertex(last, -f10, 100.0F, -f10).setColor(r, g, b, a);
-
-        BufferUploader.drawWithShader(buffer.buildOrThrow());
+        renderSunHalo(last, Mth.lerp(lowSun, 20.0F, 29.0F), haloRed, haloGreen, haloBlue,
+                Mth.lerp(lowSun, 0.18F, 0.50F) * haloVisibility);
+        renderSunHalo(last, Mth.lerp(lowSun, 40.0F, 58.0F), haloRed, haloGreen, haloBlue,
+                Mth.lerp(lowSun, 0.08F, 0.26F) * haloVisibility);
+        renderSunHalo(last, Mth.lerp(lowSun, 62.0F, 88.0F), haloRed, haloGreen, haloBlue,
+                lowSun * 0.10F * haloVisibility);
         poseStack.popPose();
 
         RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+        BufferBuilder buffer;
         poseStack.pushPose();
         f7 = 0.0F;
         f8 = 0.0F;
@@ -347,5 +312,22 @@ public class MarsSkyRenderer {
         RenderSystem.depthMask(true);
         RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         RenderSystem.disableBlend();
+    }
+
+    private static void renderSunHalo(Matrix4f matrix, float radius, float red, float green, float blue, float alpha) {
+        if (alpha <= 0.001F) return;
+
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
+        buffer.addVertex(matrix, 0.0F, 100.0F, 0.0F).setColor(red, green, blue, alpha);
+        buffer.addVertex(matrix, -radius, 100.0F, -radius).setColor(red, green, blue, 0.0F)
+                .addVertex(matrix, 0.0F, 100.0F, -radius * 1.5F).setColor(red, green, blue, 0.0F)
+                .addVertex(matrix, radius, 100.0F, -radius).setColor(red, green, blue, 0.0F)
+                .addVertex(matrix, radius * 1.5F, 100.0F, 0.0F).setColor(red, green, blue, 0.0F)
+                .addVertex(matrix, radius, 100.0F, radius).setColor(red, green, blue, 0.0F)
+                .addVertex(matrix, 0.0F, 100.0F, radius * 1.5F).setColor(red, green, blue, 0.0F)
+                .addVertex(matrix, -radius, 100.0F, radius).setColor(red, green, blue, 0.0F)
+                .addVertex(matrix, -radius * 1.5F, 100.0F, 0.0F).setColor(red, green, blue, 0.0F)
+                .addVertex(matrix, -radius, 100.0F, -radius).setColor(red, green, blue, 0.0F);
+        BufferUploader.drawWithShader(buffer.buildOrThrow());
     }
 }

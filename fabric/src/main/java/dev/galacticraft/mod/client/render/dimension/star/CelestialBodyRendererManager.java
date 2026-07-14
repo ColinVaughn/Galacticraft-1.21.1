@@ -26,13 +26,14 @@ import dev.galacticraft.mod.client.render.dimension.star.data.CelestialBody;
 import dev.galacticraft.mod.client.render.dimension.star.data.CelestialBodyType;
 import dev.galacticraft.mod.client.render.dimension.star.data.Planet3DData;
 import dev.galacticraft.mod.client.render.dimension.star.data.PlanetData;
+import dev.galacticraft.mod.client.render.dimension.star.data.StarData;
 import dev.galacticraft.mod.client.render.dimension.star.display.CelestialBodyRenderer;
 import dev.galacticraft.mod.client.render.dimension.star.display.PlanetRenderer2D;
 import dev.galacticraft.mod.client.render.dimension.star.display.PlanetRenderer3D;
 import dev.galacticraft.mod.client.render.dimension.star.display.StarRenderer;
 import dev.galacticraft.mod.client.render.dimension.GCWorldRenderContext;
 import net.minecraft.resources.ResourceLocation;
-import org.joml.SimplexNoise;
+import org.joml.Matrix4f;
 import org.joml.Vector3d;
 
 import java.util.*;
@@ -49,12 +50,68 @@ public class CelestialBodyRendererManager {
 
     // Fixed seed keeps the procedural background stars identical across clients.
     private static final long STAR_FIELD_SEED = 27893L;
-    private static final int STAR_COUNT = 20000;
-    private static final int STAR_FIELD_RADIUS = 850;
-    private static final int WORLEY_POINT_COUNT = 32;
-    private static final float STAR_NOISE_SCALE = 0.005F;
-    private static final double WORLEY_MIN_DISTANCE = 100.0;
-    private static final double STAR_NOISE_THRESHOLD = 0.4;
+    private static final int UNIFORM_STAR_COUNT = 5500;
+    private static final int GALACTIC_STAR_COUNT = 3000;
+    // Vanilla's sky projection is intentionally shallow. Keeping the stellar
+    // sphere near the other sky bodies prevents the entire field from being
+    // clipped at common render distances while pixel-sized billboards preserve
+    // the illusion of astronomical distance.
+    private static final double STAR_FIELD_RADIUS = 100.0;
+    private static final double GALACTIC_BAND_SIGMA = Math.toRadians(6.5);
+    private static final Vector3d GALACTIC_NORTH = new Vector3d(-0.868, 0.456, -0.198).normalize();
+    private static final Vector3d GALACTIC_AXIS_U = new Vector3d(GALACTIC_NORTH).cross(0.0, 1.0, 0.0).normalize();
+    private static final Vector3d GALACTIC_AXIS_V = new Vector3d(GALACTIC_NORTH).cross(GALACTIC_AXIS_U).normalize();
+
+    /**
+     * A compact naked-eye catalog. Procedural stars provide the depth while these
+     * fixed equatorial positions preserve recognizable anchor constellations.
+     */
+    private static final CatalogStar[] BRIGHT_STAR_CATALOG = {
+            // Orion
+            new CatalogStar(5.9195, 7.407, 0.42, 0.02),
+            new CatalogStar(5.4189, 6.349, 0.13, 0.96),
+            new CatalogStar(5.6036, -1.202, 1.69, 0.72),
+            new CatalogStar(5.6793, -1.943, 1.74, 0.88),
+            new CatalogStar(5.5334, -0.299, 2.25, 0.82),
+            new CatalogStar(5.2423, -8.202, 0.13, 0.98),
+            new CatalogStar(5.7959, -9.670, 2.06, 0.86),
+            // Big Dipper
+            new CatalogStar(11.0621, 61.751, 1.79, 0.64),
+            new CatalogStar(11.0307, 56.382, 2.37, 0.70),
+            new CatalogStar(11.8972, 53.695, 2.44, 0.66),
+            new CatalogStar(12.2570, 57.033, 3.31, 0.72),
+            new CatalogStar(12.9004, 55.959, 1.76, 0.72),
+            new CatalogStar(13.3987, 54.925, 2.23, 0.80),
+            new CatalogStar(13.7923, 49.313, 1.85, 0.86),
+            // Cassiopeia
+            new CatalogStar(0.1529, 59.150, 2.27, 0.72),
+            new CatalogStar(0.6751, 56.537, 2.24, 0.12),
+            new CatalogStar(0.9451, 60.717, 2.47, 0.90),
+            new CatalogStar(1.4302, 60.235, 2.68, 0.84),
+            new CatalogStar(1.9066, 63.670, 3.35, 0.90),
+            // Southern Cross
+            new CatalogStar(12.4433, -63.099, 0.76, 0.90),
+            new CatalogStar(12.7953, -59.689, 1.25, 0.96),
+            new CatalogStar(12.5194, -57.113, 1.63, 0.08),
+            new CatalogStar(12.2524, -58.749, 2.79, 0.84),
+            // Bright all-sky anchors: Sirius through Regulus
+            new CatalogStar(6.7525, -16.716, -1.46, 0.92),
+            new CatalogStar(6.3992, -52.696, -0.74, 0.20),
+            new CatalogStar(14.6601, -60.835, -0.27, 0.18),
+            new CatalogStar(18.6156, 38.784, 0.03, 0.98),
+            new CatalogStar(5.2782, 45.998, 0.08, 0.14),
+            new CatalogStar(14.2610, 19.182, -0.05, 0.10),
+            new CatalogStar(7.6550, 5.225, 0.34, 0.72),
+            new CatalogStar(1.6286, -57.237, 0.46, 0.94),
+            new CatalogStar(19.8464, 8.868, 0.77, 0.94),
+            new CatalogStar(4.5987, 16.509, 0.85, 0.04),
+            new CatalogStar(16.4901, -26.432, 0.96, 0.01),
+            new CatalogStar(13.4199, -11.161, 0.97, 0.92),
+            new CatalogStar(7.7553, 28.026, 1.14, 0.18),
+            new CatalogStar(22.9608, -29.622, 1.16, 0.82),
+            new CatalogStar(20.6905, 45.280, 1.25, 0.90),
+            new CatalogStar(10.1395, 11.967, 1.35, 0.94)
+    };
 
     private CelestialBodyRendererManager() {
 
@@ -77,44 +134,70 @@ public class CelestialBodyRendererManager {
     /** Rebuilds the deterministic background star field. */
     public void setStarPositions() {
         final Random random = new Random(STAR_FIELD_SEED);
-        final int starCount = STAR_COUNT;
-        final int size = STAR_FIELD_RADIUS;
+        celestialBodies.get(CelestialBodyType.STAR).clear();
 
-        int numPoints = WORLEY_POINT_COUNT;
-        Vector3d[] points = new Vector3d[numPoints];
-        for (int i = 0; i < numPoints; i++) {
-            points[i] = new Vector3d(
-                    random.nextInt(size * 2) - size,
-                    random.nextInt(size * 2) - size,
-                    random.nextInt(size * 2) - size
-            );
+        for (int i = 0; i < UNIFORM_STAR_COUNT; i++) {
+            this.addProceduralStar(random, randomSphereDirection(random));
         }
 
-        for (int i = 0; i < starCount; i++) {
-            int x = random.nextInt((size * 2) + 1) - size;
-            int y = random.nextInt((size * 2) + 1) - size;
-            int z = random.nextInt((size * 2) + 1) - size;
-
-            double noise = (SimplexNoise.noise(x * STAR_NOISE_SCALE, y * STAR_NOISE_SCALE, z * STAR_NOISE_SCALE) + 1) * 0.5;
-
-            double minDist = Double.MAX_VALUE;
-            for (Vector3d p : points) {
-                double dx = x - p.x;
-                double dy = y - p.y;
-                double dz = z - p.z;
-                double dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-                minDist = Math.min(minDist, dist);
-            }
-
-            if (minDist > WORLEY_MIN_DISTANCE && noise > STAR_NOISE_THRESHOLD) {
-                this.addCelestialBody(
-                        CelestialBodyType.STAR,
-                        x, y, z,
-                        random.nextFloat(0.3f) + 1,
-                        random.nextDouble(360) + 1
-                );
-            }
+        for (int i = 0; i < GALACTIC_STAR_COUNT; i++) {
+            this.addProceduralStar(random, galacticBandDirection(random));
         }
+
+        for (CatalogStar catalogStar : BRIGHT_STAR_CATALOG) {
+            Vector3d direction = equatorialDirection(catalogStar.rightAscensionHours, catalogStar.declinationDegrees);
+            StarData star = this.addStar(direction, 0.90, catalogStar.colorHint * 360.0);
+            double normalizedMagnitude = Math.max(0.0, Math.min(1.0, (4.0 - catalogStar.visualMagnitude) / 5.5));
+            star.setBrightness(0.58 + Math.pow(normalizedMagnitude, 1.35) * 0.42);
+        }
+    }
+
+    private void addProceduralStar(Random random, Vector3d direction) {
+        // A power distribution produces many sub-pixel stars and very few visual
+        // anchors, which is much closer to an apparent-magnitude sky.
+        double brightness = 0.035 + Math.pow(random.nextDouble(), 6.5) * 0.965;
+        StarData star = this.addStar(direction, 0.25 + brightness * 0.65, random.nextDouble(360.0));
+        star.setBrightness(brightness);
+    }
+
+    private StarData addStar(Vector3d direction, double size, double colorHintDegrees) {
+        CelestialBody body = this.addCelestialBody(
+                CelestialBodyType.STAR,
+                (int) Math.round(direction.x * STAR_FIELD_RADIUS),
+                (int) Math.round(direction.y * STAR_FIELD_RADIUS),
+                (int) Math.round(direction.z * STAR_FIELD_RADIUS),
+                size,
+                colorHintDegrees
+        );
+        return (StarData) body;
+    }
+
+    private static Vector3d randomSphereDirection(Random random) {
+        double y = random.nextDouble() * 2.0 - 1.0;
+        double longitude = random.nextDouble() * Math.PI * 2.0;
+        double horizontal = Math.sqrt(1.0 - y * y);
+        return new Vector3d(horizontal * Math.cos(longitude), y, horizontal * Math.sin(longitude));
+    }
+
+    private static Vector3d galacticBandDirection(Random random) {
+        double longitude = random.nextDouble() * Math.PI * 2.0;
+        double latitude = Math.max(-0.35, Math.min(0.35, random.nextGaussian() * GALACTIC_BAND_SIGMA));
+        double planar = Math.cos(latitude);
+        return new Vector3d(GALACTIC_AXIS_U).mul(Math.cos(longitude) * planar)
+                .add(new Vector3d(GALACTIC_AXIS_V).mul(Math.sin(longitude) * planar))
+                .add(new Vector3d(GALACTIC_NORTH).mul(Math.sin(latitude)))
+                .normalize();
+    }
+
+    private static Vector3d equatorialDirection(double rightAscensionHours, double declinationDegrees) {
+        double longitude = Math.toRadians(rightAscensionHours * 15.0);
+        double latitude = Math.toRadians(declinationDegrees);
+        double planar = Math.cos(latitude);
+        return new Vector3d(planar * Math.cos(longitude), Math.sin(latitude), planar * Math.sin(longitude));
+    }
+
+    private record CatalogStar(double rightAscensionHours, double declinationDegrees, double visualMagnitude,
+                               double colorHint) {
     }
 
     public CelestialBody addCelestialBody(CelestialBodyType type, int x, int y, int z, double size, double rotation) {
@@ -163,11 +246,20 @@ public class CelestialBodyRendererManager {
     }
 
     public void render(GCWorldRenderContext worldRenderContext) {
+        this.render(worldRenderContext, null);
+    }
+
+    /** Renders the celestial sphere with an optional dimension-specific rotation. */
+    public void render(GCWorldRenderContext worldRenderContext, Matrix4f celestialMatrix) {
         for (CelestialBodyType type : CelestialBodyType.values()) {
             CelestialBodyRenderer renderer = renderers.get(type);
             if (renderer != null) {
                 List<CelestialBody> bodies = celestialBodies.get(type);
-                renderer.renderAll(bodies, worldRenderContext);
+                if (celestialMatrix != null && renderer instanceof StarRenderer starRenderer) {
+                    starRenderer.renderAll(bodies, worldRenderContext, celestialMatrix);
+                } else {
+                    renderer.renderAll(bodies, worldRenderContext);
+                }
             }
         }
     }

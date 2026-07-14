@@ -2,8 +2,7 @@
   "carvers": {
     "air": [
       "galacticraft:moon_crater_carver",
-      "galacticraft:moon_canyon_carver",
-      "galacticraft:moon_mare_cave_carver"
+      "galacticraft:moon_mare_lava_tube_carver"
     ]
   },
   "downfall": 0.0,
@@ -45,6 +44,9 @@
       "galacticraft:ore_lunar_sapphire_moon",
       "galacticraft:ore_tin_mare_bonus",
       "galacticraft:ore_lunar_sapphire_mare_bonus"
+    ],
+    [
+      "galacticraft:moon_cave_landmark"
     ]
   ],
   "has_precipitation": false,

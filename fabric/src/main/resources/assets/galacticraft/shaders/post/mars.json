@@ -1,0 +1,21 @@
+{
+  "targets": ["mars_color"],
+  "passes": [
+    {
+      "name": "galacticraft:mars_tonemap",
+      "intarget": "minecraft:main",
+      "outtarget": "mars_color",
+      "auxtargets": [
+        {
+          "name": "DepthSampler",
+          "id": "minecraft:main:depth"
+        }
+      ]
+    },
+    {
+      "name": "blit",
+      "intarget": "mars_color",
+      "outtarget": "minecraft:main"
+    }
+  ]
+}

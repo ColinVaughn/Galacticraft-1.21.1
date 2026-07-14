@@ -29,8 +29,10 @@ import dev.galacticraft.api.universe.celestialbody.landable.teleporter.type.Cele
 import dev.galacticraft.impl.universe.celestialbody.landable.teleporter.config.DefaultCelestialTeleporterConfig;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.content.entity.vehicle.LanderEntity;
+import dev.galacticraft.mod.world.gen.custom.AsteroidChunkGenerator;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 
 public class LanderCelestialTeleporterType<Config extends CelestialTeleporterConfig> extends CelestialTeleporterType<Config> {
@@ -42,7 +44,20 @@ public class LanderCelestialTeleporterType<Config extends CelestialTeleporterCon
 
     @Override
     public void onEnterAtmosphere(ServerLevel level, Entity entity, CelestialBody<?, ?> body, CelestialBody<?, ?> fromBody, Config config) {
-        entity.teleportTo(level, entity.getX(), Constant.REENTRY_HEIGHT, entity.getZ(), NO_RELATIVE_MOVEMENT, -90.0F, 45.0F);
+        double targetX = entity.getX();
+        double targetZ = entity.getZ();
+
+        if (level.getChunkSource().getGenerator() instanceof AsteroidChunkGenerator generator) {
+            var asteroid = generator.isLargeAsteroidAt(Mth.floor(targetX), Mth.floor(targetZ));
+            if (asteroid != null) {
+                // Asteroid generation is sparse, so preserving the source coordinates can put
+                // the lander above an empty column. Enter over the nearest generated body instead.
+                targetX = asteroid.x + 0.5D;
+                targetZ = asteroid.z + 0.5D;
+            }
+        }
+
+        entity.teleportTo(level, targetX, Constant.REENTRY_HEIGHT, targetZ, NO_RELATIVE_MOVEMENT, -90.0F, 45.0F);
         if (entity instanceof ServerPlayer player) {
             LanderEntity lander = new LanderEntity(player);
             level.addFreshEntity(lander);

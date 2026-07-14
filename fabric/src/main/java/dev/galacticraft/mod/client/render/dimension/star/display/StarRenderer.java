@@ -24,14 +24,17 @@ package dev.galacticraft.mod.client.render.dimension.star.display;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
+import dev.galacticraft.mod.client.model.GCRenderTypes;
+import dev.galacticraft.mod.client.render.dimension.LunarSkyExposure;
 import dev.galacticraft.mod.client.render.dimension.star.GeographicalSolarPosition;
 import dev.galacticraft.mod.client.render.dimension.star.data.CelestialBody;
 import dev.galacticraft.mod.client.render.dimension.star.data.StarData;
 import dev.galacticraft.mod.client.render.dimension.GCWorldRenderContext;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.FogRenderer;
-import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Vector3d;
+import org.joml.Matrix4f;
 
 import java.util.List;
 
@@ -39,101 +42,86 @@ import java.util.List;
  * Renderer for stars.
  */
 public class StarRenderer implements CelestialBodyRenderer {
+    private static final double STAR_RENDER_DISTANCE = 850.0;
 
     private VertexBuffer starBuffer;
     private final GeographicalSolarPosition cameraRenderPosition = GeographicalSolarPosition.getInstance();
+    private double bufferedCameraX = Double.NaN;
+    private double bufferedCameraY = Double.NaN;
+    private double bufferedCameraZ = Double.NaN;
+    private int bufferedBodyCount = -1;
 
     @Override
     public void setupBufferPositions(List<CelestialBody> bodies) {
+        double cameraX = cameraRenderPosition.getX();
+        double cameraY = cameraRenderPosition.getY();
+        double cameraZ = cameraRenderPosition.getZ();
+
+        // The Moon uses a fixed astronomical camera. Its old renderer rebuilt
+        // and uploaded thousands of identical star quads every frame.
+        if (this.starBuffer != null
+                && this.bufferedBodyCount == bodies.size()
+                && Double.compare(this.bufferedCameraX, cameraX) == 0
+                && Double.compare(this.bufferedCameraY, cameraY) == 0
+                && Double.compare(this.bufferedCameraZ, cameraZ) == 0) {
+            return;
+        }
+
         if (this.starBuffer == null) {
             this.starBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
         }
 
-        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        RenderSystem.enableBlend();
-
-        RenderSystem.disableCull();
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
 
         // Calculate the direction from the star to the camera
-        Vec3 cameraPos = new Vec3(cameraRenderPosition.getX(), cameraRenderPosition.getY(), cameraRenderPosition.getZ());
+        Vec3 cameraPos = new Vec3(cameraX, cameraY, cameraZ);
 
 
         for (CelestialBody body : bodies) {
             if (body instanceof StarData star) {
 
-                double starSize = star.getSize();
                 double starBrightness = star.getBrightness();
                 double x = star.getX() - cameraPos.x;
                 double y = star.getY() - cameraPos.y;
                 double z = star.getZ() - cameraPos.z;
 
                 Vec3 starToCamera = new Vec3(x, y, z); // Star's position relative to camera
-                Vec3 starToCameraNormalized = starToCamera.normalize();
 
                 Vec3 starPos = new Vec3(star.getX(), star.getY(), star.getZ());
 
                 double distance = starPos.distanceTo(cameraPos);
 
-                starSize = this.getModifiedStarSize(distance, starSize);
-
-                starSize *= 0.5; // half size star
-
-                // TODO: we should make the star sized modified by the distance from the camera
-                if (starSize == 0) {
+                if (distance < 4.0 || distance > STAR_RENDER_DISTANCE) {
                     continue;
                 }
 
-                Vec3 right = starToCameraNormalized.cross(new Vec3(0, 1, 0)).normalize();
-                Vec3 up = right.cross(starToCameraNormalized).normalize();
+                // Only visually bright stars reveal much temperature color to a
+                // dark-adapted human eye. Rotation is a deterministic color hint.
+                double temperature = star.getRotation() / 360.0;
+                float r = 0.975F;
+                float g = 0.985F;
+                float b = 1.0F;
+                float colorStrength = (float) Math.max(0.0, Math.min(1.0, (starBrightness - 0.45) / 0.45));
+                if (temperature < 0.10) {
+                    r = 1.0F;
+                    g = 1.0F - 0.14F * colorStrength;
+                    b = 1.0F - 0.27F * colorStrength;
+                } else if (temperature > 0.90) {
+                    r = 1.0F - 0.20F * colorStrength;
+                    g = 1.0F - 0.10F * colorStrength;
+                }
+                float a = (float) starBrightness;
 
-                double angle = Math.toRadians(star.getRotation());
-
-                double cos = Math.cos(angle);
-                double sin = Math.sin(angle);
-
-                // Compute rotated right and up vectors
-                Vector3d rotatedRight = new Vector3d(
-                        cos * right.x - sin * up.x,
-                        cos * right.y - sin * up.y,
-                        cos * right.z - sin * up.z
-                ).normalize();
-
-                Vector3d rotatedUp = new Vector3d(
-                        sin * right.x + cos * up.x,
-                        sin * right.y + cos * up.y,
-                        sin * right.z + cos * up.z
-                ).normalize();
-
-                // Define vertices of the quad (billboard) around the star with rotation
-                float r = 1.0f;
-                float g = 1.0f;
-                float b = 1.0f;
-                float a = 1.0f;
-
-                buffer.addVertex(
-                        (float) (starToCamera.x - rotatedRight.x * starSize - rotatedUp.x * starSize),
-                        (float) (starToCamera.y - rotatedRight.y * starSize - rotatedUp.y * starSize),
-                        (float) (starToCamera.z - rotatedRight.z * starSize - rotatedUp.z * starSize)
-                ).setColor(r, g, b, a);
-
-                buffer.addVertex(
-                        (float) (starToCamera.x + rotatedRight.x * starSize - rotatedUp.x * starSize),
-                        (float) (starToCamera.y + rotatedRight.y * starSize - rotatedUp.y * starSize),
-                        (float) (starToCamera.z + rotatedRight.z * starSize - rotatedUp.z * starSize)
-                ).setColor(r, g, b, a);
-
-                buffer.addVertex(
-                        (float) (starToCamera.x + rotatedRight.x * starSize + rotatedUp.x * starSize),
-                        (float) (starToCamera.y + rotatedRight.y * starSize + rotatedUp.y * starSize),
-                        (float) (starToCamera.z + rotatedRight.z * starSize + rotatedUp.z * starSize)
-                ).setColor(r, g, b, a);
-
-                buffer.addVertex(
-                        (float) (starToCamera.x - rotatedRight.x * starSize + rotatedUp.x * starSize),
-                        (float) (starToCamera.y - rotatedRight.y * starSize + rotatedUp.y * starSize),
-                        (float) (starToCamera.z - rotatedRight.z * starSize + rotatedUp.z * starSize)
-                ).setColor(r, g, b, a);
+                // UV0 identifies the four corners. Their positions intentionally
+                // coincide; space_star.vsh expands them by a fixed pixel radius.
+                buffer.addVertex((float) starToCamera.x, (float) starToCamera.y, (float) starToCamera.z)
+                        .setUv(0.0F, 0.0F).setColor(r, g, b, a);
+                buffer.addVertex((float) starToCamera.x, (float) starToCamera.y, (float) starToCamera.z)
+                        .setUv(1.0F, 0.0F).setColor(r, g, b, a);
+                buffer.addVertex((float) starToCamera.x, (float) starToCamera.y, (float) starToCamera.z)
+                        .setUv(1.0F, 1.0F).setColor(r, g, b, a);
+                buffer.addVertex((float) starToCamera.x, (float) starToCamera.y, (float) starToCamera.z)
+                        .setUv(0.0F, 1.0F).setColor(r, g, b, a);
 
             }
         }
@@ -142,23 +130,11 @@ public class StarRenderer implements CelestialBodyRenderer {
         this.starBuffer.upload(buffer.build());
         VertexBuffer.unbind();
 
-        RenderSystem.enableCull();
+        this.bufferedCameraX = cameraX;
+        this.bufferedCameraY = cameraY;
+        this.bufferedCameraZ = cameraZ;
+        this.bufferedBodyCount = bodies.size();
 
-
-    }
-
-    // modify star size to scale differently based on distance from camera
-    private double getModifiedStarSize(double distance, double starSize) {
-        if (distance < 60) {
-            // Reduce star size linearly as distance decreases from 100 to 0
-            return starSize * (distance / 60);
-        } else if (distance > 600) {
-            // Increase star size linearly as distance increases from 200 to 1000
-            return 0;
-        } else if (distance > 320) {
-            return starSize * (1 + (distance / 300));
-        }
-        return starSize;
     }
 
     @Override
@@ -169,28 +145,37 @@ public class StarRenderer implements CelestialBodyRenderer {
 
     @Override
     public void renderAll(List<CelestialBody> bodies, GCWorldRenderContext worldRenderContext) {
+        this.renderAll(bodies, worldRenderContext, new Matrix4f(worldRenderContext.positionMatrix()));
+    }
+
+    public void renderAll(List<CelestialBody> bodies, GCWorldRenderContext worldRenderContext, Matrix4f celestialMatrix) {
         // Setup buffer positions once for all bodies
         this.setupBufferPositions(bodies);
 
-
         // Render all stars at once
-        if (starBuffer != null) {
-            RenderSystem.setShaderColor(1.0F, 0.95F, 0.9F, 1);
+        ShaderInstance shader = GCRenderTypes.getSpaceStarShader();
+        if (starBuffer != null && shader != null) {
+            shader.safeGetUniform("ScreenSize").set(
+                    (float) Minecraft.getInstance().getWindow().getWidth(),
+                    (float) Minecraft.getInstance().getWindow().getHeight()
+            );
+            shader.safeGetUniform("PointScale").set(1.0F);
+            shader.safeGetUniform("RenderMode").set(0.0F);
+            shader.safeGetUniform("Exposure").set(LunarSkyExposure.value());
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+            RenderSystem.enableBlend();
+            RenderSystem.disableCull();
             FogRenderer.setupNoFog();
 
             this.starBuffer.bind();
-
-
-            PoseStack matrices = new PoseStack();
-
-            matrices.mulPose(worldRenderContext.positionMatrix());
-
             this.starBuffer.drawWithShader(
-                    matrices.last().pose(),
+                    celestialMatrix,
                     worldRenderContext.projectionMatrix(),
-                    GameRenderer.getPositionColorShader()
+                    shader
             );
             VertexBuffer.unbind();
+            RenderSystem.enableCull();
+            RenderSystem.disableBlend();
         }
     }
 }

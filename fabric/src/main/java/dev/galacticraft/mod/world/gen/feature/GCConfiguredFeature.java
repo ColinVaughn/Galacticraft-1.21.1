@@ -75,6 +75,7 @@ public class GCConfiguredFeature {
     public static final ResourceKey<ConfiguredFeature<?, ?>> MOON_FALLEN_METEOR = key("moon_fallen_meteor");
     public static final ResourceKey<ConfiguredFeature<?, ?>> MOON_CHEESE_TREE = key("moon_cheese_tree");
     public static final ResourceKey<ConfiguredFeature<?, ?>> MOON_CHEESE_FLORA = key("moon_cheese_flora");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> MOON_CAVE_LANDMARK = key("moon_cave_landmark");
 
     private static ResourceKey<ConfiguredFeature<?, ?>> key(String id) {
         return ResourceKey.create(Registries.CONFIGURED_FEATURE, Constant.id(id));
@@ -144,5 +145,7 @@ public class GCConfiguredFeature {
                                 .add(GCBlocks.MOON_WEED.defaultBlockState(), 2)
                                 .add(GCBlocks.MOON_TANGLE.defaultBlockState(), 2)
                                 .build()))));
+        context.register(MOON_CAVE_LANDMARK,
+                new ConfiguredFeature<>(GCFeatures.LUNAR_CAVE_LANDMARK, NoneFeatureConfiguration.INSTANCE));
     }
 }

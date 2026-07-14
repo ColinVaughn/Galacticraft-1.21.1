@@ -23,10 +23,16 @@
 package dev.galacticraft.mod.mixin.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.client.accessor.GameRendererAccessor;
+import dev.galacticraft.mod.client.render.dimension.LunarSkyExposure;
+import dev.galacticraft.mod.world.dimension.GCDimensions;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.PostChain;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffects;
 import org.joml.Matrix4f;
@@ -35,11 +41,26 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(GameRenderer.class)
 public abstract class GameRendererMixin implements GameRendererAccessor {
     @Unique
     private static final float DEPTH_FAR = 32.0F * 16.0F * 4.0F;
+
+    @Unique
+    private static final ResourceLocation MOON_POST_EFFECT = Constant.id("shaders/post/moon.json");
+
+    @Unique
+    private static final ResourceLocation MARS_POST_EFFECT = Constant.id("shaders/post/mars.json");
+
+    @Unique
+    private ResourceLocation galacticraft$activePlanetPostEffect;
+
+    @Unique
+    private ResourceLocation galacticraft$failedPlanetPostEffect;
 
     @Shadow
     @Final
@@ -62,6 +83,12 @@ public abstract class GameRendererMixin implements GameRendererAccessor {
     private Camera mainCamera;
 
     @Shadow
+    private PostChain postEffect;
+
+    @Shadow
+    public abstract void shutdownEffect();
+
+    @Shadow
     public abstract double getFov(Camera camera, float f, boolean bl);
 
     @Shadow
@@ -72,6 +99,70 @@ public abstract class GameRendererMixin implements GameRendererAccessor {
 
     @Shadow
     public abstract void resetProjectionMatrix(Matrix4f matrix4f);
+
+    @Inject(method = "tick", at = @At("TAIL"))
+    private void galacticraft$updatePlanetPostEffect(CallbackInfo ci) {
+        LunarSkyExposure.tick(this.minecraft);
+        ResourceLocation desiredEffect = this.galacticraft$getPlanetPostEffect();
+
+        if (this.galacticraft$activePlanetPostEffect != null
+                && !this.galacticraft$activePlanetPostEffect.equals(desiredEffect)) {
+            this.shutdownEffect();
+        }
+
+        // Respect mob vision and other temporary post effects. The planetary pass
+        // returns automatically when they release vanilla's post-effect slot.
+        if (desiredEffect != null
+                && this.postEffect == null
+                && !desiredEffect.equals(this.galacticraft$failedPlanetPostEffect)) {
+            ((GameRendererInvoker) this).galacticraft$invokeLoadEffect(desiredEffect);
+        }
+
+        if (MOON_POST_EFFECT.equals(this.galacticraft$activePlanetPostEffect) && this.postEffect != null) {
+            this.postEffect.setUniform("Exposure", LunarSkyExposure.value());
+        }
+    }
+
+    @Inject(method = "loadEffect", at = @At("RETURN"))
+    private void galacticraft$trackPlanetPostEffect(ResourceLocation effect, CallbackInfo ci) {
+        if (!galacticraft$isPlanetPostEffect(effect)) {
+            this.galacticraft$activePlanetPostEffect = null;
+            return;
+        }
+
+        if (this.postEffect != null) {
+            this.galacticraft$activePlanetPostEffect = effect;
+            this.galacticraft$failedPlanetPostEffect = null;
+            Constant.LOGGER.info("Loaded planetary post effect {}", effect);
+        } else {
+            // Avoid retrying a malformed shader every tick and flooding the log.
+            this.galacticraft$activePlanetPostEffect = null;
+            this.galacticraft$failedPlanetPostEffect = effect;
+        }
+    }
+
+    @Inject(method = "shutdownEffect", at = @At("HEAD"))
+    private void galacticraft$clearPlanetPostEffect(CallbackInfo ci) {
+        this.galacticraft$activePlanetPostEffect = null;
+    }
+
+    @Inject(method = "reloadShaders", at = @At("HEAD"))
+    private void galacticraft$retryPlanetPostEffectAfterReload(ResourceProvider resources, CallbackInfo ci) {
+        this.galacticraft$failedPlanetPostEffect = null;
+    }
+
+    @Unique
+    private ResourceLocation galacticraft$getPlanetPostEffect() {
+        if (this.minecraft.level == null) return null;
+        if (this.minecraft.level.dimension().equals(GCDimensions.MOON)) return MOON_POST_EFFECT;
+        if (this.minecraft.level.dimension().equals(GCDimensions.MARS)) return MARS_POST_EFFECT;
+        return null;
+    }
+
+    @Unique
+    private static boolean galacticraft$isPlanetPostEffect(ResourceLocation effect) {
+        return effect.equals(MOON_POST_EFFECT) || effect.equals(MARS_POST_EFFECT);
+    }
 
     @Override
     public void galacticraft$overworldProjectionMatrix(float partialTicks, Camera camera) {

@@ -46,15 +46,15 @@ public abstract class ItemInHandRendererMixin {
                 return;
             }
 
-            // If there is a rocket in both hands, only render the one in the off-hand
-            switch (itemDisplayContext) {
-                case THIRD_PERSON_RIGHT_HAND:
-                case FIRST_PERSON_RIGHT_HAND: {
-                    if (livingEntity.getItemInHand(InteractionHand.OFF_HAND).getItem() instanceof RocketItem) {
-                        ci.cancel();
-                        return;
-                    }
-                }
+            // If there is a rocket in both hands, only render the one in the off-hand.
+            // Avoid switching on ItemDisplayContext here: javac emits a synthetic
+            // ItemInHandRendererMixin$1 switch-map class for enum switches, which
+            // Architectury's development transformer can hot-reload independently
+            // from this mixin and cause a NoSuchFieldError on NeoForge.
+            boolean rightHandContext = itemDisplayContext == ItemDisplayContext.THIRD_PERSON_RIGHT_HAND
+                    || itemDisplayContext == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND;
+            if (rightHandContext && livingEntity.getItemInHand(InteractionHand.OFF_HAND).getItem() instanceof RocketItem) {
+                ci.cancel();
             }
         }
     }

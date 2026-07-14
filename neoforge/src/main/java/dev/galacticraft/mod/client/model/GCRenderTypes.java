@@ -37,6 +37,8 @@ import java.util.function.BiFunction;
 public final class GCRenderTypes {
     public static final ResourceLocation OBJ_ATLAS = Constant.id("textures/atlas/obj.png");
     private static @Nullable ShaderInstance bubbleShader;
+    private static @Nullable ShaderInstance spaceStarShader;
+    private static @Nullable ShaderInstance spaceGalaxyShader;
 
     private static final BiFunction<ResourceLocation, Boolean, RenderType> OBJ = Util.memoize((texture, outline) ->
             RenderType.create("galacticraft_obj", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.TRIANGLES,
@@ -65,6 +67,10 @@ public final class GCRenderTypes {
     public static RenderType bubble(ResourceLocation texture) { return bubble(texture, true); }
     public static RenderType bubble(ResourceLocation texture, boolean outline) { return BUBBLE.apply(texture, outline); }
     public static void setBubbleShader(ShaderInstance shader) { bubbleShader = shader; }
+    public static @Nullable ShaderInstance getSpaceStarShader() { return spaceStarShader; }
+    public static void setSpaceStarShader(ShaderInstance shader) { spaceStarShader = shader; }
+    public static @Nullable ShaderInstance getSpaceGalaxyShader() { return spaceGalaxyShader; }
+    public static void setSpaceGalaxyShader(ShaderInstance shader) { spaceGalaxyShader = shader; }
 
     private GCRenderTypes() {}
 }

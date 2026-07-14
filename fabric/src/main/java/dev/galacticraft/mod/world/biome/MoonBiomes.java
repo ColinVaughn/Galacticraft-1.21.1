@@ -41,6 +41,7 @@ public class MoonBiomes {
 
     public static Biome createCometTundra(HolderGetter<PlacedFeature> featureLookup, HolderGetter<ConfiguredWorldCarver<?>> carverLookup) {
         var generation = baseGeneration(featureLookup, carverLookup);
+        generation.addCarver(GenerationStep.Carving.AIR, GCConfiguredCarvers.MOON_HIGHLANDS_CAVE_CARVER);
         generation.addFeature(GenerationStep.Decoration.LOCAL_MODIFICATIONS, GCPlacedFeatures.MOON_ICE_PATCH);
         generation.addFeature(GenerationStep.Decoration.SURFACE_STRUCTURES, GCPlacedFeatures.MOON_ICE_BOULDER);
         generation.addFeature(GenerationStep.Decoration.SURFACE_STRUCTURES, GCPlacedFeatures.MOON_BOULDER_SPARSE);
@@ -51,7 +52,7 @@ public class MoonBiomes {
 
     public static Biome createBasalticMare(HolderGetter<PlacedFeature> featureLookup, HolderGetter<ConfiguredWorldCarver<?>> carverLookup) {
         var generation = baseGeneration(featureLookup, carverLookup);
-        generation.addCarver(GenerationStep.Carving.AIR, GCConfiguredCarvers.MOON_MARE_CAVE_CARVER);
+        generation.addCarver(GenerationStep.Carving.AIR, GCConfiguredCarvers.MOON_MARE_LAVA_TUBE_CARVER);
         // Use dedicated bonus keys so these passes do not duplicate the defaults.
         generation.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, GCOrePlacedFeatures.ORE_TIN_MARE_BONUS);
         generation.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, GCOrePlacedFeatures.ORE_LUNAR_SAPPHIRE_MARE_BONUS);
@@ -64,6 +65,7 @@ public class MoonBiomes {
     public static Biome createLunarHighlands(HolderGetter<PlacedFeature> featureLookup, HolderGetter<ConfiguredWorldCarver<?>> carverLookup) {
         var generation = baseGeneration(featureLookup, carverLookup);
         generation.addCarver(GenerationStep.Carving.AIR, GCConfiguredCarvers.MOON_HIGHLANDS_CAVE_CARVER);
+        generation.addCarver(GenerationStep.Carving.AIR, GCConfiguredCarvers.MOON_CANYON_CARVER);
         generation.addCarver(GenerationStep.Carving.AIR, GCConfiguredCarvers.MOON_LARGE_CRATER_CARVER);
         generation.addFeature(GenerationStep.Decoration.SURFACE_STRUCTURES, GCPlacedFeatures.MOON_BOULDER);
         MobSpawnSettings.Builder spawns = new MobSpawnSettings.Builder();
@@ -73,6 +75,7 @@ public class MoonBiomes {
 
     public static Biome createLunarLowlands(HolderGetter<PlacedFeature> featureLookup, HolderGetter<ConfiguredWorldCarver<?>> carverLookup) {
         var generation = baseGeneration(featureLookup, carverLookup);
+        generation.addCarver(GenerationStep.Carving.AIR, GCConfiguredCarvers.MOON_HIGHLANDS_CAVE_CARVER);
         generation.addFeature(GenerationStep.Decoration.SURFACE_STRUCTURES, GCPlacedFeatures.MOON_BOULDER_SPARSE);
         MobSpawnSettings.Builder spawns = new MobSpawnSettings.Builder();
         monsters(spawns, 95, 5, 100);
@@ -81,6 +84,8 @@ public class MoonBiomes {
 
     public static Biome createOlivineSpikes(HolderGetter<PlacedFeature> featureLookup, HolderGetter<ConfiguredWorldCarver<?>> carverLookup) {
         var generation = baseGeneration(featureLookup, carverLookup);
+        generation.addCarver(GenerationStep.Carving.AIR, GCConfiguredCarvers.MOON_HIGHLANDS_CAVE_CARVER);
+        generation.addCarver(GenerationStep.Carving.AIR, GCConfiguredCarvers.MOON_CANYON_CARVER);
         generation.addFeature(GenerationStep.Decoration.SURFACE_STRUCTURES, GCPlacedFeatures.MOON_OLIVINE_SPIRE);
         generation.addFeature(GenerationStep.Decoration.SURFACE_STRUCTURES, GCPlacedFeatures.MOON_BOULDER_SPARSE);
         MobSpawnSettings.Builder spawns = new MobSpawnSettings.Builder();
@@ -91,6 +96,8 @@ public class MoonBiomes {
     /** Fresh impact field with large craters and meteorites. */
     public static Biome createRayCraterField(HolderGetter<PlacedFeature> featureLookup, HolderGetter<ConfiguredWorldCarver<?>> carverLookup) {
         var generation = baseGeneration(featureLookup, carverLookup);
+        generation.addCarver(GenerationStep.Carving.AIR, GCConfiguredCarvers.MOON_HIGHLANDS_CAVE_CARVER);
+        generation.addCarver(GenerationStep.Carving.AIR, GCConfiguredCarvers.MOON_CANYON_CARVER);
         generation.addCarver(GenerationStep.Carving.AIR, GCConfiguredCarvers.MOON_LARGE_CRATER_CARVER);
         generation.addFeature(GenerationStep.Decoration.SURFACE_STRUCTURES, GCPlacedFeatures.MOON_BOULDER);
         generation.addFeature(GenerationStep.Decoration.SURFACE_STRUCTURES, GCPlacedFeatures.MOON_FALLEN_METEOR);
@@ -102,6 +109,7 @@ public class MoonBiomes {
     /** Rare biome for moon-cheese vegetation. */
     public static Biome createCheeseGrove(HolderGetter<PlacedFeature> featureLookup, HolderGetter<ConfiguredWorldCarver<?>> carverLookup) {
         var generation = baseGeneration(featureLookup, carverLookup);
+        generation.addCarver(GenerationStep.Carving.AIR, GCConfiguredCarvers.MOON_HIGHLANDS_CAVE_CARVER);
         generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, GCPlacedFeatures.MOON_CHEESE_TREE);
         generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, GCPlacedFeatures.MOON_CHEESE_FLORA);
         MobSpawnSettings.Builder spawns = new MobSpawnSettings.Builder();
@@ -145,7 +153,7 @@ public class MoonBiomes {
         addDefaultMoonOres(generation);
         addDefaultSoftDisks(generation);
         generation.addCarver(GenerationStep.Carving.AIR, GCConfiguredCarvers.MOON_CRATER_CARVER);
-        generation.addCarver(GenerationStep.Carving.AIR, GCConfiguredCarvers.MOON_CANYON_CARVER);
+        generation.addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, GCPlacedFeatures.MOON_CAVE_LANDMARK);
         return generation;
     }
 

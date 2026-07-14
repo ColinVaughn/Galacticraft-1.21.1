@@ -35,6 +35,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.chunk.CarvingMask;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.levelgen.Aquifer;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.carver.CarvingContext;
 import net.minecraft.world.level.levelgen.carver.WorldCarver;
 
@@ -47,9 +48,10 @@ public class CraterCarver extends WorldCarver<CraterCarverConfig> {
 
     @Override
     public boolean carve(CarvingContext context, CraterCarverConfig config, ChunkAccess chunk, Function<BlockPos, Holder<Biome>> posToBiome, RandomSource random, Aquifer aquiferSampler, ChunkPos pos, CarvingMask carvingMask) {
-        int y = config.y.sample(random, context);
-        //pos = center chunk pos
-        BlockPos craterCenter = pos.getBlockAt(random.nextInt(16), y, random.nextInt(16));
+        // The configured height is only a legacy search hint. Craters must start at the actual
+        // terrain surface: tall Moon regions can rise above the old fixed y=128 start and would
+        // otherwise receive a perfectly formed crater sealed beneath a thick rock ceiling.
+        BlockPos craterCenter = pos.getBlockAt(random.nextInt(16), 0, random.nextInt(16));
 
         if (!chunk.getReferencesForStructure(context.registryAccess().registryOrThrow(Registries.STRUCTURE).getOrThrow(GCStructures.Moon.VILLAGE)).isEmpty()) {
             return false;
@@ -87,10 +89,16 @@ public class CraterCarver extends WorldCarver<CraterCarverConfig> {
                         if (fresh) toDig++; // Dig one more block, because we're not replacing the top with turf
                     }
                     BlockPos.MutableBlockPos copy = new BlockPos.MutableBlockPos();
-                    mutable.set(innerChunkX, y, innerChunkZ);
+                    // At the carver stage this height resolves to the top occupied block, while the
+                    // loop moves down before carving. Start one block above it so the visible
+                    // surface is removed instead of leaving a one-block lid over the crater.
+                    int surfaceY = chunk.getHeight(Heightmap.Types.WORLD_SURFACE_WG, innerChunkX, innerChunkZ) + 1;
+                    mutable.set(innerChunkX, surfaceY, innerChunkZ);
                     for (int dug = 0; dug < toDig; dug++) {
                         mutable.move(Direction.DOWN);
-                        if (!chunk.getBlockState(mutable).isAir() || carvingMask.get(innerChunkX, mutable.getY() + 64, innerChunkZ) || dug > 0) {
+                        if (!chunk.getBlockState(mutable).isAir()
+                                || carvingMask.get(innerChunkX, mutable.getY() + 64, innerChunkZ)
+                                || dug > 0) {
                             chunk.setBlockState(mutable, AIR, false);
                             if (dug == 0) {
                                 carvingMask.set(innerChunkX, mutable.getY() + 64, innerChunkZ);
@@ -98,8 +106,6 @@ public class CraterCarver extends WorldCarver<CraterCarverConfig> {
                             if (!fresh && dug + 1 >= toDig && !chunk.getBlockState(copy.set(mutable).move(Direction.DOWN, 2)).isAir()) {
                                 context.topMaterial(posToBiome, chunk, mutable, false).ifPresent(blockStatex -> chunk.setBlockState(mutable.move(Direction.DOWN), blockStatex, false));
                             }
-                        } else {
-                            dug--;
                         }
                     }
                 }

@@ -271,8 +271,10 @@ public final class GCNeoForgeClient {
     private static void registerShaders(RegisterShadersEvent event) {
         try {
             event.registerShader(new ShaderInstance(event.getResourceProvider(), dev.galacticraft.mod.Constant.id("rendertype_bubble"), com.mojang.blaze3d.vertex.DefaultVertexFormat.NEW_ENTITY), GCRenderTypes::setBubbleShader);
+            event.registerShader(new ShaderInstance(event.getResourceProvider(), dev.galacticraft.mod.Constant.id("space_star"), com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_TEX_COLOR), GCRenderTypes::setSpaceStarShader);
+            event.registerShader(new ShaderInstance(event.getResourceProvider(), dev.galacticraft.mod.Constant.id("space_galaxy"), com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION), GCRenderTypes::setSpaceGalaxyShader);
         } catch (java.io.IOException exception) {
-            throw new IllegalStateException("Failed to load Galacticraft bubble shader", exception);
+            throw new IllegalStateException("Failed to load Galacticraft core shaders", exception);
         }
     }
 

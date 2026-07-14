@@ -1239,6 +1239,7 @@ public interface Constant {
 
     interface LootTable {
         String BASIC_MOON_RUINS_CHEST = "chests/moon_ruins/basic_chest";
+        String MOON_CAVE_EXPEDITION_CACHE = "chests/moon_cave_expedition_cache";
     }
 
     interface Text {
@@ -1421,7 +1422,7 @@ public interface Constant {
         String MOON_CRATER_CARVER = "moon_crater_carver";
         String MOON_LARGE_CRATER_CARVER = "moon_large_crater_carver";
         String MOON_HIGHLANDS_CAVE_CARVER = "moon_highlands_cave_carver";
-        String MOON_MARE_CAVE_CARVER = "moon_mare_cave_carver";
+        String MOON_MARE_LAVA_TUBE_CARVER = "moon_mare_lava_tube_carver";
         String MARS_CANYON_CARVER = "mars_canyon_carver";
         String MARS_CRATER_CARVER = "mars_crater_carver";
         String MARS_CAVE_CARVER = "mars_cave_carver";

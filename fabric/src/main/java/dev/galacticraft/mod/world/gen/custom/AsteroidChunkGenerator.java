@@ -1099,36 +1099,35 @@ public class AsteroidChunkGenerator extends ChunkGenerator {
     }
 
     public BlockVec3 isLargeAsteroidAt(int x0, int z0) {
-        int xToCheck;
-        int zToCheck;
-        for (int i0 = 0; i0 <= 32; i0++) {
-            for (int i1 = -i0; i1 <= i0; i1++) {
-                xToCheck = (x0 >> 4) + i0;
-                zToCheck = (z0 >> 4) + i1;
+        int originChunkX = x0 >> 4;
+        int originChunkZ = z0 >> 4;
 
-                if (isLargeAsteroidAt0(xToCheck * 16, zToCheck * 16)) {
-                    return new BlockVec3(xToCheck * 16, 0, zToCheck * 16);
+        for (int radius = 0; radius <= 32; radius++) {
+            for (int offset = -radius; offset <= radius; offset++) {
+                BlockVec3 asteroid = getLargeAsteroidInChunk(originChunkX + offset, originChunkZ - radius);
+                if (asteroid != null) {
+                    return asteroid;
                 }
 
-                xToCheck = (x0 >> 4) + i0;
-                zToCheck = (z0 >> 4) - i1;
+                if (radius > 0) {
+                    asteroid = getLargeAsteroidInChunk(originChunkX + offset, originChunkZ + radius);
+                    if (asteroid != null) {
+                        return asteroid;
+                    }
+                }
+            }
 
-                if (isLargeAsteroidAt0(xToCheck * 16, zToCheck * 16)) {
-                    return new BlockVec3(xToCheck * 16, 0, zToCheck * 16);
+            for (int offset = -radius + 1; offset < radius; offset++) {
+                BlockVec3 asteroid = getLargeAsteroidInChunk(originChunkX - radius, originChunkZ + offset);
+                if (asteroid != null) {
+                    return asteroid;
                 }
 
-                xToCheck = (x0 >> 4) - i0;
-                zToCheck = (z0 >> 4) + i1;
-
-                if (isLargeAsteroidAt0(xToCheck * 16, zToCheck * 16)) {
-                    return new BlockVec3(xToCheck * 16, 0, zToCheck * 16);
-                }
-
-                xToCheck = (x0 >> 4) - i0;
-                zToCheck = (z0 >> 4) - i1;
-
-                if (isLargeAsteroidAt0(xToCheck * 16, zToCheck * 16)) {
-                    return new BlockVec3(xToCheck * 16, 0, zToCheck * 16);
+                if (radius > 0) {
+                    asteroid = getLargeAsteroidInChunk(originChunkX + radius, originChunkZ + offset);
+                    if (asteroid != null) {
+                        return asteroid;
+                    }
                 }
             }
         }
@@ -1136,16 +1135,23 @@ public class AsteroidChunkGenerator extends ChunkGenerator {
         return null;
     }
 
-    private boolean isLargeAsteroidAt0(int x0, int z0) {
-        for (int x = x0; x < x0 + AsteroidChunkGenerator.CHUNK_SIZE_X; x += 2) {
-            for (int z = z0; z < z0 + AsteroidChunkGenerator.CHUNK_SIZE_Z; z += 2) {
-                if ((Math.abs(this.randFromPoint(x, z)) < (this.asteroidDensity.getNoise(x, z) + 0.4) / AsteroidChunkGenerator.ASTEROID_CHANCE)) {
-                    return true;
+    private BlockVec3 getLargeAsteroidInChunk(int chunkX, int chunkZ) {
+        int minX = chunkX * AsteroidChunkGenerator.CHUNK_SIZE_X;
+        int minZ = chunkZ * AsteroidChunkGenerator.CHUNK_SIZE_Z;
+
+        for (int x = minX; x < minX + AsteroidChunkGenerator.CHUNK_SIZE_X; x += 2) {
+            for (int z = minZ; z < minZ + AsteroidChunkGenerator.CHUNK_SIZE_Z; z += 2) {
+                // Keep this predicate and seed in sync with generateChunkData().
+                if (this.randFromPointPos(x, z) < (this.asteroidDensity.getNoise(x, z) + 0.4) / AsteroidChunkGenerator.ASTEROID_CHANCE) {
+                    Random random = new Random(x + z * 3067L);
+                    int y = random.nextInt(AsteroidChunkGenerator.MAX_ASTEROID_Y - AsteroidChunkGenerator.MIN_ASTEROID_Y)
+                            + AsteroidChunkGenerator.MIN_ASTEROID_Y;
+                    return new BlockVec3(x, y, z);
                 }
             }
         }
 
-        return false;
+        return null;
     }
 
 }

@@ -1,0 +1,15 @@
+{
+  "targets": ["moon_color"],
+  "passes": [
+    {
+      "name": "galacticraft:moon_tonemap",
+      "intarget": "minecraft:main",
+      "outtarget": "moon_color"
+    },
+    {
+      "name": "blit",
+      "intarget": "moon_color",
+      "outtarget": "minecraft:main"
+    }
+  ]
+}

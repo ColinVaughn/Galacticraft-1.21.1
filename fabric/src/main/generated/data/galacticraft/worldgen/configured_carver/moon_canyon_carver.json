@@ -4,7 +4,7 @@
     "lava_level": {
       "above_bottom": 8
     },
-    "probability": 0.05,
+    "probability": 0.012,
     "replaceable": "#galacticraft:moon_carver_replaceables",
     "shape": {
       "distance_factor": {
@@ -19,9 +19,9 @@
       },
       "thickness": {
         "type": "minecraft:trapezoid",
-        "max": 6.0,
-        "min": 0.0,
-        "plateau": 2.0
+        "max": 2.2,
+        "min": 0.35,
+        "plateau": 0.5
       },
       "vertical_radius_center_factor": 0.0,
       "vertical_radius_default_factor": 1.0,
@@ -35,12 +35,12 @@
     "y": {
       "type": "minecraft:uniform",
       "max_inclusive": {
-        "absolute": 67
+        "absolute": 48
       },
       "min_inclusive": {
-        "absolute": 10
+        "absolute": 4
       }
     },
-    "yScale": 3.0
+    "yScale": 1.2
   }
 }

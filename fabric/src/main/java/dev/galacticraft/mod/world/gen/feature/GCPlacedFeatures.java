@@ -80,6 +80,7 @@ public class GCPlacedFeatures {
     public static final ResourceKey<PlacedFeature> MOON_FALLEN_METEOR = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("moon_fallen_meteor"));
     public static final ResourceKey<PlacedFeature> MOON_CHEESE_TREE = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("moon_cheese_tree"));
     public static final ResourceKey<PlacedFeature> MOON_CHEESE_FLORA = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("moon_cheese_flora"));
+    public static final ResourceKey<PlacedFeature> MOON_CAVE_LANDMARK = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("moon_cave_landmark"));
 
     private static PlacedFeature surfaceScatter(HolderGetter<ConfiguredFeature<?, ?>> lookup, ResourceKey<ConfiguredFeature<?, ?>> feature, int rarity) {
         return new PlacedFeature(lookup.getOrThrow(feature), List.of(
@@ -179,6 +180,11 @@ public class GCPlacedFeatures {
                 CountPlacement.of(UniformInt.of(4, 10)),
                 InSquarePlacement.spread(),
                 PlacementUtils.HEIGHTMAP_WORLD_SURFACE,
+                BiomeFilter.biome()
+        )));
+        context.register(MOON_CAVE_LANDMARK, new PlacedFeature(configuredFeatureLookup.getOrThrow(GCConfiguredFeature.MOON_CAVE_LANDMARK), List.of(
+                RarityFilter.onAverageOnceEvery(14),
+                InSquarePlacement.spread(),
                 BiomeFilter.biome()
         )));
 

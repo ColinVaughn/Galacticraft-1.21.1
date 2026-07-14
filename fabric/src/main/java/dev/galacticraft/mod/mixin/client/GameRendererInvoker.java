@@ -20,14 +20,15 @@
  * SOFTWARE.
  */
 
-package dev.galacticraft.mod.content;
+package dev.galacticraft.mod.mixin.client;
 
-import dev.galacticraft.mod.Constant;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.resources.ResourceLocation;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.gen.Invoker;
 
-public class GCLootTables {
-    public static final ResourceKey<LootTable> BASIC_MOON_RUINS_CHEST = Constant.key(Registries.LOOT_TABLE, Constant.LootTable.BASIC_MOON_RUINS_CHEST);
-    public static final ResourceKey<LootTable> MOON_CAVE_EXPEDITION_CACHE = Constant.key(Registries.LOOT_TABLE, Constant.LootTable.MOON_CAVE_EXPEDITION_CACHE);
+@Mixin(GameRenderer.class)
+public interface GameRendererInvoker {
+    @Invoker("loadEffect")
+    void galacticraft$invokeLoadEffect(ResourceLocation effect);
 }
