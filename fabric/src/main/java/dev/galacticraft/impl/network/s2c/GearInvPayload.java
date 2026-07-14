@@ -26,12 +26,14 @@ import dev.galacticraft.api.accessor.GearInventoryProvider;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.util.StreamCodecs;
 import dev.architectury.networking.NetworkManager;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
@@ -54,9 +56,14 @@ public record GearInvPayload(int entityId, ItemStack[] items) implements S2CPayl
     @Override
     public Runnable handle(NetworkManager.@NotNull PacketContext context) {
         return () -> {
-            if (net.minecraft.client.Minecraft.getInstance().level.getEntity(this.entityId) instanceof GearInventoryProvider provider && provider != null) {
+            Minecraft minecraft = Minecraft.getInstance();
+            Entity entity = minecraft.level == null ? null : minecraft.level.getEntity(this.entityId);
+            if (entity == null && minecraft.player != null && minecraft.player.getId() == this.entityId) {
+                entity = minecraft.player;
+            }
+            if (entity instanceof GearInventoryProvider provider) {
                 Container container = provider.galacticraft$getGearInv();
-                for (int i = 0; i < this.items.length; i++) {
+                for (int i = 0; i < Math.min(this.items.length, container.getContainerSize()); i++) {
                     container.setItem(i, this.items[i]);
                 }
             }

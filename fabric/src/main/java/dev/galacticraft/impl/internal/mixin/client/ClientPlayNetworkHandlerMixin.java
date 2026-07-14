@@ -59,11 +59,15 @@ public abstract class ClientPlayNetworkHandlerMixin implements ClientSatelliteAc
     @Override
     public void galacticraft$addSatellite(CelestialBody<SatelliteConfig, SatelliteType> satellite, boolean newlyCreated) {
         ResourceLocation id = satellite.config().getId();
-        this.satellites.put(id, satellite);
-        if (newlyCreated) {
-            RegistryUtil.registerUnfreeze(this.registryAccess().registryOrThrow(AddonRegistries.CELESTIAL_BODY), id, satellite);
+        CelestialBody<SatelliteConfig, SatelliteType> previous = this.satellites.put(id, satellite);
+        var registry = this.registryAccess().registryOrThrow(AddonRegistries.CELESTIAL_BODY);
+        if (newlyCreated && !registry.containsKey(id)) {
+            RegistryUtil.registerUnfreeze(registry, id, satellite);
         }
         for (SatelliteListener listener : this.listeners) {
+            if (previous != null) {
+                listener.onSatelliteUpdated(previous, false);
+            }
             listener.onSatelliteUpdated(satellite, true);
         }
     }

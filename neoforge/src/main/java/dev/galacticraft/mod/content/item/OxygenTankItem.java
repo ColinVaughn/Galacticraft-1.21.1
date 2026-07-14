@@ -38,6 +38,9 @@ public class OxygenTankItem extends AccessoryItem {
     public OxygenTankItem(Properties properties, long capacity) { super(properties); this.capacity = capacity; }
 
     public static OxygenStorageView getStorage(ItemStack stack) {
+        if (stack.getItem() instanceof InfiniteOxygenTankItem) {
+            return new OxygenStorageView(Long.MAX_VALUE, Long.MAX_VALUE);
+        }
         OxygenTankItem item = (OxygenTankItem) stack.getItem();
         return new OxygenStorageView(stack.getOrDefault(MLDataComponents.AMOUNT.get(), 0L), item.capacity);
     }

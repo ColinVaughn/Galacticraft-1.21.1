@@ -35,11 +35,11 @@ import dev.galacticraft.impl.internal.fabric.GalacticraftAPI;
 import dev.galacticraft.impl.network.s2c.GearInvPayload;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.Galacticraft;
+import dev.galacticraft.mod.content.GCAccessorySlots;
 import dev.galacticraft.mod.content.block.special.CryogenicChamberBlock;
 import dev.galacticraft.mod.content.block.special.CryogenicChamberPart;
 import dev.galacticraft.mod.content.entity.vehicle.LanderEntity;
 import dev.galacticraft.mod.content.item.GCItems;
-import dev.galacticraft.mod.content.item.InfiniteOxygenTankItem;
 import dev.galacticraft.mod.tag.GCFluidTags;
 import dev.galacticraft.mod.tag.GCItemTags;
 import dev.galacticraft.mod.world.inventory.GearInventory;
@@ -117,6 +117,10 @@ public abstract class LivingEntityMixin extends Entity implements GearInventoryP
     private int galacticraft$breathabilityCacheTick = Integer.MIN_VALUE;
     @Unique
     private boolean galacticraft$cachedEyePositionBreathable;
+    @Unique
+    private int galacticraft$oxygenUseCacheTick = Integer.MIN_VALUE;
+    @Unique
+    private boolean galacticraft$cachedOxygenUse;
 
     @Shadow
     protected abstract int increaseAirSupply(int air);
@@ -198,23 +202,9 @@ public abstract class LivingEntityMixin extends Entity implements GearInventoryP
         )) {
             this.lastHurtBySuffocationTimestamp = this.tickCount;
             cir.setReturnValue(this.increaseAirSupply(air));
-        } else if (this.galacticraft$hasMaskAndGear()) {
-            Container tanks = this.galacticraft$getOxygenTanks();
-            for (int i = 0; i < tanks.getContainerSize(); i++) {
-                ItemStack stack = tanks.getItem(i);
-                if (stack.getItem() instanceof InfiniteOxygenTankItem) {
-                    this.lastHurtBySuffocationTimestamp = this.tickCount;
-                    cir.setReturnValue(this.increaseAirSupply(air));
-                    return;
-                }
-            }
-            for (int i = 0; i < tanks.getContainerSize(); i++) {
-                if (OxygenTankExtractor.extract(tanks, i, rate)) {
-                    this.lastHurtBySuffocationTimestamp = this.tickCount;
-                    cir.setReturnValue(this.increaseAirSupply(air));
-                    return;
-                }
-            }
+        } else if (this.galacticraft$tryUseOxygen(rate)) {
+            this.lastHurtBySuffocationTimestamp = this.tickCount;
+            cir.setReturnValue(this.increaseAirSupply(air));
         }
     }
 
@@ -294,7 +284,7 @@ public abstract class LivingEntityMixin extends Entity implements GearInventoryP
         Container thermalArmor = this.galacticraft$getThermalArmor();
         int protection = 0;
         for (int slot = 0; slot < thermalArmor.getContainerSize(); slot++) {
-            if (galacticraft_protectsAgainst(thermalArmor.getItem(slot), cold)) protection++;
+            if (galacticraft_isThermalPadding(thermalArmor.getItem(slot))) protection++;
         }
         if (protection >= thermalArmor.getContainerSize()) return; // fully padded
 
@@ -328,6 +318,35 @@ public abstract class LivingEntityMixin extends Entity implements GearInventoryP
         return this.galacticraft$cachedEyePositionBreathable;
     }
 
+    @Override
+    public boolean galacticraft$tryUseOxygen(long amount) {
+        if (this.galacticraft$oxygenUseCacheTick == this.tickCount) {
+            return this.galacticraft$cachedOxygenUse;
+        }
+        this.galacticraft$oxygenUseCacheTick = this.tickCount;
+
+        Container gear = this.galacticraft$getGearInv();
+        boolean hasEquippedSetup = gear.getContainerSize() > GCAccessorySlots.OXYGEN_GEAR_SLOT
+                && gear.getItem(GCAccessorySlots.OXYGEN_MASK_SLOT).is(GCItemTags.OXYGEN_MASKS)
+                && gear.getItem(GCAccessorySlots.OXYGEN_GEAR_SLOT).is(GCItemTags.OXYGEN_GEAR);
+        if (!hasEquippedSetup && !this.galacticraft$hasMaskAndGear()) {
+            return this.galacticraft$cachedOxygenUse = false;
+        }
+
+        Container tanks = this.galacticraft$getOxygenTanks();
+        for (int slot = 0; slot < tanks.getContainerSize(); slot++) {
+            if (tanks.getItem(slot).is(GCItems.INFINITE_OXYGEN_TANK)) {
+                return this.galacticraft$cachedOxygenUse = true;
+            }
+        }
+        for (int slot = 0; slot < tanks.getContainerSize(); slot++) {
+            if (OxygenTankExtractor.extract(tanks, slot, amount)) {
+                return this.galacticraft$cachedOxygenUse = true;
+            }
+        }
+        return this.galacticraft$cachedOxygenUse = false;
+    }
+
     @Unique
     private static int galacticraft_surfaceTemperature(CelestialBody<?, ?> body, Level level) {
         if (body.type() instanceof SurfaceEnvironment) {
@@ -341,12 +360,10 @@ public abstract class LivingEntityMixin extends Entity implements GearInventoryP
     }
 
     @Unique
-    private static boolean galacticraft_protectsAgainst(ItemStack stack, boolean cold) {
-        if (cold) {
-            return stack.is(GCItems.THERMAL_PADDING_HELMET) || stack.is(GCItems.THERMAL_PADDING_CHESTPIECE)
-                    || stack.is(GCItems.THERMAL_PADDING_LEGGINGS) || stack.is(GCItems.THERMAL_PADDING_BOOTS);
-        }
-        return stack.is(GCItems.ISOTHERMAL_PADDING_HELMET) || stack.is(GCItems.ISOTHERMAL_PADDING_CHESTPIECE)
+    private static boolean galacticraft_isThermalPadding(ItemStack stack) {
+        return stack.is(GCItems.THERMAL_PADDING_HELMET) || stack.is(GCItems.THERMAL_PADDING_CHESTPIECE)
+                || stack.is(GCItems.THERMAL_PADDING_LEGGINGS) || stack.is(GCItems.THERMAL_PADDING_BOOTS)
+                || stack.is(GCItems.ISOTHERMAL_PADDING_HELMET) || stack.is(GCItems.ISOTHERMAL_PADDING_CHESTPIECE)
                 || stack.is(GCItems.ISOTHERMAL_PADDING_LEGGINGS) || stack.is(GCItems.ISOTHERMAL_PADDING_BOOTS);
     }
 

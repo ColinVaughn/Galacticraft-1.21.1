@@ -50,9 +50,11 @@ public class BubbleEntityRenderer extends EntityRenderer<BubbleEntity> {
 
     @Override
     public void render(BubbleEntity entity, float yaw, float tickDelta, PoseStack matrices, MultiBufferSource vertexConsumers, int light) {
-        if (bubbleModel == null) {
+        if (bubbleModel == null || bubbleModel == GCModelLoader.MISSING_MODEL) {
             bubbleModel = GCModelLoader.INSTANCE.getModel(BubbleDistributorRenderer.MODEL);
-            assert bubbleModel != null;
+        }
+        if (bubbleModel == GCModelLoader.MISSING_MODEL) {
+            return;
         }
         float size = entity.getSize();
 

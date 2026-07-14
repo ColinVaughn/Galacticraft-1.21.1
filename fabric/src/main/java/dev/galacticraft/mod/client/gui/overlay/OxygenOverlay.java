@@ -25,8 +25,10 @@ package dev.galacticraft.mod.client.gui.overlay;
 import com.mojang.blaze3d.platform.Window;
 import dev.galacticraft.machinelib.client.api.util.GraphicsUtil;
 import dev.galacticraft.mod.Constant;
+import dev.galacticraft.mod.content.GCAccessorySlots;
 import dev.galacticraft.mod.content.entity.vehicle.LanderEntity;
 import dev.galacticraft.mod.content.item.OxygenTankItem;
+import dev.galacticraft.mod.tag.GCItemTags;
 import dev.galacticraft.mod.util.Translations;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -48,7 +50,11 @@ public class OxygenOverlay {
             }
 
             boolean nonBreathable = !mc.level.getDefaultBreathable();
-            boolean hasMaskAndGear = mc.player.galacticraft$hasMaskAndGear();
+            Container gear = mc.player.galacticraft$getGearInv();
+            boolean hasEquippedSetup = gear.getContainerSize() > GCAccessorySlots.OXYGEN_GEAR_SLOT
+                    && gear.getItem(GCAccessorySlots.OXYGEN_MASK_SLOT).is(GCItemTags.OXYGEN_MASKS)
+                    && gear.getItem(GCAccessorySlots.OXYGEN_GEAR_SLOT).is(GCItemTags.OXYGEN_GEAR);
+            boolean hasMaskAndGear = hasEquippedSetup || mc.player.galacticraft$hasMaskAndGear();
             if (nonBreathable || hasMaskAndGear) {
                 boolean hasOxygen = false;
                 Container inv = mc.player.galacticraft$getOxygenTanks();

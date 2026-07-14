@@ -322,6 +322,7 @@ public interface Translations {
         String IODINE = "gas.galacticraft.iodine";
         String KRYPTON = "gas.galacticraft.krypton";
         String METHANE = "gas.galacticraft.methane";
+        String METHANE_FLUID = "fluid.galacticraft.methane";
         String NEON = "gas.galacticraft.neon";
         String NITRIC_OXIDE = "gas.galacticraft.nitric_oxide";
         String NITROGEN = "gas.galacticraft.nitrogen";
@@ -348,6 +349,11 @@ public interface Translations {
         String FLAG_CONFIRM_MESSAGE = "ui.galacticraft.space_race_manager.flag.confirm.message";
         String CUSTOMIZE_FLAG = "ui.galacticraft.space_race_manager.customize_flag";
         String DRAG_AND_DROP_FLAG = "ui.galacticraft.space_race_manager.drap_and_drop_flag";
+        String SELECT_FLAG = "ui.galacticraft.space_race_manager.select_flag";
+        String FLAG_REQUIREMENTS = "ui.galacticraft.space_race_manager.flag.requirements";
+        String FLAG_INVALID_SIZE = "ui.galacticraft.space_race_manager.flag.invalid_size";
+        String FLAG_READ_ERROR = "ui.galacticraft.space_race_manager.flag.read_error";
+        String FLAG_PICKER_ERROR = "ui.galacticraft.space_race_manager.flag.picker_error";
         String TEAM_COLOR_1 = "ui.galacticraft.space_race_manager.team_color_1";
         String TEAM_COLOR_2 = "ui.galacticraft.space_race_manager.team_color_2";
         String TEAM_COLOR_3 = "ui.galacticraft.space_race_manager.team_color_3";
@@ -449,6 +455,17 @@ public interface Translations {
 
         String AIRLOCK_REDSTONE_SIGNAL = "ui.galacticraft.airlock.redstone_signal";
         String AIRLOCK_OWNER = "ui.galacticraft.airlock.owner";
+        String AIRLOCK_PLAYER_DISTANCE = "ui.galacticraft.airlock.player_distance";
+        String AIRLOCK_DISTANCE_1 = "ui.galacticraft.airlock.distance.1";
+        String AIRLOCK_DISTANCE_2 = "ui.galacticraft.airlock.distance.2";
+        String AIRLOCK_DISTANCE_5 = "ui.galacticraft.airlock.distance.5";
+        String AIRLOCK_DISTANCE_10 = "ui.galacticraft.airlock.distance.10";
+        String AIRLOCK_PLAYER_NAME = "ui.galacticraft.airlock.player_name";
+        String AIRLOCK_INVERT_SELECTION = "ui.galacticraft.airlock.invert_selection";
+        String AIRLOCK_HORIZONTAL_MODE = "ui.galacticraft.airlock.horizontal_mode";
+        String AIRLOCK_STATUS = "ui.galacticraft.airlock.status";
+        String AIRLOCK_OPEN = "ui.galacticraft.airlock.open";
+        String AIRLOCK_CLOSED = "ui.galacticraft.airlock.closed";
         String ALPHA_WARNING_1 = "ui.galacticraft.alpha_warning.content1";
         String ALPHA_WARNING_2 = "ui.galacticraft.alpha_warning.content2";
         String ALPHA_WARNING_3 = "ui.galacticraft.alpha_warning.content3";

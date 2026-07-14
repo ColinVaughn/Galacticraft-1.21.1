@@ -22,11 +22,13 @@
 
 package dev.galacticraft.mod.network.c2s;
 
+import dev.galacticraft.api.accessor.SatelliteAccessor;
 import dev.galacticraft.api.registry.AddonRegistries;
 import dev.galacticraft.api.satellite.SatelliteRecipe;
 import dev.galacticraft.api.universe.celestialbody.CelestialBody;
 import dev.galacticraft.api.universe.celestialbody.satellite.Orbitable;
 import dev.galacticraft.impl.network.c2s.C2SPayload;
+import dev.galacticraft.impl.network.s2c.AddSatellitePayload;
 import dev.galacticraft.impl.universe.celestialbody.type.SatelliteType;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.Galacticraft;
@@ -39,6 +41,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.NotNull;
 
 public record SatelliteCreationPayload(ResourceKey<CelestialBody<?, ?>> body) implements C2SPayload {
@@ -51,27 +54,52 @@ public record SatelliteCreationPayload(ResourceKey<CelestialBody<?, ?>> body) im
 
     @Override
     public void handle(NetworkManager.@NotNull PacketContext context) {
+        ServerPlayer player = (ServerPlayer) context.getPlayer();
         try {
-            Registry<CelestialBody<?, ?>> celestialBodies = ((net.minecraft.server.level.ServerPlayer) context.getPlayer()).server.registryAccess().registryOrThrow(AddonRegistries.CELESTIAL_BODY);
+            Registry<CelestialBody<?, ?>> celestialBodies = player.server.registryAccess().registryOrThrow(AddonRegistries.CELESTIAL_BODY);
 
             // Server-authoritative gate: reject creation on bodies the config disallows, before any ingredients are consumed.
             if (!Galacticraft.CONFIG.isSpaceStationCreationAllowed(this.body.location())) {
-                Constant.LOGGER.warn("Rejecting space station creation by {} at disallowed body {}", ((net.minecraft.server.level.ServerPlayer) context.getPlayer()).getScoreboardName(), this.body.location());
+                Constant.LOGGER.warn("Rejecting space station creation by {} at disallowed body {}", player.getScoreboardName(), this.body.location());
                 return;
             }
 
-            if (!((net.minecraft.server.level.ServerPlayer) context.getPlayer()).hasInfiniteMaterials()) {
-                CelestialBody parentBody = celestialBodies.getOrThrow(body);
-                SatelliteRecipe recipe = ((Orbitable) parentBody.type()).satelliteRecipe(parentBody.config());
-                if (!recipe.handle(((net.minecraft.server.level.ServerPlayer) context.getPlayer()).getInventory())) {
-                    Constant.LOGGER.error("Unable to remove the required ingredients for the satellite recipe from player {}", ((net.minecraft.server.level.ServerPlayer) context.getPlayer()).getScoreboardName());
+            CelestialBody<?, ?> parentBody = celestialBodies.get(this.body);
+            if (parentBody == null || !(parentBody.type() instanceof Orbitable orbitable)) {
+                Constant.LOGGER.warn("Rejecting space station creation by {} at non-orbitable body {}", player.getScoreboardName(), this.body.location());
+                return;
+            }
+
+            SatelliteRecipe recipe = orbitable.satelliteRecipe(parentBody.config());
+            if (recipe == null) {
+                Constant.LOGGER.warn("Rejecting space station creation by {} at body {} without a station recipe", player.getScoreboardName(), this.body.location());
+                return;
+            }
+
+            // Repeated clicks can arrive while the live client update is in flight. Resend the
+            // existing station instead of charging the recipe or recreating its dimension.
+            for (var satellite : ((SatelliteAccessor) player.server).galacticraft$getSatellites().values()) {
+                if (satellite.config().getParent().filter(this.body::equals).isPresent()
+                        && satellite.config().getOwnershipData().owner().equals(player.getUUID())) {
+                    NetworkManager.sendToPlayer(player, new AddSatellitePayload(satellite.config(), true));
+                    return;
                 }
             }
 
-            SatelliteType.registerSatellite(((net.minecraft.server.level.ServerPlayer) context.getPlayer()).server, ((net.minecraft.server.level.ServerPlayer) context.getPlayer()), this.body, ((net.minecraft.server.level.ServerPlayer) context.getPlayer()).server.getStructureManager().get(Constant.Structure.SPACE_STATION).orElseThrow(), celestialBodies);
-            GCTriggers.CREATE_SPACE_STATION.trigger(((net.minecraft.server.level.ServerPlayer) context.getPlayer()));
+            if (!player.hasInfiniteMaterials() && !recipe.test(player.getInventory())) {
+                Constant.LOGGER.warn("Rejecting space station creation by {} because the required ingredients are missing", player.getScoreboardName());
+                return;
+            }
+
+            SatelliteType.registerSatellite(player.server, player, this.body, player.server.getStructureManager().get(Constant.Structure.SPACE_STATION).orElseThrow(), celestialBodies);
+
+            // Only charge the recipe after station and dimension creation succeeded.
+            if (!player.hasInfiniteMaterials() && !recipe.handle(player.getInventory())) {
+                Constant.LOGGER.error("Unable to remove the required ingredients for the satellite recipe from player {} after station creation", player.getScoreboardName());
+            }
+            GCTriggers.CREATE_SPACE_STATION.trigger(player);
         } catch (Exception e) {
-            e.printStackTrace();
+            Constant.LOGGER.error("Failed to create space station for {} at {}", player.getScoreboardName(), this.body.location(), e);
         }
     }
 

@@ -268,7 +268,9 @@ public final class GalacticraftNeoForge {
         GcApiEntityAttributes.init();
         DynamicDimensionLoadCallback.register((server, loader) ->
                 ((SatelliteAccessor) server).galacticraft$loadSatellites(loader));
-        GCApiPackets.register();
+        // A physical client installs the real S2C handlers from GCNeoForgeClient. Registering
+        // no-op payload handlers here would win instead and silently discard live sync packets.
+        GCApiPackets.register(FMLEnvironment.dist == Dist.DEDICATED_SERVER);
         GCApiServerPacketReceivers.register();
         NeoForge.EVENT_BUS.addListener(this::onServerStarted);
         NeoForge.EVENT_BUS.addListener(this::onAddReloadListeners);

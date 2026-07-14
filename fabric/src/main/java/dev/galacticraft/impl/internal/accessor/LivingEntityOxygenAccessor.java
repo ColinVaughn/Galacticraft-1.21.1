@@ -27,4 +27,6 @@ package dev.galacticraft.impl.internal.accessor;
  */
 public interface LivingEntityOxygenAccessor {
     boolean galacticraft$isEyePositionBreathable();
+
+    boolean galacticraft$tryUseOxygen(long amount);
 }

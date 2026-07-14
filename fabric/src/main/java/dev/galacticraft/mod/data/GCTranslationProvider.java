@@ -819,6 +819,7 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(Gas.IODINE, "Iodine");
         this.add(Gas.KRYPTON, "Krypton");
         this.add(Gas.METHANE, "Methane");
+        this.add(Gas.METHANE_FLUID, "Methane");
         this.add(Gas.NEON, "Neon");
         this.add(Gas.NITRIC_OXIDE, "Nitric Oxide");
         this.add(Gas.NITROGEN, "Nitrogen");
@@ -1163,6 +1164,11 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(SpaceRace.FLAG_CONFIRM_MESSAGE, "");
         this.add(SpaceRace.CUSTOMIZE_FLAG, "Customize Flag");
         this.add(SpaceRace.DRAG_AND_DROP_FLAG, "Drag and drop an image to use as a flag");
+        this.add(SpaceRace.SELECT_FLAG, "Select Image...");
+        this.add(SpaceRace.FLAG_REQUIREMENTS, "PNG images must be exactly 48 x 32 pixels.");
+        this.add(SpaceRace.FLAG_INVALID_SIZE, "That image is %s x %s; flags must be 48 x 32.");
+        this.add(SpaceRace.FLAG_READ_ERROR, "Could not open that image.");
+        this.add(SpaceRace.FLAG_PICKER_ERROR, "Could not open the file picker.");
         this.add(SpaceRace.TEAM_COLOR_1, "Change");
         this.add(SpaceRace.TEAM_COLOR_2, "Team");
         this.add(SpaceRace.TEAM_COLOR_3, "Color");
@@ -1263,6 +1269,17 @@ public class GCTranslationProvider extends TranslationProvider {
 
         this.add(Ui.AIRLOCK_REDSTONE_SIGNAL, "Opens on Redstone Signal");
         this.add(Ui.AIRLOCK_OWNER, "%s's Airlock Controller");
+        this.add(Ui.AIRLOCK_PLAYER_DISTANCE, "Player Within:");
+        this.add(Ui.AIRLOCK_DISTANCE_1, "1 block");
+        this.add(Ui.AIRLOCK_DISTANCE_2, "2 blocks");
+        this.add(Ui.AIRLOCK_DISTANCE_5, "5 blocks");
+        this.add(Ui.AIRLOCK_DISTANCE_10, "10 blocks");
+        this.add(Ui.AIRLOCK_PLAYER_NAME, "Open for Player:");
+        this.add(Ui.AIRLOCK_INVERT_SELECTION, "Invert Selection");
+        this.add(Ui.AIRLOCK_HORIZONTAL_MODE, "Horizontal Mode");
+        this.add(Ui.AIRLOCK_STATUS, "Status:");
+        this.add(Ui.AIRLOCK_OPEN, "Open");
+        this.add(Ui.AIRLOCK_CLOSED, "Closed");
         this.add(Ui.ALPHA_WARNING_1, "Galacticraft - Boobcat Edition is currently in ALPHA.");
         this.add(Ui.ALPHA_WARNING_2, "Please report all issues you find.");
         this.add(Ui.ALPHA_WARNING_3, "Press [ESC] or click to continue.");

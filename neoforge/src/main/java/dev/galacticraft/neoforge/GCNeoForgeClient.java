@@ -27,6 +27,7 @@ import dev.galacticraft.api.client.tabs.InventoryTabRegistry;
 import dev.galacticraft.api.component.GCDataComponents;
 import dev.galacticraft.api.fluid.FluidData;
 import dev.galacticraft.api.gas.Gases;
+import dev.galacticraft.impl.network.GCApiClientPacketReceivers;
 import dev.galacticraft.mod.client.GCKeyBinds;
 import dev.galacticraft.mod.client.network.CapeClientNet;
 import dev.galacticraft.mod.client.gui.overlay.*;
@@ -126,6 +127,7 @@ import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 /** Native NeoForge client registrations replacing Fabric client entrypoints. */
 public final class GCNeoForgeClient {
     public static void init(IEventBus modBus) {
+        GCApiClientPacketReceivers.register();
         GCModelLoader.registerModelType(UnbakedObjModel.TYPE);
         GalacticraftRocketPartRenderers.register();
         modBus.addListener(GCNeoForgeClient::registerScreens);

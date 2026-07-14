@@ -23,8 +23,10 @@
 package dev.galacticraft.impl.internal.mixin.gear;
 
 import dev.galacticraft.api.accessor.GearInventoryProvider;
-import dev.galacticraft.impl.internal.inventory.MappedInventory;
 import dev.galacticraft.impl.internal.gear.OxygenTankExtractor;
+import dev.galacticraft.impl.internal.inventory.MappedInventory;
+import dev.galacticraft.impl.network.s2c.GearInvPayload;
+import dev.architectury.networking.NetworkManager;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.Galacticraft;
 import dev.galacticraft.mod.content.GCAccessorySlots;
@@ -37,14 +39,19 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.RelativeMovement;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.Set;
 
 import static dev.galacticraft.mod.content.GCAccessorySlots.*;
 
@@ -92,6 +99,31 @@ public abstract class ServerPlayerMixin extends Player implements GearInventoryP
                 }
             }
         }
+    }
+
+    @Inject(
+            method = "teleportTo(Lnet/minecraft/server/level/ServerLevel;DDDLjava/util/Set;FF)Z",
+            at = @At("RETURN")
+    )
+    private void galacticraft_syncGearAfterTeleport(
+            ServerLevel level,
+            double x,
+            double y,
+            double z,
+            Set<RelativeMovement> relativeMovements,
+            float yaw,
+            float pitch,
+            CallbackInfoReturnable<Boolean> cir
+    ) {
+        if (!cir.getReturnValueZ()) return;
+
+        ItemStack[] stacks = new ItemStack[this.gearInv.getContainerSize()];
+        for (int slot = 0; slot < stacks.length; slot++) {
+            stacks[slot] = this.gearInv.getItem(slot);
+        }
+
+        ServerPlayer player = (ServerPlayer) (Object) this;
+        NetworkManager.sendToPlayer(player, new GearInvPayload(player.getId(), stacks));
     }
 
     @Unique

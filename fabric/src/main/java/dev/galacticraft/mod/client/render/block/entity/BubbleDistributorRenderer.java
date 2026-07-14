@@ -36,20 +36,17 @@ import net.minecraft.resources.ResourceLocation;
 
 public class BubbleDistributorRenderer implements BlockEntityRenderer<OxygenBubbleDistributorBlockEntity> {
     public static final ResourceLocation MODEL = Constant.id("models/misc/sphere.json");
-    public final GCModel bubbleModel;
 
     public BubbleDistributorRenderer(BlockEntityRendererProvider.Context context) {
-        this.bubbleModel = GCModelLoader.INSTANCE.getModel(MODEL);
-
-        if (bubbleModel == null) {
-            // TODO: possible missing model?
-            throw new IllegalStateException("Failed to load model: " + MODEL);
-        }
     }
 
     @Override
     public void render(OxygenBubbleDistributorBlockEntity machine, float tickDelta, PoseStack matrices, MultiBufferSource vertexConsumers, int light, int overlay) {
         if (machine.isDisabled() || !machine.isBubbleVisible()) {
+            return;
+        }
+        GCModel bubbleModel = GCModelLoader.INSTANCE.getModel(MODEL);
+        if (bubbleModel == GCModelLoader.MISSING_MODEL) {
             return;
         }
         double size = machine.getSize();

@@ -32,6 +32,7 @@ public class GCPackets {
     public static void register() {
         GCClientPacketReceiver.register();
 
+        registerC2S(AirlockPlayerNamePayload.TYPE, AirlockPlayerNamePayload.STREAM_CODEC);
         registerC2S(BubbleMaxPayload.TYPE, BubbleMaxPayload.STREAM_CODEC);
         registerC2S(BubbleVisibilityPayload.TYPE, BubbleVisibilityPayload.STREAM_CODEC);
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, ControlEntityPayload.TYPE, ControlEntityPayload.STREAM_CODEC,

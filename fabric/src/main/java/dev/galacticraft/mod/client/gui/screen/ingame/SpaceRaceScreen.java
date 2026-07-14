@@ -27,9 +27,8 @@ import dev.galacticraft.impl.network.c2s.FlagDataPayload;
 import dev.galacticraft.impl.network.c2s.TeamNamePayload;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.util.Translations;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
 import dev.architectury.networking.NetworkManager;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -44,12 +43,16 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FastColor;
+import org.jetbrains.annotations.Nullable;
+import org.lwjgl.util.tinyfd.TinyFileDialogs;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 public class SpaceRaceScreen extends Screen {
@@ -60,7 +63,10 @@ public class SpaceRaceScreen extends Screen {
     private EditBox teamNameInput;
     private boolean animationCompleted = false;
     private int teamColor = 0xFF000000;
-    private final ResourceLocation teamFlag = Constant.id("team_name/id_here");
+    private @Nullable ResourceLocation teamFlag;
+    private @Nullable Component flagError;
+    private boolean filePickerOpen;
+    private final Set<ResourceLocation> ownedFlagTextures = new HashSet<>();
 
     public SpaceRaceScreen() {
         super(Component.translatable(Translations.SpaceRace.SPACE_RACE_MANAGER));
@@ -81,7 +87,8 @@ public class SpaceRaceScreen extends Screen {
         int flagButtonWidth = 96;
         int flagButtonHeight = 64;
         int flagButtonX = this.width / 2 - flagButtonWidth / 2, flagButtonY = this.getTop() + 10;
-        this.addRenderableWidget(new CustomizeFlagButton(flagButtonX, flagButtonY, flagButtonWidth, flagButtonHeight, this.teamFlag, () -> setMenu(Menu.TEAM_FLAG)));
+        this.addRenderableWidget(new CustomizeFlagButton(flagButtonX, flagButtonY, flagButtonWidth, flagButtonHeight,
+                this.teamFlag, this.teamColor, () -> setMenu(Menu.TEAM_FLAG)));
         this.addRenderableWidget(new TeamColorButton(flagButtonX + flagButtonWidth + 10, flagButtonY + flagButtonHeight / 2 - 45 / 2, 45, 45));
         this.addRenderableWidget(this.teamNameInput = new EditBox(this.font, this.getLeft() + (this.backgroundWidth / 2) - 64, flagButtonY + 75, 128, 15, this.teamNameInput, Component.empty()) {
             private String prevText;
@@ -131,8 +138,22 @@ public class SpaceRaceScreen extends Screen {
     protected void teamFlagMenu() {
         addBackButton();
 
+        int buttonWidth = 120;
+        addButton(Component.translatable(Translations.SpaceRace.SELECT_FLAG),
+                this.width / 2 - buttonWidth / 2, this.height / 2 + 18, buttonWidth, 20,
+                button -> this.openFlagFilePicker());
+
         this.addRenderableOnly((graphics, mouseX, mouseY, delta) -> {
-            graphics.drawCenteredString(this.minecraft.font, Component.translatable(Translations.SpaceRace.DRAG_AND_DROP_FLAG), this.width / 2, this.height / 2 - this.minecraft.font.lineHeight / 2, 0xFFFFFFFF);
+            graphics.drawCenteredString(this.minecraft.font,
+                    Component.translatable(Translations.SpaceRace.DRAG_AND_DROP_FLAG),
+                    this.width / 2, this.height / 2 - 18, 0xFFFFFFFF);
+            graphics.drawCenteredString(this.minecraft.font,
+                    Component.translatable(Translations.SpaceRace.FLAG_REQUIREMENTS),
+                    this.width / 2, this.height / 2 - 4, 0xFFAAAAAA);
+            if (this.flagError != null) {
+                graphics.drawCenteredString(this.minecraft.font, this.flagError,
+                        this.width / 2, this.height / 2 + 44, 0xFFFF5555);
+            }
         });
     }
 
@@ -148,6 +169,10 @@ public class SpaceRaceScreen extends Screen {
     @Override
     public void onClose() {
         this.openingStartTime = -1;
+        for (ResourceLocation texture : this.ownedFlagTextures) {
+            this.minecraft.getTextureManager().release(texture);
+        }
+        this.ownedFlagTextures.clear();
         super.onClose();
     }
 
@@ -266,50 +291,78 @@ public class SpaceRaceScreen extends Screen {
         if (paths.isEmpty()) {
             return;
         }
-        File file = paths.get(0).toFile();
+        this.loadFlag(paths.get(0));
+    }
+
+    private void openFlagFilePicker() {
+        if (this.filePickerOpen) {
+            return;
+        }
+        this.filePickerOpen = true;
+        Minecraft minecraft = this.minecraft;
+        CompletableFuture.supplyAsync(() -> TinyFileDialogs.tinyfd_openFileDialog(
+                        Component.translatable(Translations.SpaceRace.SELECT_FLAG).getString(), "", null,
+                        "PNG image", false), Util.ioPool())
+                .whenComplete((selected, error) -> minecraft.execute(() -> {
+                    this.filePickerOpen = false;
+                    if (minecraft.screen != this) {
+                        return;
+                    }
+                    if (error != null) {
+                        this.flagError = Component.translatable(Translations.SpaceRace.FLAG_PICKER_ERROR);
+                    } else if (selected != null) {
+                        this.loadFlag(Path.of(selected));
+                    }
+                }));
+    }
+
+    private void loadFlag(Path path) {
+        this.flagError = null;
         NativeImage image;
-        assert file.exists();
-        try (FileInputStream fileInputStream = new FileInputStream(file)) {
-            image = NativeImage.read(fileInputStream); //ABGR ONLY
+        try (var input = Files.newInputStream(path)) {
+            image = NativeImage.read(input); // ABGR
         } catch (IOException e) {
-            e.printStackTrace();
+            this.flagError = Component.translatable(Translations.SpaceRace.FLAG_READ_ERROR);
             return;
         }
 
-        if (image.getWidth() == 48 && image.getHeight() == 32) {
-            final NativeImage finalImage = image;
-            final DynamicTexture texture = new DynamicTexture(finalImage);
-            ResourceLocation location = Constant.id("temp_flag");
-            this.minecraft.getTextureManager().register(location, texture);
-            this.minecraft.setScreen(new ConfirmFlagScreen(yes -> {
-                if (yes) {
-                    ByteBuf buf = ByteBufAllocator.DEFAULT.buffer(48 * 32 * 3, 48 * 32 * 3);
-                    for (int y = 0; y < 32; y++) {
-                        for (int x = 0; x < 48; x++) {
-                            int color = finalImage.getPixelRGBA(x, y);
-                            //ignore alpha channel
-                            buf.writeByte((color >> 16) & 0xFF)
-                                    .writeByte((color >> 8) & 0xFF)
-                                    .writeByte(color & 0xFF);
-                        }
-                    }
-
-                    byte[] data;
-                    if (buf.hasArray()) {
-                        data = buf.array();
-                    } else {
-                        data = new byte[buf.readableBytes()];
-                        buf.getBytes(buf.readerIndex(), data);
-                    }
-
-                    NetworkManager.sendToServer(new FlagDataPayload(data));
-                    this.minecraft.getTextureManager().register(this.teamFlag, texture);
-                } else {
-                    finalImage.close();
-                }
-                this.minecraft.setScreen(SpaceRaceScreen.this);
-            }, location, Component.translatable(Translations.SpaceRace.FLAG_CONFIRM), Component.translatable(Translations.SpaceRace.FLAG_CONFIRM_MESSAGE)));
+        if (image.getWidth() != 48 || image.getHeight() != 32) {
+            this.flagError = Component.translatable(Translations.SpaceRace.FLAG_INVALID_SIZE,
+                    image.getWidth(), image.getHeight());
+            image.close();
+            return;
         }
+
+        final NativeImage finalImage = image;
+        ResourceLocation location = Constant.id("temp_flag/" + Long.toUnsignedString(System.nanoTime()));
+        this.minecraft.getTextureManager().register(location, new DynamicTexture(finalImage));
+        this.ownedFlagTextures.add(location);
+        this.minecraft.setScreen(new ConfirmFlagScreen(yes -> {
+            if (yes) {
+                byte[] data = new byte[48 * 32 * 3];
+                int index = 0;
+                for (int y = 0; y < 32; y++) {
+                    for (int x = 0; x < 48; x++) {
+                        int color = finalImage.getPixelRGBA(x, y);
+                        data[index++] = (byte) ((color >> 16) & 0xFF);
+                        data[index++] = (byte) ((color >> 8) & 0xFF);
+                        data[index++] = (byte) (color & 0xFF);
+                    }
+                }
+
+                NetworkManager.sendToServer(new FlagDataPayload(data));
+                if (this.teamFlag != null && !this.teamFlag.equals(location)) {
+                    this.minecraft.getTextureManager().release(this.teamFlag);
+                    this.ownedFlagTextures.remove(this.teamFlag);
+                }
+                this.teamFlag = location;
+            } else {
+                this.minecraft.getTextureManager().release(location);
+                this.ownedFlagTextures.remove(location);
+            }
+            this.minecraft.setScreen(SpaceRaceScreen.this);
+        }, location, Component.translatable(Translations.SpaceRace.FLAG_CONFIRM),
+                Component.translatable(Translations.SpaceRace.FLAG_CONFIRM_MESSAGE)));
     }
 
     private enum Menu {
@@ -355,12 +408,15 @@ public class SpaceRaceScreen extends Screen {
 
     private static class CustomizeFlagButton extends AbstractButton {
         private final Runnable onPress;
-        private final ResourceLocation imageLocation;
+        private final @Nullable ResourceLocation imageLocation;
+        private final int fallbackColor;
 
-        public CustomizeFlagButton(int x, int y, int width, int height, ResourceLocation imageLocation, Runnable onPress) {
+        public CustomizeFlagButton(int x, int y, int width, int height, @Nullable ResourceLocation imageLocation,
+                                   int fallbackColor, Runnable onPress) {
             super(x, y, width, height, Component.translatable(Translations.SpaceRace.CUSTOMIZE_FLAG));
             this.onPress = onPress;
             this.imageLocation = imageLocation;
+            this.fallbackColor = fallbackColor;
         }
 
         @Override
@@ -370,7 +426,13 @@ public class SpaceRaceScreen extends Screen {
 
         @Override
         protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
-            graphics.blit(this.imageLocation, this.getX(), this.getY(), this.width, this.height, 0, 0, 48, 32, 48, 32);
+            if (this.imageLocation != null) {
+                graphics.blit(this.imageLocation, this.getX(), this.getY(), this.width, this.height,
+                        0, 0, 48, 32, 48, 32);
+            } else {
+                graphics.fill(this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height,
+                        this.fallbackColor);
+            }
 
             graphics.renderOutline(this.getX(), this.getY(), this.width, this.height, this.isHoveredOrFocused() ? 0xFF3c3c3c : 0xFF2d2d2d);
 

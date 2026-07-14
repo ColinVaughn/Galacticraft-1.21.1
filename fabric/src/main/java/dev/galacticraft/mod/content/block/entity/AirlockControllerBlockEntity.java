@@ -29,7 +29,10 @@ import dev.galacticraft.mod.screen.AirlockControllerMenu;
 import dev.galacticraft.mod.util.Translations;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
@@ -47,6 +50,16 @@ import java.util.List;
 import static dev.galacticraft.mod.content.block.special.AirlockSealBlock.FACING;
 
 public class AirlockControllerBlockEntity extends BlockEntity implements MenuProvider {
+    private static final String OWNER_NAME = "OwnerName";
+    private static final String REDSTONE_ACTIVATION = "RedstoneActivation";
+    private static final String PLAYER_DISTANCE_ACTIVATION = "PlayerDistanceActivation";
+    private static final String PLAYER_DISTANCE_SELECTION = "PlayerDistanceSelection";
+    private static final String PLAYER_NAME_MATCHES = "PlayerNameMatches";
+    private static final String PLAYER_TO_OPEN_FOR = "PlayerToOpenFor";
+    private static final String INVERT_SELECTION = "InvertSelection";
+    private static final String HORIZONTAL_MODE_ENABLED = "HorizontalModeEnabled";
+    private static final String ACTIVE = "Active";
+
     public boolean redstoneActivation;
     public boolean playerDistanceActivation = true;
     public int playerDistanceSelection;
@@ -106,7 +119,7 @@ public class AirlockControllerBlockEntity extends BlockEntity implements MenuPro
                 if (this.playerNameMatches) {
                     boolean foundPlayer = false;
                     for (Player p : playersWithin) {
-                        if (p.getUUID().equals(this.playerToOpenFor)) {
+                        if (p.getGameProfile().getName().equalsIgnoreCase(this.playerToOpenFor)) {
                             foundPlayer = true;
                             break;
                         }
@@ -343,6 +356,71 @@ public class AirlockControllerBlockEntity extends BlockEntity implements MenuPro
         }
     }
 
+    public boolean canPlayerEdit(Player player) {
+        return this.ownerName.isEmpty() || this.ownerName.equalsIgnoreCase(player.getGameProfile().getName());
+    }
+
+    public void setOwnerName(String ownerName) {
+        this.ownerName = ownerName;
+        this.configurationChanged();
+    }
+
+    public void setPlayerToOpenFor(String playerToOpenFor) {
+        this.playerToOpenFor = playerToOpenFor.substring(0, Math.min(playerToOpenFor.length(), 16));
+        this.configurationChanged();
+    }
+
+    public void configurationChanged() {
+        this.setChanged();
+        if (this.level != null) {
+            BlockState state = this.getBlockState();
+            this.level.sendBlockUpdated(this.getBlockPos(), state, state, Block.UPDATE_CLIENTS);
+        }
+    }
+
+    @Override
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        tag.putString(OWNER_NAME, this.ownerName);
+        tag.putBoolean(REDSTONE_ACTIVATION, this.redstoneActivation);
+        tag.putBoolean(PLAYER_DISTANCE_ACTIVATION, this.playerDistanceActivation);
+        tag.putInt(PLAYER_DISTANCE_SELECTION, this.playerDistanceSelection);
+        tag.putBoolean(PLAYER_NAME_MATCHES, this.playerNameMatches);
+        tag.putString(PLAYER_TO_OPEN_FOR, this.playerToOpenFor);
+        tag.putBoolean(INVERT_SELECTION, this.invertSelection);
+        tag.putBoolean(HORIZONTAL_MODE_ENABLED, this.horizontalModeEnabled);
+        tag.putBoolean(ACTIVE, this.active);
+    }
+
+    @Override
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        this.ownerName = tag.getString(OWNER_NAME);
+        this.redstoneActivation = tag.getBoolean(REDSTONE_ACTIVATION);
+        if (tag.contains(PLAYER_DISTANCE_ACTIVATION)) {
+            this.playerDistanceActivation = tag.getBoolean(PLAYER_DISTANCE_ACTIVATION);
+        }
+        this.playerDistanceSelection = Math.clamp(tag.getInt(PLAYER_DISTANCE_SELECTION), 0, 3);
+        this.playerNameMatches = tag.getBoolean(PLAYER_NAME_MATCHES);
+        String playerToOpenFor = tag.getString(PLAYER_TO_OPEN_FOR);
+        this.playerToOpenFor = playerToOpenFor.substring(0, Math.min(playerToOpenFor.length(), 16));
+        this.invertSelection = tag.getBoolean(INVERT_SELECTION);
+        this.horizontalModeEnabled = tag.getBoolean(HORIZONTAL_MODE_ENABLED);
+        this.lastHorizontalModeEnabled = this.horizontalModeEnabled;
+        this.active = tag.getBoolean(ACTIVE);
+        this.lastActive = this.active;
+    }
+
+    @Override
+    public ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    @Override
+    public @NotNull CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        return this.saveWithoutMetadata(registries);
+    }
+
     @Override
     public @NotNull Component getDisplayName() {
         return Component.translatable(Translations.Ui.AIRLOCK_OWNER, ownerName);
@@ -350,6 +428,6 @@ public class AirlockControllerBlockEntity extends BlockEntity implements MenuPro
 
     @Override
     public AirlockControllerMenu createMenu(int syncId, Inventory inventory, Player player) {
-        return new AirlockControllerMenu(syncId, inventory);
+        return new AirlockControllerMenu(syncId, inventory, this);
     }
 }

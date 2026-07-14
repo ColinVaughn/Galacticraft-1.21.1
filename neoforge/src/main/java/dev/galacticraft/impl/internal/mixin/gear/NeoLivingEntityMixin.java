@@ -48,6 +48,9 @@ abstract class NeoLivingEntityMixin {
     @Shadow
     protected abstract int decreaseAirSupply(int air);
 
+    @Shadow
+    protected abstract int increaseAirSupply(int air);
+
     @Inject(
             method = "baseTick",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;baseTick()V", shift = At.Shift.AFTER)
@@ -63,6 +66,13 @@ abstract class NeoLivingEntityMixin {
         boolean breathable = ((LivingEntityOxygenAccessor) entity).galacticraft$isEyePositionBreathable();
         if (breathable || canBreathe || entity.isEyeInFluid(GCFluidTags.NON_BREATHABLE)
                 || entity instanceof Player player && player.getAbilities().invulnerable) {
+            return;
+        }
+
+        long oxygenRate = entity.galacticraft$oxygenConsumptionRate();
+        if (((LivingEntityOxygenAccessor) entity).galacticraft$tryUseOxygen(oxygenRate)) {
+            this.galacticraft$lastHurtBySuffocationTimestamp = entity.tickCount;
+            entity.setAirSupply(this.increaseAirSupply(entity.getAirSupply()));
             return;
         }
 
