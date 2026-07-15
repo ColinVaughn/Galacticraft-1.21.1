@@ -22,14 +22,40 @@
 
 package dev.galacticraft.mod.gametest;
 
+import dev.galacticraft.mod.api.block.FluidLoggable;
 import dev.galacticraft.mod.api.wire.Wire;
 import dev.galacticraft.mod.api.wire.impl.WireNetworkImpl;
 import dev.galacticraft.mod.content.GCBlocks;
+import dev.galacticraft.mod.content.GCFluids;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 
 public class WireTestSuite implements GalacticraftGameTest {
+    @GameTest(template = EMPTY_STRUCTURE)
+    public void heavyAluminumWireCanContainFlowingFuel(GameTestHelper context) {
+        final var pos = new BlockPos(0, 1, 0);
+        context.setBlock(pos, GCBlocks.HEAVY_ALUMINUM_WIRE);
+
+        var state = context.getBlockState(pos);
+        var fluidLoggable = (FluidLoggable) state.getBlock();
+        fluidLoggable.placeLiquid(
+                context.getLevel(),
+                context.absolutePos(pos),
+                state,
+                GCFluids.FLOWING_FUEL.defaultFluidState()
+        );
+
+        var fluidState = context.getBlockState(pos).getFluidState();
+        if (!fluidState.is(GCFluids.FLOWING_FUEL)) {
+            context.fail("Expected flowing fuel in heavy aluminum wire but found %s!"
+                    .formatted(BuiltInRegistries.FLUID.getKey(fluidState.getType())), pos);
+        } else {
+            context.succeed();
+        }
+    }
+
     @GameTest(template = EMPTY_STRUCTURE)
     public void wireConnectionTest(GameTestHelper context) {
         final var pos0 = new BlockPos(0, 1, 0);

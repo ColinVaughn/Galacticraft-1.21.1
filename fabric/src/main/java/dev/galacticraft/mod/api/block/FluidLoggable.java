@@ -68,10 +68,25 @@ public interface FluidLoggable extends BucketPickup, LiquidBlockContainer {
                         list.add(BuiltInRegistries.FLUID.getKey(fluid));
                     }
                 }
+                // Blocks can be constructed before Galacticraft's fluids are registered (notably on
+                // NeoForge). Block state definitions snapshot this collection during construction, so
+                // add our flowing fluids explicitly instead of relying solely on registry iteration.
+                addIfAbsent(list, Constant.id(Constant.Fluid.CRUDE_OIL_STILL));
+                addIfAbsent(list, Constant.id(Constant.Fluid.CRUDE_OIL_FLOWING));
+                addIfAbsent(list, Constant.id(Constant.Fluid.FUEL_STILL));
+                addIfAbsent(list, Constant.id(Constant.Fluid.FUEL_FLOWING));
+                addIfAbsent(list, Constant.id(Constant.Fluid.SULFURIC_ACID_STILL));
+                addIfAbsent(list, Constant.id(Constant.Fluid.SULFURIC_ACID_FLOWING));
                 list.add(Constant.Misc.EMPTY);
                 list.add(INVALID);
             }
         });
+
+        private static void addIfAbsent(List<ResourceLocation> values, ResourceLocation value) {
+            if (!values.contains(value)) {
+                values.add(value);
+            }
+        }
 
         @Override
         public @NotNull Collection<ResourceLocation> getPossibleValues() {
