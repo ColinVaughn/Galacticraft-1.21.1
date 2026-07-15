@@ -22,6 +22,8 @@
 
 package dev.galacticraft.mod.content.item;
 
+import dev.galacticraft.api.component.GCDataComponents;
+import dev.galacticraft.api.fluid.FluidData;
 import dev.galacticraft.mod.content.GCBlocks;
 import dev.galacticraft.mod.content.GCEntityTypes;
 import dev.galacticraft.mod.content.block.special.launchpad.AbstractLaunchPad;
@@ -78,7 +80,12 @@ public class BuggyItem extends Item {
 
     private static void spawnBuggy(Level level, double x, double y, double z, UseOnContext context, LaunchPadBlockEntity pad) {
         Buggy buggy = new Buggy(GCEntityTypes.BUGGY, level);
-        buggy.setVariant(Buggy.BuggyType.NORMAL);
+        ItemStack stack = context.getItemInHand();
+        buggy.setVariant(Buggy.BuggyType.byId(stack.getOrDefault(GCDataComponents.BUGGY_TYPE, 0)));
+        FluidData fuel = stack.get(GCDataComponents.FLUID_DATA);
+        if (fuel != null) {
+            buggy.getFuelTank().insert(fuel.variant().fluid(), fuel.variant().components(), fuel.amount());
+        }
         buggy.setPos(x, y, z);
         buggy.setYRot(context.getHorizontalDirection().toYRot());
         if (pad != null) {
@@ -96,6 +103,8 @@ public class BuggyItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag type) {
+        Buggy.BuggyType variant = Buggy.BuggyType.byId(stack.getOrDefault(GCDataComponents.BUGGY_TYPE, 0));
+        tooltip.add(Component.translatable("tooltip.galacticraft.buggy_storage", variant.getStorage()));
         super.appendHoverText(stack, context, tooltip, type);
     }
 }

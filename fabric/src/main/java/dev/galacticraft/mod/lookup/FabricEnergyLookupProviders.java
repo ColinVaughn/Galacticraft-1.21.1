@@ -25,6 +25,8 @@ package dev.galacticraft.mod.lookup;
 import dev.galacticraft.machinelib.api.compat.transfer.ExposedEnergyStorage;
 import dev.galacticraft.mod.api.wire.Wire;
 import dev.galacticraft.mod.content.GCBlockEntityTypes;
+import dev.galacticraft.mod.content.GCBlocks;
+import dev.galacticraft.mod.content.block.special.AstroMinerBaseBlock;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import team.reborn.energy.api.EnergyStorage;
 
@@ -45,8 +47,11 @@ public final class FabricEnergyLookupProviders {
             return ((Wire) blockEntity).getInsertable();
         }, (BlockEntityType[]) WIRE_TYPES);
 
-        EnergyStorage.SIDED.registerForBlockEntity((be, direction) ->
-                        ExposedEnergyStorage.create(be.getEnergyStorage(), be.getEnergyStorage().externalInsertionRate(), 0),
-                GCBlockEntityTypes.ASTRO_MINER_BASE);
+        // Proxy all eight multiblock corners to the master block entity.
+        EnergyStorage.SIDED.registerForBlocks((level, pos, state, blockEntity, direction) -> {
+            var base = AstroMinerBaseBlock.getMasterBlockEntity(level, pos, state);
+            return base == null || !base.isEnergyInputSide(direction) ? null : ExposedEnergyStorage.create(base.getEnergyStorage(),
+                    base.getEnergyStorage().externalInsertionRate(), 0);
+        }, GCBlocks.ASTRO_MINER_BASE);
     }
 }

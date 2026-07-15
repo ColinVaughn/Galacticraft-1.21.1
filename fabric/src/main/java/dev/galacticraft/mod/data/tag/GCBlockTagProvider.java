@@ -155,6 +155,8 @@ public class GCBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                 .add(Blocks.BASALT)
                 .add(Blocks.SMOOTH_BASALT)
                 .add(Blocks.BLACKSTONE);
+        this.tag(GCBlockTags.MARS_CRATER_CARVER_REPLACEABLES)
+                .addTag(GCBlockTags.MARS_CARVER_REPLACEABLES);
 
         this.tag(GCBlockTags.VENUS_CARVER_REPLACEABLES)
                 .add(GCBlocks.HARD_VENUS_ROCK)
@@ -165,6 +167,8 @@ public class GCBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                 .add(Blocks.BASALT)
                 .add(Blocks.BLACKSTONE)
                 .add(Blocks.MAGMA_BLOCK);
+        this.tag(GCBlockTags.VENUS_CRATER_CARVER_REPLACEABLES)
+                .addTag(GCBlockTags.VENUS_CARVER_REPLACEABLES);
 
         this.tag(GCBlockTags.MERCURY_CARVER_REPLACEABLES)
                 .add(GCBlocks.MERCURY_STONE)

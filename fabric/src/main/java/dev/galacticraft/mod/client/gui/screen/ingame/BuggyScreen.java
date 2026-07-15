@@ -22,19 +22,61 @@
 
 package dev.galacticraft.mod.client.gui.screen.ingame;
 
+import dev.galacticraft.mod.Constant;
+import dev.galacticraft.mod.content.entity.vehicle.Buggy;
 import dev.galacticraft.mod.screen.BuggyMenu;
+import dev.galacticraft.mod.util.Translations;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
 public class BuggyScreen extends AbstractContainerScreen<BuggyMenu> {
-    public BuggyScreen(BuggyMenu abstractContainerMenu, Inventory inventory, Component component) {
-        super(abstractContainerMenu, inventory, component);
+    private static final ResourceLocation[] TEXTURES = {
+            Constant.id("textures/gui/buggy_0.png"),
+            Constant.id("textures/gui/buggy_18.png"),
+            Constant.id("textures/gui/buggy_36.png")
+    };
+
+    public BuggyScreen(BuggyMenu menu, Inventory inventory, Component title) {
+        super(menu, inventory, title);
+        this.imageHeight = 145 + menu.getStorageRows() * 18;
+        this.inventoryLabelY = 52 + menu.getStorageRows() * 18;
     }
 
     @Override
-    protected void renderBg(GuiGraphics context, float delta, int mouseX, int mouseY) {
+    protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
+        int variant = Math.min(TEXTURES.length - 1, this.menu.getStorageRows() / 2);
+        graphics.blit(TEXTURES[variant], this.leftPos, this.topPos, 0, 0,
+                this.imageWidth, this.imageHeight, 256, 256);
 
+        Buggy buggy = this.menu.getBuggy();
+        if (buggy != null) {
+            int fuelLevel = Math.round(buggy.getScaledFuelLevel(38));
+            if (fuelLevel > 0) {
+                graphics.blit(TEXTURES[variant], this.leftPos + 72, this.topPos + 45 - fuelLevel,
+                        176, 38 - fuelLevel, 42, fuelLevel, 256, 256);
+            }
+        }
+    }
+
+    @Override
+    protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
+        graphics.drawString(this.font, Component.translatable(Translations.Ui.BUGGY_FUEL), 8, 5, 0xFF404040, false);
+        graphics.drawString(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY,
+                0xFF404040, false);
+
+        Buggy buggy = this.menu.getBuggy();
+        int percentage = buggy == null ? 0 : Math.round(buggy.getScaledFuelLevel(100));
+        int color = percentage > 80 ? 0xFF20A020 : percentage > 40 ? 0xFFD08020 : 0xFFB02020;
+        graphics.drawString(this.font, Component.translatable(Translations.Ui.BUGGY_FUEL_PERCENT, percentage),
+                116, 18, color, false);
+    }
+
+    @Override
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        super.render(graphics, mouseX, mouseY, partialTick);
+        this.renderTooltip(graphics, mouseX, mouseY);
     }
 }

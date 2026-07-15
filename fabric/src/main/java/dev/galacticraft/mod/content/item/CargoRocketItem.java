@@ -22,13 +22,19 @@
 
 package dev.galacticraft.mod.content.item;
 
+import dev.galacticraft.api.component.GCDataComponents;
+import dev.galacticraft.api.fluid.FluidData;
 import dev.galacticraft.mod.content.GCEntityTypes;
+import dev.galacticraft.mod.content.GCBlocks;
+import dev.galacticraft.mod.content.block.special.launchpad.AbstractLaunchPad;
+import dev.galacticraft.mod.content.block.special.launchpad.LaunchPadBlockEntity;
 import dev.galacticraft.mod.content.entity.vehicle.CargoRocketEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.server.level.ServerLevel;
 
 public class CargoRocketItem extends Item {
     public CargoRocketItem(Properties properties) {
@@ -38,14 +44,30 @@ public class CargoRocketItem extends Item {
     @Override
     public InteractionResult useOn(UseOnContext context) {
         Level level = context.getLevel();
-        BlockPos pos = context.getClickedPos().relative(context.getClickedFace());
-        if (!level.isClientSide) {
+        BlockPos clickedPos = context.getClickedPos();
+        if (level.getBlockState(clickedPos).getBlock() != GCBlocks.ROCKET_LAUNCH_PAD
+                || level.getBlockState(clickedPos).getValue(AbstractLaunchPad.PART) == AbstractLaunchPad.Part.NONE) {
+            return InteractionResult.FAIL;
+        }
+        BlockPos pos = clickedPos.offset(AbstractLaunchPad.partToCenterPos(
+                level.getBlockState(clickedPos).getValue(AbstractLaunchPad.PART)));
+        if (!(level.getBlockEntity(pos) instanceof LaunchPadBlockEntity pad) || pad.hasDockedEntity()) {
+            return InteractionResult.FAIL;
+        }
+        if (level instanceof ServerLevel) {
             CargoRocketEntity rocket = new CargoRocketEntity(GCEntityTypes.CARGO_ROCKET, level);
-            rocket.setPos(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
+            FluidData fuel = context.getItemInHand().get(GCDataComponents.FLUID_DATA);
+            if (fuel != null) {
+                rocket.getFuelTank().insert(fuel.variant().fluid(), fuel.variant().components(), fuel.amount());
+            }
+            rocket.setPad(pad);
+            rocket.setPos(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
             rocket.setYRot(context.getHorizontalDirection().toYRot());
             level.addFreshEntity(rocket);
-            context.getItemInHand().shrink(1);
-            // TODO: automated cargo loading + auto-travel to a target planet.
+            pad.setDockedEntity(rocket);
+            if (context.getPlayer() == null || !context.getPlayer().isCreative()) {
+                context.getItemInHand().shrink(1);
+            }
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

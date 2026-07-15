@@ -25,13 +25,19 @@ package dev.galacticraft.mod.client.render.dimension;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import dev.galacticraft.api.registry.AddonRegistries;
+import dev.galacticraft.api.universe.celestialbody.CelestialBody;
 import dev.galacticraft.mod.client.render.dimension.star.CelestialBodyRendererManager;
+import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
+
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Set;
 
 public class SpaceSkyRenderer {
     protected final StarManager starManager = new StarManager();
-
-    protected final CelestialBodyRendererManager celestialBodyRendererManager
-            = CelestialBodyRendererManager.getInstance();
 
     public void render(GCWorldRenderContext context) {
         PoseStack matrices = new PoseStack();
@@ -47,31 +53,35 @@ public class SpaceSkyRenderer {
         context.profiler().push("celestial_render");
         matrices.pushPose();
 
-        // Update camera position for star rendering
-        this.celestialBodyRendererManager.updateSolarPosition(
+        CelestialBodyRendererManager celestialBodyRendererManager = this.celestialBodyRendererManager(context);
+        celestialBodyRendererManager.updateSolarPosition(
             context.camera().getPosition().x / 128.0,
             context.camera().getPosition().y / 128.0,
             context.camera().getPosition().z / 128.0
         );
 
-        this.celestialBodyRendererManager.render(context);
+        celestialBodyRendererManager.render(context);
 
         matrices.popPose();
         context.profiler().pop();
         RenderSystem.setShaderColor(1.0f, 1.0F, 1.0F, 1.0F);
 
-//        PoseStack matrices = new PoseStack();
-//        matrices.mulPose(context.positionMatrix());
-//
-//        context.profiler().push("stars");
-//        matrices.pushPose();
-//        matrices.mulPose(Axis.YP.rotationDegrees(-90.0F));
-//        matrices.mulPose(Axis.XP.rotationDegrees(context.world().getTimeOfDay(context.tickCounter().getRealtimeDeltaTicks()) * 360.0f));
-//        matrices.mulPose(Axis.YP.rotationDegrees(-19.0F));
-//
-//        this.starManager.render(matrices, context.projectionMatrix(), context.world(), context.tickCounter().getRealtimeDeltaTicks());
-//
-//        matrices.popPose();
-//        context.profiler().pop();
+    }
+
+    /** Resolves an isolated render world space from the current body's root star. */
+    protected CelestialBodyRendererManager celestialBodyRendererManager(GCWorldRenderContext context) {
+        Registry<CelestialBody<?, ?>> registry = context.world().registryAccess().registryOrThrow(AddonRegistries.CELESTIAL_BODY);
+        Holder<CelestialBody<?, ?>> holder = context.world().galacticraft$getCelestialBody();
+        if (holder == null) {
+            return CelestialBodyRendererManager.getInstance(context.world().dimension().location());
+        }
+
+        CelestialBody<?, ?> root = holder.value();
+        Set<CelestialBody<?, ?>> visited = Collections.newSetFromMap(new IdentityHashMap<>());
+        while (root.parent().isPresent() && visited.add(root)) {
+            root = root.parentValue(registry);
+        }
+        ResourceLocation rootId = registry.getKey(root);
+        return CelestialBodyRendererManager.getInstance(rootId != null ? rootId : context.world().dimension().location());
     }
 }

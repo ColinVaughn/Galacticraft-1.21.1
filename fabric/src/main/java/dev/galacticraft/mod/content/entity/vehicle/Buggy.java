@@ -23,15 +23,22 @@
 package dev.galacticraft.mod.content.entity.vehicle;
 
 import dev.galacticraft.api.entity.ControllableEntity;
+import dev.galacticraft.api.component.GCDataComponents;
+import dev.galacticraft.api.fluid.FluidData;
 import dev.galacticraft.api.universe.celestialbody.CelestialBody;
+import dev.galacticraft.machinelib.api.transfer.MLFluidStack;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.api.block.entity.FuelDock;
 import dev.galacticraft.mod.api.entity.Dockable;
 import dev.galacticraft.mod.content.block.special.launchpad.LaunchPadBlockEntity;
+import dev.galacticraft.mod.content.entity.ScalableFuelLevel;
+import dev.galacticraft.mod.content.item.GCItems;
+import dev.galacticraft.mod.screen.BuggyMenu;
 import dev.galacticraft.mod.util.FluidUtil;
 import dev.galacticraft.mod.storage.SimpleFluidTank;
 import dev.galacticraft.machinelib.api.storage.StorageAccess;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -46,10 +53,18 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluid;
+import dev.architectury.registry.menu.ExtendedMenuProvider;
+import dev.architectury.registry.menu.MenuRegistry;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 
 import java.util.function.IntFunction;
 
-public class Buggy extends GCVehicle implements ContainerListener, ControllableEntity, Dockable, VariantHolder<Buggy.BuggyType> {
+public class Buggy extends GCVehicle implements ContainerListener, ContainerVehicle, ControllableEntity, Dockable,
+        VariantHolder<Buggy.BuggyType>, ExtendedMenuProvider, ScalableFuelLevel {
     private static final EntityDataAccessor<Integer> DATA_TYPE_ID = SynchedEntityData.defineId(Buggy.class, EntityDataSerializers.INT);
     // Synced server -> client so the controlling client (which simulates movement) knows
     // whether there is fuel. The tank itself lives only on the server, so without this the
@@ -72,6 +87,7 @@ public class Buggy extends GCVehicle implements ContainerListener, ControllableE
 
     public Buggy(EntityType<?> entityType, Level level) {
         super(entityType, level);
+        createInventory();
     }
 
     @Override
@@ -79,7 +95,6 @@ public class Buggy extends GCVehicle implements ContainerListener, ControllableE
         super.defineSynchedData(builder);
         builder.define(DATA_TYPE_ID, 0);
         builder.define(DATA_FUEL, 0);
-        createInventory();
     }
 
     /**
@@ -95,12 +110,14 @@ public class Buggy extends GCVehicle implements ContainerListener, ControllableE
         setVariant(BuggyType.byName(nbt.getString("Type")));
         tank.readNbt(nbt, registryAccess());
         createInventory();
+        ContainerVehicle.loadInventory(nbt, this.inventory, this.registryAccess());
     }
 
     @Override
     protected void addAdditionalSaveData(CompoundTag nbt) {
         nbt.putString("Type", getVariant().getSerializedName());
         tank.writeNbt(nbt, registryAccess());
+        ContainerVehicle.saveInventory(nbt, this.inventory, this.registryAccess());
     }
 
     @Override
@@ -124,7 +141,7 @@ public class Buggy extends GCVehicle implements ContainerListener, ControllableE
     }
 
     protected int getInventorySize() {
-        return 2;
+        return getVariant().getStorage();
     }
 
     protected void createInventory() {
@@ -158,17 +175,13 @@ public class Buggy extends GCVehicle implements ContainerListener, ControllableE
     @Override
     public InteractionResult interact(Player player, InteractionHand hand) {
         if (!this.level().isClientSide) {
-            return player.startRiding(this) ? InteractionResult.CONSUME : InteractionResult.PASS;
-        } else {
-            if (this.getPassengers().isEmpty()) {
-//                player.sendSystemMessage(new TextComponentString(GameSettings.getKeyDisplayString(KeyHandlerClient.leftKey.getKeyCode()) + " / "
-//                        + GameSettings.getKeyDisplayString(KeyHandlerClient.rightKey.getKeyCode()) + "  - " + GCCoreUtil.translate("gui.buggy.turn.name")));
-//                player.sendSystemMessage(Component.keybind(GameSettings.getKeyDisplayString(KeyHandlerClient.accelerateKey.getKeyCode()) + "       - " + GCCoreUtil.translate("gui.buggy.accel.name")));
-//                player.sendSystemMessage(Component.keybind(GameSettings.getKeyDisplayString(KeyHandlerClient.decelerateKey.getKeyCode()) + "       - " + GCCoreUtil.translate("gui.buggy.decel.name")));
-//                player.sendSystemMessage(Component.keybind(GameSettings.getKeyDisplayString(KeyHandlerClient.openFuelGui.getKeyCode()) + "       - " + GCCoreUtil.translate("gui.buggy.inv.name")));
+            if (player.isSecondaryUseActive() && player instanceof ServerPlayer serverPlayer) {
+                MenuRegistry.openExtendedMenu(serverPlayer, this);
+                return InteractionResult.CONSUME;
             }
-            return InteractionResult.SUCCESS;
+            return player.startRiding(this) ? InteractionResult.CONSUME : InteractionResult.PASS;
         }
+        return InteractionResult.SUCCESS;
     }
 
     @Override
@@ -235,6 +248,11 @@ public class Buggy extends GCVehicle implements ContainerListener, ControllableE
     }
 
     @Override
+    public Container getVehicleInventory() {
+        return this.inventory;
+    }
+
+    @Override
     public LivingEntity getControllingPassenger() {
         return getFirstPassenger() instanceof LivingEntity livingEntity ? livingEntity : super.getControllingPassenger();
     }
@@ -246,7 +264,11 @@ public class Buggy extends GCVehicle implements ContainerListener, ControllableE
 
     @Override
     public void setVariant(BuggyType type) {
+        boolean changed = this.entityData.get(DATA_TYPE_ID) != type.getId();
         this.entityData.set(DATA_TYPE_ID, type.getId());
+        if (changed && this.inventory != null) {
+            createInventory();
+        }
     }
 
     @Override
@@ -262,11 +284,6 @@ public class Buggy extends GCVehicle implements ContainerListener, ControllableE
     @Override
     public FuelDock getLandingPad() {
         return this.landingPad;
-    }
-
-    @Override
-    public void onPadDestroyed() {
-        this.landingPad = null;
     }
 
     @Override
@@ -303,6 +320,67 @@ public class Buggy extends GCVehicle implements ContainerListener, ControllableE
     @Override
     public StorageAccess<Fluid> getFuelTank() {
         return this.tank;
+    }
+
+    @Override
+    public float getScaledFuelLevel(float scale) {
+        return this.tank.getCapacity() == 0 ? 0 : this.getFuel() * scale / this.tank.getCapacity();
+    }
+
+    @Override
+    public ItemStack getDropItem() {
+        ItemStack stack = new ItemStack(GCItems.BUGGY);
+        stack.set(GCDataComponents.BUGGY_TYPE, this.getVariant().getId());
+        if (!this.tank.isEmpty()) {
+            stack.set(GCDataComponents.FLUID_DATA,
+                    new FluidData(new MLFluidStack(this.tank.getResource(), this.tank.getComponents()), this.tank.getAmount()));
+        }
+        return stack;
+    }
+
+    @Override
+    public ItemStack getPickResult() {
+        return this.getDropItem();
+    }
+
+    @Override
+    protected void destroy(DamageSource source) {
+        Containers.dropContents(this.level(), this.blockPosition(), this.inventory);
+        this.inventory.clearContent();
+        super.destroy(source);
+    }
+
+    @Override
+    public void remove(RemovalReason reason) {
+        super.remove(reason);
+        if (this.landingPad != null && (reason == RemovalReason.KILLED || reason == RemovalReason.DISCARDED)) {
+            this.landingPad.setDockedEntity(null);
+        }
+    }
+
+    @Override
+    public void onPadDestroyed() {
+        if (!this.level().isClientSide) {
+            Containers.dropContents(this.level(), this.blockPosition(), this.inventory);
+            this.inventory.clearContent();
+            this.spawnAtLocation(this.getDropItem());
+        }
+        this.remove(RemovalReason.DISCARDED);
+    }
+
+    @Override
+    public Component getDisplayName() {
+        return Component.translatable("entity.galacticraft.buggy");
+    }
+
+    @Override
+    public void saveExtraData(FriendlyByteBuf buf) {
+        buf.writeVarInt(this.getId());
+    }
+
+    @Override
+    public AbstractContainerMenu createMenu(int syncId, Inventory playerInventory, Player player) {
+        return new BuggyMenu(syncId, playerInventory, this);
     }
 
     public enum BuggyType implements StringRepresentable {

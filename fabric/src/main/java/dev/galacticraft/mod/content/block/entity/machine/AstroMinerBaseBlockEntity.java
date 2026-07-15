@@ -119,6 +119,10 @@ public class AstroMinerBaseBlockEntity extends BlockEntity implements ExtendedMe
         return this.energy;
     }
 
+    public boolean isEnergyInputSide(@Nullable Direction side) {
+        return side == this.facing.getOpposite();
+    }
+
     // ==== Inventory / hold API ====
 
     public SimpleContainer getHold() {

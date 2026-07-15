@@ -22,17 +22,40 @@
 
 package dev.galacticraft.mod.content.entity.vehicle;
 
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.NonNullList;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.Container;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.item.ItemStack;
 
-/**
- * Implemented by vehicle entities that expose a chest-like inventory to
- * {@link dev.galacticraft.mod.screen.VehicleInventoryMenu}. The menu resolves the
- * backing container from the entity by id, so both the client (display) and the
- * server (authoritative) share a single generic menu/screen.
- */
+/** A vehicle with a persistent container inventory. */
 public interface ContainerVehicle {
-    /**
-     * @return the container backing this vehicle's inventory GUI.
-     */
     Container getVehicleInventory();
+
+    static void loadInventory(CompoundTag nbt, Container container, HolderLookup.Provider registries) {
+        if (nbt.contains("Inventory", Tag.TAG_LIST)) {
+            if (container instanceof net.minecraft.world.SimpleContainer simpleContainer) {
+                simpleContainer.fromTag(nbt.getList("Inventory", Tag.TAG_COMPOUND), registries);
+            }
+            return;
+        }
+
+        NonNullList<ItemStack> items = NonNullList.withSize(container.getContainerSize(), ItemStack.EMPTY);
+        ContainerHelper.loadAllItems(nbt.getCompound("Inventory"), items, registries);
+        for (int slot = 0; slot < items.size(); slot++) {
+            container.setItem(slot, items.get(slot));
+        }
+    }
+
+    static void saveInventory(CompoundTag nbt, Container container, HolderLookup.Provider registries) {
+        NonNullList<ItemStack> items = NonNullList.withSize(container.getContainerSize(), ItemStack.EMPTY);
+        for (int slot = 0; slot < items.size(); slot++) {
+            items.set(slot, container.getItem(slot));
+        }
+        CompoundTag inventory = new CompoundTag();
+        ContainerHelper.saveAllItems(inventory, items, registries);
+        nbt.put("Inventory", inventory);
+    }
 }

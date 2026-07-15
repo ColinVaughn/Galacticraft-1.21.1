@@ -1230,6 +1230,8 @@ public interface Constant {
         String AIR_LOCK_CONTROLLER_MENU = "air_lock_menu";
         String ROCKET_WORKBENCH_MENU = "rocket_workbench_menu";
         String ROCKET = "rocket";
+        String BUGGY = "buggy";
+        String LAUNCH_PAD = "launch_pad";
         String PARACHEST = "parachest";
         String BUGGY_BENCH = "buggy_bench";
         String TIER_1_ROCKET = "tier_1_rocket";

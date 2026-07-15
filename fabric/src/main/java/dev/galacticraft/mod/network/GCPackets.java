@@ -23,14 +23,29 @@
 package dev.galacticraft.mod.network;
 
 import dev.architectury.networking.NetworkManager;
+import dev.architectury.platform.Platform;
+import dev.architectury.utils.Env;
+import dev.galacticraft.impl.network.s2c.S2CPayload;
 import dev.galacticraft.mod.network.c2s.*;
 import dev.galacticraft.mod.network.s2c.*;
-import dev.galacticraft.mod.client.network.GCClientPacketReceiver;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
 
 public class GCPackets {
     public static void register() {
-        GCClientPacketReceiver.register();
+        if (Platform.getEnvironment() == Env.SERVER) {
+            registerS2C(BubbleSizePayload.TYPE, BubbleSizePayload.STREAM_CODEC);
+            registerS2C(BubbleUpdatePayload.TYPE, BubbleUpdatePayload.STREAM_CODEC);
+            registerS2C(OpenCelestialScreenPayload.TYPE, OpenCelestialScreenPayload.STREAM_CODEC);
+            registerS2C(FootprintPacket.TYPE, FootprintPacket.STREAM_CODEC);
+            registerS2C(FootprintRemovedPacket.TYPE, FootprintRemovedPacket.STREAM_CODEC);
+            registerS2C(ResetPerspectivePacket.TYPE, ResetPerspectivePacket.STREAM_CODEC);
+            registerS2C(CapeAssignmentsPacket.TYPE, CapeAssignmentsPacket.STREAM_CODEC);
+            registerS2C(DustStormSyncPayload.TYPE, DustStormSyncPayload.STREAM_CODEC);
+            registerS2C(SolarFlareSyncPayload.TYPE, SolarFlareSyncPayload.STREAM_CODEC);
+        }
 
         registerC2S(AirlockPlayerNamePayload.TYPE, AirlockPlayerNamePayload.STREAM_CODEC);
         registerC2S(BubbleMaxPayload.TYPE, BubbleMaxPayload.STREAM_CODEC);
@@ -38,6 +53,7 @@ public class GCPackets {
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, ControlEntityPayload.TYPE, ControlEntityPayload.STREAM_CODEC,
                 (payload, context) -> context.queue(() -> payload.apply((ServerPlayer) context.getPlayer())));
         registerC2S(EjectCanPayload.TYPE, EjectCanPayload.STREAM_CODEC);
+        registerC2S(LaunchPadRoutePayload.TYPE, LaunchPadRoutePayload.STREAM_CODEC);
         registerC2S(OpenGcInventoryPayload.TYPE, OpenGcInventoryPayload.STREAM_CODEC);
         registerC2S(OpenPetInventoryPayload.TYPE, OpenPetInventoryPayload.STREAM_CODEC);
         registerC2S(OpenRocketPayload.TYPE, OpenRocketPayload.STREAM_CODEC);
@@ -46,6 +62,11 @@ public class GCPackets {
         registerC2S(SatelliteUpdatePayload.TYPE, SatelliteUpdatePayload.STREAM_CODEC);
         registerC2S(CapeSelectionPayload.TYPE, CapeSelectionPayload.STREAM_CODEC);
         registerC2S(CreativeGcTransferItemPayload.TYPE, CreativeGcTransferItemPayload.STREAM_CODEC);
+    }
+
+    private static <P extends S2CPayload> void registerS2C(CustomPacketPayload.Type<P> type,
+            StreamCodec<? super RegistryFriendlyByteBuf, P> codec) {
+        NetworkManager.registerS2CPayloadType(type, codec);
     }
 
     private static <P extends dev.galacticraft.impl.network.c2s.C2SPayload> void registerC2S(

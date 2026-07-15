@@ -21,6 +21,7 @@
     "max_radius": 24,
     "min_radius": 7,
     "probability": 0.04,
+    "replaceable": "#galacticraft:mars_crater_carver_replaceables",
     "y": {
       "absolute": 128
     },

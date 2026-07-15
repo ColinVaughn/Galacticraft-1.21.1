@@ -22,12 +22,8 @@
 
 package dev.galacticraft.impl.network.s2c;
 
-import dev.galacticraft.api.client.accessor.ClientSatelliteAccessor;
-import dev.galacticraft.api.universe.celestialbody.CelestialBody;
-import dev.galacticraft.impl.universe.celestialbody.type.SatelliteType;
 import dev.galacticraft.impl.universe.position.config.SatelliteConfig;
 import dev.galacticraft.mod.Constant;
-import dev.architectury.networking.NetworkManager;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -47,8 +43,4 @@ public record UpdateSatellitePayload(SatelliteConfig config) implements S2CPaylo
         return TYPE;
     }
 
-    @Override
-    public Runnable handle(NetworkManager.@NotNull PacketContext context) {
-        return () -> ((ClientSatelliteAccessor) net.minecraft.client.Minecraft.getInstance().player.connection).galacticraft$updateSatellite(new CelestialBody<>(SatelliteType.INSTANCE, this.config));
-    }
 }

@@ -52,6 +52,7 @@ import dev.galacticraft.mod.content.GCRegistry;
 import dev.galacticraft.mod.content.GCBlocks;
 import dev.galacticraft.mod.content.GCBlockPlatformHooks;
 import dev.galacticraft.mod.content.GCBlockEntityTypes;
+import dev.galacticraft.mod.content.block.special.AstroMinerBaseBlock;
 import dev.galacticraft.mod.content.item.GCItems;
 import dev.galacticraft.mod.content.item.InfiniteBatteryItem;
 import dev.galacticraft.mod.attachments.GCAttachments;
@@ -352,9 +353,12 @@ public final class GalacticraftNeoForge {
                 (wire, direction) -> direction == null || wire.canConnect(direction) ? wire.getInsertable() : null);
         event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, GCBlockEntityTypes.WIRE_T2,
                 (wire, direction) -> direction == null || wire.canConnect(direction) ? wire.getInsertable() : null);
-        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, GCBlockEntityTypes.ASTRO_MINER_BASE,
-                (base, direction) -> new ExposedEnergyStorageNeoForge(base.getEnergyStorage(),
-                        base.getEnergyStorage().externalInsertionRate(), 0));
+        // Resolve every corner of the 2x2x2 base to its single energy-owning master.
+        event.registerBlock(Capabilities.EnergyStorage.BLOCK, (level, pos, state, blockEntity, direction) -> {
+            var base = AstroMinerBaseBlock.getMasterBlockEntity(level, pos, state);
+            return base == null || !base.isEnergyInputSide(direction) ? null : new ExposedEnergyStorageNeoForge(base.getEnergyStorage(),
+                    base.getEnergyStorage().externalInsertionRate(), 0);
+        }, GCBlocks.ASTRO_MINER_BASE);
         event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, GCBlockEntityTypes.PARACHEST,
                 (chest, direction) -> chest.tank);
         event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, GCBlockEntityTypes.GLASS_FLUID_PIPE,

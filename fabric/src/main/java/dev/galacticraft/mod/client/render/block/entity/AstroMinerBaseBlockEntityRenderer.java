@@ -32,10 +32,13 @@ import dev.galacticraft.mod.client.model.GCRenderTypes;
 import dev.galacticraft.mod.content.block.entity.machine.AstroMinerBaseBlockEntity;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 
 /**
@@ -57,6 +60,7 @@ public class AstroMinerBaseBlockEntityRenderer implements BlockEntityRenderer<As
         if (this.model == null) {
             this.model = GCModelLoader.INSTANCE.getModel(MODEL);
         }
+        light = getAverageLight(blockEntity, light);
         VertexConsumer consumer = vertexConsumers.getBuffer(GCRenderTypes.obj(GCRenderTypes.OBJ_ATLAS));
         matrices.pushPose();
         // Transform mirrors legacy TileEntityMinerBaseRenderer: master is the min corner, so
@@ -72,5 +76,29 @@ public class AstroMinerBaseBlockEntityRenderer implements BlockEntityRenderer<As
         matrices.mulPose(Axis.YP.rotationDegrees(angle));
         this.model.render(matrices, null, consumer, light, OverlayTexture.NO_OVERLAY);
         matrices.popPose();
+    }
+
+    /** Matches the legacy renderer by averaging the light across all eight base blocks. */
+    private static int getAverageLight(AstroMinerBaseBlockEntity blockEntity, int fallback) {
+        if (blockEntity.getLevel() == null) {
+            return fallback;
+        }
+
+        int blockLight = 0;
+        int skyLight = 0;
+        BlockPos master = blockEntity.getBlockPos();
+        BlockPos.MutableBlockPos sample = new BlockPos.MutableBlockPos();
+
+        for (int x = 0; x <= 1; x++) {
+            for (int y = 0; y <= 1; y++) {
+                for (int z = 0; z <= 1; z++) {
+                    sample.setWithOffset(master, x, y, z);
+                    int sampledLight = LevelRenderer.getLightColor(blockEntity.getLevel(), sample);
+                    blockLight += LightTexture.block(sampledLight);
+                    skyLight += LightTexture.sky(sampledLight);
+                }
+            }
+        }
+        return LightTexture.pack(blockLight / 8, skyLight / 8);
     }
 }

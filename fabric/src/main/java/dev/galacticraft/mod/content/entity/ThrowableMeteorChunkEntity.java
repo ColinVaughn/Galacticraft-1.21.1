@@ -107,17 +107,26 @@ public class ThrowableMeteorChunkEntity extends ThrowableItemProjectile {
         super.onHitEntity(result);
         Entity entity = result.getEntity();
         Entity owner = this.getOwner();
-        // TODO: Find out why the owner isn't getting credited for the damage
-        DamageSource damage = this.damageSources().source(METEOR_STRIKE, this, owner != null ? owner : this);
+        DamageSource damage = this.createMeteorDamageSource();
+        boolean damaged;
         if (this.entityData.get(HOT)) {
-            entity.hurt(damage, 4.0F);
+            damaged = entity.hurt(damage, 4.0F);
             entity.igniteForSeconds(3);
         } else {
-            entity.hurt(damage, 2.0F);
+            damaged = entity.hurt(damage, 2.0F);
         }
-        if (owner instanceof LivingEntity livingEntity) {
+
+        if (damaged && owner instanceof LivingEntity livingEntity) {
             livingEntity.setLastHurtMob(entity);
         }
+    }
+
+    /** Keeps the meteor as the direct entity and its thrower as the causing entity. */
+    protected DamageSource createMeteorDamageSource() {
+        Entity owner = this.getOwner();
+        return owner == null
+                ? this.damageSources().source(METEOR_STRIKE, this)
+                : this.damageSources().source(METEOR_STRIKE, this, owner);
     }
 
     @Override

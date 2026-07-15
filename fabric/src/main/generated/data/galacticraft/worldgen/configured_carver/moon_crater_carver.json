@@ -22,6 +22,7 @@
     "max_radius": 34,
     "min_radius": 10,
     "probability": 0.055,
+    "replaceable": "#galacticraft:moon_crater_carver_replaceables",
     "y": {
       "absolute": 128
     },

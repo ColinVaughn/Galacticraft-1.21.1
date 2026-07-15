@@ -259,7 +259,9 @@ public class GCItems {
     public static final Item ROCKET = ITEMS.register(Constant.Item.ROCKET, new RocketItem(new Item.Properties()
             .component(GCDataComponents.ROCKET_DATA, RocketPrefabs.TIER_1)
             .stacksTo(1)));
-    public static final Item BUGGY = ITEMS.register(Constant.Item.BUGGY, new BuggyItem(new Item.Properties().stacksTo(1)));
+    public static final Item BUGGY = ITEMS.register(Constant.Item.BUGGY, new BuggyItem(new Item.Properties()
+            .component(GCDataComponents.BUGGY_TYPE, 0)
+            .stacksTo(1)));
     public static final Item ASTRO_MINER = ITEMS.register(Constant.Item.ASTRO_MINER, new AstroMinerItem(new Item.Properties().stacksTo(1)));
     public static final Item CARGO_ROCKET = ITEMS.register(Constant.Item.CARGO_ROCKET, new CargoRocketItem(new Item.Properties().stacksTo(1)));
 

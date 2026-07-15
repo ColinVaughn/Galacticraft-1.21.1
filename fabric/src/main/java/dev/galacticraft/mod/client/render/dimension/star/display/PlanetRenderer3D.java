@@ -40,7 +40,11 @@ import java.util.List;
  * Renderer for 3D planets as cubes with texture and opacity support.
  */
 public class PlanetRenderer3D implements CelestialBodyRenderer {
-    private final GeographicalSolarPosition cameraRenderPosition = GeographicalSolarPosition.getInstance();
+    private final GeographicalSolarPosition cameraRenderPosition;
+
+    public PlanetRenderer3D(GeographicalSolarPosition cameraRenderPosition) {
+        this.cameraRenderPosition = cameraRenderPosition;
+    }
 
     @Override
     public void setupBufferPositions(List<CelestialBody> bodies) {

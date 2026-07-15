@@ -30,12 +30,13 @@ import dev.galacticraft.machinelib.api.machine.MachineStatuses;
 import dev.galacticraft.machinelib.api.menu.MachineMenu;
 import dev.galacticraft.machinelib.api.storage.MachineEnergyStorage;
 import dev.galacticraft.machinelib.api.storage.MachineItemStorage;
-import dev.galacticraft.machinelib.api.storage.StorageSpec;
 import dev.galacticraft.machinelib.api.storage.slot.ItemResourceSlot;
+import dev.galacticraft.machinelib.api.storage.StorageSpec;
 import dev.galacticraft.machinelib.api.transfer.TransferType;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.Galacticraft;
 import dev.galacticraft.mod.content.GCBlockEntityTypes;
+import dev.galacticraft.mod.content.entity.vehicle.CargoRocketEntity;
 import dev.galacticraft.mod.screen.GCMenuTypes;
 import dev.galacticraft.mod.storage.ItemStoragePull;
 import net.minecraft.core.BlockPos;
@@ -45,13 +46,15 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * A machinelib port of legacy Galacticraft's Cargo Unloader. Pulls items from any adjacent
- * container (or cargo rocket on a pad, once supported) into its internal buffer.
+ * container into its internal buffer, prioritizing a cargo rocket docked on an adjacent pad.
  */
 public class CargoUnloaderBlockEntity extends MachineBlockEntity {
     public static final int CHARGE_SLOT = 0;
@@ -87,6 +90,29 @@ public class CargoUnloaderBlockEntity extends MachineBlockEntity {
     protected @NotNull MachineStatus tick(@NotNull ServerLevel level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull ProfilerFiller profiler) {
         if (!this.energyStorage().canExtract(ENERGY_USAGE)) return MachineStatuses.NOT_ENOUGH_ENERGY;
 
+        CargoRocketEntity rocket = CargoRocketEntity.findDockedRocket(level, pos);
+        if (rocket != null) {
+            int remaining = (int) TRANSFER_RATE;
+            int moved = 0;
+            Container rocketInventory = rocket.getVehicleInventory();
+            for (int sourceSlot = 0; sourceSlot < rocketInventory.getContainerSize() && remaining > 0;
+                 sourceSlot++) {
+                ItemStack stack = rocketInventory.getItem(sourceSlot);
+                if (stack.isEmpty()) continue;
+                int inserted = this.insertIntoBuffer(stack, remaining);
+                if (inserted > 0) {
+                    rocketInventory.removeItem(sourceSlot, inserted);
+                    remaining -= inserted;
+                    moved += inserted;
+                }
+            }
+            if (moved > 0) {
+                rocketInventory.setChanged();
+                this.energyStorage().extract(ENERGY_USAGE);
+                return MachineStatuses.ACTIVE;
+            }
+        }
+
         long moved = 0;
         for (Direction direction : Direction.values()) {
             moved += ItemStoragePull.pull(level, pos, direction,
@@ -98,6 +124,16 @@ public class CargoUnloaderBlockEntity extends MachineBlockEntity {
             return MachineStatuses.ACTIVE;
         }
         return MachineStatuses.IDLE;
+    }
+
+    private int insertIntoBuffer(ItemStack stack, int limit) {
+        int remaining = Math.min(stack.getCount(), limit);
+        for (int slot = BUFFER_START; slot < BUFFER_START + BUFFER_SIZE && remaining > 0; slot++) {
+            ItemResourceSlot target = this.itemStorage().slot(slot);
+            long inserted = target.insert(stack.getItem(), stack.getComponentsPatch(), remaining);
+            remaining -= (int) inserted;
+        }
+        return Math.min(stack.getCount(), limit) - remaining;
     }
 
     @Nullable

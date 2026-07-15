@@ -96,6 +96,9 @@ public class CraterCarver extends WorldCarver<CraterCarverConfig> {
                     mutable.set(innerChunkX, surfaceY, innerChunkZ);
                     for (int dug = 0; dug < toDig; dug++) {
                         mutable.move(Direction.DOWN);
+                        if (!this.canReplaceBlock(config, chunk.getBlockState(mutable))) {
+                            break;
+                        }
                         if (!chunk.getBlockState(mutable).isAir()
                                 || carvingMask.get(innerChunkX, mutable.getY() + 64, innerChunkZ)
                                 || dug > 0) {

@@ -88,6 +88,7 @@ configurations["runtimeClasspath"].extendsFrom(common)
 configurations["developmentFabric"].extendsFrom(common)
 configurations["testCompileClasspath"].extendsFrom(common)
 configurations["testRuntimeClasspath"].extendsFrom(common)
+configurations["testRuntimeClasspath"].extendsFrom(configurations["architecturyTransformerRuntimeClasspath"])
 
 repositories {
     mavenLocal()

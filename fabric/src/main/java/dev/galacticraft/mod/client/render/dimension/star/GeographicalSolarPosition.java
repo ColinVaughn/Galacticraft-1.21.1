@@ -61,11 +61,4 @@ public class GeographicalSolarPosition {
         return new Vec3(x, y, z);
     }
 
-    private static final GeographicalSolarPosition instance = new GeographicalSolarPosition(0, 0, 0);
-
-    public static GeographicalSolarPosition getInstance() {
-        return instance;
-    }
-
 }
-

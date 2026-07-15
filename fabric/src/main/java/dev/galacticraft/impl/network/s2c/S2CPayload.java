@@ -27,5 +27,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import org.jetbrains.annotations.NotNull;
 
 public interface S2CPayload extends CustomPacketPayload {
-    Runnable handle(@NotNull NetworkManager.PacketContext context);
+    default Runnable handle(@NotNull NetworkManager.PacketContext context) {
+        throw new UnsupportedOperationException("This payload uses a dedicated client handler");
+    }
 }

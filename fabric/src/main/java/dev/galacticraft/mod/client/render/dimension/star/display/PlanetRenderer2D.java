@@ -39,7 +39,11 @@ import java.util.List;
  * Renderer for planets.
  */
 public class PlanetRenderer2D implements CelestialBodyRenderer {
-    private final GeographicalSolarPosition cameraRenderPosition = GeographicalSolarPosition.getInstance();
+    private final GeographicalSolarPosition cameraRenderPosition;
+
+    public PlanetRenderer2D(GeographicalSolarPosition cameraRenderPosition) {
+        this.cameraRenderPosition = cameraRenderPosition;
+    }
 
     @Override
     public void setupBufferPositions(List<CelestialBody> bodies) {

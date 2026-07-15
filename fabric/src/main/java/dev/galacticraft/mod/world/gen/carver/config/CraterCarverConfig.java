@@ -24,9 +24,11 @@ package dev.galacticraft.mod.world.gen.carver.config;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import dev.galacticraft.mod.tag.GCBlockTags;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.RegistryCodecs;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.util.valueproviders.FloatProvider;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.levelgen.VerticalAnchor;
 import net.minecraft.world.level.levelgen.carver.CarverConfiguration;
 import net.minecraft.world.level.levelgen.carver.CarverDebugSettings;
@@ -38,6 +40,7 @@ public class CraterCarverConfig extends CarverConfiguration {
             HeightProvider.CODEC.fieldOf("y").forGetter(i -> i.y),
             FloatProvider.CODEC.fieldOf("y_scale").forGetter(i -> i.yScale),
             CarverDebugSettings.CODEC.fieldOf("debug_settings").forGetter(i -> i.debugSettings),
+            RegistryCodecs.homogeneousList(Registries.BLOCK).fieldOf("replaceable").forGetter(i -> i.replaceable),
             Codec.INT.fieldOf("max_radius").forGetter(i -> i.maxRadius),
             Codec.INT.fieldOf("min_radius").forGetter(i -> i.minRadius),
             Codec.INT.fieldOf("ideal_range_offset").forGetter(i -> i.idealRangeOffset),
@@ -50,8 +53,8 @@ public class CraterCarverConfig extends CarverConfiguration {
     public final int idealRangeOffset;
     public final float depthScale;
 
-    public CraterCarverConfig(float probability, HeightProvider y, FloatProvider yScale, CarverDebugSettings carverDebugConfig, int maxRadius, int minRadius, int idealRangeOffset, float depthScale) {
-        super(probability, y, yScale, VerticalAnchor.bottom(), carverDebugConfig, BuiltInRegistries.BLOCK.getOrCreateTag(GCBlockTags.MOON_CRATER_CARVER_REPLACEABLES)); // TODO: Crater replaceables
+    public CraterCarverConfig(float probability, HeightProvider y, FloatProvider yScale, CarverDebugSettings carverDebugConfig, HolderSet<Block> replaceable, int maxRadius, int minRadius, int idealRangeOffset, float depthScale) {
+        super(probability, y, yScale, VerticalAnchor.bottom(), carverDebugConfig, replaceable);
         this.maxRadius = maxRadius;
         this.minRadius = minRadius;
         this.idealRangeOffset = idealRangeOffset;

@@ -60,6 +60,7 @@ import dev.galacticraft.mod.events.ClientEventHandler;
 import dev.galacticraft.mod.misc.cape.CapeRegistry;
 import dev.galacticraft.mod.misc.cape.CapesClientRole;
 import dev.galacticraft.mod.misc.cape.CapesLoader;
+import dev.galacticraft.mod.client.network.GCClientPacketReceiver;
 import dev.galacticraft.mod.network.c2s.OpenGcInventoryPayload;
 import dev.galacticraft.mod.network.c2s.OpenRocketPayload;
 import dev.galacticraft.mod.particle.GCParticleTypes;
@@ -115,6 +116,7 @@ public class GalacticraftClient implements ClientModInitializer {
     public void onInitializeClient() {
         long startInitTime = System.currentTimeMillis();
         Constant.LOGGER.info("Starting client initialization.");
+        GCClientPacketReceiver.register();
         ClientEventHandler.init();
         ClientCapeLoginSync.init();
         CapesClientRole.ensureLoadedAsync();
@@ -150,6 +152,8 @@ public class GalacticraftClient implements ClientModInitializer {
         MenuRegistry.registerScreenFactory(GCMenuTypes.AIRLOCK_CONTROLLER_MENU, AirlockControllerScreen::new);
         MenuRegistry.registerScreenFactory(GCMenuTypes.ROCKET_WORKBENCH, RocketWorkbenchScreen::new);
         MenuRegistry.registerScreenFactory(GCMenuTypes.ROCKET, RocketInventoryScreen::new);
+        MenuRegistry.registerScreenFactory(GCMenuTypes.BUGGY, BuggyScreen::new);
+        MenuRegistry.registerScreenFactory(GCMenuTypes.LAUNCH_PAD, LaunchPadScreen::new);
         MenuRegistry.registerScreenFactory(GCMenuTypes.PARACHEST, ParachestScreen::new);
         MenuRegistry.registerScreenFactory(GCMenuTypes.VEHICLE_INVENTORY, VehicleInventoryScreen::new);
         MenuRegistry.registerScreenFactory(GCMenuTypes.ASTRO_MINER_BASE, AstroMinerBaseScreen::new);

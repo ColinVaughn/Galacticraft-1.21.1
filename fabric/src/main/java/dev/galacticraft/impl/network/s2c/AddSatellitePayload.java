@@ -22,12 +22,8 @@
 
 package dev.galacticraft.impl.network.s2c;
 
-import dev.galacticraft.api.client.accessor.ClientSatelliteAccessor;
-import dev.galacticraft.api.universe.celestialbody.CelestialBody;
-import dev.galacticraft.impl.universe.celestialbody.type.SatelliteType;
 import dev.galacticraft.impl.universe.position.config.SatelliteConfig;
 import dev.galacticraft.mod.Constant;
-import dev.architectury.networking.NetworkManager;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -50,8 +46,4 @@ public record AddSatellitePayload(SatelliteConfig config, boolean newlyCreated) 
         return TYPE;
     }
 
-    @Override
-    public Runnable handle(NetworkManager.@NotNull PacketContext context) {
-        return () -> ((ClientSatelliteAccessor) net.minecraft.client.Minecraft.getInstance().player.connection).galacticraft$addSatellite(new CelestialBody<>(SatelliteType.INSTANCE, this.config), this.newlyCreated);
-    }
 }

@@ -22,17 +22,13 @@
 
 package dev.galacticraft.impl.network.s2c;
 
-import dev.galacticraft.impl.internal.accessor.ChunkSectionOxygenAccessor;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.util.StreamCodecs;
 import io.netty.buffer.ByteBuf;
-import dev.architectury.networking.NetworkManager;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.chunk.LevelChunk;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.BitSet;
@@ -51,17 +47,6 @@ public record OxygenUpdatePayload(long chunk, OxygenData[] data) implements S2CP
     @Override
     public @NotNull Type<? extends CustomPacketPayload> type() {
         return TYPE;
-    }
-
-    @Override
-    public Runnable handle(NetworkManager.@NotNull PacketContext context) {
-        return () -> {
-            LevelChunk chunk = net.minecraft.client.Minecraft.getInstance().level.getChunk(ChunkPos.getX(this.chunk), ChunkPos.getZ(this.chunk));
-            for (OxygenData datum : this.data) {
-                ChunkSectionOxygenAccessor accessor = (ChunkSectionOxygenAccessor) chunk.getSection(datum.section);
-                accessor.galacticraft$setBits(datum.data);
-            }
-        };
     }
 
     public record OxygenData(byte section, @NotNull BitSet data) {

@@ -29,6 +29,7 @@ import dev.galacticraft.api.fluid.FluidData;
 import dev.galacticraft.api.gas.Gases;
 import dev.galacticraft.impl.network.GCApiClientPacketReceivers;
 import dev.galacticraft.mod.client.GCKeyBinds;
+import dev.galacticraft.mod.client.network.GCClientPacketReceiver;
 import dev.galacticraft.mod.client.network.CapeClientNet;
 import dev.galacticraft.mod.client.gui.overlay.*;
 import dev.galacticraft.mod.client.render.dimension.duststorm.ClientDustStorms;
@@ -128,6 +129,7 @@ import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 public final class GCNeoForgeClient {
     public static void init(IEventBus modBus) {
         GCApiClientPacketReceivers.register();
+        GCClientPacketReceiver.register();
         GCModelLoader.registerModelType(UnbakedObjModel.TYPE);
         GalacticraftRocketPartRenderers.register();
         modBus.addListener(GCNeoForgeClient::registerScreens);
@@ -354,6 +356,8 @@ public final class GCNeoForgeClient {
         event.register(GCMenuTypes.AIRLOCK_CONTROLLER_MENU, AirlockControllerScreen::new);
         event.register(GCMenuTypes.ROCKET_WORKBENCH, RocketWorkbenchScreen::new);
         event.register(GCMenuTypes.ROCKET, RocketInventoryScreen::new);
+        event.register(GCMenuTypes.BUGGY, BuggyScreen::new);
+        event.register(GCMenuTypes.LAUNCH_PAD, LaunchPadScreen::new);
         event.register(GCMenuTypes.PARACHEST, ParachestScreen::new);
         event.register(GCMenuTypes.VEHICLE_INVENTORY, VehicleInventoryScreen::new);
         event.register(GCMenuTypes.ASTRO_MINER_BASE, AstroMinerBaseScreen::new);

@@ -36,22 +36,26 @@ import dev.galacticraft.machinelib.api.transfer.TransferType;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.Galacticraft;
 import dev.galacticraft.mod.content.GCBlockEntityTypes;
+import dev.galacticraft.mod.content.entity.vehicle.CargoRocketEntity;
 import dev.galacticraft.mod.screen.GCMenuTypes;
+import dev.galacticraft.mod.storage.ContainerTransfer;
 import dev.galacticraft.machinelib.impl.platform.MachineLibPlatform;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * A machinelib port of legacy Galacticraft's Cargo Loader. Pushes items from its internal
- * buffer into any adjacent container (or cargo rocket on a pad, once supported).
+ * buffer into any adjacent container, prioritizing a cargo rocket docked on an adjacent pad.
  */
 public class CargoLoaderBlockEntity extends MachineBlockEntity {
     public static final int CHARGE_SLOT = 0;
@@ -86,6 +90,28 @@ public class CargoLoaderBlockEntity extends MachineBlockEntity {
     @Override
     protected @NotNull MachineStatus tick(@NotNull ServerLevel level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull ProfilerFiller profiler) {
         if (!this.energyStorage().canExtract(ENERGY_USAGE)) return MachineStatuses.NOT_ENOUGH_ENERGY;
+
+        CargoRocketEntity rocket = CargoRocketEntity.findDockedRocket(level, pos);
+        if (rocket != null) {
+            int remaining = (int) TRANSFER_RATE;
+            int moved = 0;
+            Container rocketInventory = rocket.getVehicleInventory();
+            for (int slot = BUFFER_START; slot < BUFFER_START + BUFFER_SIZE && remaining > 0; slot++) {
+                ItemStack stack = this.itemStorage().getItem(slot);
+                if (stack.isEmpty()) continue;
+                int inserted = ContainerTransfer.insert(rocketInventory, 0, rocketInventory.getContainerSize(),
+                        stack, remaining);
+                if (inserted > 0) {
+                    this.itemStorage().slot(slot).extract(inserted);
+                    remaining -= inserted;
+                    moved += inserted;
+                }
+            }
+            if (moved > 0) {
+                this.energyStorage().extract(ENERGY_USAGE);
+                return MachineStatuses.ACTIVE;
+            }
+        }
 
         long before = this.itemStorage().getModifications();
         for (Direction direction : Direction.values()) {

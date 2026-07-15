@@ -1047,8 +1047,8 @@ public class GCTranslationProvider extends TranslationProvider {
         this.blockDesc(GCBlocks.OXYGEN_DETECTOR, "Emits a redstone signal when in a sealed, oxygenated area.");
         this.blockDesc(GCBlocks.FOOD_CANNER, "Compresses several food items into a single can. Canned foods can be eaten while wearing an oxygen mask.");
         this.blockDesc(GCBlocks.FUEL_LOADER, "Loads fuel into a rocket placed on an adjacent launch pad.");
-        this.blockDesc(GCBlocks.CARGO_LOADER, "Pushes items from its buffer into an adjacent container.");
-        this.blockDesc(GCBlocks.CARGO_UNLOADER, "Pulls items from an adjacent container into its buffer.");
+        this.blockDesc(GCBlocks.CARGO_LOADER, "Pushes items from its buffer into an adjacent container or docked cargo rocket.");
+        this.blockDesc(GCBlocks.CARGO_UNLOADER, "Pulls items from an adjacent container or docked cargo rocket into its buffer.");
         this.blockDesc(GCBlocks.FLUID_TANK, "Stores a large amount of any single fluid and connects to fluid pipes.");
         this.blockDesc(GCBlocks.PAINTER, "Recolors dyeable blocks such as glass, terracotta, and concrete using a dye.");
         this.blockDesc(GCBlocks.DECONSTRUCTOR, "Reverse-engineers compressed metals back into their base ingots.");
@@ -1073,6 +1073,7 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(Tooltip.TIME_UNTIL_COOL, "Time Until Cool: %s");
         this.add(Tooltip.SECONDS_UNIT, "%ss");
         this.add(Tooltip.INCORRECT_NUMBER_OF_SLOTS, "Incorrect number of slots in the workstation for this recipe.");
+        this.add("tooltip.galacticraft.buggy_storage", "Storage: %s slots");
 
         this.add(Tooltip.FLUID_CANISTER_EMPTY, "Empty");
         this.add(Tooltip.FLUID_CANISTER_FLUID_INFO, "%s: %s");
@@ -1266,6 +1267,21 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(Ui.ENGINE, "Engine");
         this.add(Ui.UPGRADE, "Upgrade");
         this.add(Ui.COLOR, "Color");
+        this.add(Ui.LAUNCH_PAD_ADDRESS, "Pad Address:");
+        this.add(Ui.LAUNCH_PAD_DESTINATION, "Destination:");
+        this.add(Ui.LAUNCH_PAD_ROUTING, "Cargo Rocket Routing");
+        this.add(Ui.LAUNCH_PAD_SAVE, "Save Route");
+        this.add(Ui.LAUNCH_PAD_ROUTE_READY, "Destination online");
+        this.add(Ui.LAUNCH_PAD_ROUTE_UNAVAILABLE, "Destination unavailable");
+        this.add(Ui.CARGO_ROCKET_ALREADY_FLYING, "Cargo rocket is already in flight");
+        this.add(Ui.CARGO_ROCKET_DESTINATION_BLOCKED, "Destination pad is occupied; returning to origin");
+        this.add(Ui.CARGO_ROCKET_DESTINATION_UNAVAILABLE, "Destination pad is unavailable");
+        this.add(Ui.CARGO_ROCKET_NO_FUEL, "Cargo rocket needs fuel");
+        this.add(Ui.CARGO_ROCKET_NO_PAD, "Cargo rocket is not docked on a launch pad");
+        this.add(Ui.CARGO_ROCKET_NO_ROUTE, "Launch pad has no destination route");
+        this.add(Ui.CARGO_ROCKET_TELEPORT_FAILED, "Cargo rocket could not reach its destination");
+        this.add(Ui.BUGGY_FUEL, "Fuel");
+        this.add(Ui.BUGGY_FUEL_PERCENT, "%s%% full");
 
         this.add(Ui.AIRLOCK_REDSTONE_SIGNAL, "Opens on Redstone Signal");
         this.add(Ui.AIRLOCK_OWNER, "%s's Airlock Controller");

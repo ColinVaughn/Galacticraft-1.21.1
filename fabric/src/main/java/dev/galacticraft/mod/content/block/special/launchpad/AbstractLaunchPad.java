@@ -24,10 +24,13 @@ package dev.galacticraft.mod.content.block.special.launchpad;
 
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.MapCodec;
+import dev.architectury.registry.menu.MenuRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
@@ -42,6 +45,7 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class AbstractLaunchPad extends BaseEntityBlock {
@@ -98,6 +102,20 @@ public abstract class AbstractLaunchPad extends BaseEntityBlock {
     }
 
     @Override
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        if (state.getValue(PART) == Part.NONE) return InteractionResult.PASS;
+        BlockPos center = pos.offset(partToCenterPos(state.getValue(PART)));
+        if (level.getBlockEntity(center) instanceof LaunchPadBlockEntity pad
+                && pad.getPadType() == LaunchPadBlockEntity.Type.ROCKET) {
+            if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
+                MenuRegistry.openExtendedMenu(serverPlayer, pad);
+            }
+            return InteractionResult.sidedSuccess(level.isClientSide);
+        }
+        return InteractionResult.PASS;
+    }
+
+    @Override
     public BlockState playerWillDestroy(Level level, BlockPos blockPos, BlockState blockState, Player player) {
         if (!level.isClientSide() && player.isCreative()) {
             var part = blockState.getValue(PART);
@@ -126,6 +144,7 @@ public abstract class AbstractLaunchPad extends BaseEntityBlock {
         // figure out where the center block is and remove the rocket
         BlockPos center = blockPos.offset(AbstractLaunchPad.partToCenterPos(blockState.getValue(PART)));
         if (level.getBlockEntity(center) instanceof LaunchPadBlockEntity pad) {
+            pad.unregisterAddress();
             if (pad.hasDockedEntity() && pad.getDockedEntity() != null) {
                 pad.getDockedEntity().onPadDestroyed();
             }

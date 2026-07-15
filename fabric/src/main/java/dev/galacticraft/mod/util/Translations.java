@@ -452,6 +452,21 @@ public interface Translations {
         String ENGINE = "ui.galacticraft.engine";
         String UPGRADE = "ui.galacticraft.upgrade";
         String COLOR = "ui.galacticraft.color";
+        String LAUNCH_PAD_ADDRESS = "ui.galacticraft.launch_pad.address";
+        String LAUNCH_PAD_DESTINATION = "ui.galacticraft.launch_pad.destination";
+        String LAUNCH_PAD_ROUTING = "ui.galacticraft.launch_pad.routing";
+        String LAUNCH_PAD_SAVE = "ui.galacticraft.launch_pad.save";
+        String LAUNCH_PAD_ROUTE_READY = "ui.galacticraft.launch_pad.route_ready";
+        String LAUNCH_PAD_ROUTE_UNAVAILABLE = "ui.galacticraft.launch_pad.route_unavailable";
+        String CARGO_ROCKET_ALREADY_FLYING = "ui.galacticraft.cargo_rocket.already_flying";
+        String CARGO_ROCKET_DESTINATION_BLOCKED = "ui.galacticraft.cargo_rocket.destination_blocked";
+        String CARGO_ROCKET_DESTINATION_UNAVAILABLE = "ui.galacticraft.cargo_rocket.destination_unavailable";
+        String CARGO_ROCKET_NO_FUEL = "ui.galacticraft.cargo_rocket.no_fuel";
+        String CARGO_ROCKET_NO_PAD = "ui.galacticraft.cargo_rocket.no_pad";
+        String CARGO_ROCKET_NO_ROUTE = "ui.galacticraft.cargo_rocket.no_route";
+        String CARGO_ROCKET_TELEPORT_FAILED = "ui.galacticraft.cargo_rocket.teleport_failed";
+        String BUGGY_FUEL = "ui.galacticraft.buggy.fuel";
+        String BUGGY_FUEL_PERCENT = "ui.galacticraft.buggy.fuel_percent";
 
         String AIRLOCK_REDSTONE_SIGNAL = "ui.galacticraft.airlock.redstone_signal";
         String AIRLOCK_OWNER = "ui.galacticraft.airlock.owner";

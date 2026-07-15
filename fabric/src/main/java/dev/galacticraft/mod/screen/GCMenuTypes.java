@@ -78,6 +78,8 @@ public class GCMenuTypes {
     public static final MenuType<AirlockControllerMenu> AIRLOCK_CONTROLLER_MENU = new MenuType<>(AirlockControllerMenu::new, FeatureFlags.VANILLA_SET);
     public static final MenuType<RocketWorkbenchMenu> ROCKET_WORKBENCH = MenuRegistry.ofExtended((id, inventory, buf) -> new RocketWorkbenchMenu(id, inventory, RocketWorkbenchMenu.OpeningData.CODEC.decode(buf)));
     public static final MenuType<RocketMenu> ROCKET = MenuRegistry.ofExtended((id, inventory, buf) -> new RocketMenu(id, inventory, ByteBufCodecs.INT.decode(buf)));
+    public static final MenuType<BuggyMenu> BUGGY = MenuRegistry.ofExtended((id, inventory, buf) -> new BuggyMenu(id, inventory, ByteBufCodecs.VAR_INT.decode(buf)));
+    public static final MenuType<LaunchPadMenu> LAUNCH_PAD = MenuRegistry.ofExtended((id, inventory, buf) -> new LaunchPadMenu(id, inventory, BlockPos.STREAM_CODEC.decode(buf)));
     public static final MenuType<ParachestMenu> PARACHEST = MenuRegistry.ofExtended((id, inventory, buf) -> new ParachestMenu(id, inventory, ParachestMenu.OpeningData.STREAM_CODEC.decode(buf)));
     public static final MenuType<VehicleInventoryMenu> VEHICLE_INVENTORY = MenuRegistry.ofExtended((id, inventory, buf) -> new VehicleInventoryMenu(id, inventory, ByteBufCodecs.VAR_INT.decode(buf)));
     public static final MenuType<AstroMinerBaseMenu> ASTRO_MINER_BASE = MenuRegistry.ofExtended((id, inventory, buf) -> new AstroMinerBaseMenu(id, inventory, BlockPos.STREAM_CODEC.decode(buf)));
@@ -119,6 +121,8 @@ public class GCMenuTypes {
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.AIR_LOCK_CONTROLLER_MENU), AIRLOCK_CONTROLLER_MENU);
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.ROCKET_WORKBENCH_MENU), ROCKET_WORKBENCH);
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.ROCKET), ROCKET);
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.BUGGY), BUGGY);
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.LAUNCH_PAD), LAUNCH_PAD);
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.PARACHEST), PARACHEST);
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.VEHICLE_INVENTORY), VEHICLE_INVENTORY);
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.ASTRO_MINER_BASE_MENU), ASTRO_MINER_BASE);

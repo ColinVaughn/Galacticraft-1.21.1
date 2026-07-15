@@ -76,6 +76,15 @@ public class AstroMinerBaseBlock extends BaseEntityBlock {
         return new BlockPos(-part.offsetX, -part.offsetY, -part.offsetZ);
     }
 
+    public static @Nullable AstroMinerBaseBlockEntity getMasterBlockEntity(BlockGetter level, BlockPos pos, BlockState state) {
+        if (!(state.getBlock() instanceof AstroMinerBaseBlock) || state.getValue(PART) == Part.NONE) {
+            return null;
+        }
+
+        BlockPos master = pos.offset(partToMasterPos(state.getValue(PART)));
+        return level.getBlockEntity(master) instanceof AstroMinerBaseBlockEntity base ? base : null;
+    }
+
     private static Part partForOffset(int x, int y, int z) {
         for (Part part : Part.values()) {
             if (part != Part.NONE && part.offsetX == x && part.offsetY == y && part.offsetZ == z) {

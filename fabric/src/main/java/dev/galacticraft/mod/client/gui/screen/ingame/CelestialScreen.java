@@ -93,7 +93,7 @@ public class CelestialScreen extends Screen implements ClientSatelliteAccessor.S
     protected final Map<CelestialBody<?, ?>, Vec3> planetPositions = new IdentityHashMap<>();
 
     protected @Nullable CelestialBody<?, ?> selectedBody;
-    protected @Nullable CelestialBody<?, ?> selectedParent = this.celestialBodies.get(SOL);
+    protected @Nullable CelestialBody<?, ?> selectedParent = this.findDefaultSystem();
     protected @Nullable CelestialBody<?, ?> lastSelectedBody;
 
     protected EnumSelection selectionState = EnumSelection.UNSELECTED;
@@ -142,6 +142,32 @@ public class CelestialScreen extends Screen implements ClientSatelliteAccessor.S
         return body != null && body.isSatellite();
     }
 
+    /** Returns the root star for a body, guarding against malformed cyclic add-on data. */
+    protected @Nullable CelestialBody<?, ?> getSystemRoot(@Nullable CelestialBody<?, ?> body) {
+        Set<CelestialBody<?, ?>> visited = Collections.newSetFromMap(new IdentityHashMap<>());
+        CelestialBody<?, ?> current = body;
+        while (current != null && current.parent().isPresent() && visited.add(current)) {
+            current = current.parentValue(this.celestialBodies);
+        }
+        return current;
+    }
+
+    protected @Nullable CelestialBody<?, ?> getFocusedSystem() {
+        CelestialBody<?, ?> root = this.getSystemRoot(this.selectedBody != null ? this.selectedBody : this.selectedParent);
+        return root != null ? root : this.findDefaultSystem();
+    }
+
+    private @Nullable CelestialBody<?, ?> findDefaultSystem() {
+        CelestialBody<?, ?> sol = this.celestialBodies.get(SOL);
+        if (sol != null && sol.parent().isEmpty()) {
+            return sol;
+        }
+        return this.celestialBodies.stream()
+                .filter(body -> body.parent().isEmpty() && this.isStar(body))
+                .findFirst()
+                .orElse(null);
+    }
+
     protected float lineScale(CelestialBody<?, ?> body) {
         if (Float.isNaN(body.position().lineScale())) return Float.NaN;
         return 3.0F * body.position().lineScale() * (this.isPlanet(body) ? 25.0F : 0.2F);
@@ -177,7 +203,6 @@ public class CelestialScreen extends Screen implements ClientSatelliteAccessor.S
             scale = Mth.lerp(Mth.clamp(this.ticksSinceUnselectionF / 100.0F, 0.0F, 1.0F), this.zoom, this.preSelectZoom);
             if (scale <= this.preSelectZoom + 0.05F) {
                 this.zoom = this.preSelectZoom;
-                // this.preSelectZoom = 0.0F;
                 this.ticksSinceUnselectionF = -1.0F;
                 this.doneZooming = true;
             }
@@ -239,10 +264,14 @@ public class CelestialScreen extends Screen implements ClientSatelliteAccessor.S
     }
 
     protected void unselectCelestialBody() {
+        CelestialBody<?, ?> focusedSystem = this.getSystemRoot(this.selectedBody);
         this.selectionState = EnumSelection.UNSELECTED;
         this.ticksSinceUnselectionF = 0.0F;
         this.lastSelectedBody = this.selectedBody;
         this.selectedBody = null;
+        if (focusedSystem != null) {
+            this.selectedParent = focusedSystem;
+        }
         this.doneZooming = false;
         this.animateGrandchildren = 0;
     }
@@ -328,19 +357,20 @@ public class CelestialScreen extends Screen implements ClientSatelliteAccessor.S
             this.mouseDragging = true;
         }
 
-        CelestialBody<?, ?> selectedParent;
+        this.updateSelectedParent();
 
-        if (this.selectedBody == null || this.selectedBody.parent().isEmpty()) {
-            selectedParent = this.celestialBodies.get(SOL);
-        } else {
-            selectedParent = this.selectedBody.parentValue(this.celestialBodies);
-        }
+        return clickHandled;
+    }
 
+    protected void updateSelectedParent() {
+        if (this.selectedBody == null) return;
+
+        CelestialBody<?, ?> selectedParent = this.selectedBody.parent().isEmpty()
+                ? this.selectedBody
+                : this.selectedBody.parentValue(this.celestialBodies);
         if (this.selectedParent != selectedParent) {
             this.selectedParent = selectedParent;
         }
-
-        return clickHandled;
     }
 
     protected boolean tryClickCelestialBody(double mouseX, double mouseY) {

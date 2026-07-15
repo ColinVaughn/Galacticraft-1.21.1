@@ -22,10 +22,8 @@
 
 package dev.galacticraft.impl.network.s2c;
 
-import dev.galacticraft.impl.client.accessor.ClientResearchAccessor;
 import dev.galacticraft.mod.Constant;
 import io.netty.buffer.ByteBuf;
-import dev.architectury.networking.NetworkManager;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -44,11 +42,6 @@ public record ResearchUpdatePayload(boolean add, List<ResourceLocation> ids) imp
             p -> p.ids,
             ResearchUpdatePayload::new
     );
-
-    @Override
-    public Runnable handle(NetworkManager.@NotNull PacketContext context) {
-        return () -> ((ClientResearchAccessor) context.getPlayer()).galacticraft$updateResearch(this.add, this.ids);
-    }
 
     @Override
     public @NotNull Type<? extends CustomPacketPayload> type() {

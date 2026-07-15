@@ -106,11 +106,10 @@ public class CelestialSelectionScreen extends CelestialScreen {
     protected Component grandparentName() {
         CelestialBody<?, ?> body = this.selectedBody;
         if (body == null) {
-            // Nothing selected: default to the home galaxy of the star at the centre of the map.
-            return Component.translatable(Translations.Galaxy.MILKY_WAY);
-        }
-        if (body == this.celestialBodies.get(SOL)) {
-            return body.galaxyValue(this.galaxies, this.celestialBodies).name();
+            body = this.getFocusedSystem();
+            return body == null
+                    ? Component.translatable(Translations.Galaxy.MILKY_WAY)
+                    : body.galaxyValue(this.galaxies, this.celestialBodies).name();
         }
         if (body.parent().isPresent()) {
             if (body.parentValue(this.celestialBodies).parent().isPresent()) {
@@ -124,9 +123,15 @@ public class CelestialSelectionScreen extends CelestialScreen {
     }
 
     protected Component parentName() {
-        // Nothing selected, or the star itself is selected: show the central star's name.
-        if (this.selectedBody == null || this.selectedBody == this.celestialBodies.get(SOL))
-            return Component.translatable(Translations.CelestialBody.SOL);
+        if (this.selectedBody == null) {
+            CelestialBody<?, ?> focusedSystem = this.getFocusedSystem();
+            return focusedSystem == null
+                    ? Component.translatable(Translations.CelestialBody.SOL)
+                    : focusedSystem.name();
+        }
+        if (this.selectedBody.parent().isEmpty()) {
+            return this.selectedBody.name();
+        }
         if (this.selectedBody.parent().isPresent())
             return this.selectedBody.parentValue(this.celestialBodies).name();
         return this.selectedBody.galaxyValue(this.galaxies, this.celestialBodies).name();
@@ -158,7 +163,6 @@ public class CelestialSelectionScreen extends CelestialScreen {
 
                     if (this.isValid(toBeParsed)) {
                         this.renamingString = toBeParsed;
-//                        this.timeBackspacePressed = System.currentTimeMillis();
                     } else {
                         this.renamingString = "";
                     }
@@ -513,7 +517,11 @@ public class CelestialSelectionScreen extends CelestialScreen {
             }
         }
 
-        return clickHandled || super.mouseClicked(x, y, button);
+        if (clickHandled) {
+            this.updateSelectedParent();
+            return true;
+        }
+        return super.mouseClicked(x, y, button);
     }
 
     protected boolean testClicked(CelestialBody<?, ?> body, int xOffset, int yPos, double x, double y, boolean grandchild) {
@@ -598,14 +606,14 @@ public class CelestialSelectionScreen extends CelestialScreen {
 
                 // Grandparent frame:
                 texture.blit(LHS + 2 - 95 + scale, LHS + 14, 93, 17, GRANDPARENT_LABEL_U, GRANDPARENT_LABEL_V, GRANDPARENT_LABEL_WIDTH, GRANDPARENT_LABEL_HEIGHT, YELLOW);
-                if (this.isZoomed() && this.selectedBody == this.celestialBodies.get(SOL)) {
+                if (this.isZoomed() && this.isStar(this.selectedBody)) {
                     text = this.grandparentName();
                 } else {
                     text = planetZoomedNotMoon ? this.parentName() : this.grandparentName();
                 }
                 texture.drawText(text, LHS + 7 - 95 + scale, LHS + 16, GREY3, false);
 
-                List<CelestialBody<?, ?>> children = this.getChildren(/*planetZoomedNotMoon*/this.isZoomed() ? this.selectedBody : this.celestialBodies.get(SOL));
+                List<CelestialBody<?, ?>> children = this.getChildren(this.isZoomed() ? this.selectedBody : this.getFocusedSystem());
                 this.drawChildButtons(texture, children, 0, 0, true);
 
                 if (this.mapMode) {

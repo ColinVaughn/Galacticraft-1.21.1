@@ -45,11 +45,15 @@ public class StarRenderer implements CelestialBodyRenderer {
     private static final double STAR_RENDER_DISTANCE = 850.0;
 
     private VertexBuffer starBuffer;
-    private final GeographicalSolarPosition cameraRenderPosition = GeographicalSolarPosition.getInstance();
+    private final GeographicalSolarPosition cameraRenderPosition;
     private double bufferedCameraX = Double.NaN;
     private double bufferedCameraY = Double.NaN;
     private double bufferedCameraZ = Double.NaN;
     private int bufferedBodyCount = -1;
+
+    public StarRenderer(GeographicalSolarPosition cameraRenderPosition) {
+        this.cameraRenderPosition = cameraRenderPosition;
+    }
 
     @Override
     public void setupBufferPositions(List<CelestialBody> bodies) {

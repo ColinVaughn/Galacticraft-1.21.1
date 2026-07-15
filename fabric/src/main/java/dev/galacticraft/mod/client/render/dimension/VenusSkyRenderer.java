@@ -32,7 +32,6 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.ShaderInstance;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
@@ -54,7 +53,7 @@ public class VenusSkyRenderer {
 
         // Bind stars to display list
         this.starBuffer.bind();
-        this.starBuffer.upload(this.renderStars());
+        this.starBuffer.upload(StarManager.buildStarField(10842L, 24000, 11000, 210.0));
         VertexBuffer.unbind();
 
         this.skyBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
@@ -95,54 +94,6 @@ public class VenusSkyRenderer {
         VertexBuffer.unbind();
     }
 
-    private MeshData renderStars() {
-        RandomSource rand = RandomSource.create(10842L);
-        RenderSystem.setShader(GameRenderer::getPositionShader);
-        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
-
-        for (int starIndex = 0; starIndex < 35000; ++starIndex) {
-            double var4 = rand.nextFloat() * 2.0F - 1.0F;
-            double var6 = rand.nextFloat() * 2.0F - 1.0F;
-            double var8 = rand.nextFloat() * 2.0F - 1.0F;
-            final double var10 = 0.15F + rand.nextFloat() * 0.1F;
-            double var12 = var4 * var4 + var6 * var6 + var8 * var8;
-
-            if (var12 < 1.0D && var12 > 0.01D) {
-                var12 = 1.0D / Math.sqrt(var12);
-                var4 *= var12;
-                var6 *= var12;
-                var8 *= var12;
-                final double var14 = var4 * (rand.nextDouble() * 150D + 130D);
-                final double var16 = var6 * (rand.nextDouble() * 150D + 130D);
-                final double var18 = var8 * (rand.nextDouble() * 150D + 130D);
-                final double var20 = Math.atan2(var4, var8);
-                final double var22 = Math.sin(var20);
-                final double var24 = Math.cos(var20);
-                final double var26 = Math.atan2(Math.sqrt(var4 * var4 + var8 * var8), var6);
-                final double var28 = Math.sin(var26);
-                final double var30 = Math.cos(var26);
-                final double var32 = rand.nextDouble() * Math.PI * 2.0D;
-                final double var34 = Math.sin(var32);
-                final double var36 = Math.cos(var32);
-
-                for (int var38 = 0; var38 < 4; ++var38) {
-                    final double var39 = 0.0D;
-                    final double var41 = ((var38 & 2) - 1) * var10;
-                    final double var43 = ((var38 + 1 & 2) - 1) * var10;
-                    final double var47 = var41 * var36 - var43 * var34;
-                    final double var49 = var43 * var36 + var41 * var34;
-                    final double var53 = var47 * var28 + var39 * var30;
-                    final double var55 = var39 * var28 - var47 * var30;
-                    final double var57 = var55 * var22 - var49 * var24;
-                    final double var61 = var49 * var22 + var55 * var24;
-                    buffer.addVertex((float) (var14 + var57), (float) (var16 + var53), (float) (var18 + var61));
-                }
-            }
-        }
-
-        return buffer.buildOrThrow();
-    }
-
     public void render(GCWorldRenderContext context) {
         ClientLevel level = context.world();
         float partialTicks = context.tickCounter().getGameTimeDeltaPartialTick(true);
@@ -178,7 +129,7 @@ public class VenusSkyRenderer {
             RenderSystem.setShaderColor(starBrightness, starBrightness, starBrightness, starBrightness);
             FogRenderer.setupNoFog();
             this.starBuffer.bind();
-            this.starBuffer.drawWithShader(poseStack.last().pose(), context.projectionMatrix(), GameRenderer.getPositionShader());
+            this.starBuffer.drawWithShader(poseStack.last().pose(), context.projectionMatrix(), GameRenderer.getPositionColorShader());
             VertexBuffer.unbind();
             poseStack.popPose();
         }
@@ -296,7 +247,6 @@ public class VenusSkyRenderer {
 
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.disableBlend();
-//        GL11.glEnable(GL11.GL_FOG);
         poseStack.popPose();
         RenderSystem.setShaderColor(0.0F, 0.0F, 0.0F, 1.0F);
         double horizon = minecraft.player.getEyePosition().y - level.getLevelData().getHorizonHeight(level);

@@ -34,6 +34,7 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Axis;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.client.model.GCRenderTypes;
+import dev.galacticraft.mod.client.render.dimension.star.CelestialBodyRendererManager;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.ShaderInstance;
@@ -74,8 +75,9 @@ public class MoonSkyRenderer extends SpaceSkyRenderer {
         context.profiler().pop();
 
         context.profiler().push("moon_stars");
-        this.celestialBodyRendererManager.updateSolarPosition(0.0, 0.0, 0.0);
-        this.celestialBodyRendererManager.render(context, celestialMatrices.last().pose());
+        CelestialBodyRendererManager celestialBodyRendererManager = this.celestialBodyRendererManager(context);
+        celestialBodyRendererManager.updateSolarPosition(0.0, 0.0, 0.0);
+        celestialBodyRendererManager.render(context, celestialMatrices.last().pose());
         context.profiler().pop();
 
         context.profiler().push("moon_sun");

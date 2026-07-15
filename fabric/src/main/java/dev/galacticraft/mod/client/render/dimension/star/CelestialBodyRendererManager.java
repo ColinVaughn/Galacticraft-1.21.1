@@ -37,6 +37,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector3d;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /** Renders stars and planets in a galaxy view. */
 public class CelestialBodyRendererManager {
@@ -46,7 +47,7 @@ public class CelestialBodyRendererManager {
 
     private final Map<CelestialBodyType, CelestialBodyRenderer> renderers;
 
-    private GeographicalSolarPosition solarPosition;
+    private final GeographicalSolarPosition solarPosition;
 
     // Fixed seed keeps the procedural background stars identical across clients.
     private static final long STAR_FIELD_SEED = 27893L;
@@ -118,15 +119,15 @@ public class CelestialBodyRendererManager {
         this.factory = new CelestialBodyFactory();
         this.celestialBodies = new HashMap<>();
         this.renderers = new HashMap<>();
-        this.solarPosition = GeographicalSolarPosition.getInstance();
+        this.solarPosition = new GeographicalSolarPosition(0.0, 0.0, 0.0);
 
         for (CelestialBodyType type : CelestialBodyType.values()) {
             celestialBodies.put(type, new ArrayList<>());
         }
 
-        renderers.put(CelestialBodyType.STAR, new StarRenderer());
-        renderers.put(CelestialBodyType.PLANET2D, new PlanetRenderer2D());
-        renderers.put(CelestialBodyType.PLANET3D, new PlanetRenderer3D());
+        renderers.put(CelestialBodyType.STAR, new StarRenderer(this.solarPosition));
+        renderers.put(CelestialBodyType.PLANET2D, new PlanetRenderer2D(this.solarPosition));
+        renderers.put(CelestialBodyType.PLANET3D, new PlanetRenderer3D(this.solarPosition));
 
         this.setStarPositions();
     }
@@ -269,17 +270,21 @@ public class CelestialBodyRendererManager {
     }
 
     public void setSolarPosition(GeographicalSolarPosition solarPosition) {
-        this.solarPosition = solarPosition;
+        this.solarPosition.setCameraPositions(solarPosition.getX(), solarPosition.getY(), solarPosition.getZ());
     }
 
     public void updateSolarPosition(double x, double y, double z) {
         this.solarPosition.setCameraPositions(x, y, z);
     }
 
-    private static final CelestialBodyRendererManager INSTANCE = new CelestialBodyRendererManager();
+    private static final Map<ResourceLocation, CelestialBodyRendererManager> WORLD_SPACES = new ConcurrentHashMap<>();
 
-    // TODO: support multiple world spaces for add-on solar systems.
     public static CelestialBodyRendererManager getInstance() {
-        return INSTANCE;
+        return getInstance(ResourceLocation.fromNamespaceAndPath("galacticraft", "sol"));
+    }
+
+    /** Returns isolated camera and GPU-buffer state for one solar system. */
+    public static CelestialBodyRendererManager getInstance(ResourceLocation worldSpace) {
+        return WORLD_SPACES.computeIfAbsent(worldSpace, ignored -> new CelestialBodyRendererManager());
     }
 }

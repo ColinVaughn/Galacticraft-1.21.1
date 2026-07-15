@@ -22,10 +22,8 @@
 
 package dev.galacticraft.impl.network.s2c;
 
-import dev.galacticraft.api.accessor.SatelliteAccessor;
 import dev.galacticraft.mod.Constant;
 import io.netty.buffer.ByteBuf;
-import dev.architectury.networking.NetworkManager;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
@@ -35,11 +33,6 @@ public record RemoveSatellitePayload(ResourceLocation id) implements S2CPayload 
     public static final ResourceLocation ID = Constant.id("remove_satellite");
     public static final Type<RemoveSatellitePayload> TYPE = new Type<>(ID);
     public static final StreamCodec<ByteBuf, RemoveSatellitePayload> CODEC = ResourceLocation.STREAM_CODEC.map(RemoveSatellitePayload::new, RemoveSatellitePayload::id);
-
-    @Override
-    public Runnable handle(NetworkManager.@NotNull PacketContext context) {
-        return () -> ((SatelliteAccessor) net.minecraft.client.Minecraft.getInstance().getConnection()).galacticraft$removeSatellite(this.id);
-    }
 
     @Override
     public @NotNull Type<? extends CustomPacketPayload> type() {

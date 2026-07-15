@@ -56,6 +56,8 @@ public class GCDataComponents {
             .persistent(ExtraCodecs.NON_NEGATIVE_INT).networkSynchronized(ByteBufCodecs.INT));
     public static final DataComponentType<Boolean> CREATIVE = register("creative", b -> b
             .persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL));
+    public static final DataComponentType<Integer> BUGGY_TYPE = register("buggy_type", b -> b
+            .persistent(Codec.intRange(0, 2)).networkSynchronized(ByteBufCodecs.VAR_INT));
 
     public static final DataComponentType<ResourceKey<?>> KEY = register("key", b -> b
             .persistent(RecordCodecBuilder.create(i ->
