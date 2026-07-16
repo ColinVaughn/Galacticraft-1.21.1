@@ -60,8 +60,7 @@ public class CargoRocketItem extends Item {
             if (fuel != null) {
                 rocket.getFuelTank().insert(fuel.variant().fluid(), fuel.variant().components(), fuel.amount());
             }
-            rocket.setPad(pad);
-            rocket.setPos(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
+            rocket.placeOnPad(pad);
             rocket.setYRot(context.getHorizontalDirection().toYRot());
             level.addFreshEntity(rocket);
             pad.setDockedEntity(rocket);

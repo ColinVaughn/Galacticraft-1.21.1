@@ -174,7 +174,7 @@ public class GCEntityTypes {
     public static final EntityType<CargoRocketEntity> CARGO_ROCKET = ENTITIES.register(Entity.CARGO_ROCKET, velocityUpdates(EntityType.Builder.of(CargoRocketEntity::new, MobCategory.MISC)
             .clientTrackingRange(150)
             .updateInterval(5), true)
-            .sized(1.2F, 5.0F)
+            .sized(0.98F, 2.0F)
             .fireImmune()
             .build(Constant.id(Entity.CARGO_ROCKET).toString()));
     public static final EntityType<ParachestEntity> PARACHEST = ENTITIES.register(Entity.PARACHEST, EntityType.Builder.<ParachestEntity>of(ParachestEntity::new, MobCategory.MISC)

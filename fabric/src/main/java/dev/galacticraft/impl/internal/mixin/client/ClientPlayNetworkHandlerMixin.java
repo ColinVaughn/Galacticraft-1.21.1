@@ -22,6 +22,7 @@
 
 package dev.galacticraft.impl.internal.mixin.client;
 
+import dev.galacticraft.api.accessor.GearInventoryProvider;
 import dev.galacticraft.api.client.accessor.ClientSatelliteAccessor;
 import dev.galacticraft.api.registry.AddonRegistries;
 import dev.galacticraft.api.universe.celestialbody.CelestialBody;
@@ -30,12 +31,20 @@ import dev.galacticraft.impl.universe.celestialbody.type.SatelliteType;
 import dev.galacticraft.impl.universe.position.config.SatelliteConfig;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.protocol.game.ClientboundRespawnPacket;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,9 +56,43 @@ import java.util.Map;
 public abstract class ClientPlayNetworkHandlerMixin implements ClientSatelliteAccessor {
     private final @Unique Map<ResourceLocation, CelestialBody<SatelliteConfig, SatelliteType>> satellites = new HashMap<>();
     private final @Unique List<SatelliteListener> listeners = new ArrayList<>();
+    private @Unique ItemStack[] galacticraft$gearBeforeDimensionChange = new ItemStack[0];
 
     @Shadow
     public abstract RegistryAccess.Frozen registryAccess();
+
+    @Inject(method = "handleRespawn", at = @At("HEAD"))
+    private void galacticraft$captureGearBeforeDimensionChange(ClientboundRespawnPacket packet, CallbackInfo ci) {
+        // Packet handlers enter once on the network thread before being rescheduled onto the client thread.
+        Minecraft minecraft = Minecraft.getInstance();
+        if (!minecraft.isSameThread()) return;
+
+        LocalPlayer player = minecraft.player;
+        if (player == null || player.level().dimension().equals(packet.commonPlayerSpawnInfo().dimension())) {
+            this.galacticraft$gearBeforeDimensionChange = new ItemStack[0];
+            return;
+        }
+
+        Container gear = ((GearInventoryProvider) player).galacticraft$getGearInv();
+        this.galacticraft$gearBeforeDimensionChange = new ItemStack[gear.getContainerSize()];
+        for (int slot = 0; slot < gear.getContainerSize(); slot++) {
+            this.galacticraft$gearBeforeDimensionChange[slot] = gear.getItem(slot).copy();
+        }
+    }
+
+    @Inject(method = "handleRespawn", at = @At("RETURN"))
+    private void galacticraft$restoreGearAfterDimensionChange(ClientboundRespawnPacket packet, CallbackInfo ci) {
+        ItemStack[] gearBeforeDimensionChange = this.galacticraft$gearBeforeDimensionChange;
+        this.galacticraft$gearBeforeDimensionChange = new ItemStack[0];
+
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (gearBeforeDimensionChange.length == 0 || player == null) return;
+
+        Container gear = ((GearInventoryProvider) player).galacticraft$getGearInv();
+        for (int slot = 0; slot < Math.min(gear.getContainerSize(), gearBeforeDimensionChange.length); slot++) {
+            gear.setItem(slot, gearBeforeDimensionChange[slot]);
+        }
+    }
 
     @Override
     public Map<ResourceLocation, CelestialBody<SatelliteConfig, SatelliteType>> galacticraft$getSatellites() {

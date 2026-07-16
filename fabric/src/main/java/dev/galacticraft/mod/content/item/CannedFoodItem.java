@@ -22,6 +22,8 @@
 
 package dev.galacticraft.mod.content.item;
 
+import dev.architectury.platform.Platform;
+import dev.architectury.utils.Env;
 import dev.galacticraft.api.component.GCDataComponents;
 import dev.galacticraft.mod.content.CannedFoodTooltip;
 import dev.galacticraft.mod.content.GCBlocks;
@@ -298,8 +300,7 @@ public class CannedFoodItem extends Item {
             stack.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(items));
 
             // Recalculate and update the stored color
-            int newColor = calculateCanColor(items);
-            stack.set(GCDataComponents.COLOR, newColor);
+            updateCanColor(stack, items);
         }
     }
 
@@ -331,10 +332,20 @@ public class CannedFoodItem extends Item {
                 cannedFood.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(cannedFoodItems));
 
                 // Recalculate and store the new color inside the stack components
-                int newColor = calculateCanColor(cannedFoodItems);
-                cannedFood.set(GCDataComponents.COLOR, newColor);
+                updateCanColor(cannedFood, cannedFoodItems);
             }
         }
+    }
+
+    private static void updateCanColor(ItemStack cannedFood, List<ItemStack> items) {
+        // A dedicated server has no texture atlas. Preserve colors received with an item, or
+        // use neutral white for server-created cans, instead of loading client-only classes.
+        if (Platform.getEnvironment() == Env.SERVER) {
+            if (!cannedFood.has(GCDataComponents.COLOR)) cannedFood.set(GCDataComponents.COLOR, 0xFFFFFF);
+            return;
+        }
+
+        cannedFood.set(GCDataComponents.COLOR, calculateCanColor(items));
     }
 
     private static int calculateCanColor(List<ItemStack> items) {

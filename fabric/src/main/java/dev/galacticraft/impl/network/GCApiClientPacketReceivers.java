@@ -61,10 +61,9 @@ public class GCApiClientPacketReceivers {
 
     private static void handle(GearInvPayload payload) {
         Minecraft minecraft = Minecraft.getInstance();
-        Entity entity = minecraft.level == null ? null : minecraft.level.getEntity(payload.entityId());
-        if (entity == null && minecraft.player != null && minecraft.player.getId() == payload.entityId()) {
-            entity = minecraft.player;
-        }
+        Entity entity = minecraft.player != null && minecraft.player.getId() == payload.entityId()
+                ? minecraft.player
+                : minecraft.level == null ? null : minecraft.level.getEntity(payload.entityId());
         if (entity instanceof GearInventoryProvider provider) {
             Container container = provider.galacticraft$getGearInv();
             for (int i = 0; i < Math.min(payload.items().length, container.getContainerSize()); i++) {

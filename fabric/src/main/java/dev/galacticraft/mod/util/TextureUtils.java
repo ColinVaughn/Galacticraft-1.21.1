@@ -61,6 +61,8 @@ public class TextureUtils {
             }
         }
 
+        if (pixelCount == 0) return 0xFFFFFF;
+
         int avgRed = (int) (sumRed / pixelCount);
         int avgGreen = (int) (sumGreen / pixelCount);
         int avgBlue = (int) (sumBlue / pixelCount);

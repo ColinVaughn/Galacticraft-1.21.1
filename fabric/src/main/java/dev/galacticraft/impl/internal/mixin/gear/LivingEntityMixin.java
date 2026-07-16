@@ -44,6 +44,7 @@ import dev.galacticraft.mod.tag.GCFluidTags;
 import dev.galacticraft.mod.tag.GCItemTags;
 import dev.galacticraft.mod.world.inventory.GearInventory;
 import dev.architectury.networking.NetworkManager;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -158,7 +159,7 @@ public abstract class LivingEntityMixin extends Entity implements GearInventoryP
         if (entity.galacticraft$oxygenConsumptionRate() == 0) return;
         AttributeInstance attribute = entity.getAttribute(GcApiEntityAttributes.CAN_BREATHE_IN_SPACE);
         if (!this.galacticraft$isEyePositionBreathable() && !(attribute != null && attribute.getValue() >= 0.99D)) {
-            if (!entity.isEyeInFluid(GCFluidTags.NON_BREATHABLE) && !(entity instanceof Player player && player.getAbilities().invulnerable)) {
+            if (!this.galacticraft$isEyeInNonBreathableFluid() && !(entity instanceof Player player && player.getAbilities().invulnerable)) {
                 entity.setAirSupply(this.decreaseAirSupply(entity.getAirSupply()));
                 if (entity.getAirSupply() == -20) {
                     entity.setAirSupply(0);
@@ -181,13 +182,13 @@ public abstract class LivingEntityMixin extends Entity implements GearInventoryP
             this.lastHurtBySuffocationTimestamp = this.tickCount;
             return false;
         }
-        return original || this.isEyeInFluid(GCFluidTags.NON_BREATHABLE) || !this.galacticraft$isEyePositionBreathable();
+        return original || this.galacticraft$isEyeInNonBreathableFluid() || !this.galacticraft$isEyePositionBreathable();
     }
 
     @ModifyExpressionValue(method = "baseTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;canBreatheUnderwater()Z"), require = 0)
     private boolean galacticraft_drowningDamage(boolean original) {
         // Return whether the player should take drowning damage
-        return original || !this.isEyeInFluid(GCFluidTags.NON_BREATHABLE);
+        return original || !this.galacticraft$isEyeInNonBreathableFluid();
     }
 
     @Inject(method = "decreaseAirSupply", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getAttribute(Lnet/minecraft/core/Holder;)Lnet/minecraft/world/entity/ai/attributes/AttributeInstance;"), cancellable = true)
@@ -196,7 +197,7 @@ public abstract class LivingEntityMixin extends Entity implements GearInventoryP
         long rate = entity.galacticraft$oxygenConsumptionRate();
         if (rate == 0) return;
         AttributeInstance attribute = entity.getAttribute(GcApiEntityAttributes.CAN_BREATHE_IN_SPACE);
-        if (!this.isEyeInFluid(GCFluidTags.NON_BREATHABLE) && (
+        if (!this.galacticraft$isEyeInNonBreathableFluid() && (
                 (attribute != null && attribute.getValue() >= 0.99D) ||
                 this.galacticraft$isEyePositionBreathable()
         )) {
@@ -316,6 +317,21 @@ public abstract class LivingEntityMixin extends Entity implements GearInventoryP
             this.galacticraft$breathabilityCacheTick = this.tickCount;
         }
         return this.galacticraft$cachedEyePositionBreathable;
+    }
+
+    @Override
+    public boolean galacticraft$isEyeInNonBreathableFluid() {
+        if (this.isEyeInFluid(GCFluidTags.NON_BREATHABLE)) {
+            return true;
+        }
+
+        // NeoForge tracks water and lava by FluidType instead of populating Entity.fluidOnEyes
+        // with custom fluid tags. Check the tagged FluidState directly as a loader-safe fallback.
+        double eyeY = this.getEyeY();
+        BlockPos eyePos = BlockPos.containing(this.getX(), eyeY, this.getZ());
+        var fluidState = this.level().getFluidState(eyePos);
+        return fluidState.is(GCFluidTags.NON_BREATHABLE)
+                && eyePos.getY() + fluidState.getHeight(this.level(), eyePos) > eyeY;
     }
 
     @Override

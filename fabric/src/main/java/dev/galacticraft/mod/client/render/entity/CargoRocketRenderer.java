@@ -38,6 +38,8 @@ import net.minecraft.resources.ResourceLocation;
 
 public class CargoRocketRenderer extends EntityRenderer<CargoRocketEntity> {
     public static final ResourceLocation MODEL = Constant.id("models/misc/cargo_rocket.json");
+    private static final float MODEL_SCALE = 0.4F;
+    private static final float MODEL_Y_OFFSET = -0.1F;
 
     private GCModel cargoRocketModel;
 
@@ -51,6 +53,8 @@ public class CargoRocketRenderer extends EntityRenderer<CargoRocketEntity> {
             this.cargoRocketModel = GCModelLoader.INSTANCE.getModel(MODEL);
         VertexConsumer consumer = vertexConsumers.getBuffer(GCRenderTypes.obj(GCRenderTypes.OBJ_ATLAS));
         matrices.pushPose();
+        matrices.translate(0.0F, MODEL_Y_OFFSET, 0.0F);
+        matrices.scale(MODEL_SCALE, MODEL_SCALE, MODEL_SCALE);
         matrices.mulPose(Axis.YP.rotationDegrees(180.0F - yaw));
         // null state = render the whole model at once.
         this.cargoRocketModel.render(matrices, null, consumer, light, OverlayTexture.NO_OVERLAY);

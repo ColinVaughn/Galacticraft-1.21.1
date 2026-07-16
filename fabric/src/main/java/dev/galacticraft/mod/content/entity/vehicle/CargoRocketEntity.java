@@ -83,6 +83,7 @@ public class CargoRocketEntity extends GCVehicle
     private static final double MAX_ASCENT_SPEED = 1.2D;
     private static final int MAX_LAUNCH_TICKS = 20 * 60;
     private static final long FLIGHT_FUEL = FluidUtil.bucketsToDroplets(1) / 4L;
+    private static final double PAD_Y_OFFSET = 0.35D;
 
     protected SimpleContainer inventory;
     private final SimpleFluidTank tank = new SimpleFluidTank(
@@ -233,6 +234,11 @@ public class CargoRocketEntity extends GCVehicle
         super.tick();
         if (this.level().isClientSide || !(this.level() instanceof ServerLevel level)) return;
 
+        FuelDock pad = this.getLandingPad();
+        if (this.flightState == FlightState.IDLE && pad != null) {
+            this.snapToPad(pad);
+        }
+
         if (this.flightState == FlightState.RETURNING) {
             String reason = this.lastFailure.isEmpty()
                     ? "ui.galacticraft.cargo_rocket.destination_blocked"
@@ -295,7 +301,7 @@ public class CargoRocketEntity extends GCVehicle
 
     private boolean teleportAndDock(ServerLevel destination, LaunchPadBlockEntity pad) {
         BlockPos pos = pad.getBlockPos();
-        boolean teleported = this.teleportTo(destination, pos.getX() + 0.5D, pos.getY() + 0.5D,
+        boolean teleported = this.teleportTo(destination, pos.getX() + 0.5D, pos.getY() + PAD_Y_OFFSET,
                 pos.getZ() + 0.5D, NO_RELATIVE_MOVEMENT, this.getYRot(), 0.0F);
         if (!teleported) return false;
 
@@ -305,7 +311,7 @@ public class CargoRocketEntity extends GCVehicle
         this.targetAddress = -1;
         this.originDimension = null;
         this.originPadPos = null;
-        this.setPad(pad);
+        this.placeOnPad(pad);
         pad.setDockedEntity(this);
         return true;
     }
@@ -352,6 +358,21 @@ public class CargoRocketEntity extends GCVehicle
     public void setPad(FuelDock pad) {
         this.linkedPad = pad;
         this.linkedPadPos = pad.getDockPos().immutable();
+    }
+
+    public void placeOnPad(FuelDock pad) {
+        this.setPad(pad);
+        this.snapToPad(pad);
+    }
+
+    private void snapToPad(FuelDock pad) {
+        BlockPos pos = pad.getDockPos();
+        double x = pos.getX() + 0.5D;
+        double y = pos.getY() + PAD_Y_OFFSET;
+        double z = pos.getZ() + 0.5D;
+        if (this.getX() != x || this.getY() != y || this.getZ() != z) {
+            this.setPos(x, y, z);
+        }
     }
 
     @Override

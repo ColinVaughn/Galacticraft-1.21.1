@@ -22,9 +22,12 @@
 
 package dev.galacticraft.mod.gametest;
 
+import dev.galacticraft.mod.api.block.entity.FuelDock;
+import dev.galacticraft.mod.api.entity.Dockable;
 import dev.galacticraft.mod.content.GCEntityTypes;
 import dev.galacticraft.mod.content.entity.vehicle.Buggy;
 import dev.galacticraft.mod.content.entity.vehicle.CargoRocketEntity;
+import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
@@ -92,6 +95,27 @@ public final class VehiclePersistenceTestSuite implements GalacticraftGameTest {
         }
     }
 
+    @GameTest(template = EMPTY_STRUCTURE)
+    public void cargoRocketUsesLegacySizeAndPadPosition(GameTestHelper context) {
+        CargoRocketEntity rocket = GCEntityTypes.CARGO_ROCKET.create(context.getLevel());
+        if (rocket == null) {
+            context.fail("Cargo rocket entity type returned null");
+            return;
+        }
+
+        BlockPos padPos = new BlockPos(2, 3, 4);
+        rocket.placeOnPad(new TestFuelDock(padPos));
+        if (Math.abs(rocket.getBbWidth() - 0.98F) > 0.0001F || Math.abs(rocket.getBbHeight() - 2.0F) > 0.0001F) {
+            context.fail("Cargo rocket did not use the legacy collision dimensions");
+        } else if (Math.abs(rocket.getX() - 2.5D) > 0.0001D
+                || Math.abs(rocket.getY() - 3.35D) > 0.0001D
+                || Math.abs(rocket.getZ() - 4.5D) > 0.0001D) {
+            context.fail("Cargo rocket did not use the legacy launch-pad offset");
+        } else {
+            context.succeed();
+        }
+    }
+
     private static final class TestBuggy extends Buggy {
         private TestBuggy(Level level) {
             super(GCEntityTypes.BUGGY, level);
@@ -117,6 +141,22 @@ public final class VehiclePersistenceTestSuite implements GalacticraftGameTest {
 
         private void writeData(CompoundTag tag) {
             super.addAdditionalSaveData(tag);
+        }
+    }
+
+    private record TestFuelDock(BlockPos pos) implements FuelDock {
+        @Override
+        public BlockPos getDockPos() {
+            return this.pos;
+        }
+
+        @Override
+        public Dockable getDockedEntity() {
+            return null;
+        }
+
+        @Override
+        public void setDockedEntity(Dockable entity) {
         }
     }
 }

@@ -24,9 +24,11 @@ package dev.galacticraft.mod.gametest;
 
 import dev.galacticraft.mod.content.GCBlocks;
 import dev.galacticraft.mod.content.entity.ThrowableMeteorChunkEntity;
+import dev.galacticraft.mod.content.item.CannedFoodItem;
 import dev.galacticraft.mod.tag.GCBlockTags;
 import dev.galacticraft.mod.world.gen.carver.CraterCarver;
 import dev.galacticraft.mod.world.gen.carver.config.CraterCarverConfig;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -34,16 +36,44 @@ import net.minecraft.util.valueproviders.UniformFloat;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.animal.Pig;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.VerticalAnchor;
 import net.minecraft.world.level.levelgen.carver.CarverDebugSettings;
 import net.minecraft.world.level.levelgen.heightproviders.ConstantHeight;
 
 public final class PolishTestSuite implements GalacticraftGameTest {
+    @GameTest(template = EMPTY_STRUCTURE)
+    public void cannedFoodVariantsBuildWithoutClientTextures(GameTestHelper context) {
+        if (CannedFoodItem.getDefaultCannedFoods().isEmpty()) {
+            context.fail("No default canned-food variants were created");
+        } else {
+            context.succeed();
+        }
+    }
+
+    @GameTest(template = EMPTY_STRUCTURE)
+    public void vanillaDrowningStillConsumesAir(GameTestHelper context) {
+        BlockPos lowerWater = new BlockPos(1, 1, 1);
+        context.setBlock(lowerWater, Blocks.WATER);
+        context.setBlock(lowerWater.above(), Blocks.WATER);
+        Pig pig = context.spawnWithNoFreeWill(EntityType.PIG, lowerWater);
+        pig.setAirSupply(pig.getMaxAirSupply());
+
+        context.runAtTickTime(context.getTick() + 5L, () -> {
+            if (pig.getAirSupply() >= pig.getMaxAirSupply()) {
+                context.fail("A submerged living entity did not consume vanilla air");
+            } else {
+                context.succeed();
+            }
+        });
+    }
+
     @GameTest(template = EMPTY_STRUCTURE)
     public void meteorCreditsItsThrower(GameTestHelper context) {
         Player thrower = context.makeMockPlayer(GameType.SURVIVAL);

@@ -25,7 +25,6 @@ package dev.galacticraft.impl.internal.mixin.gear;
 import dev.galacticraft.api.entity.attribute.GcApiEntityAttributes;
 import dev.galacticraft.impl.internal.accessor.LivingEntityOxygenAccessor;
 import dev.galacticraft.mod.content.entity.damage.GCDamageTypes;
-import dev.galacticraft.mod.tag.GCFluidTags;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.player.Player;
@@ -53,7 +52,11 @@ abstract class NeoLivingEntityMixin {
 
     @Inject(
             method = "baseTick",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;baseTick()V", shift = At.Shift.AFTER)
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/neoforged/neoforge/common/CommonHooks;onLivingBreathe(Lnet/minecraft/world/entity/LivingEntity;II)V",
+                    shift = At.Shift.AFTER
+            )
     )
     private void galacticraft$oxygenCheckAfterNeoForgeBreathing(CallbackInfo ci) {
         LivingEntity entity = (LivingEntity) (Object) this;
@@ -64,7 +67,7 @@ abstract class NeoLivingEntityMixin {
         AttributeInstance attribute = entity.getAttribute(GcApiEntityAttributes.CAN_BREATHE_IN_SPACE);
         boolean canBreathe = attribute != null && attribute.getValue() >= 0.99D;
         boolean breathable = ((LivingEntityOxygenAccessor) entity).galacticraft$isEyePositionBreathable();
-        if (breathable || canBreathe || entity.isEyeInFluid(GCFluidTags.NON_BREATHABLE)
+        if (breathable || canBreathe || ((LivingEntityOxygenAccessor) entity).galacticraft$isEyeInNonBreathableFluid()
                 || entity instanceof Player player && player.getAbilities().invulnerable) {
             return;
         }
