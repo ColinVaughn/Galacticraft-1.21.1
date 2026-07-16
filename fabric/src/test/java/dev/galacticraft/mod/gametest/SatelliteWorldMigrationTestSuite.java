@@ -34,6 +34,28 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 
 public final class SatelliteWorldMigrationTestSuite implements GalacticraftGameTest {
     @GameTest(template = EMPTY_STRUCTURE)
+    public void repairsLegacyZeroGravity(GameTestHelper context) {
+        float repairedGravity = SatelliteWorldMigration.repairLegacyGravity(0.0F);
+
+        if (repairedGravity != 1.0F) {
+            context.fail("Legacy satellite gravity was not restored");
+        } else {
+            context.succeed();
+        }
+    }
+
+    @GameTest(template = EMPTY_STRUCTURE)
+    public void preservesConfiguredGravity(GameTestHelper context) {
+        float configuredGravity = 0.38F;
+
+        if (SatelliteWorldMigration.repairLegacyGravity(configuredGravity) != configuredGravity) {
+            context.fail("A nonzero satellite gravity value was overwritten");
+        } else {
+            context.succeed();
+        }
+    }
+
+    @GameTest(template = EMPTY_STRUCTURE)
     public void repairsLegacyDirectBiomeHolder(GameTestHelper context) {
         var biomes = context.getLevel().registryAccess().registryOrThrow(Registries.BIOME);
         var registeredSpaceBiome = biomes.getHolderOrThrow(GCBiomes.SPACE);

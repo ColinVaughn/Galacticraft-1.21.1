@@ -144,6 +144,12 @@ public abstract class MinecraftServerMixin implements SatelliteAccessor {
                         config.setOptions(repairedOptions);
                         Constant.LOGGER.warn("Repaired legacy biome data for satellite '{}' in dimension '{}'", id, config.getWorld().location());
                     }
+                    float savedGravity = config.getGravity();
+                    float repairedGravity = SatelliteWorldMigration.repairLegacyGravity(savedGravity);
+                    if (repairedGravity != savedGravity) {
+                        config.setGravity(repairedGravity);
+                        Constant.LOGGER.warn("Repaired legacy gravity for satellite '{}' in dimension '{}'", id, config.getWorld().location());
+                    }
 
                     CelestialBody<SatelliteConfig, SatelliteType> satellite = new CelestialBody<>(SatelliteType.INSTANCE, config);
                     this.galacticraft$addSatellite(satellite, false);

@@ -52,4 +52,16 @@ public final class SatelliteWorldMigration {
         var spaceBiome = registryAccess.registryOrThrow(Registries.BIOME).getHolderOrThrow(GCBiomes.SPACE);
         return new LevelStem(options.type(), generator.withBiome(spaceBiome));
     }
+
+    /**
+     * Replaces the zero-gravity value written by older Galacticraft versions.
+     *
+     * <p>New stations have Earth-relative gravity, but the old value remains in
+     * {@code satellites.dat} until it is explicitly migrated.</p>
+     *
+     * @return the gravity value that should be used for the loaded satellite
+     */
+    public static float repairLegacyGravity(float gravity) {
+        return gravity == 0.0F ? SatelliteType.DEFAULT_GRAVITY : gravity;
+    }
 }

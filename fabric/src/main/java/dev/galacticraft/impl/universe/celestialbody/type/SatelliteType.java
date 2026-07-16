@@ -91,6 +91,7 @@ import java.util.OptionalLong;
 
 public class SatelliteType extends CelestialBodyType<SatelliteConfig> implements Satellite<SatelliteConfig>, Tiered<SatelliteConfig> {
     public static final SatelliteType INSTANCE = new SatelliteType(SatelliteConfig.CODEC);
+    public static final float DEFAULT_GRAVITY = 1.0F;
     public static final ChunkProgressListener EMPTY_PROGRESS_LISTENER = new ChunkProgressListener() {
         @Override
         public void updateSpawnPos(ChunkPos spawnPos) {
@@ -215,7 +216,7 @@ public class SatelliteType extends CelestialBodyType<SatelliteConfig> implements
         CelestialBody<?, ?> parent = celestialBodyRegistry.get(parentResourceKey);
 
         assert parent != null;
-        SatelliteConfig config = new SatelliteConfig(id, name, Optional.of(parentResourceKey), position, display, ring, ownershipData, worldKey, direct, EMPTY_GAS_COMPOSITION, 1.0f, parent.type() instanceof Tiered<?> ? ((Tiered) parent.type()).accessWeight(parent.config()) : 1, new LevelStem(Holder.direct(type), generator), stationPos);
+        SatelliteConfig config = new SatelliteConfig(id, name, Optional.of(parentResourceKey), position, display, ring, ownershipData, worldKey, direct, EMPTY_GAS_COMPOSITION, DEFAULT_GRAVITY, parent.type() instanceof Tiered<?> ? ((Tiered) parent.type()).accessWeight(parent.config()) : 1, new LevelStem(Holder.direct(type), generator), stationPos);
         CelestialBody<SatelliteConfig, SatelliteType> satellite = INSTANCE.configure(config);
 
         ((SatelliteAccessor) server).galacticraft$addSatellite(satellite, true);
