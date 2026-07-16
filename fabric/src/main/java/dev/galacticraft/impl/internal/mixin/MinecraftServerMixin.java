@@ -31,6 +31,7 @@ import dev.galacticraft.api.universe.celestialbody.CelestialBody;
 import dev.galacticraft.dynamicdimensions.api.event.DynamicDimensionLoadCallback;
 import dev.galacticraft.dynamicdimensions.impl.registry.RegistryUtil;
 import dev.galacticraft.impl.universe.celestialbody.type.SatelliteType;
+import dev.galacticraft.impl.universe.celestialbody.type.SatelliteWorldMigration;
 import dev.galacticraft.impl.universe.position.config.SatelliteConfig;
 import dev.galacticraft.mod.Constant;
 import net.minecraft.core.RegistryAccess;
@@ -136,7 +137,15 @@ public abstract class MinecraftServerMixin implements SatelliteAccessor {
                         Constant.LOGGER.error("Skipping satellite '{}' - {}", id, decode.error().get().message());
                         continue;
                     }
-                    CelestialBody<SatelliteConfig, SatelliteType> satellite = new CelestialBody<>(SatelliteType.INSTANCE, decode.getOrThrow().getFirst());
+                    SatelliteConfig config = decode.getOrThrow().getFirst();
+                    LevelStem savedOptions = config.getOptions();
+                    LevelStem repairedOptions = SatelliteWorldMigration.repairLegacyBiomeHolder(savedOptions, this.registryAccess());
+                    if (repairedOptions != savedOptions) {
+                        config.setOptions(repairedOptions);
+                        Constant.LOGGER.warn("Repaired legacy biome data for satellite '{}' in dimension '{}'", id, config.getWorld().location());
+                    }
+
+                    CelestialBody<SatelliteConfig, SatelliteType> satellite = new CelestialBody<>(SatelliteType.INSTANCE, config);
                     this.galacticraft$addSatellite(satellite, false);
 
                     ResourceLocation dimensionId = satellite.config().getWorld().location();

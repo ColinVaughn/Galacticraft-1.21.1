@@ -28,6 +28,7 @@
     "fabric-gametest": [
       "dev.galacticraft.mod.gametest.GratingTestSuite",
       "dev.galacticraft.mod.gametest.PolishTestSuite",
+      "dev.galacticraft.mod.gametest.SatelliteWorldMigrationTestSuite",
       "dev.galacticraft.mod.gametest.VehiclePersistenceTestSuite",
       "dev.galacticraft.mod.gametest.machine.AdvancedSolarPanelTestSuite",
       "dev.galacticraft.mod.gametest.machine.BasicSolarPanelTestSuite",

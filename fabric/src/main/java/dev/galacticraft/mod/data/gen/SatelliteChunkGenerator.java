@@ -122,6 +122,10 @@ public class SatelliteChunkGenerator extends ChunkGenerator {
         return this.structure;
     }
 
+    public @NotNull SatelliteChunkGenerator withBiome(@NotNull Holder<Biome> biome) {
+        return new SatelliteChunkGenerator(biome, this.structure, this.placeStructure);
+    }
+
     @Override
     protected @NotNull MapCodec<? extends ChunkGenerator> codec() {
         return CODEC;
