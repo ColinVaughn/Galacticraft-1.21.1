@@ -24,6 +24,7 @@ package dev.galacticraft.mod.events;
 
 import dev.galacticraft.api.registry.ExtinguishableBlockRegistry;
 import dev.galacticraft.api.registry.AcidTransformItemRegistry;
+import dev.galacticraft.api.registry.AddonRegistries;
 import dev.architectury.event.events.common.TickEvent;
 import dev.architectury.networking.NetworkManager;
 import dev.galacticraft.api.universe.celestialbody.CelestialBody;
@@ -36,17 +37,20 @@ import dev.galacticraft.mod.content.GCEntityTypes;
 import dev.galacticraft.mod.content.entity.FallingMeteorEntity;
 import dev.galacticraft.mod.misc.footprint.FootprintManager;
 import dev.galacticraft.mod.network.s2c.FootprintRemovedPacket;
+import dev.galacticraft.mod.tag.GCEntityTypeTags;
 import dev.galacticraft.mod.world.dimension.duststorm.MarsDustStormManager;
 import dev.galacticraft.mod.world.dimension.solarflare.MercurySolarFlareManager;
 import dev.galacticraft.mod.util.Translations;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -54,7 +58,14 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class GCEventHandlers {
+    // Galacticraft Legacy treated Y=30 as an invisible plane that returned entities
+    // falling from an orbit dimension to the body below.
+    static final double SATELLITE_REENTRY_HEIGHT = 30.0D;
+
     public static void init() {
         GCSleepEventHandlers.init();
         GCInteractionEventHandlers.init();
@@ -72,6 +83,8 @@ public class GCEventHandlers {
     }
 
     public static void onWorldTick(ServerLevel level) {
+        tickSatelliteReentryPlane(level);
+
         FootprintManager footprintManager = level.galacticraft$getFootprintManager();
         footprintManager.tick(level);
         if (!footprintManager.footprintBlockChanges.isEmpty()) {
@@ -89,6 +102,51 @@ public class GCEventHandlers {
         level.galacticraft$getSealerManager().tick();
         MarsDustStormManager.tick(level);
         MercurySolarFlareManager.tick(level);
+    }
+
+    private static void tickSatelliteReentryPlane(ServerLevel level) {
+        Holder<CelestialBody<?, ?>> holder = level.galacticraft$getCelestialBody();
+        if (holder == null || !holder.value().isSatellite()) return;
+
+        // Teleporting changes the entity's level, so collect candidates before mutating them.
+        List<Entity> reentering = new ArrayList<>();
+        for (Entity entity : level.getAllEntities()) {
+            if (isBelowSatelliteReentryPlane(entity.getY())
+                    && entity.getType().is(GCEntityTypeTags.CAN_REENTER_ATMOSPHERE)) {
+                reentering.add(entity);
+            }
+        }
+        reentering.forEach(GCEventHandlers::tryReenterAtmosphere);
+    }
+
+    static boolean isBelowSatelliteReentryPlane(double y) {
+        return y <= SATELLITE_REENTRY_HEIGHT;
+    }
+
+    /**
+     * Attempts to return an entity falling from a satellite to its parent body.
+     *
+     * @return whether a destination teleporter accepted the entity
+     */
+    public static boolean tryReenterAtmosphere(Entity entity) {
+        if (!entity.getType().is(GCEntityTypeTags.CAN_REENTER_ATMOSPHERE)
+                || !(entity.level() instanceof ServerLevel level)) {
+            return false;
+        }
+
+        Holder<CelestialBody<?, ?>> holder = level.galacticraft$getCelestialBody();
+        CelestialBody<?, ?> fromBody = holder != null ? holder.value() : null;
+        if (fromBody == null || !fromBody.isSatellite() || fromBody.parent().isEmpty()) return false;
+
+        Registry<CelestialBody<?, ?>> celestialBodies = level.registryAccess().registryOrThrow(AddonRegistries.CELESTIAL_BODY);
+        CelestialBody<?, ?> body = fromBody.parentValue(celestialBodies);
+        if (!(body.type() instanceof Landable landable)) return false;
+
+        ServerLevel destination = level.getServer().getLevel(landable.world(body.config()));
+        if (destination == null) return false;
+
+        ((CelestialTeleporter) landable.teleporter(body.config()).value()).onEnterAtmosphere(destination, entity, body, fromBody);
+        return true;
     }
 
     public static void onServerTick(MinecraftServer server) {

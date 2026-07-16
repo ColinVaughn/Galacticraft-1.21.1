@@ -50,6 +50,10 @@ import java.util.function.Supplier;
 public abstract class LevelCelestialBodyMixin implements LevelBodyAccessor {
     @Unique
     private Holder<CelestialBody<?, ?>> celestialBody = null;
+    @Unique
+    private ResourceKey<Level> galacticraft$levelKey;
+    @Unique
+    private int galacticraft$celestialBodyRegistrySize = -1;
 
     @Shadow public abstract RegistryAccess registryAccess();
 
@@ -65,14 +69,31 @@ public abstract class LevelCelestialBodyMixin implements LevelBodyAccessor {
                       boolean bl2,
                       long l,
                       int i, CallbackInfo ci) {
-        this.celestialBody = registryAccess.registryOrThrow(AddonRegistries.CELESTIAL_BODY).holders().filter(
-                b -> b.value().type() instanceof Landable landable && landable.world(b.value().config()).equals(levelKey)
-        ).findFirst().orElse(null);
+        this.galacticraft$levelKey = levelKey;
+        this.celestialBody = this.galacticraft$resolveCelestialBody();
     }
 
     @Override
     public @Nullable Holder<CelestialBody<?, ?>> galacticraft$getCelestialBody() {
+        // Dynamic satellite levels can be constructed before their celestial body is registered.
+        // Retry unresolved levels so a newly-created station starts behaving as a satellite
+        // immediately instead of only after the server reloads it from disk.
+        Registry<CelestialBody<?, ?>> celestialBodies = this.registryAccess().registryOrThrow(AddonRegistries.CELESTIAL_BODY);
+        if (this.celestialBody == null && celestialBodies.size() != this.galacticraft$celestialBodyRegistrySize) {
+            this.celestialBody = this.galacticraft$resolveCelestialBody();
+        }
         return this.celestialBody;
+    }
+
+    @Unique
+    private @Nullable Holder<CelestialBody<?, ?>> galacticraft$resolveCelestialBody() {
+        if (this.galacticraft$levelKey == null) return null;
+        Registry<CelestialBody<?, ?>> celestialBodies = this.registryAccess().registryOrThrow(AddonRegistries.CELESTIAL_BODY);
+        this.galacticraft$celestialBodyRegistrySize = celestialBodies.size();
+        return celestialBodies.holders().filter(
+                body -> body.value().type() instanceof Landable landable
+                        && landable.world(body.value().config()).equals(this.galacticraft$levelKey)
+        ).findFirst().orElse(null);
     }
 
     @Override
