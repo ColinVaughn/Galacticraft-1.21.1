@@ -33,6 +33,7 @@ import dev.galacticraft.machinelib.api.storage.StorageSpec;
 import dev.galacticraft.machinelib.api.storage.slot.FluidResourceSlot;
 import dev.galacticraft.machinelib.api.storage.slot.ItemResourceSlot;
 import dev.galacticraft.machinelib.api.transfer.TransferType;
+import dev.galacticraft.machinelib.api.util.FluidSource;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.content.GCBlockEntityTypes;
 import dev.galacticraft.mod.screen.GCMenuTypes;
@@ -76,6 +77,7 @@ public class FluidTankBlockEntity extends MachineBlockEntity {
                             .capacity(FluidTankBlockEntity.CAPACITY)
             )
     );
+    private final FluidSource fluidSource = new FluidSource(this);
 
     public FluidTankBlockEntity(BlockPos pos, BlockState state) {
         super(GCBlockEntityTypes.FLUID_TANK, pos, state, SPEC);
@@ -88,6 +90,9 @@ public class FluidTankBlockEntity extends MachineBlockEntity {
 
         // Drain the tank into an empty fluid container placed in the drain slot.
         this.drainFluidToSlot(DRAIN_SLOT, FLUID_TANK);
+
+        // Push stored fluid through every side configured as a fluid output.
+        this.fluidSource.trySpreadFluids(level, pos, state);
 
         return MachineStatuses.ACTIVE;
     }

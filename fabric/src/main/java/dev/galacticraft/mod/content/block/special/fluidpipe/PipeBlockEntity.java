@@ -22,6 +22,7 @@
 
 package dev.galacticraft.mod.content.block.special.fluidpipe;
 
+import dev.galacticraft.machinelib.api.transfer.MLFluidStack;
 import dev.galacticraft.mod.api.pipe.FluidPipe;
 import dev.galacticraft.mod.api.pipe.PipeNetwork;
 import dev.galacticraft.mod.api.pipe.impl.PipeNetworkImpl;
@@ -34,6 +35,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Block;
@@ -45,9 +47,14 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Objects;
 
 public abstract class PipeBlockEntity extends BlockEntity implements FluidPipe, Storage<FluidVariant> {
+    public static final int DISPLAY_TIMEOUT_TICKS = 4;
+    private static final String DISPLAYED_FLUID_KEY = "displayed_fluid";
     private @Nullable PipeNetwork network = null;
+    private @Nullable MLFluidStack displayedFluid;
+    private long displayedFluidExpiresAt;
     private final long maxTransferRate; // 1 bucket per second
     private final boolean[] connections = new boolean[6];
 
@@ -101,6 +108,42 @@ public abstract class PipeBlockEntity extends BlockEntity implements FluidPipe, 
         return this.connections;
     }
 
+    public @Nullable MLFluidStack getDisplayedFluid() {
+        return this.displayedFluid;
+    }
+
+    public void setDisplayedFluid(@NotNull MLFluidStack fluid) {
+        this.refreshDisplayedFluidTimeout();
+        if (Objects.equals(this.displayedFluid, fluid)) return;
+        this.displayedFluid = fluid;
+        this.setChanged();
+        if (this.level != null && !this.level.isClientSide) {
+            this.level.sendBlockUpdated(this.getBlockPos(), this.getBlockState(), this.getBlockState(), Block.UPDATE_CLIENTS);
+        }
+    }
+
+    private void refreshDisplayedFluidTimeout() {
+        if (this.level instanceof ServerLevel serverLevel) {
+            this.displayedFluidExpiresAt = serverLevel.getGameTime() + DISPLAY_TIMEOUT_TICKS;
+            serverLevel.scheduleTick(this.getBlockPos(), this.getBlockState().getBlock(), DISPLAY_TIMEOUT_TICKS);
+        }
+    }
+
+    public void clearDisplayedFluidIfExpired(@NotNull ServerLevel serverLevel) {
+        if (this.displayedFluid == null) return;
+
+        long remainingTicks = this.displayedFluidExpiresAt - serverLevel.getGameTime();
+        if (remainingTicks > 0) {
+            serverLevel.scheduleTick(this.getBlockPos(), this.getBlockState().getBlock(), (int) remainingTicks);
+            return;
+        }
+
+        this.displayedFluid = null;
+        this.displayedFluidExpiresAt = 0;
+        this.setChanged();
+        serverLevel.sendBlockUpdated(this.getBlockPos(), this.getBlockState(), this.getBlockState(), Block.UPDATE_CLIENTS);
+    }
+
     @Override
     public void updateConnection(BlockState state, BlockPos pos, BlockPos neighborPos, Direction direction) {
         if (this.network == null || this.network.markedForRemoval()) {
@@ -140,6 +183,9 @@ public abstract class PipeBlockEntity extends BlockEntity implements FluidPipe, 
     protected void loadAdditional(CompoundTag nbt, HolderLookup.Provider registryLookup) {
         super.loadAdditional(nbt, registryLookup);
         this.readConnectionNbt(nbt);
+        this.displayedFluid = nbt.contains(DISPLAYED_FLUID_KEY)
+                ? MLFluidStack.CODEC.parse(registryLookup.createSerializationContext(NbtOps.INSTANCE), nbt.get(DISPLAYED_FLUID_KEY)).result().orElse(null)
+                : null;
 
         if (this.level != null && this.level.isClientSide) {
             this.level.sendBlockUpdated(this.getBlockPos(), this.getBlockState(), this.getBlockState(), Block.UPDATE_IMMEDIATE);
@@ -152,6 +198,13 @@ public abstract class PipeBlockEntity extends BlockEntity implements FluidPipe, 
         this.writeConnectionNbt(nbt);
     }
 
+    private void writeDisplayedFluid(CompoundTag nbt, HolderLookup.Provider registryLookup) {
+        if (this.displayedFluid != null) {
+            nbt.put(DISPLAYED_FLUID_KEY, MLFluidStack.CODEC.encodeStart(
+                    registryLookup.createSerializationContext(NbtOps.INSTANCE), this.displayedFluid).getOrThrow());
+        }
+    }
+
     @Override
     public ClientboundBlockEntityDataPacket getUpdatePacket() {
         return ClientboundBlockEntityDataPacket.create(this);
@@ -159,6 +212,8 @@ public abstract class PipeBlockEntity extends BlockEntity implements FluidPipe, 
 
     @Override
     public @NotNull CompoundTag getUpdateTag(HolderLookup.Provider registryLookup) {
-        return this.saveWithoutMetadata(registryLookup);
+        CompoundTag nbt = this.saveWithoutMetadata(registryLookup);
+        this.writeDisplayedFluid(nbt, registryLookup);
+        return nbt;
     }
 }

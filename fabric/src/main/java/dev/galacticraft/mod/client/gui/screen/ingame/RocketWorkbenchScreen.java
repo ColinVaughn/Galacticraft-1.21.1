@@ -24,12 +24,12 @@ package dev.galacticraft.mod.client.gui.screen.ingame;
 
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
+import dev.architectury.platform.Platform;
 import dev.galacticraft.mod.client.util.Graphics;
 import dev.galacticraft.mod.content.GCEntityTypes;
 import dev.galacticraft.mod.content.entity.vehicle.RocketEntity;
 import dev.galacticraft.mod.machine.storage.VariableSizedContainer;
 import dev.galacticraft.mod.screen.RocketWorkbenchMenu;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -78,7 +78,7 @@ public class RocketWorkbenchScreen extends AbstractContainerScreen<RocketWorkben
         this.imageHeight = UI_HEIGHT;
         super.init();
 
-        if (FabricLoader.getInstance().isModLoaded("emi")) {
+        if (Platform.isModLoaded("emi")) {
             this.topPos = Mth.clamp(this.height - this.imageHeight - 23, 2, this.topPos);
         }
     }

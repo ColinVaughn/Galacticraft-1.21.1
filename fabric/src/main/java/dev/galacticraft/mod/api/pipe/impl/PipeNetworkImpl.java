@@ -26,6 +26,8 @@ import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.api.block.FluidPipeBlock;
 import dev.galacticraft.mod.api.pipe.FluidPipe;
 import dev.galacticraft.mod.api.pipe.PipeNetwork;
+import dev.galacticraft.machinelib.api.transfer.MLFluidStack;
+import dev.galacticraft.mod.content.block.special.fluidpipe.PipeBlockEntity;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -237,8 +239,25 @@ public class PipeNetworkImpl extends SnapshotParticipant<PipeNetworkImpl.PipeSna
             }
         });
 
+        if (this.transferred > baseTransferred) {
+            long committedTransferred = this.transferred;
+            transaction.addOuterCloseCallback(result -> {
+                if (result.wasCommitted() && this.transferred >= committedTransferred && resource.equals(this.currentVariant)) {
+                    this.updateDisplayedFluid(new MLFluidStack(resource.getFluid(), resource.getComponents()));
+                }
+            });
+        }
+
         this.activeTransaction = false;
         return this.transferred - baseTransferred;
+    }
+
+    private void updateDisplayedFluid(@NotNull MLFluidStack fluid) {
+        for (BlockPos pos : this.pipes.keySet()) {
+            if (this.level.getBlockEntity(pos) instanceof PipeBlockEntity pipe) {
+                pipe.setDisplayedFluid(fluid);
+            }
+        }
     }
 
     @Override

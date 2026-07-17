@@ -26,6 +26,8 @@ import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.api.block.FluidPipeBlock;
 import dev.galacticraft.mod.api.pipe.FluidPipe;
 import dev.galacticraft.mod.api.pipe.PipeNetwork;
+import dev.galacticraft.machinelib.api.transfer.MLFluidStack;
+import dev.galacticraft.mod.content.block.special.fluidpipe.PipeBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -148,10 +150,19 @@ public final class PipeNetworkImpl implements PipeNetwork {
             if (inserted > 0) {
                 currentFluid = resource.copyWithAmount(1);
                 transferred += inserted;
+                updateDisplayedFluid(new MLFluidStack(resource.getFluid(), resource.getComponentsPatch()));
             }
             return inserted;
         } finally {
             activeTransaction = false;
+        }
+    }
+
+    private void updateDisplayedFluid(MLFluidStack fluid) {
+        for (BlockPos pos : pipes.keySet()) {
+            if (level.getBlockEntity(pos) instanceof PipeBlockEntity pipe) {
+                pipe.setDisplayedFluid(fluid);
+            }
         }
     }
 

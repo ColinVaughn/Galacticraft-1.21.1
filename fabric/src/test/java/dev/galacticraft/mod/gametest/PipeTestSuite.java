@@ -22,14 +22,70 @@
 
 package dev.galacticraft.mod.gametest;
 
+import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
+import dev.galacticraft.machinelib.api.transfer.ResourceType;
+import dev.galacticraft.machinelib.api.util.BlockFace;
 import dev.galacticraft.mod.api.pipe.FluidPipe;
 import dev.galacticraft.mod.api.pipe.impl.PipeNetworkImpl;
 import dev.galacticraft.mod.content.GCBlocks;
+import dev.galacticraft.mod.content.block.entity.machine.FluidTankBlockEntity;
+import dev.galacticraft.mod.content.block.entity.networked.GlassFluidPipeBlockEntity;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.level.material.Fluids;
 
 public class PipeTestSuite implements GalacticraftGameTest {
+    @GameTest(template = EMPTY_STRUCTURE)
+    public void fluidTankTransfersThroughPipes(GameTestHelper context) {
+        BlockPos sourcePos = new BlockPos(1, 4, 1);
+        BlockPos upperPipePos = new BlockPos(1, 3, 1);
+        BlockPos lowerPipePos = new BlockPos(1, 2, 1);
+        BlockPos targetPos = new BlockPos(1, 1, 1);
+
+        context.setBlock(sourcePos, GCBlocks.FLUID_TANK);
+        context.setBlock(upperPipePos, GCBlocks.GLASS_FLUID_PIPE);
+        context.setBlock(lowerPipePos, GCBlocks.GLASS_FLUID_PIPE);
+        context.setBlock(targetPos, GCBlocks.FLUID_TANK);
+
+        FluidTankBlockEntity source = context.getBlockEntity(sourcePos);
+        FluidTankBlockEntity target = context.getBlockEntity(targetPos);
+        GlassFluidPipeBlockEntity upperPipe = context.getBlockEntity(upperPipePos);
+        GlassFluidPipeBlockEntity lowerPipe = context.getBlockEntity(lowerPipePos);
+        source.fluidStorage().slot(FluidTankBlockEntity.FLUID_TANK).set(Fluids.WATER, FluidConstants.BUCKET);
+        source.getIOConfig().get(BlockFace.BOTTOM).setOption(ResourceType.FLUID, ResourceFlow.OUTPUT);
+        target.getIOConfig().get(BlockFace.TOP).setOption(ResourceType.FLUID, ResourceFlow.INPUT);
+
+        runAt(context, 5, () -> {
+            long sourceAmount = source.fluidStorage().slot(FluidTankBlockEntity.FLUID_TANK).getAmount();
+            long targetAmount = target.fluidStorage().slot(FluidTankBlockEntity.FLUID_TANK).getAmount();
+            if (sourceAmount >= FluidConstants.BUCKET) {
+                context.fail("Expected the output tank to send water into the pipe network", sourcePos);
+            } else if (targetAmount <= 0) {
+                context.fail("Expected the input tank to receive water from the pipe network", targetPos);
+            } else if (sourceAmount + targetAmount != FluidConstants.BUCKET) {
+                context.fail("Pipe transfer did not conserve the stored water", lowerPipePos);
+            } else if (upperPipe.getDisplayedFluid() == null || upperPipe.getDisplayedFluid().fluid() != Fluids.WATER) {
+                context.fail("Expected the upper pipe to display the transferred water", upperPipePos);
+            } else if (lowerPipe.getDisplayedFluid() == null || lowerPipe.getDisplayedFluid().fluid() != Fluids.WATER) {
+                context.fail("Expected the lower pipe to display the transferred water", lowerPipePos);
+            }
+        });
+
+        runFinalTaskAt(context, 65, () -> {
+            long sourceAmount = source.fluidStorage().slot(FluidTankBlockEntity.FLUID_TANK).getAmount();
+            long targetAmount = target.fluidStorage().slot(FluidTankBlockEntity.FLUID_TANK).getAmount();
+            if (sourceAmount != 0 || targetAmount != FluidConstants.BUCKET) {
+                context.fail("Expected all water to finish transferring into the input tank", targetPos);
+            } else if (upperPipe.getDisplayedFluid() != null) {
+                context.fail("Expected the upper pipe fluid display to clear after transfer stopped", upperPipePos);
+            } else if (lowerPipe.getDisplayedFluid() != null) {
+                context.fail("Expected the lower pipe fluid display to clear after transfer stopped", lowerPipePos);
+            }
+        });
+    }
+
     @GameTest(template = EMPTY_STRUCTURE)
     public void pipeConnectionTest(GameTestHelper context) {
         final var pos0 = new BlockPos(0, 1, 0);

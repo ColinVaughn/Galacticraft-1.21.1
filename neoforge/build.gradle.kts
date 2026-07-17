@@ -10,7 +10,10 @@ val localMachineLib = rootProject.file("../MachineLib/neoforge/build/libs").list
     ?.filter { it.name.startsWith("MachineLib-neoforge-") && it.extension == "jar" }
     ?.filterNot { it.name.contains("-sources") || it.name.contains("-javadoc") || it.name.contains("-shadow") }
     ?.maxByOrNull { it.lastModified() }
-val localDynamicDimensions = rootProject.file("build/dependency-sources/DynamicDimensions/neoforge/build/libs").listFiles()
+val localDynamicDimensionsRoot = rootProject.file(
+    rootProject.findProperty("dynamicdimensions.local.path")?.toString() ?: "../DynamicDimensions"
+)
+val localDynamicDimensions = localDynamicDimensionsRoot.resolve("neoforge/build/libs").listFiles()
     ?.filter { it.name.startsWith("dynamicdimensions-neoforge-") && it.extension == "jar" }
     ?.filterNot { it.name.contains("-sources") || it.name.contains("-javadoc") }
     ?.maxByOrNull { it.lastModified() }
@@ -270,7 +273,7 @@ tasks.processResources {
         "neoForgeVersion" to rootProject.property("neoforge.version"),
         "architecturyVersion" to rootProject.property("architectury.version"),
         "machineLibVersion" to rootProject.property("machinelib.version"),
-        "dynamicDimensionsVersion" to rootProject.property("dynamicdimensions.version"),
+        "dynamicDimensionsVersion" to (localDynamicDimensionsVersion ?: rootProject.property("dynamicdimensions.version")),
         "badPacketsVersion" to rootProject.property("badpackets.version")
     )
     inputs.properties(properties)

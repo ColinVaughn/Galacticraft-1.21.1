@@ -58,6 +58,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.EitherHolder;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.block.TntBlock;
 import org.jetbrains.annotations.NotNull;
@@ -66,7 +67,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static dev.galacticraft.mod.Constant.RocketWorkbench.*;
@@ -128,27 +128,27 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
         for (RocketRecipe.RocketSlotData data : RocketRecipe.slotData(recipe.bodyHeight(), !recipe.boosters().isEmpty())) {
             switch (data.partType()) {
                 case CONE: {
-                    this.coneSlot = this.addSlot(new FilteredSlot(this.workbench.ingredients, nextSlot, data.x(), data.y(), this.anyPart(RocketRecipe::cone)).withBackground(Constant.SlotSprite.ROCKET_CONE));
+                    this.coneSlot = this.addSlot(new FilteredSlot(this.workbench.ingredients, nextSlot, data.x(), data.y(), this.recipeCompatiblePart(nextSlot)).withBackground(Constant.SlotSprite.ROCKET_CONE));
                     break;
                 }
                 case BODY: {
-                    this.bodySlots.add(this.addSlot(new FilteredSlot(this.workbench.ingredients, nextSlot, data.x(), data.y(), this.anyPart(RocketRecipe::body)).withBackground(Constant.SlotSprite.ROCKET_PLATING)));
+                    this.bodySlots.add(this.addSlot(new FilteredSlot(this.workbench.ingredients, nextSlot, data.x(), data.y(), this.recipeCompatiblePart(nextSlot)).withBackground(Constant.SlotSprite.ROCKET_PLATING)));
                     break;
                 }
                 case BOOSTER: {
-                    this.boosterSlots.add(this.addSlot(new FilteredSlot(this.workbench.ingredients, nextSlot, data.x(), data.y(), this.anyPart(RocketRecipe::boosters)).withBackground(Constant.SlotSprite.ROCKET_BOOSTER)));
+                    this.boosterSlots.add(this.addSlot(new FilteredSlot(this.workbench.ingredients, nextSlot, data.x(), data.y(), this.recipeCompatiblePart(nextSlot)).withBackground(Constant.SlotSprite.ROCKET_BOOSTER)));
                     break;
                 }
                 case FIN: {
                     if (data.mirror()) {
-                        this.finSlots.add(this.addSlot(new MirroredFilteredSlot(this.workbench.ingredients, nextSlot, data.x(), data.y(), this.anyPart(RocketRecipe::fins)).withBackground(Constant.SlotSprite.ROCKET_FIN_RIGHT)));
+                        this.finSlots.add(this.addSlot(new MirroredFilteredSlot(this.workbench.ingredients, nextSlot, data.x(), data.y(), this.recipeCompatiblePart(nextSlot)).withBackground(Constant.SlotSprite.ROCKET_FIN_RIGHT)));
                     } else {
-                        this.finSlots.add(this.addSlot(new FilteredSlot(this.workbench.ingredients, nextSlot, data.x(), data.y(), this.anyPart(RocketRecipe::fins)).withBackground(Constant.SlotSprite.ROCKET_FIN_LEFT)));
+                        this.finSlots.add(this.addSlot(new FilteredSlot(this.workbench.ingredients, nextSlot, data.x(), data.y(), this.recipeCompatiblePart(nextSlot)).withBackground(Constant.SlotSprite.ROCKET_FIN_LEFT)));
                     }
                     break;
                 }
                 case ENGINE: {
-                    this.engineSlot = this.addSlot(new FilteredSlot(this.workbench.ingredients, nextSlot, data.x(), data.y(), this.anyPart(RocketRecipe::engine)).withBackground(Constant.SlotSprite.ROCKET_ENGINE));
+                    this.engineSlot = this.addSlot(new FilteredSlot(this.workbench.ingredients, nextSlot, data.x(), data.y(), this.recipeCompatiblePart(nextSlot)).withBackground(Constant.SlotSprite.ROCKET_ENGINE));
                     break;
                 }
             }
@@ -188,13 +188,37 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
                 holder.value().getIngredients().stream().distinct().anyMatch(ingredient -> ingredient.test(stack)));
     }
 
-    /** Accept a rocket part used by any registered tier. */
-    private Predicate<ItemStack> anyPart(Function<RocketRecipe, net.minecraft.world.item.crafting.Ingredient> extractor) {
-        List<net.minecraft.world.item.crafting.Ingredient> ingredients = this.recipes.stream()
-                .map(holder -> extractor.apply(holder.value()))
-                .filter(ingredient -> !ingredient.isEmpty())
-                .toList();
-        return stack -> ingredients.stream().anyMatch(ingredient -> ingredient.test(stack));
+    /** Accept a part only when at least one rocket recipe remains possible. */
+    private Predicate<ItemStack> recipeCompatiblePart(int targetSlot) {
+        return stack -> this.recipes.stream().anyMatch(holder -> {
+            List<Ingredient> ingredients = holder.value().getIngredients();
+            return targetSlot < ingredients.size()
+                    && ingredients.get(targetSlot).test(stack)
+                    && this.currentItemsMatch(holder.value(), targetSlot);
+        });
+    }
+
+    private boolean currentItemsMatch(RocketRecipe recipe, int ignoredSlot) {
+        List<Ingredient> ingredients = recipe.getIngredients();
+        for (int slot = 0; slot < this.workbench.ingredients.getTargetSize(); slot++) {
+            if (slot == ignoredSlot) continue;
+
+            ItemStack existing = this.workbench.ingredients.getItem(slot);
+            if (!existing.isEmpty() && (slot >= ingredients.size() || !ingredients.get(slot).test(existing))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** Returns a recipe that can still be completed with the currently inserted parts. */
+    private RecipeHolder<RocketRecipe> findCompatibleRecipe() {
+        for (RecipeHolder<RocketRecipe> holder : this.recipes) {
+            if (this.currentItemsMatch(holder.value(), -1)) {
+                return holder;
+            }
+        }
+        return null;
     }
 
     /** Returns the first rocket recipe that matches the current workbench contents. */
@@ -304,28 +328,38 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
     @Override
     public void onItemChanged() {
         RecipeHolder<RocketRecipe> matched = this.findMatchingRecipe();
-        if (matched != null) {
-            // Update the preview to the matched tier.
-            this.recipe = matched;
-            ItemStack result = matched.value().result();
-            RocketData base = result.getOrDefault(GCDataComponents.ROCKET_DATA, RocketPrefabs.TIER_1);
-            if (this.hasResearchedParts(base)) {
-                ItemStack output = result.copy();
-                output.set(GCDataComponents.ROCKET_DATA, this.withWorkbenchUpgrade(base));
-                this.workbench.output.setItem(0, output);
+        RecipeHolder<RocketRecipe> compatible = matched != null ? matched : this.findCompatibleRecipe();
+        this.recipe = compatible != null ? compatible : this.baseRecipe;
+
+        // The server owns the result slot. Recomputing it on the client can erase the
+        // synchronized result when research data has not arrived yet after login.
+        if (this.workbench.getLevel() instanceof ServerLevel) {
+            if (matched != null) {
+                ItemStack result = matched.value().result();
+                RocketData base = result.getOrDefault(GCDataComponents.ROCKET_DATA, RocketPrefabs.TIER_1);
+                if (this.hasResearchedParts(base)) {
+                    ItemStack output = result.copy();
+                    output.set(GCDataComponents.ROCKET_DATA, this.withWorkbenchUpgrade(base));
+                    this.workbench.output.setItem(0, output);
+                } else {
+                    this.workbench.output.clearContent();
+                }
             } else {
                 this.workbench.output.clearContent();
             }
-        } else {
-            this.recipe = this.baseRecipe;
-            this.workbench.output.clearContent();
         }
 
-        this.coneComplete = this.coneSlot.hasItem();
-        this.bodyComplete = this.bodySlots.stream().allMatch(Slot::hasItem);
-        this.boostersComplete = this.boosterSlots.stream().allMatch(Slot::hasItem);
-        this.finsComplete = this.finSlots.stream().allMatch(Slot::hasItem);
-        this.engineComplete = this.engineSlot.hasItem();
+        this.coneComplete = this.slotMatchesRecipe(this.coneSlot);
+        this.bodyComplete = this.bodySlots.stream().allMatch(this::slotMatchesRecipe);
+        this.boostersComplete = this.boosterSlots.stream().allMatch(this::slotMatchesRecipe);
+        this.finsComplete = this.finSlots.stream().allMatch(this::slotMatchesRecipe);
+        this.engineComplete = this.slotMatchesRecipe(this.engineSlot);
+    }
+
+    private boolean slotMatchesRecipe(Slot slot) {
+        List<Ingredient> ingredients = this.recipe.value().getIngredients();
+        int index = slot.getContainerSlot();
+        return index < ingredients.size() && ingredients.get(index).test(slot.getItem());
     }
 
     /** Requires research unlocks for every structural part in the assembled rocket. */

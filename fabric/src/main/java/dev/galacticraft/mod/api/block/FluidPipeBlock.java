@@ -35,6 +35,8 @@ import dev.galacticraft.mod.util.FluidUtil;
 import dev.architectury.platform.Platform;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
@@ -64,6 +66,13 @@ public abstract class FluidPipeBlock extends PipeShapedBlock<PipeBlockEntity> im
     public FluidPipeBlock(Properties settings, PipeColor color) {
         super(0.125f, settings.pushReaction(PushReaction.BLOCK));
         this.color = color;
+    }
+
+    @Override
+    public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+        if (level.getBlockEntity(pos) instanceof PipeBlockEntity pipe) {
+            pipe.clearDisplayedFluidIfExpired(level);
+        }
     }
 
     @Override

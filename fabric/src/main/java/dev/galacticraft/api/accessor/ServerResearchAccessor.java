@@ -28,4 +28,6 @@ public interface ServerResearchAccessor extends ResearchAccessor {
     void galacticraft$unlockRocketPartRecipes(ResourceLocation... id);
 
     void galacticraft$unlearnRocketPartRecipes(ResourceLocation... id);
+
+    void galacticraft$syncResearch();
 }

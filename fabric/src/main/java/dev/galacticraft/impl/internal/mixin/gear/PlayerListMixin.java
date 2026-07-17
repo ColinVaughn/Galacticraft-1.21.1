@@ -23,6 +23,7 @@
 package dev.galacticraft.impl.internal.mixin.gear;
 
 import dev.galacticraft.api.accessor.SatelliteAccessor;
+import dev.galacticraft.api.accessor.ServerResearchAccessor;
 import dev.galacticraft.impl.network.s2c.AddSatellitePayload;
 import dev.galacticraft.impl.network.s2c.GearInvPayload;
 import dev.architectury.networking.NetworkManager;
@@ -57,6 +58,9 @@ public abstract class PlayerListMixin {
         for (ServerPlayer remote : tracking) {
             NetworkManager.sendToPlayer(remote, gearInvPayload);
         }
+
+        // Restore persisted rocket-part research on the joining client.
+        ((ServerResearchAccessor) player).galacticraft$syncResearch();
 
         // Sync the list of satellites with new players
         ((SatelliteAccessor) player.server).galacticraft$getSatellites().forEach((id, satellite) -> {

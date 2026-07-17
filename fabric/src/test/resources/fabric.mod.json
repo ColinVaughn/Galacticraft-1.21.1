@@ -42,6 +42,7 @@
       "dev.galacticraft.mod.gametest.machine.FuelLoaderTestSuite",
       "dev.galacticraft.mod.gametest.machine.RefineryTestSuite",
       "dev.galacticraft.mod.gametest.PipeTestSuite",
+      "dev.galacticraft.mod.gametest.RocketWorkbenchTestSuite",
       "dev.galacticraft.mod.gametest.WireTestSuite"
     ]
   },

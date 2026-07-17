@@ -72,6 +72,11 @@ public abstract class ServerPlayerMixin implements ServerResearchAccessor {
         NetworkManager.sendToPlayer((ServerPlayer) (Object) this, new ResearchUpdatePayload(false, List.of(ids)));
     }
 
+    @Override
+    public void galacticraft$syncResearch() {
+        NetworkManager.sendToPlayer((ServerPlayer) (Object) this, new ResearchUpdatePayload(true, List.copyOf(this.unlockedRecipes)));
+    }
+
     @Inject(method = "readAdditionalSaveData", at = @At("RETURN"))
     private void galacticraft_readCustomDataFromNbt(CompoundTag nbt, CallbackInfo ci) {
         this.unlockedRecipes.clear();

@@ -12,7 +12,10 @@ val localMachineLib = rootProject.file("../MachineLib/fabric/build/libs").listFi
     ?.filter { it.name.startsWith("MachineLib-fabric-") && it.extension == "jar" }
     ?.filterNot { it.name.contains("-sources") || it.name.contains("-javadoc") || it.name.contains("-shadow") }
     ?.maxByOrNull { it.lastModified() }
-val localDynamicDimensions = rootProject.file("build/dependency-sources/DynamicDimensions/fabric/build/libs").listFiles()
+val localDynamicDimensionsRoot = rootProject.file(
+    rootProject.findProperty("dynamicdimensions.local.path")?.toString() ?: "../DynamicDimensions"
+)
+val localDynamicDimensions = localDynamicDimensionsRoot.resolve("fabric/build/libs").listFiles()
     ?.filter { it.name.startsWith("dynamicdimensions-fabric-") && it.extension == "jar" }
     ?.filterNot { it.name.contains("-sources") || it.name.contains("-javadoc") }
     ?.maxByOrNull { it.lastModified() }
