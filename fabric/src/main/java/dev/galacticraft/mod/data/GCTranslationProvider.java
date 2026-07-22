@@ -810,6 +810,7 @@ public class GCTranslationProvider extends TranslationProvider {
     }
 
     protected void generateGasTranslations() {
+        this.add(Gas.GAS, "Gas");
         this.add(Gas.ARGON, "Argon");
         this.add(Gas.CARBON_DIOXIDE, "Carbon Dioxide");
         this.add(Gas.CARBON_MONOXIDE, "Carbon Monoxide");

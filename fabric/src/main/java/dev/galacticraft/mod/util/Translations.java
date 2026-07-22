@@ -313,6 +313,7 @@ public interface Translations {
     }
 
     interface Gas {
+        String GAS = "fluid_type.galacticraft.gas";
         String ARGON = "gas.galacticraft.argon";
         String CARBON_DIOXIDE = "gas.galacticraft.carbon_dioxide";
         String CARBON_MONOXIDE = "gas.galacticraft.carbon_monoxide";

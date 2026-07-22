@@ -22,17 +22,20 @@
 
 package dev.galacticraft.neoforge.fluid;
 
+import dev.galacticraft.api.gas.Gas;
 import dev.galacticraft.api.gas.GasFluid;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.content.GCFluids;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.material.Fluid;
+import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
+import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import net.neoforged.neoforge.registries.RegisterEvent;
 import org.jetbrains.annotations.Nullable;
-import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 
 public final class GCNeoForgeFluidTypes {
     private static final FluidType CRUDE_OIL = new FluidType(FluidType.Properties.create()
@@ -61,9 +64,19 @@ public final class GCNeoForgeFluidTypes {
             .canDrown(false)
             .fallDistanceModifier(1.0F)
             .pathType(null)
-            .adjacentPathType(null));
+            .adjacentPathType(null)) {
+        @Override
+        public Component getDescription(FluidStack stack) {
+            Gas gas = stack.getFluid() instanceof Gas value ? value : null;
+            return gasDescription(gas, super.getDescription(stack));
+        }
+    };
 
     private GCNeoForgeFluidTypes() {
+    }
+
+    static Component gasDescription(@Nullable Gas gas, Component fallback) {
+        return gas == null ? fallback : gas.getName();
     }
 
     public static void register(RegisterEvent event) {

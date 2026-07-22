@@ -24,10 +24,12 @@ package dev.galacticraft.impl.internal.mixin.client;
 
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
+import dev.galacticraft.impl.internal.client.tabs.InventoryTabLayout;
 import dev.galacticraft.impl.internal.client.tabs.InventoryTabRegistryImpl;
 import dev.galacticraft.mod.Constant;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.GameRenderer;
@@ -43,6 +45,10 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Mixin(AbstractContainerScreen.class)
 public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMenu> extends Screen {
     @Shadow
@@ -50,6 +56,12 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
 
     @Shadow
     protected int topPos;
+
+    @Shadow
+    protected int imageWidth;
+
+    @Shadow
+    protected int imageHeight;
 
     @Shadow
     @Final
@@ -61,28 +73,25 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
 
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
     private void onTabClicked(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> ci) {
-        boolean tabsVisible = false;
-        for (InventoryTabRegistryImpl.TabData data : InventoryTabRegistryImpl.INSTANCE.TABS) {
-            if (this.menu.getClass().equals(data.clazz())) {
-                tabsVisible = true;
-                break;
-            }
-        }
-        if (!tabsVisible)
+        List<InventoryTabRegistryImpl.TabData> tabs = this.getVisibleTabs();
+        if (tabs.isEmpty()) {
             return;
-        int i = 0;
-        for (InventoryTabRegistryImpl.TabData data : InventoryTabRegistryImpl.INSTANCE.TABS) {
+        }
+
+        InventoryTabLayout.Position position = this.getTabPosition(tabs.size());
+        for (int i = 0; i < tabs.size(); i++) {
+            InventoryTabRegistryImpl.TabData data = tabs.get(i);
             if (this.menu.getClass().equals(data.clazz())) {
-                i++;
                 continue;
             }
-            if (data.visiblePredicate().test(Minecraft.getInstance().player)) {
-                if (isCoordinateBetween((int) Math.floor(mouseX), this.leftPos + (30 * i), this.leftPos + (29 * (i + 1)))
-                        && isCoordinateBetween((int) Math.floor(mouseY), this.topPos - 26, this.topPos)) {
-                    data.onClick().run();
-                    ci.setReturnValue(true);
-                }
-                i++;
+
+            if (mouseX >= position.x() + (InventoryTabLayout.TAB_WIDTH * i)
+                    && mouseX < position.x() + (InventoryTabLayout.TAB_WIDTH * (i + 1))
+                    && mouseY >= position.y()
+                    && mouseY < position.y() + InventoryTabLayout.TAB_HEIGHT) {
+                data.onClick().run();
+                ci.setReturnValue(true);
+                return;
             }
         }
     }
@@ -92,71 +101,70 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
             @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;renderBackground(Lnet/minecraft/client/gui/GuiGraphics;IIF)V", shift = At.Shift.AFTER)
     })
     public void drawBackground(GuiGraphics graphics, int mouseX, int mouseY, float v, CallbackInfo callbackInfo) {
-        boolean tabsVisible = false;
-        for (InventoryTabRegistryImpl.TabData data : InventoryTabRegistryImpl.INSTANCE.TABS) {
-            if (this.menu.getClass().equals(data.clazz())) {
-                tabsVisible = true;
-                break;
-            }
-        }
-        if (!tabsVisible)
+        List<InventoryTabRegistryImpl.TabData> tabs = this.getVisibleTabs();
+        if (tabs.isEmpty()) {
             return;
+        }
+
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         ResourceLocation texture = Constant.id("textures/gui/player_inventory_switch_tabs.png");
-        int i = 0;
-        for (InventoryTabRegistryImpl.TabData data : InventoryTabRegistryImpl.INSTANCE.TABS) {
+        InventoryTabLayout.Position position = this.getTabPosition(tabs.size());
+        for (int i = 0; i < tabs.size(); i++) {
+            InventoryTabRegistryImpl.TabData data = tabs.get(i);
+            int x = position.x() + (InventoryTabLayout.TAB_WIDTH * i);
             if (this.menu.getClass().equals(data.clazz())) {
                 if (i == 0) {
-                    graphics.blit(texture, this.leftPos, this.topPos - 28, 0.0F, 0.0F, 29, 32, 64, 64);
+                    graphics.blit(texture, x, position.y(), 0.0F, 0.0F, 29, 32, 64, 64);
                 } else {
-                    graphics.blit(texture, this.leftPos + (29 * i), this.topPos - 28, 29.0F, 32.0F, 29, 32, 64, 64);
+                    graphics.blit(texture, x, position.y(), 29.0F, 32.0F, 29, 32, 64, 64);
                 }
-                i++;
-                continue;
-            }
-            if (data.visiblePredicate().test(Minecraft.getInstance().player)) {
+            } else {
                 if (i == 0) {
-                    graphics.blit(texture, this.leftPos, this.topPos - 28, 0.0F, 32.0F, 29, 32, 64, 64);
+                    graphics.blit(texture, x, position.y(), 0.0F, 32.0F, 29, 32, 64, 64);
                 } else {
-                    graphics.blit(texture, this.leftPos + (29 * i), this.topPos - 28, 29.0F, 0.0F, 29, 32, 64, 64);
+                    graphics.blit(texture, x, position.y(), 29.0F, 0.0F, 29, 32, 64, 64);
                 }
-                i++;
             }
         }
     }
 
     @Inject(method = "render", at = @At("TAIL"))
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float v, CallbackInfo callbackInfo) {
-        boolean tabsVisible = false;
-        for (InventoryTabRegistryImpl.TabData data : InventoryTabRegistryImpl.INSTANCE.TABS) {
-            if (this.menu.getClass().equals(data.clazz())) {
-                tabsVisible = true;
-                break;
-            }
-        }
-        if (!tabsVisible)
+        List<InventoryTabRegistryImpl.TabData> tabs = this.getVisibleTabs();
+        if (tabs.isEmpty()) {
             return;
+        }
+
         Lighting.setupFor3DItems();
-        int i = 0;
-        for (InventoryTabRegistryImpl.TabData data : InventoryTabRegistryImpl.INSTANCE.TABS) {
-            if (i == 0) {
-                graphics.renderItem(data.icon(), this.leftPos + 6, this.topPos - 20);
-                i++;
-                continue;
-            }
-            if (data.visiblePredicate().test(Minecraft.getInstance().player)) {
-                graphics.renderItem(data.icon(), (this.leftPos + 6) + (29 * i), this.topPos - 20);
-                i++;
-            }
+        InventoryTabLayout.Position position = this.getTabPosition(tabs.size());
+        for (int i = 0; i < tabs.size(); i++) {
+            graphics.renderItem(tabs.get(i).icon(), position.x() + 6 + (InventoryTabLayout.TAB_WIDTH * i), position.y() + 8);
         }
         Lighting.setupForFlatItems();
     }
 
     @Unique
-    private static boolean isCoordinateBetween(int coordinate, int min, int max) {
-        int newMin = Math.min(min, max);
-        int newMax = Math.max(min, max);
-        return coordinate >= newMin && coordinate <= newMax;
+    private List<InventoryTabRegistryImpl.TabData> getVisibleTabs() {
+        boolean tabsVisible = InventoryTabRegistryImpl.INSTANCE.TABS.stream().anyMatch(data -> this.menu.getClass().equals(data.clazz()));
+        if (!tabsVisible) {
+            return List.of();
+        }
+
+        return InventoryTabRegistryImpl.INSTANCE.TABS.stream()
+                .filter(data -> this.menu.getClass().equals(data.clazz()) || data.visiblePredicate().test(Minecraft.getInstance().player))
+                .toList();
+    }
+
+    @Unique
+    private InventoryTabLayout.Position getTabPosition(int tabCount) {
+        List<InventoryTabLayout.Bounds> occupied = this.children().stream()
+                .filter(child -> child instanceof AbstractWidget)
+                .map(child -> (AbstractWidget) child)
+                .filter(widget -> widget.visible)
+                .map(widget -> new InventoryTabLayout.Bounds(widget.getX(), widget.getY(), widget.getWidth(), widget.getHeight()))
+                .collect(Collectors.toCollection(ArrayList::new));
+        occupied.add(new InventoryTabLayout.Bounds(this.leftPos, this.topPos + 4, this.imageWidth, this.imageHeight - 4));
+        return InventoryTabLayout.findPosition(this.leftPos, this.topPos - 28, tabCount, this.width, this.height, occupied);
     }
 }

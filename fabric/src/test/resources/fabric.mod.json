@@ -27,6 +27,7 @@
   "entrypoints": {
     "fabric-gametest": [
       "dev.galacticraft.mod.gametest.GratingTestSuite",
+      "dev.galacticraft.mod.gametest.OxygenSealerTestSuite",
       "dev.galacticraft.mod.gametest.PolishTestSuite",
       "dev.galacticraft.mod.gametest.SatelliteWorldMigrationTestSuite",
       "dev.galacticraft.mod.gametest.VehiclePersistenceTestSuite",
