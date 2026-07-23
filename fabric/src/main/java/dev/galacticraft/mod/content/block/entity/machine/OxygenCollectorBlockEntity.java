@@ -24,6 +24,7 @@ package dev.galacticraft.mod.content.block.entity.machine;
 
 import com.mojang.datafixers.util.Pair;
 import dev.galacticraft.api.gas.Gases;
+import dev.galacticraft.api.universe.celestialbody.CelestialBody;
 import dev.galacticraft.machinelib.api.block.entity.MachineBlockEntity;
 import dev.galacticraft.machinelib.api.filter.ResourceFilters;
 import dev.galacticraft.machinelib.api.machine.MachineStatus;
@@ -45,18 +46,22 @@ import dev.galacticraft.mod.machine.GCMachineStatuses;
 import dev.galacticraft.mod.screen.OxygenCollectorMenu;
 import dev.galacticraft.mod.util.FluidUtil;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.InventoryMenu;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Fluid;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class OxygenCollectorBlockEntity extends MachineBlockEntity {
     private static final int COLLECTION_SCAN_INTERVAL = 20;
+    private static final ResourceKey<Fluid> OXYGEN_KEY = ResourceKey.create(Registries.FLUID, Gases.OXYGEN_ID);
 
     public static final int CHARGE_SLOT = 0;
     public static final int OXYGEN_TANK = 0;
@@ -87,44 +92,39 @@ public class OxygenCollectorBlockEntity extends MachineBlockEntity {
     private final FluidSource fluidSource = new FluidSource(this);
     public int collectionAmount = 0;
     private boolean collectionScanInitialized;
-    private boolean oxygenWorld = false;
 
     public OxygenCollectorBlockEntity(BlockPos pos, BlockState state) {
         super(GCBlockEntityTypes.OXYGEN_COLLECTOR, pos, state, SPEC);
     }
 
-    @Override
-    public void setLevel(Level level) {
-        super.setLevel(level);
-        this.oxygenWorld = level.getDefaultBreathable();
+    int collectOxygen(@NotNull ServerLevel level, @NotNull BlockPos pos) {
+        Holder<CelestialBody<?, ?>> body = level.galacticraft$getCelestialBody();
+        boolean atmosphericOxygen = body == null || body.value().atmosphere().composition().getDouble(OXYGEN_KEY) > 0;
+        return this.collectOxygen(level, pos, atmosphericOxygen);
     }
 
-    private int collectOxygen(@NotNull ServerLevel level, @NotNull BlockPos pos) {
-        if (!this.oxygenWorld) {
-            int minX = pos.getX() - 5;
-            int minY = pos.getY() - 5;
-            int minZ = pos.getZ() - 5;
-            int maxX = pos.getX() + 5;
-            int maxY = pos.getY() + 5;
-            int maxZ = pos.getZ() + 5;
-
-            float leafBlocks = 0;
-
-            for (BlockPos pos1 : BlockPos.betweenClosed(minX, minY, minZ, maxX, maxY, maxZ)) {
-                BlockState state = level.getBlockState(pos1);
-                if (state.isAir()) {
-                    continue;
-                }
-
-                leafBlocks += OxygenBlockDataManager.getOxygen(level, pos1, state);
-            }
-
-            if (leafBlocks < 2) return 0;
-
-            double oxyCount = 20 * (leafBlocks / 14.0F);
-            return (int) Math.ceil(oxyCount) / 20; //every tick
+    int collectOxygen(@NotNull ServerLevel level, @NotNull BlockPos pos, boolean atmosphericOxygen) {
+        if (atmosphericOxygen) {
+            return OxygenCollectorLogic.collectionPerSecond(true, 0);
         }
-        return 183 / 20;
+
+        int minX = pos.getX() - 5;
+        int minY = Math.max(pos.getY() - 5, level.getMinBuildHeight());
+        int minZ = pos.getZ() - 5;
+        int maxX = pos.getX() + 5;
+        int maxY = Math.min(pos.getY() + 5, level.getMaxBuildHeight() - 1);
+        int maxZ = pos.getZ() + 5;
+
+        float nearbyOxygen = 0;
+
+        for (BlockPos providerPos : BlockPos.betweenClosed(minX, minY, minZ, maxX, maxY, maxZ)) {
+            BlockState providerState = level.getBlockState(providerPos);
+            if (!providerState.isAir()) {
+                nearbyOxygen += OxygenBlockDataManager.getOxygen(level, providerPos, providerState);
+            }
+        }
+
+        return OxygenCollectorLogic.collectionPerSecond(false, nearbyOxygen);
     }
 
     @Override
@@ -154,7 +154,7 @@ public class OxygenCollectorBlockEntity extends MachineBlockEntity {
                 profiler.pop();
                 if (this.collectionAmount > 0) {
                     this.energyStorage().extract(Galacticraft.CONFIG.oxygenCollectorEnergyConsumptionRate());
-                    this.fluidStorage().slot(OXYGEN_TANK).insert(Gases.OXYGEN, FluidUtil.bucketsToDroplets(this.collectionAmount));
+                    this.fluidStorage().slot(OXYGEN_TANK).insert(Gases.OXYGEN, FluidUtil.bucketsToDroplets(this.collectionAmount) / 20L);
                     return GCMachineStatuses.COLLECTING;
                 } else {
                     return GCMachineStatuses.NOT_ENOUGH_OXYGEN;

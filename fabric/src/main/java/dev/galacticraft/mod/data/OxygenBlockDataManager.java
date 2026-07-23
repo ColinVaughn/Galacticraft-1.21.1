@@ -36,6 +36,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.CropBlock;
@@ -67,9 +68,9 @@ public class OxygenBlockDataManager implements ResourceManagerReloadListener {
     public static float getOxygen(BlockState state) {
         boolean fallbackBehavior = true; // Probably make this a config value?
         if (!INSTANCE.blocks.containsKey(state) && fallbackBehavior) {
-            if (state.getBlock() instanceof LeavesBlock && !state.getValue(LeavesBlock.PERSISTENT)) {
-                return 1;
-            } else if (state.getBlock() instanceof CropBlock) {
+            if (state.getBlock() instanceof LeavesBlock || state.is(BlockTags.LEAVES)) {
+                return 0.75F;
+            } else if (state.getBlock() instanceof CropBlock || state.is(BlockTags.CROPS)) {
                 return 0.75F;
             }
 
