@@ -366,6 +366,7 @@
     "badpackets": "*"
   },
   "suggests": {
+    "astrocraft": "*",
     "modmenu": "*",
     "waila": "*"
   }

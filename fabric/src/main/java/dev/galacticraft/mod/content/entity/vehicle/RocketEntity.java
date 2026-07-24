@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -123,7 +124,7 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
     private final boolean debugMode = false && Platform.isDevelopmentEnvironment();
 
     private FuelDock linkedPad = null;
-    private final SimpleFluidTank tank = new SimpleFluidTank(FluidUtil.bucketsToDroplets(100), () -> {
+    private final SimpleFluidTank tank = new SimpleFluidTank(FluidUtil.bucketsToDroplets(RocketFlightLogic.FUEL_TANK_CAPACITY_BUCKETS), () -> {
         this.entityData.set(FUEL, getTank().getAmount());
     });
 
@@ -664,8 +665,8 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
                 return;
             }
 
-            if (!this.isCreative()) {
-                this.getTank().extract(FluidUtil.bucketsToDroplets(1) / 9L);
+            if (!this.isCreative() && RocketFlightLogic.BURNS_FUEL_DURING_COUNTDOWN) {
+                this.getTank().extract(fuelBurnPerTick());
             }
 
             if (getTimeAsState() >= getPreLaunchWait()) {
@@ -700,7 +701,7 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
                 this.setLaunchStage(LaunchStage.FAILED);
             } else {
                 if (!this.isCreative()) {
-                    this.getTank().extract(FluidUtil.bucketsToDroplets(1) / 9L);
+                    this.getTank().extract(fuelBurnPerTick());
                 }
 
                 this.setThrust(this.getThrust() + 0.005F);
@@ -887,7 +888,12 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
     }
 
     public int getPreLaunchWait() {
-        return 400;
+        return RocketFlightLogic.PRE_LAUNCH_WAIT_TICKS;
+    }
+
+    /** Droplets of fuel the engines burn on a single tick of powered flight. */
+    private static long fuelBurnPerTick() {
+        return FluidUtil.bucketsToDroplets(1) / RocketFlightLogic.BURN_TICKS_PER_BUCKET;
     }
 
     @Override public @Nullable Holder<RocketCone<?, ?>> cone() { return maybeGet(getRocketData().cone()); }

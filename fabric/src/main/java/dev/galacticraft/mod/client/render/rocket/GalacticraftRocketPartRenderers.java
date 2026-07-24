@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -75,5 +76,6 @@ public class GalacticraftRocketPartRenderers {
         RocketPartRendererRegistry.INSTANCE.register(GCRocketParts.TIER_3_CONE, EmptyRocketPartRenderer.INSTANCE);
         RocketPartRendererRegistry.INSTANCE.register(GCRocketParts.TIER_3_FIN, EmptyRocketPartRenderer.INSTANCE);
         RocketPartRendererRegistry.INSTANCE.register(GCRocketParts.TIER_3_ENGINE, EmptyRocketPartRenderer.INSTANCE);
+        RocketPartRendererRegistry.INSTANCE.register(GCRocketParts.TIER_3_BOOSTER, EmptyRocketPartRenderer.INSTANCE);
     }
 }

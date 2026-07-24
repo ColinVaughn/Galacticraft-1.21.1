@@ -68,7 +68,8 @@ subprojects {
         lineEndings = com.diffplug.spotless.LineEnding.UNIX
         java {
             target(project.fileTree("src") { include("**/*.java") })
-            licenseHeader(processLicenseHeader(rootProject.file("LICENSE")))
+            // No licenseHeader step. Fork-authored files carry a second copyright line that a
+            // single enforced header cannot express; LICENSE remains the record of both holders.
             leadingTabsToSpaces()
             removeUnusedImports()
             trimTrailingWhitespace()
@@ -101,12 +102,4 @@ subprojects {
             )
         }
     }
-}
-
-fun processLicenseHeader(license: File): String {
-    val text = license.readText()
-    return "/*\n * " + text.substring(text.indexOf("Copyright"))
-        .replace("\n", "\n * ")
-        .replace("* \n", "*\n")
-        .trim() + "/\n\n"
 }

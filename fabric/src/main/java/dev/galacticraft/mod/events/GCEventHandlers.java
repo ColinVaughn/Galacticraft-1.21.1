@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +38,7 @@ import dev.galacticraft.mod.content.GCEntityTypes;
 import dev.galacticraft.mod.content.entity.FallingMeteorEntity;
 import dev.galacticraft.mod.misc.footprint.FootprintManager;
 import dev.galacticraft.mod.network.s2c.FootprintRemovedPacket;
+import dev.galacticraft.mod.statistics.GlobalStatisticsReporter;
 import dev.galacticraft.mod.tag.GCEntityTypeTags;
 import dev.galacticraft.mod.world.dimension.duststorm.MarsDustStormManager;
 import dev.galacticraft.mod.world.dimension.solarflare.MercurySolarFlareManager;
@@ -69,6 +71,7 @@ public class GCEventHandlers {
     public static void init() {
         GCSleepEventHandlers.init();
         GCInteractionEventHandlers.init();
+        GlobalStatisticsReporter.init();
         TickEvent.SERVER_LEVEL_POST.register(GCEventHandlers::onWorldTick);
         TickEvent.SERVER_POST.register(GCEventHandlers::onServerTick);
     }

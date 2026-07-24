@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,6 +44,7 @@ import net.minecraft.world.entity.RelativeMovement;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameRules;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -67,6 +69,18 @@ public abstract class ServerPlayerMixin extends Player implements GearInventoryP
 
     ServerPlayerMixin() {
         super(null, null, 0.0F, null);
+    }
+
+    @Inject(method = "restoreFrom", at = @At("TAIL"))
+    private void galacticraft$restoreGearInventory(ServerPlayer oldPlayer, boolean restoreAll, CallbackInfo ci) {
+        if (restoreAll
+                || this.level().getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY)
+                || oldPlayer.isSpectator()) {
+            GearInventory.copyContents(
+                    ((GearInventoryProvider) oldPlayer).galacticraft$getGearInv(),
+                    this.gearInv
+            );
+        }
     }
 
     @Inject(method = "tick", at = @At("TAIL"))

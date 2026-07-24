@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -344,8 +345,14 @@ public interface Translations {
         String COMING_SOON = "ui.galacticraft.space_race_manager.coming_soon";
         String EXIT = "ui.galacticraft.space_race_manager.exit";
         String GLOBAL_STATS = "ui.galacticraft.space_race_manager.global_stats";
+        String GLOBAL_STATS_ERROR = "ui.galacticraft.space_race_manager.global_stats.error";
+        String GLOBAL_STATS_NOT_CONFIGURED = "ui.galacticraft.space_race_manager.global_stats.not_configured";
+        String GLOBAL_STATS_SOURCE = "ui.galacticraft.space_race_manager.global_stats.source";
+        String LOADING = "ui.galacticraft.space_race_manager.loading";
+        String REFRESH = "ui.galacticraft.space_race_manager.refresh";
         String REMOVE_PLAYERS = "ui.galacticraft.space_race_manager.remove_players";
         String SERVER_STATS = "ui.galacticraft.space_race_manager.server_stats";
+        String SERVER_STATS_SUMMARY = "ui.galacticraft.space_race_manager.server_stats.summary";
         String FLAG_CONFIRM = "ui.galacticraft.space_race_manager.flag.confirm";
         String FLAG_CONFIRM_MESSAGE = "ui.galacticraft.space_race_manager.flag.confirm.message";
         String CUSTOMIZE_FLAG = "ui.galacticraft.space_race_manager.customize_flag";

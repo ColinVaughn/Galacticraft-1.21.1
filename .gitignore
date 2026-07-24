@@ -212,6 +212,7 @@ gradle-app.setting
 
 ### Gradle Patch ###
 **/build/
+node_modules/
 
 # End of https://www.toptal.com/developers/gitignore/api/java,gradle,jetbrains+all,eclipse,visualstudiocode
 
@@ -225,3 +226,6 @@ remappedSrc/
 
 # Synaptic
 synaptic-out/
+
+# Supabase CLI local state (linked project ref, cached service versions)
+supabase/.temp/

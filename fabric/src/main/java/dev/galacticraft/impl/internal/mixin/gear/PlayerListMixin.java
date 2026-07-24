@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,11 +33,14 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.world.Container;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Collection;
 
@@ -44,6 +48,29 @@ import java.util.Collection;
 public abstract class PlayerListMixin {
     @Inject(method = "placeNewPlayer", at = @At("RETURN"))
     private void syncGalacticraftData(Connection connection, ServerPlayer player, CommonListenerCookie cookie, CallbackInfo ci) {
+        galacticraft$syncGearInventory(player);
+
+        // Restore persisted rocket-part research on the joining client.
+        ((ServerResearchAccessor) player).galacticraft$syncResearch();
+
+        // Sync the list of satellites with new players
+        ((SatelliteAccessor) player.server).galacticraft$getSatellites().forEach((id, satellite) -> {
+            NetworkManager.sendToPlayer(player, new AddSatellitePayload(satellite.config(), false));
+        });
+    }
+
+    @Inject(method = "respawn", at = @At("RETURN"))
+    private void syncGalacticraftDataAfterRespawn(
+            ServerPlayer oldPlayer,
+            boolean restoreAll,
+            Entity.RemovalReason removalReason,
+            CallbackInfoReturnable<ServerPlayer> cir
+    ) {
+        galacticraft$syncGearInventory(cir.getReturnValue());
+    }
+
+    @Unique
+    private static void galacticraft$syncGearInventory(ServerPlayer player) {
         Container inventory = player.galacticraft$getGearInv();
         ItemStack[] stacks = new ItemStack[inventory.getContainerSize()];
         for (int i = 0; i < inventory.getContainerSize(); i++) {
@@ -58,13 +85,5 @@ public abstract class PlayerListMixin {
         for (ServerPlayer remote : tracking) {
             NetworkManager.sendToPlayer(remote, gearInvPayload);
         }
-
-        // Restore persisted rocket-part research on the joining client.
-        ((ServerResearchAccessor) player).galacticraft$syncResearch();
-
-        // Sync the list of satellites with new players
-        ((SatelliteAccessor) player.server).galacticraft$getSatellites().forEach((id, satellite) -> {
-            NetworkManager.sendToPlayer(player, new AddSatellitePayload(satellite.config(), false));
-        });
     }
 }

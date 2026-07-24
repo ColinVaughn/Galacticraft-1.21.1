@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -93,7 +94,12 @@ public class GCBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                 .add(GCBlocks.AIR_LOCK_SEAL)
                 .add(GCBlocks.ROCKET_WORKBENCH)
                 .add(GCBlocks.CRYOGENIC_CHAMBER)
-                .add(GCBlocks.CRYOGENIC_CHAMBER_PART);
+                .add(GCBlocks.CRYOGENIC_CHAMBER_PART)
+                // Glass panes fill their block cell but aren't face-sturdy, so the sealer
+                // flood fill leaks through them unless they're explicitly marked sealable.
+                .add(GCBlocks.OLIVINE_GLASS_PANE)
+                .add(GCBlocks.MOON_GLASS_PANE)
+                .forceAddTag(ConventionalBlockTags.GLASS_PANES);
         this.tag(GCBlockTags.UNSEALABLE)
                 .forceAddTag(BlockTags.LEAVES)
                 .add(Blocks.MANGROVE_ROOTS)

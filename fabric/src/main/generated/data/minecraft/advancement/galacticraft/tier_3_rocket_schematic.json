@@ -34,7 +34,8 @@
       "galacticraft:rocket_cone/tier_3",
       "galacticraft:rocket_body/tier_3",
       "galacticraft:rocket_fin/tier_3",
-      "galacticraft:rocket_engine/tier_3"
+      "galacticraft:rocket_engine/tier_3",
+      "galacticraft:rocket_booster/tier_3"
     ]
   },
   "sends_telemetry_event": true

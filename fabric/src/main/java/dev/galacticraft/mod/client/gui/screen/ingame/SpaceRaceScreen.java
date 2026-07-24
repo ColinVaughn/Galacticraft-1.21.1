@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +27,10 @@ import com.mojang.blaze3d.platform.NativeImage;
 import dev.galacticraft.impl.network.c2s.FlagDataPayload;
 import dev.galacticraft.impl.network.c2s.TeamNamePayload;
 import dev.galacticraft.mod.Constant;
+import dev.galacticraft.mod.network.c2s.GlobalStatisticsRequestPayload;
+import dev.galacticraft.mod.network.c2s.ServerStatisticsRequestPayload;
+import dev.galacticraft.mod.network.s2c.GlobalStatisticsPayload;
+import dev.galacticraft.mod.network.s2c.ServerStatisticsPayload;
 import dev.galacticraft.mod.util.Translations;
 import dev.architectury.networking.NetworkManager;
 import net.minecraft.Util;
@@ -51,6 +56,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -65,6 +71,8 @@ public class SpaceRaceScreen extends Screen {
     private int teamColor = 0xFF000000;
     private @Nullable ResourceLocation teamFlag;
     private @Nullable Component flagError;
+    private @Nullable ServerStatisticsPayload serverStatistics;
+    private @Nullable GlobalStatisticsPayload globalStatistics;
     private boolean filePickerOpen;
     private final Set<ResourceLocation> ownedFlagTextures = new HashSet<>();
 
@@ -81,8 +89,10 @@ public class SpaceRaceScreen extends Screen {
         addButton(Component.translatable(Translations.SpaceRace.EXIT), this.getLeft() + 5, this.getTop() + 5, 40, 14, button -> this.onClose());
         addButton(Component.translatable(Translations.SpaceRace.ADD_PLAYERS), this.getLeft() + 10, this.getBottom() - 85, 100, 30, button -> setMenu(Menu.ADD_PLAYERS));
         addButton(Component.translatable(Translations.SpaceRace.REMOVE_PLAYERS), this.getLeft() + 10, this.getBottom() - 45, 100, 30, button -> setMenu(Menu.REMOVE_PLAYERS));
-        addComingSoonButton(Component.translatable(Translations.SpaceRace.SERVER_STATS), this.getRight() - 100 - 10, this.getBottom() - 85, 100, 30);
-        addComingSoonButton(Component.translatable(Translations.SpaceRace.GLOBAL_STATS), this.getRight() - 100 - 10, this.getBottom() - 45, 100, 30);
+        addButton(Component.translatable(Translations.SpaceRace.SERVER_STATS), this.getRight() - 100 - 10, this.getBottom() - 85, 100, 30,
+                button -> requestServerStatistics());
+        addButton(Component.translatable(Translations.SpaceRace.GLOBAL_STATS), this.getRight() - 100 - 10, this.getBottom() - 45, 100, 30,
+                button -> requestGlobalStatistics());
 
         int flagButtonWidth = 96;
         int flagButtonHeight = 64;
@@ -157,6 +167,20 @@ public class SpaceRaceScreen extends Screen {
         });
     }
 
+    protected void serverStatisticsMenu() {
+        addBackButton();
+        addButton(Component.translatable(Translations.SpaceRace.REFRESH), this.getRight() - 65, this.getTop() + 5, 60, 14,
+                button -> requestServerStatistics());
+        this.addRenderableOnly((graphics, mouseX, mouseY, delta) -> renderServerStatistics(graphics));
+    }
+
+    protected void globalStatisticsMenu() {
+        addBackButton();
+        addButton(Component.translatable(Translations.SpaceRace.REFRESH), this.getRight() - 65, this.getTop() + 5, 60, 14,
+                button -> requestGlobalStatistics());
+        this.addRenderableOnly((graphics, mouseX, mouseY, delta) -> renderGlobalStatistics(graphics));
+    }
+
     @Override
     protected void init() {
         super.init();
@@ -185,10 +209,6 @@ public class SpaceRaceScreen extends Screen {
 
     private void addButton(Component text, int x, int y, int width, int height, Button.OnPress onPress) {
         this.addRenderableWidget(new SpaceRaceButton(text, x, y, width, height, onPress));
-    }
-
-    private void addComingSoonButton(Component text, int x, int y, int width, int height) {
-        this.addRenderableWidget(new ComingSoonButton(text, x, y, width, height));
     }
 
     private void addBackButton() {
@@ -272,6 +292,108 @@ public class SpaceRaceScreen extends Screen {
             case REMOVE_PLAYERS -> removePlayersMenu();
             case TEAM_FLAG -> teamFlagMenu();
             case TEAM_COLOR -> teamColorMenu();
+            case SERVER_STATS -> serverStatisticsMenu();
+            case GLOBAL_STATS -> globalStatisticsMenu();
+        }
+    }
+
+    private void requestServerStatistics() {
+        this.serverStatistics = null;
+        setMenu(Menu.SERVER_STATS);
+        NetworkManager.sendToServer(ServerStatisticsRequestPayload.INSTANCE);
+    }
+
+    private void requestGlobalStatistics() {
+        this.globalStatistics = null;
+        setMenu(Menu.GLOBAL_STATS);
+        NetworkManager.sendToServer(GlobalStatisticsRequestPayload.INSTANCE);
+    }
+
+    public void acceptServerStatistics(ServerStatisticsPayload statistics) {
+        this.serverStatistics = statistics;
+    }
+
+    public void acceptGlobalStatistics(GlobalStatisticsPayload statistics) {
+        this.globalStatistics = statistics;
+    }
+
+    private void renderServerStatistics(GuiGraphics graphics) {
+        graphics.drawCenteredString(this.font, Component.translatable(Translations.SpaceRace.SERVER_STATS),
+                this.width / 2, this.getTop() + 28, 0xFFFFFFFF);
+        if (this.serverStatistics == null) {
+            renderStatisticsStatus(graphics, Component.translatable(Translations.SpaceRace.LOADING), 0xFFAAAAAA);
+            return;
+        }
+
+        Component summary = Component.translatable(
+                Translations.SpaceRace.SERVER_STATS_SUMMARY,
+                this.serverStatistics.trackedPlayers(),
+                this.serverStatistics.onlinePlayers()
+        );
+        renderStatisticsRows(graphics, summary, this.serverStatistics.entries().stream()
+                .map(entry -> new StatisticsRow(entry.stat(), entry.total()))
+                .toList());
+    }
+
+    private void renderGlobalStatistics(GuiGraphics graphics) {
+        graphics.drawCenteredString(this.font, Component.translatable(Translations.SpaceRace.GLOBAL_STATS),
+                this.width / 2, this.getTop() + 28, 0xFFFFFFFF);
+        if (this.globalStatistics == null) {
+            renderStatisticsStatus(graphics, Component.translatable(Translations.SpaceRace.LOADING), 0xFFAAAAAA);
+            return;
+        }
+        if (this.globalStatistics.status() == GlobalStatisticsPayload.Status.NOT_CONFIGURED) {
+            renderStatisticsStatus(graphics, Component.translatable(Translations.SpaceRace.GLOBAL_STATS_NOT_CONFIGURED), 0xFFFFAA00);
+            return;
+        }
+        if (this.globalStatistics.status() == GlobalStatisticsPayload.Status.ERROR) {
+            renderStatisticsStatus(graphics, Component.translatable(Translations.SpaceRace.GLOBAL_STATS_ERROR), 0xFFFF5555);
+            return;
+        }
+
+        renderStatisticsRows(graphics, Component.translatable(Translations.SpaceRace.GLOBAL_STATS_SOURCE),
+                this.globalStatistics.entries().stream()
+                        .map(entry -> new StatisticsRow(entry.stat(), entry.total()))
+                        .toList());
+    }
+
+    private void renderStatisticsStatus(GuiGraphics graphics, Component status, int color) {
+        int panelLeft = this.getLeft() + 20;
+        int panelRight = this.getRight() - 20;
+        int panelTop = this.getTop() + 48;
+        int panelBottom = this.getBottom() - 20;
+        graphics.fill(panelLeft, panelTop, panelRight, panelBottom, 0x66000000);
+        graphics.renderOutline(panelLeft, panelTop, panelRight - panelLeft, panelBottom - panelTop, 0xFF2D2D2D);
+        graphics.drawCenteredString(this.font, status, this.width / 2,
+                (panelTop + panelBottom - this.font.lineHeight) / 2, color);
+    }
+
+    private void renderStatisticsRows(GuiGraphics graphics, Component summary, List<StatisticsRow> rows) {
+        int panelLeft = this.getLeft() + 20;
+        int panelRight = this.getRight() - 20;
+        int panelTop = this.getTop() + 48;
+        int panelBottom = this.getBottom() - 20;
+        graphics.fill(panelLeft, panelTop, panelRight, panelBottom, 0x66000000);
+        graphics.renderOutline(panelLeft, panelTop, panelRight - panelLeft, panelBottom - panelTop, 0xFF2D2D2D);
+        graphics.drawCenteredString(this.font, summary, this.width / 2, panelTop + 8, 0xFFAAAAAA);
+
+        int listTop = panelTop + 26;
+        int rowHeight = Math.max(12, Math.min(22, (panelBottom - listTop) / Math.max(1, rows.size())));
+        for (int i = 0; i < rows.size(); i++) {
+            StatisticsRow row = rows.get(i);
+            int rowTop = listTop + i * rowHeight;
+            if (rowTop + this.font.lineHeight >= panelBottom) {
+                break;
+            }
+            if ((i & 1) == 0) {
+                graphics.fill(panelLeft + 1, rowTop, panelRight - 1, Math.min(panelBottom, rowTop + rowHeight), 0x33000000);
+            }
+
+            Component label = Component.translatable(Util.makeDescriptionId("stat", row.stat()));
+            String total = String.format(Locale.ROOT, "%,d", row.total());
+            int textY = rowTop + (rowHeight - this.font.lineHeight) / 2;
+            graphics.drawString(this.font, label, panelLeft + 10, textY, 0xFFFFFFFF, false);
+            graphics.drawString(this.font, total, panelRight - 10 - this.font.width(total), textY, 0xFFFFFFFF, false);
         }
     }
 
@@ -370,7 +492,12 @@ public class SpaceRaceScreen extends Screen {
         ADD_PLAYERS,
         REMOVE_PLAYERS,
         TEAM_COLOR,
-        TEAM_FLAG
+        TEAM_FLAG,
+        SERVER_STATS,
+        GLOBAL_STATS
+    }
+
+    private record StatisticsRow(ResourceLocation stat, long total) {
     }
 
     private static class SpaceRaceButton extends Button {
@@ -387,22 +514,6 @@ public class SpaceRaceScreen extends Screen {
             graphics.fill(x, y, x + width, y + height, backgroundColor);
             graphics.renderOutline(x, y, width, height, lineColor);
             this.renderString(graphics, Minecraft.getInstance().font, 0xFFFFFFFF);
-        }
-    }
-
-    private static class ComingSoonButton extends SpaceRaceButton {
-        private final Component originalMessage;
-
-        public ComingSoonButton(Component component, int x, int y, int width, int height) {
-            super(component, x, y, width, height, button -> {
-            });
-            this.originalMessage = component;
-        }
-
-        @Override
-        protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
-            this.setMessage(this.isHoveredOrFocused() ? Component.translatable(Translations.SpaceRace.COMING_SOON) : this.originalMessage);
-            super.renderWidget(graphics, mouseX, mouseY, delta);
         }
     }
 

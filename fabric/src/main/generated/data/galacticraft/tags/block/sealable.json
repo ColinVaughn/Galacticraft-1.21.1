@@ -3,6 +3,9 @@
     "galacticraft:air_lock_seal",
     "galacticraft:rocket_workbench",
     "galacticraft:cryogenic_chamber",
-    "galacticraft:cryogenic_chamber_part"
+    "galacticraft:cryogenic_chamber_part",
+    "galacticraft:olivine_glass_pane",
+    "galacticraft:moon_glass_pane",
+    "#c:glass_panes"
   ]
 }

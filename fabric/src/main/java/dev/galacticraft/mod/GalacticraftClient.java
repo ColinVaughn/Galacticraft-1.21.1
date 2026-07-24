@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,6 +57,7 @@ import dev.galacticraft.mod.content.block.environment.FallenMeteorBlock;
 import dev.galacticraft.mod.content.entity.vehicle.RocketEntity;
 import dev.galacticraft.mod.content.item.FluidCanisterItem;
 import dev.galacticraft.mod.content.item.GCItems;
+import dev.galacticraft.mod.compat.astrocraft.AstrocraftCompat;
 import dev.galacticraft.mod.events.ClientEventHandler;
 import dev.galacticraft.mod.misc.cape.CapeRegistry;
 import dev.galacticraft.mod.misc.cape.CapesClientRole;
@@ -116,6 +118,7 @@ public class GalacticraftClient implements ClientModInitializer {
     public void onInitializeClient() {
         long startInitTime = System.currentTimeMillis();
         Constant.LOGGER.info("Starting client initialization.");
+        AstrocraftCompat.initialize();
         GCClientPacketReceiver.register();
         ClientEventHandler.init();
         ClientCapeLoginSync.init();

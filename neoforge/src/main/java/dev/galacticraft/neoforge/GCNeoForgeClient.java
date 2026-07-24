@@ -118,6 +118,7 @@ import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.minecraft.client.Minecraft;
 import dev.galacticraft.neoforge.fluid.GCNeoForgeFluidTypes;
+import dev.galacticraft.neoforge.client.GCNeoBubbleDistributorRenderer;
 import dev.galacticraft.neoforge.client.GCNeoModelReloadListener;
 import dev.galacticraft.neoforge.client.GCNeoItemRenderer;
 import dev.galacticraft.neoforge.client.GCNeoBlockOutlineRenderer;
@@ -395,7 +396,7 @@ public final class GCNeoForgeClient {
         event.registerBlockEntityRenderer(GCBlockEntityTypes.BASIC_SOLAR_PANEL, SolarPanelBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(GCBlockEntityTypes.ADVANCED_SOLAR_PANEL, SolarPanelBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(GCBlockEntityTypes.GLASS_FLUID_PIPE, FluidPipeBlockEntityRenderer::new);
-        event.registerBlockEntityRenderer(GCBlockEntityTypes.OXYGEN_BUBBLE_DISTRIBUTOR, BubbleDistributorRenderer::new);
+        event.registerBlockEntityRenderer(GCBlockEntityTypes.OXYGEN_BUBBLE_DISTRIBUTOR, GCNeoBubbleDistributorRenderer::new);
         event.registerBlockEntityRenderer(GCBlockEntityTypes.ROCKET_WORKBENCH, RocketWorkbenchBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(GCBlockEntityTypes.ASTRO_MINER_BASE, AstroMinerBaseBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(GCBlockEntityTypes.FLAG, FlagBlockEntityRenderer::new);

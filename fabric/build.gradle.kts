@@ -8,6 +8,7 @@ plugins {
 val runJei = project.findProperty("jei")?.toString()?.toBoolean() ?: false
 val runEmi = project.findProperty("emi")?.toString()?.toBoolean() ?: false
 val runRei = project.findProperty("rei")?.toString()?.toBoolean() ?: (!runJei && !runEmi)
+val runAstrocraft = project.findProperty("astrocraft")?.toString()?.toBoolean() ?: true
 val localMachineLib = rootProject.file("../MachineLib/fabric/build/libs").listFiles()
     ?.filter { it.name.startsWith("MachineLib-fabric-") && it.extension == "jar" }
     ?.filterNot { it.name.contains("-sources") || it.name.contains("-javadoc") || it.name.contains("-shadow") }
@@ -141,6 +142,7 @@ repositories {
     }
     maven("https://maven.blamejared.com/") { content { includeGroup("mezz.jei") } }
     maven("https://maven.ryanliptak.com/") { content { includeGroup("squeek.appleskin") } }
+    maven("https://api.modrinth.com/maven") { content { includeGroup("maven.modrinth") } }
 }
 
 dependencies {
@@ -178,6 +180,10 @@ dependencies {
 
     modCompileOnly("com.terraformersmc:modmenu:${rootProject.property("modmenu.version")}")
     modCompileOnly("me.shedaniel.cloth:cloth-config-fabric:${rootProject.property("cloth.config.version")}")
+    if (runAstrocraft) {
+        modLocalRuntime("me.shedaniel.cloth:cloth-config-fabric:${rootProject.property("cloth.config.version")}")
+        modLocalRuntime("maven.modrinth:astrocraft:${rootProject.property("astrocraft.version")}")
+    }
     modCompileOnly("mcp.mobius.waila:wthit:fabric-${rootProject.property("wthit.version")}")
     modCompileOnly("squeek.appleskin:appleskin-fabric:${rootProject.property("appleskin.version")}")
 

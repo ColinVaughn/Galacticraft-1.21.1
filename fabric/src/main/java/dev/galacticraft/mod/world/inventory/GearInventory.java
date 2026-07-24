@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +26,7 @@ package dev.galacticraft.mod.world.inventory;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -35,6 +37,17 @@ import org.jetbrains.annotations.NotNull;
 public class GearInventory extends SimpleContainer {
     public GearInventory() {
         super(12);
+    }
+
+    public static void copyContents(Container source, Container destination) {
+        if (source.getContainerSize() != destination.getContainerSize()) {
+            throw new IllegalArgumentException("Gear inventory sizes do not match");
+        }
+
+        for (int slot = 0; slot < source.getContainerSize(); slot++) {
+            destination.setItem(slot, source.getItem(slot).copy());
+        }
+        destination.setChanged();
     }
 
     @Override

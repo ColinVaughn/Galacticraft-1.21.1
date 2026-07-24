@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -66,6 +67,7 @@ public class GCRocketParts {
     public static final ResourceKey<RocketCone<?, ?>> SLOPED_CONE = cone("sloped_cone");
 
     public static final ResourceKey<RocketBooster<?, ?>> TIER_2_BOOSTER = booster("tier_2");
+    public static final ResourceKey<RocketBooster<?, ?>> TIER_3_BOOSTER = booster("tier_3");
     public static final ResourceKey<RocketUpgrade<?, ?>> STORAGE_UPGRADE = upgrade("storage");
 
     public static final ResourceKey<RocketUpgrade<?, ?>> EXPLOSIVE_UPGRADE = upgrade("explosive");
@@ -102,7 +104,8 @@ public class GCRocketParts {
           context.register(ADVANCED_CONE,
                   BasicRocketConeType.INSTANCE.configure(
                           new BasicRocketConeConfig(
-                                  AccessWeightTravelPredicateType.INSTANCE.configure(new AccessWeightTravelPredicateConfig(1, TravelPredicateType.Result.PASS)),
+                                  // Built from tier 2 plating, so it must gate travel at tier 2 like the other tier 2 parts.
+                                  AccessWeightTravelPredicateType.INSTANCE.configure(new AccessWeightTravelPredicateConfig(2, TravelPredicateType.Result.PASS)),
                                   RocketPartRecipeBuilder.create()
                                           .define('T', Ingredient.of(Items.REDSTONE_TORCH))
                                           .define('D', Ingredient.of(GCItems.TIER_2_HEAVY_DUTY_PLATE))
@@ -282,6 +285,26 @@ public class GCRocketParts {
                                 RocketPartRecipeBuilder.create()
                                         .define('B', Ingredient.of(GCItems.ROCKET_BOOSTER))
                                         .define('P', Ingredient.of(GCItems.TIER_2_HEAVY_DUTY_PLATE))
+                                        .left("P")
+                                        .left("B")
+                                        .right("P")
+                                        .right("B")
+                                        .build()
+                        )
+                )
+        );
+        context.register(TIER_3_BOOSTER,
+                BasicRocketBoosterType.INSTANCE.configure(
+                        new BasicRocketBoosterConfig(
+                                AccessWeightTravelPredicateType.INSTANCE.configure(
+                                        new AccessWeightTravelPredicateConfig(3, TravelPredicateType.Result.PASS)
+                                ),
+                                1.5,
+                                0.04,
+                                FluidConstants.NUGGET * 3,
+                                RocketPartRecipeBuilder.create()
+                                        .define('B', Ingredient.of(GCItems.ROCKET_BOOSTER))
+                                        .define('P', Ingredient.of(GCItems.TIER_3_HEAVY_DUTY_PLATE))
                                         .left("P")
                                         .left("B")
                                         .right("P")

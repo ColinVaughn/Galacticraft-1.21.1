@@ -1,0 +1,10 @@
+{
+  "nodeModulesDir": "auto",
+  "compilerOptions": {
+    "strict": true
+  },
+  "tasks": {
+    "check": "deno check functions/submit-stats/index.ts scripts/*.ts",
+    "test": "deno test functions/submit-stats/protocol_test.ts"
+  }
+}

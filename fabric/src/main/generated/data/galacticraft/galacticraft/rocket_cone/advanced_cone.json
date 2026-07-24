@@ -4,7 +4,7 @@
     "predicate": {
       "type": "galacticraft:access_weight",
       "config": {
-        "weight": 1
+        "weight": 2
       }
     },
     "recipe": {

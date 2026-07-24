@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1002,6 +1003,9 @@ public class GCTranslationProvider extends TranslationProvider {
         this.rocketPart(GCRocketParts.TIER_3_BODY, "Tier 3 Body");
         this.rocketPart(GCRocketParts.TIER_3_FIN, "Tier 3 Fins");
         this.rocketPart(GCRocketParts.TIER_3_ENGINE, "Tier 3 Engine");
+        this.rocketPart(GCRocketParts.TIER_1_BOOSTER, "Basic Booster");
+        this.rocketPart(GCRocketParts.TIER_2_BOOSTER, "Tier 2 Booster");
+        this.rocketPart(GCRocketParts.TIER_3_BOOSTER, "Tier 3 Booster");
     }
 
     protected void generateSmithingTranslations() {
@@ -1160,8 +1164,14 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(SpaceRace.COMING_SOON, "Coming Soon™");
         this.add(SpaceRace.EXIT, "Exit");
         this.add(SpaceRace.GLOBAL_STATS, "Global Statistics");
+        this.add(SpaceRace.GLOBAL_STATS_ERROR, "Unable to load global statistics");
+        this.add(SpaceRace.GLOBAL_STATS_NOT_CONFIGURED, "Global statistics are not configured on this server");
+        this.add(SpaceRace.GLOBAL_STATS_SOURCE, "Aggregated across participating servers");
+        this.add(SpaceRace.LOADING, "Loading statistics...");
+        this.add(SpaceRace.REFRESH, "Refresh");
         this.add(SpaceRace.REMOVE_PLAYERS, "Remove Player(s)");
         this.add(SpaceRace.SERVER_STATS, "Server Statistics");
+        this.add(SpaceRace.SERVER_STATS_SUMMARY, "%s tracked players • %s online");
         this.add(SpaceRace.FLAG_CONFIRM, "Use this team flag?");
         this.add(SpaceRace.FLAG_CONFIRM_MESSAGE, "");
         this.add(SpaceRace.CUSTOMIZE_FLAG, "Customize Flag");

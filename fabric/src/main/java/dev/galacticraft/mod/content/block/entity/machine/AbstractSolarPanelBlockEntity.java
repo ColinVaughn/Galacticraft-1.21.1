@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,8 +46,12 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.function.IntPredicate;
+
 public abstract class AbstractSolarPanelBlockEntity extends MachineBlockEntity implements SolarPanel, Dustable {
     private static final int BLOCKAGE_SCAN_INTERVAL = 20;
+    /** Shade search range for skylight-free dimensions: ignores the distant asteroid field, catches a built roof. */
+    static final int NO_SKYLIGHT_SCAN_HEIGHT = 16;
 
     public static final float SPEED = Mth.DEG_TO_RAD * 0.5F;
     public static final float DAWN = 4.0F * Mth.PI / 3.0F;
@@ -89,22 +94,57 @@ public abstract class AbstractSolarPanelBlockEntity extends MachineBlockEntity i
         profiler.popPush("blockage");
         if (!this.blockageScanInitialized
                 || (level.getGameTime() + pos.asLong()) % BLOCKAGE_SCAN_INTERVAL == 0) {
-            this.blocked = 0;
-            for (int x = -1; x < 2; x++) {
-                for (int z = -1; z < 2; z++) {
-                    //noinspection AssignmentUsedAsCondition
-                    if (this.blockage[(z + 1) * 3 + (x + 1)] = !level.canSeeSky(pos.offset(x, 2, z))) {
-                        this.blocked++;
-                    }
-                }
-            }
-            this.blockageScanInitialized = true;
+            this.rescanBlockage(level, pos);
         }
         profiler.popPush("dust");
         if (Galacticraft.CONFIG.machineDustEnabled()) {
             this.tickDust(level);
         }
         profiler.pop();
+    }
+
+    /** Re-samples the nine plate positions to work out how much of the panel is shaded. */
+    private void rescanBlockage(@NotNull ServerLevel level, @NotNull BlockPos pos) {
+        this.blocked = 0;
+        boolean hasSkyLight = level.dimensionType().hasSkyLight();
+        for (int x = -1; x < 2; x++) {
+            for (int z = -1; z < 2; z++) {
+                BlockPos sample = pos.offset(x, 2, z);
+                //noinspection AssignmentUsedAsCondition
+                if (this.blockage[(z + 1) * 3 + (x + 1)] = hasSkyLight
+                        ? !level.canSeeSky(sample)
+                        : isShaded(level, sample)) {
+                    this.blocked++;
+                }
+            }
+        }
+        this.blockageScanInitialized = true;
+    }
+
+    /**
+     * Sky brightness is fixed at zero in dimensions without skylight, so {@link Level#canSeeSky}
+     * reports every position as blocked there and a panel would never generate. Walk the column
+     * overhead instead, counting only blocks that absorb light.
+     */
+    private static boolean isShaded(@NotNull ServerLevel level, @NotNull BlockPos sample) {
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+        return isColumnShaded(sample.getY(), level.getMaxBuildHeight(), y -> {
+            cursor.set(sample.getX(), y, sample.getZ());
+            return level.getBlockState(cursor).getLightBlock(level, cursor) > 0;
+        });
+    }
+
+    /**
+     * Scans a bounded column above a panel plate for shade. Starts one block above {@code sampleY}
+     * because the sampled positions are the panel's own multiblock parts.
+     */
+    static boolean isColumnShaded(int sampleY, int worldTop, IntPredicate absorbsLight) {
+        int from = sampleY + 1;
+        int to = Math.min(worldTop, from + NO_SKYLIGHT_SCAN_HEIGHT);
+        for (int y = from; y < to; y++) {
+            if (absorbsLight.test(y)) return true;
+        }
+        return false;
     }
 
     /** Accrues dust while a storm blows over a sky-exposed panel; slowly weathers it off when clear. */

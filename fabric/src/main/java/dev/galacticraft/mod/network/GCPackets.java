@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,6 +46,8 @@ public class GCPackets {
             registerS2C(CapeAssignmentsPacket.TYPE, CapeAssignmentsPacket.STREAM_CODEC);
             registerS2C(DustStormSyncPayload.TYPE, DustStormSyncPayload.STREAM_CODEC);
             registerS2C(SolarFlareSyncPayload.TYPE, SolarFlareSyncPayload.STREAM_CODEC);
+            registerS2C(ServerStatisticsPayload.TYPE, ServerStatisticsPayload.STREAM_CODEC);
+            registerS2C(GlobalStatisticsPayload.TYPE, GlobalStatisticsPayload.STREAM_CODEC);
         }
 
         registerC2S(AirlockPlayerNamePayload.TYPE, AirlockPlayerNamePayload.STREAM_CODEC);
@@ -62,6 +65,8 @@ public class GCPackets {
         registerC2S(SatelliteUpdatePayload.TYPE, SatelliteUpdatePayload.STREAM_CODEC);
         registerC2S(CapeSelectionPayload.TYPE, CapeSelectionPayload.STREAM_CODEC);
         registerC2S(CreativeGcTransferItemPayload.TYPE, CreativeGcTransferItemPayload.STREAM_CODEC);
+        registerC2S(ServerStatisticsRequestPayload.TYPE, ServerStatisticsRequestPayload.STREAM_CODEC);
+        registerC2S(GlobalStatisticsRequestPayload.TYPE, GlobalStatisticsRequestPayload.STREAM_CODEC);
     }
 
     private static <P extends S2CPayload> void registerS2C(CustomPacketPayload.Type<P> type,

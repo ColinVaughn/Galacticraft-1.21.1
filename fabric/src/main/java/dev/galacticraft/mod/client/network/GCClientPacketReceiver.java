@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,6 +39,8 @@ public class GCClientPacketReceiver {
         register(CapeAssignmentsPacket.TYPE, CapeAssignmentsPacket.STREAM_CODEC);
         register(DustStormSyncPayload.TYPE, DustStormSyncPayload.STREAM_CODEC);
         register(SolarFlareSyncPayload.TYPE, SolarFlareSyncPayload.STREAM_CODEC);
+        register(ServerStatisticsPayload.TYPE, ServerStatisticsPayload.STREAM_CODEC);
+        register(GlobalStatisticsPayload.TYPE, GlobalStatisticsPayload.STREAM_CODEC);
     }
 
     public static <P extends S2CPayload> void register(CustomPacketPayload.Type<P> type,

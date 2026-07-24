@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +24,7 @@
 package dev.galacticraft.mod.client.render.dimension;
 
 import dev.galacticraft.mod.Constant;
+import dev.galacticraft.mod.compat.astrocraft.AstrocraftCompat;
 import dev.galacticraft.mod.world.dimension.GCDimensions;
 import net.fabricmc.fabric.api.client.rendering.v1.DimensionRenderingRegistry;
 import dev.galacticraft.fabric.client.FabricWorldRenderContext;
@@ -37,30 +39,42 @@ public class GCDimensionEffects {
     public static final ResourceLocation SATELLITE = Constant.id("satellite");
 
     public static void register() {
+        boolean astrocraft = AstrocraftCompat.isLoaded();
+
         DimensionRenderingRegistry.registerDimensionEffects(MOON, MoonDimensionEffects.INSTANCE);
         DimensionRenderingRegistry.registerCloudRenderer(GCDimensions.MOON, EmptyCloudRenderer.INSTANCE);
         DimensionRenderingRegistry.registerWeatherRenderer(GCDimensions.MOON, EmptyWeatherRenderer.INSTANCE);
-        DimensionRenderingRegistry.registerSkyRenderer(GCDimensions.MOON, context -> MoonSkyRenderer.INSTANCE.render(new FabricWorldRenderContext(context)));
+        if (!astrocraft) {
+            DimensionRenderingRegistry.registerSkyRenderer(GCDimensions.MOON, context -> MoonSkyRenderer.INSTANCE.render(new FabricWorldRenderContext(context)));
+        }
 
         DimensionRenderingRegistry.registerDimensionEffects(VENUS, VenusDimensionEffects.INSTANCE);
         DimensionRenderingRegistry.registerCloudRenderer(GCDimensions.VENUS, EmptyCloudRenderer.INSTANCE);
         DimensionRenderingRegistry.registerWeatherRenderer(GCDimensions.VENUS, context -> VenusWeatherRenderer.INSTANCE.render(new FabricWorldRenderContext(context)));
-        DimensionRenderingRegistry.registerSkyRenderer(GCDimensions.VENUS, context -> VenusSkyRenderer.INSTANCE.render(new FabricWorldRenderContext(context)));
+        if (!astrocraft) {
+            DimensionRenderingRegistry.registerSkyRenderer(GCDimensions.VENUS, context -> VenusSkyRenderer.INSTANCE.render(new FabricWorldRenderContext(context)));
+        }
 
         DimensionRenderingRegistry.registerDimensionEffects(MARS, MarsDimensionEffects.INSTANCE);
         DimensionRenderingRegistry.registerCloudRenderer(GCDimensions.MARS, EmptyCloudRenderer.INSTANCE);
         DimensionRenderingRegistry.registerWeatherRenderer(GCDimensions.MARS, EmptyWeatherRenderer.INSTANCE);
-        DimensionRenderingRegistry.registerSkyRenderer(GCDimensions.MARS, context -> MarsSkyRenderer.INSTANCE.render(new FabricWorldRenderContext(context)));
+        if (!astrocraft) {
+            DimensionRenderingRegistry.registerSkyRenderer(GCDimensions.MARS, context -> MarsSkyRenderer.INSTANCE.render(new FabricWorldRenderContext(context)));
+        }
 
         DimensionRenderingRegistry.registerDimensionEffects(MERCURY, MercuryDimensionEffects.INSTANCE);
         DimensionRenderingRegistry.registerCloudRenderer(GCDimensions.MERCURY, EmptyCloudRenderer.INSTANCE);
         DimensionRenderingRegistry.registerWeatherRenderer(GCDimensions.MERCURY, EmptyWeatherRenderer.INSTANCE);
-        DimensionRenderingRegistry.registerSkyRenderer(GCDimensions.MERCURY, context -> MercurySkyRenderer.INSTANCE.render(new FabricWorldRenderContext(context)));
+        if (!astrocraft) {
+            DimensionRenderingRegistry.registerSkyRenderer(GCDimensions.MERCURY, context -> MercurySkyRenderer.INSTANCE.render(new FabricWorldRenderContext(context)));
+        }
 
         DimensionRenderingRegistry.registerDimensionEffects(ASTEROID, AsteroidDimensionEffects.INSTANCE);
         DimensionRenderingRegistry.registerCloudRenderer(GCDimensions.ASTEROID, EmptyCloudRenderer.INSTANCE);
         DimensionRenderingRegistry.registerWeatherRenderer(GCDimensions.ASTEROID, EmptyWeatherRenderer.INSTANCE);
-        DimensionRenderingRegistry.registerSkyRenderer(GCDimensions.ASTEROID, context -> AsteroidSkyRenderer.INSTANCE.render(new FabricWorldRenderContext(context)));
+        if (!astrocraft) {
+            DimensionRenderingRegistry.registerSkyRenderer(GCDimensions.ASTEROID, context -> AsteroidSkyRenderer.INSTANCE.render(new FabricWorldRenderContext(context)));
+        }
 
         DimensionRenderingRegistry.registerDimensionEffects(SATELLITE, AsteroidDimensionEffects.INSTANCE);
     }

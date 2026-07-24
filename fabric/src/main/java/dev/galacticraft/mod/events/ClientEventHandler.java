@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +35,7 @@ import dev.galacticraft.mod.client.gui.overlay.RocketOverlay;
 import dev.galacticraft.mod.client.render.FootprintRenderer;
 import dev.galacticraft.mod.client.render.GCBlockOutlineRenderer;
 import dev.galacticraft.mod.client.render.dimension.SatelliteSkyRenderer;
+import dev.galacticraft.mod.compat.astrocraft.AstrocraftCompat;
 import dev.galacticraft.mod.client.sounds.GCSoundManager;
 import dev.galacticraft.mod.client.sounds.RocketSound;
 import dev.galacticraft.mod.content.entity.vehicle.RocketEntity;
@@ -79,6 +81,10 @@ public class ClientEventHandler {
     }
 
     public static void initializeSatelliteSkybox(Minecraft minecraft, ClientLevel level) {
+        if (AstrocraftCompat.isLoaded()) {
+            return;
+        }
+
         Holder<CelestialBody<?, ?>> holder = level.galacticraft$getCelestialBody();
         if (holder != null && holder.value().isSatellite()) {
             DimensionRenderingRegistry.registerSkyRenderer(level.dimension(), context -> SatelliteSkyRenderer.INSTANCE.render(new FabricWorldRenderContext(context)));

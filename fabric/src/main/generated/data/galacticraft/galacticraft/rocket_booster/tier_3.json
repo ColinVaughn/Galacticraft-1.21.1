@@ -1,0 +1,52 @@
+{
+  "type": "galacticraft:basic",
+  "config": {
+    "acceleration": 0.04,
+    "fuel_usage": 3000,
+    "max_velocity": 1.5,
+    "predicate": {
+      "type": "galacticraft:access_weight",
+      "config": {
+        "weight": 3
+      }
+    },
+    "recipe": {
+      "type": "galacticraft:wrap_patterned",
+      "config": {
+        "height": 36,
+        "left": [
+          {
+            "ingredient": {
+              "item": "galacticraft:heavy_plating_t3"
+            },
+            "x": -18,
+            "y": 0
+          },
+          {
+            "ingredient": {
+              "item": "galacticraft:rocket_booster"
+            },
+            "x": -18,
+            "y": 18
+          }
+        ],
+        "right": [
+          {
+            "ingredient": {
+              "item": "galacticraft:heavy_plating_t3"
+            },
+            "x": 0,
+            "y": 0
+          },
+          {
+            "ingredient": {
+              "item": "galacticraft:rocket_booster"
+            },
+            "x": 0,
+            "y": 18
+          }
+        ]
+      }
+    }
+  }
+}
