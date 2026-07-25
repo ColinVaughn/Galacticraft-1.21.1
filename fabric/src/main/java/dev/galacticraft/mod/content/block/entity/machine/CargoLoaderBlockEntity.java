@@ -36,7 +36,7 @@ import dev.galacticraft.machinelib.api.transfer.TransferType;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.Galacticraft;
 import dev.galacticraft.mod.content.GCBlockEntityTypes;
-import dev.galacticraft.mod.content.entity.vehicle.CargoRocketEntity;
+import dev.galacticraft.mod.content.entity.vehicle.ContainerVehicle;
 import dev.galacticraft.mod.screen.GCMenuTypes;
 import dev.galacticraft.mod.storage.ContainerTransfer;
 import dev.galacticraft.machinelib.impl.platform.MachineLibPlatform;
@@ -91,15 +91,16 @@ public class CargoLoaderBlockEntity extends MachineBlockEntity {
     protected @NotNull MachineStatus tick(@NotNull ServerLevel level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull ProfilerFiller profiler) {
         if (!this.energyStorage().canExtract(ENERGY_USAGE)) return MachineStatuses.NOT_ENOUGH_ENERGY;
 
-        CargoRocketEntity rocket = CargoRocketEntity.findDockedRocket(level, pos);
+        ContainerVehicle rocket = ContainerVehicle.findDocked(level, pos);
         if (rocket != null) {
             int remaining = (int) TRANSFER_RATE;
             int moved = 0;
             Container rocketInventory = rocket.getVehicleInventory();
+            int cargoSlots = rocket.getCargoSlotCount();
             for (int slot = BUFFER_START; slot < BUFFER_START + BUFFER_SIZE && remaining > 0; slot++) {
                 ItemStack stack = this.itemStorage().getItem(slot);
                 if (stack.isEmpty()) continue;
-                int inserted = ContainerTransfer.insert(rocketInventory, 0, rocketInventory.getContainerSize(),
+                int inserted = ContainerTransfer.insert(rocketInventory, 0, cargoSlots,
                         stack, remaining);
                 if (inserted > 0) {
                     this.itemStorage().slot(slot).extract(inserted);

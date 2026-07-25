@@ -28,6 +28,7 @@ import dev.galacticraft.machinelib.client.api.util.DisplayUtil;
 import dev.galacticraft.machinelib.client.api.util.GraphicsUtil;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.content.GCFluids;
+import dev.galacticraft.mod.content.entity.vehicle.RocketCargoLogic;
 import dev.galacticraft.mod.screen.RocketMenu;
 import dev.galacticraft.mod.util.DrawableUtil;
 import dev.galacticraft.mod.util.Translations;
@@ -37,6 +38,7 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
 import java.util.ArrayList;
@@ -45,12 +47,23 @@ import java.util.List;
 public class RocketInventoryScreen extends AbstractContainerScreen<RocketMenu> {
     public RocketInventoryScreen(RocketMenu abstractContainerMenu, Inventory inventory, Component component) {
         super(abstractContainerMenu, inventory, component);
+        // The background grows with the cargo, so the size has to be set before init lays the screen out.
+        this.imageHeight = RocketCargoLogic.menuHeight(abstractContainerMenu.storageSlots);
     }
 
     @Override
     protected void init() {
         super.init();
         this.titleLabelY = 0;
+    }
+
+    private ResourceLocation background() {
+        return switch (this.menu.storageSlots) {
+            case 18 -> Constant.ScreenTexture.ROCKET_INVENTORY_18;
+            case 36 -> Constant.ScreenTexture.ROCKET_INVENTORY_36;
+            case 54 -> Constant.ScreenTexture.ROCKET_INVENTORY_54;
+            default -> Constant.ScreenTexture.ROCKET_INVENTORY;
+        };
     }
 
     @Override
@@ -72,9 +85,10 @@ public class RocketInventoryScreen extends AbstractContainerScreen<RocketMenu> {
 
     @Override
     protected void renderBg(GuiGraphics graphics, float v, int mouseX, int mouseY) {
-        graphics.blit(Constant.ScreenTexture.ROCKET_INVENTORY, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
+        graphics.blit(this.background(), this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
 
-        final int X = this.leftPos + 71;
+        // The gauge sits one pixel further right on the cargo-bearing backgrounds, as in legacy.
+        final int X = this.leftPos + (this.menu.storageSlots == 0 ? 71 : 72);
         final int Y = this.topPos + 7;
         final int width = 34;
         final int height = 38;

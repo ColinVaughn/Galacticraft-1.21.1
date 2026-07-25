@@ -363,7 +363,8 @@ public class GCRocketParts {
     public static void bootstrapUpgrade(BootstrapContext<RocketUpgrade<?, ?>> context) {
         context.register(STORAGE_UPGRADE, RocketUpgrade.create(
                 new StorageUpgradeConfig(
-                        1,
+                        // Maximum chests, matching the three chest slots on the rocket workbench.
+                        3,
                         RocketPartRecipeBuilder.create()
                                 .define('C', Ingredient.of(Items.CHEST))
                                 .center("C")

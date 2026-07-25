@@ -26,6 +26,7 @@ import dev.galacticraft.api.accessor.LevelBodyAccessor;
 import dev.galacticraft.api.accessor.LevelOxygenAccessor;
 import dev.galacticraft.api.universe.celestialbody.CelestialBody;
 import dev.galacticraft.impl.internal.accessor.ChunkOxygenAccessor;
+import dev.galacticraft.impl.internal.accessor.InternalLevelBodyAccessor;
 import dev.galacticraft.impl.internal.accessor.InternalLevelOxygenAccessor;
 import dev.galacticraft.mod.events.GCEventHandlers;
 import net.minecraft.core.BlockPos;
@@ -61,8 +62,23 @@ public abstract class LevelMixin implements LevelOxygenAccessor, InternalLevelOx
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void initializeOxygenValues(WritableLevelData writableLevelData, ResourceKey<Level> resourceKey, RegistryAccess registryAccess, Holder holder, Supplier supplier, boolean bl, boolean bl2, long l, int i, CallbackInfo ci) {
-        Holder<CelestialBody<?, ?>> holder1 = ((LevelBodyAccessor) this).galacticraft$getCelestialBody();
+        // Deliberately the unchecked resolve: the level is not registered with the server or client
+        // until after construction, so the virtual level check has no answer yet and would leave a
+        // genuine airless dimension marked breathable. Wrapper levels are handled on read instead,
+        // in galacticraft$defaultBreathable().
+        Holder<CelestialBody<?, ?>> holder1 = ((InternalLevelBodyAccessor) this).galacticraft$getResolvedCelestialBody();
         this.setDefaultBreathable(holder1 != null ? holder1.value().atmosphere().breathable() : this.breathable);
+    }
+
+    /**
+     * The stored value is captured at construction from the level's celestial body. A virtual level
+     * inherits the dimension key — and so the atmosphere — of the level it wraps, which should not
+     * apply to it; report breathable air there instead. Ordered so that the check costs nothing on
+     * levels that already have air.
+     */
+    @Unique
+    private boolean galacticraft$defaultBreathable() {
+        return this.breathable || ((LevelBodyAccessor) this).galacticraft$isVirtualLevel();
     }
 
     @Override
@@ -70,16 +86,16 @@ public abstract class LevelMixin implements LevelOxygenAccessor, InternalLevelOx
         if (this.validPosition(x, y, z)) {
             return this.isBreathableChunk(this.getChunk(SectionPos.blockToSectionCoord(x), SectionPos.blockToSectionCoord(z)), x & 15, y, z & 15);
         }
-        return this.breathable/* && y < this.getMaxBuildHeight() * 2*/;
+        return this.galacticraft$defaultBreathable()/* && y < this.getMaxBuildHeight() * 2*/;
     }
 
     @Override
     public boolean isBreathableChunk(LevelChunk chunk, int x, int y, int z) {
         assert x >= 0 && x < 16 && z >= 0 && z < 16;
         if (this.withinBuildHeight(y)) {
-            return this.breathable ^ ((ChunkOxygenAccessor) chunk).galacticraft$isInverted(x, y, z);
+            return this.galacticraft$defaultBreathable() ^ ((ChunkOxygenAccessor) chunk).galacticraft$isInverted(x, y, z);
         }
-        return this.breathable/* && y < this.getMaxBuildHeight() * 2*/;
+        return this.galacticraft$defaultBreathable()/* && y < this.getMaxBuildHeight() * 2*/;
     }
 
     @Override
@@ -93,8 +109,9 @@ public abstract class LevelMixin implements LevelOxygenAccessor, InternalLevelOx
     public void setBreathableChunk(LevelChunk chunk, int x, int y, int z, boolean value) {
         assert x >= 0 && x < 16 && z >= 0 && z < 16;
         if (y < this.getMinBuildHeight() || y >= this.getMaxBuildHeight()) return;
-        ((ChunkOxygenAccessor) chunk).galacticraft$setInverted(x, y, z, this.breathable ^ value);
-        if (!value) {
+        boolean wasBreathable = this.isBreathableChunk(chunk, x, y, z);
+        ((ChunkOxygenAccessor) chunk).galacticraft$setInverted(x, y, z, this.galacticraft$defaultBreathable() ^ value);
+        if (wasBreathable && !value) {
             BlockPos blockPos = chunk.getPos().getBlockAt(x, y, z);
             GCEventHandlers.extinguishBlock((Level) (Object) this, blockPos, this.getBlockState(blockPos));
         }
@@ -102,7 +119,7 @@ public abstract class LevelMixin implements LevelOxygenAccessor, InternalLevelOx
 
     @Override
     public boolean getDefaultBreathable() {
-        return this.breathable;
+        return this.galacticraft$defaultBreathable();
     }
 
     @Override

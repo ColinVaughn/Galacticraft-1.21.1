@@ -34,6 +34,7 @@ import dev.galacticraft.mod.content.GCRocketParts;
 import dev.galacticraft.mod.content.block.entity.RocketWorkbenchBlockEntity;
 import dev.galacticraft.mod.content.rocket.part.data.ExplosiveRocketData;
 import dev.galacticraft.mod.content.rocket.part.data.RocketUpgradeData;
+import dev.galacticraft.mod.content.rocket.part.data.StorageRocketData;
 import dev.galacticraft.mod.machine.storage.VariableSizedContainer;
 import dev.galacticraft.mod.recipe.GCRecipes;
 import dev.galacticraft.mod.recipe.RocketRecipe;
@@ -155,8 +156,11 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
             ++nextSlot;
         }
 
-        this.addSlot(new FilteredSlot(this.workbench.chests, 0, CHEST_X, CHEST_Y, stack -> this.workbench.chests.canPlaceItem(0, stack))
-                .withBackground(Constant.SlotSprite.CHEST));
+        for (int chest = 0; chest < RocketWorkbenchBlockEntity.CHEST_SLOTS; ++chest) {
+            final int index = chest;
+            this.addSlot(new FilteredSlot(this.workbench.chests, index, CHEST_X + index * CHEST_X_OFFSET, CHEST_Y, stack -> this.workbench.chests.canPlaceItem(index, stack))
+                    .withBackground(Constant.SlotSprite.CHEST));
+        }
 
         this.addSlot(new RocketResultSlot(this, this.workbench.output, 0, OUTPUT_X, OUTPUT_Y));
 
@@ -284,8 +288,19 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
         if (upgradeStack.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof TntBlock tntBlock) {
             upgrade = Optional.of(new EitherHolder<>(GCRocketParts.EXPLOSIVE_UPGRADE));
             upgradeData = Optional.of(new ExplosiveRocketData(BuiltInRegistries.BLOCK.getKey(tntBlock)));
-        } else if (upgradeStack.is(GCItemTags.ROCKET_STORAGE_UPGRADE_ITEMS)) {
-            upgrade = Optional.of(new EitherHolder<>(GCRocketParts.STORAGE_UPGRADE));
+        } else {
+            // Chests may go in any of the three slots; the rocket's cargo scales with how many are installed.
+            int chests = 0;
+            for (int slot = 0; slot < this.workbench.chests.getContainerSize(); ++slot) {
+                if (this.workbench.chests.getItem(slot).is(GCItemTags.ROCKET_STORAGE_UPGRADE_ITEMS)) {
+                    ++chests;
+                }
+            }
+
+            if (chests > 0) {
+                upgrade = Optional.of(new EitherHolder<>(GCRocketParts.STORAGE_UPGRADE));
+                upgradeData = Optional.of(new StorageRocketData(chests));
+            }
         }
 
         return new RocketData(

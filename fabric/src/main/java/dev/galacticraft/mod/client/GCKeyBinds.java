@@ -22,11 +22,16 @@
 
 package dev.galacticraft.mod.client;
 
+import dev.architectury.networking.NetworkManager;
 import dev.galacticraft.mod.client.gui.screen.ingame.CelestialSelectionScreen;
+import dev.galacticraft.mod.content.entity.vehicle.Buggy;
+import dev.galacticraft.mod.content.entity.vehicle.RocketEntity;
+import dev.galacticraft.mod.network.c2s.OpenRocketPayload;
 import dev.galacticraft.mod.util.Translations;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.Entity;
 import org.lwjgl.glfw.GLFW;
 
 public class GCKeyBinds {
@@ -43,6 +48,14 @@ public class GCKeyBinds {
             if (client.screen == null) {
                 while (OPEN_CELESTIAL_SCREEN.consumeClick()) {
                     client.setScreen(new CelestialSelectionScreen(true, null, false, null));
+                }
+
+                // As in Galacticraft Legacy, the key opens whichever vehicle the player is riding.
+                while (OPEN_ROCKET_INVENTORY.consumeClick()) {
+                    Entity vehicle = client.player.getVehicle();
+                    if (vehicle instanceof RocketEntity || vehicle instanceof Buggy) {
+                        NetworkManager.sendToServer(OpenRocketPayload.INSTANCE);
+                    }
                 }
             }
         }

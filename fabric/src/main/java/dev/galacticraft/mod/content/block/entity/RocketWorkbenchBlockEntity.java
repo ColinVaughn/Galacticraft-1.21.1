@@ -47,6 +47,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class RocketWorkbenchBlockEntity extends BlockEntity implements ExtendedMenuProvider, VariableSizedContainer.Listener {
+    public static final int CHEST_SLOTS = 3;
+
     public final SimpleContainer output = new SimpleContainer(1) {
         @Override
         public boolean canPlaceItem(int index, ItemStack stack) {
@@ -54,14 +56,29 @@ public class RocketWorkbenchBlockEntity extends BlockEntity implements ExtendedM
         }
     };
 
-    public final SimpleContainer chests = new SimpleContainer(1) {
+    /**
+     * The rocket's upgrade slots. Three chests may be installed, one per slot, each worth two rows
+     * of cargo. The explosive upgrade shares this container but only occupies the first slot, since
+     * a rocket carries a single upgrade.
+     */
+    public final SimpleContainer chests = new SimpleContainer(CHEST_SLOTS) {
         @Override
         public boolean canPlaceItem(int slot, ItemStack stack) {
-            if (stack.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof TntBlock) {
+            if (isExplosive(stack)) {
+                if (slot != 0) return false;
+
+                // Crafting consumes every chest slot, so refuse the charge while chests are loaded
+                // rather than silently eating them for an upgrade the rocket won't get.
+                for (int other = 1; other < this.getContainerSize(); ++other) {
+                    if (!this.getItem(other).isEmpty()) return false;
+                }
                 return true;
             }
 
-            return stack.is(GCItemTags.ROCKET_STORAGE_UPGRADE_ITEMS);
+            if (!stack.is(GCItemTags.ROCKET_STORAGE_UPGRADE_ITEMS)) return false;
+
+            // Chests and the explosive charge are different upgrades; only a swap into slot 0 is allowed.
+            return slot == 0 || !isExplosive(this.getItem(0));
         }
 
         @Override
@@ -69,6 +86,10 @@ public class RocketWorkbenchBlockEntity extends BlockEntity implements ExtendedM
             return 1;
         }
     };
+
+    private static boolean isExplosive(ItemStack stack) {
+        return stack.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof TntBlock;
+    }
 
     // Using a VariableSizedContainer here to support different recipes in the future
     public final VariableSizedContainer ingredients = new VariableSizedContainer(14);

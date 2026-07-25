@@ -20,18 +20,24 @@
  * SOFTWARE.
  */
 
-package dev.galacticraft.mod.content.rocket.part.data;
+package dev.galacticraft.impl.internal.accessor;
 
-import com.mojang.serialization.Codec;
+import dev.galacticraft.api.universe.celestialbody.CelestialBody;
+import net.minecraft.core.Holder;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 
-public sealed interface RocketUpgradeData permits ExplosiveRocketData, StorageRocketData {
-
-    Codec<RocketUpgradeData> DIRECT_CODEC =
-            Codec.STRING.dispatch(
-                    "type",
-                    RocketUpgradeData::typeName,
-                    RocketUpgradeDataType::mapCodecByName
-            );
-
-    String typeName();
+@ApiStatus.Internal
+public interface InternalLevelBodyAccessor {
+    /**
+     * {@return the celestial body matching this level's dimension key, ignoring whether the level
+     * is a virtual copy of another one}
+     * <p>
+     * Only for code that runs during {@code Level.<init>}: a level is not registered with the
+     * server or client until after it is constructed, so the virtual level check cannot tell a real
+     * level apart from a wrapper yet and would report {@code null} for a genuine dimension being
+     * rebuilt. Everything else must use
+     * {@link dev.galacticraft.api.accessor.LevelBodyAccessor#galacticraft$getCelestialBody()}.
+     */
+    @Nullable Holder<CelestialBody<?, ?>> galacticraft$getResolvedCelestialBody();
 }

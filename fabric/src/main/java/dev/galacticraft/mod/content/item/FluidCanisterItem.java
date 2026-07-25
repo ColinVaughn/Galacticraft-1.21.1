@@ -63,6 +63,17 @@ public class FluidCanisterItem extends Item {
         return stack;
     }
 
+    public static ItemStack getInfiniteCanister(Item item, Fluid fluid) {
+        ItemStack stack = new ItemStack(item);
+        stack.set(FLUID_DATA, new FluidData(new MLFluidStack(fluid), Long.MAX_VALUE));
+        return stack;
+    }
+
+    public static boolean isInfinite(ItemStack stack) {
+        FluidData data = stack.get(FLUID_DATA);
+        return data != null && data.amount() == Long.MAX_VALUE;
+    }
+
     public FluidCanisterItem(Properties properties, long capacity) {
         super(properties);
         this.capacity = capacity;
@@ -75,7 +86,7 @@ public class FluidCanisterItem extends Item {
         if (data != null && data.variant().fluid() != net.minecraft.world.level.material.Fluids.EMPTY) {
             Component fluidName = FluidVariantAttributes.getName(
                     FluidVariant.of(data.variant().fluid(), data.variant().components())).plainCopy();
-            return Component.translatable(Items.FLUID_CANISTER_FILLED, fluidName);
+            return Component.translatable(isInfinite(stack) ? Items.FLUID_CANISTER_INFINITE : Items.FLUID_CANISTER_FILLED, fluidName);
         }
 
         return super.getName(stack);
@@ -85,12 +96,20 @@ public class FluidCanisterItem extends Item {
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         FluidData data = stack.get(FLUID_DATA);
         TooltipUtil.appendCanisterRemainingTooltip(Tooltip.FLUID_CANISTER_FLUID_INFO, data, capacity, tooltip);
+        if (isInfinite(stack)) {
+            TooltipUtil.appendCreativeTooltip(tooltip, Constant.Text.LIGHT_PURPLE_STYLE);
+        }
         super.appendHoverText(stack, context, tooltip, flag);
     }
 
     @Override
     public boolean isBarVisible(ItemStack stack) {
-        return true;
+        return !isInfinite(stack);
+    }
+
+    @Override
+    public boolean isFoil(ItemStack stack) {
+        return isInfinite(stack) || super.isFoil(stack);
     }
 
     @Override

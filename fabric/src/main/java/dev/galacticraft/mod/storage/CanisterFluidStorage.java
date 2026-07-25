@@ -37,11 +37,13 @@ import static dev.galacticraft.api.component.GCDataComponents.FLUID_DATA;
 public class CanisterFluidStorage extends SingleVariantItemStorage<FluidVariant> {
     private final FluidData fluidData;
     private final long capacity;
+    private final boolean infinite;
 
     public CanisterFluidStorage(ItemStack stack, ContainerItemContext context) {
         super(context);
         this.fluidData = stack.get(FLUID_DATA);
         this.capacity = ((FluidCanisterItem) stack.getItem()).capacity;
+        this.infinite = FluidCanisterItem.isInfinite(stack);
     }
 
     @Override
@@ -63,11 +65,15 @@ public class CanisterFluidStorage extends SingleVariantItemStorage<FluidVariant>
 
     @Override
     protected long getCapacity(FluidVariant variant) {
-        return this.capacity;
+        return this.infinite ? Long.MAX_VALUE : this.capacity;
     }
 
     @Override
     protected ItemVariant getUpdatedVariant(ItemVariant currentVariant, FluidVariant newResource, long newAmount) {
+        if (this.infinite) {
+            return currentVariant;
+        }
+
         ItemStack stack = currentVariant.toStack();
 
         if (newAmount <= 0 || newResource.isBlank()) {
@@ -81,6 +87,10 @@ public class CanisterFluidStorage extends SingleVariantItemStorage<FluidVariant>
 
     @Override
     protected boolean canInsert(FluidVariant resource) {
+        if (this.infinite) {
+            return false;
+        }
+
         if (resource.getFluid().is(GCFluidTags.FLUID_CANISTER_EXCLUSIONS)) {
             return false;
         }

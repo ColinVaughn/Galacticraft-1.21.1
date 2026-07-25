@@ -126,4 +126,40 @@ class RocketFlightLogicTest {
     void aRocketWithoutThrustFallsUnderGravity() {
         assertTrue(RocketFlightLogic.nextVerticalVelocity(0.0, 0.0, 0.0, EARTH_GRAVITY) < 0.0);
     }
+
+    /** Every invariant above is stated against these, so a balance change has to be deliberate. */
+    @Test
+    void theShippedDefaultsAreWhatTheInvariantsAssume() {
+        assertEquals(100, RocketFlightLogic.DEFAULT_FUEL_TANK_CAPACITY_BUCKETS);
+        assertEquals(50, RocketFlightLogic.DEFAULT_BURN_TICKS_PER_BUCKET);
+        assertEquals(5000, RocketFlightLogic.burnTicksAvailable());
+    }
+
+    @Test
+    void tankSizeAndFuelEfficiencyBothScaleTheBurnBudget() {
+        assertEquals(5000, RocketFlightLogic.burnTicksAvailable(100, 50));
+        assertEquals(2500, RocketFlightLogic.burnTicksAvailable(50, 50), "half the tank, half the budget");
+        assertEquals(10000, RocketFlightLogic.burnTicksAvailable(100, 100), "twice the efficiency, twice the budget");
+    }
+
+    /**
+     * The headline number for anyone tuning the config: leaving Earth costs about a third of a
+     * default tank, not the whole 100 buckets it takes to fill one.
+     */
+    @Test
+    void anEarthLaunchCostsAboutAThirdOfADefaultTank() {
+        int required = RocketFlightLogic.burnTicksRequiredToEscape(SEA_LEVEL, ESCAPE_HEIGHT, EARTH_GRAVITY);
+        double buckets = required / (double) RocketFlightLogic.DEFAULT_BURN_TICKS_PER_BUCKET;
+        assertTrue(buckets > 30.0 && buckets < 35.0,
+                "an Earth launch should cost roughly 32 buckets, but costs " + buckets);
+    }
+
+    /** Raising the efficiency knob is the knob that makes a launch cheaper. */
+    @Test
+    void raisingFuelEfficiencyLowersTheBucketCostOfALaunch() {
+        int required = RocketFlightLogic.burnTicksRequiredToEscape(SEA_LEVEL, ESCAPE_HEIGHT, EARTH_GRAVITY);
+        double atDefault = required / (double) RocketFlightLogic.DEFAULT_BURN_TICKS_PER_BUCKET;
+        double atDouble = required / (double) (RocketFlightLogic.DEFAULT_BURN_TICKS_PER_BUCKET * 2);
+        assertEquals(atDefault / 2.0, atDouble, 1.0E-9);
+    }
 }

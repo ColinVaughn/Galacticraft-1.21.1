@@ -107,8 +107,10 @@ public class RocketWorkbenchScreen extends AbstractContainerScreen<RocketWorkben
             try (Graphics.Texture texture = graphics.texture(SCREEN_TEXTURE, 256, 256)) {
                 texture.blit(this.leftPos, this.topPos, 0, 0, UI_WIDTH, UI_HEIGHT);
 
+                // Only the first chest slot has a frame baked into the background, so draw all three
+                // ourselves to keep them uniform.
                 for (Slot slot : this.menu.slots) {
-                    if (slot.container instanceof VariableSizedContainer) {
+                    if (slot.container instanceof VariableSizedContainer || slot.container == this.menu.workbench.chests) {
                         texture.blit(this.leftPos + slot.x - 1, this.topPos + slot.y - 1, SLOT_U, SLOT_V, SLOT_WIDTH, SLOT_HEIGHT);
                     }
                 }

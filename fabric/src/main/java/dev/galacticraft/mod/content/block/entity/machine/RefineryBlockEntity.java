@@ -44,7 +44,6 @@ import dev.galacticraft.mod.machine.GCMachineStatuses;
 import dev.galacticraft.mod.tag.GCFluidTags;
 import dev.galacticraft.mod.screen.GCMenuTypes;
 import dev.galacticraft.mod.util.FluidUtil;
-import dev.galacticraft.machinelib.api.transfer.FluidConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -146,10 +145,15 @@ public class RefineryBlockEntity extends MachineBlockEntity {
         profiler.popPush("transaction");
         try {
             if (this.energyStorage().canExtract(Galacticraft.CONFIG.refineryEnergyConsumptionRate())) {
-                long space = fuelTank.tryInsert(GCFluids.FUEL, FluidConstants.BUCKET / 20 / 5);
+                long space = fuelTank.tryInsert(GCFluids.FUEL, RefineryFuelLogic.REFINE_RATE);
                 if (space > 0) {
                     this.energyStorage().extract(Galacticraft.CONFIG.refineryEnergyConsumptionRate());
-                    fuelTank.insert(GCFluids.FUEL, oilTank.extract(GCFluids.CRUDE_OIL, space));
+                    double ratio = Galacticraft.CONFIG.refineryOilToFuelRatio();
+                    long oil = oilTank.extract(GCFluids.CRUDE_OIL, RefineryFuelLogic.oilDrawFor(space, ratio));
+                    long fuel = RefineryFuelLogic.fuelFrom(oil, ratio, space);
+                    if (fuel > 0) {
+                        fuelTank.insert(GCFluids.FUEL, fuel);
+                    }
                 }
                 return GCMachineStatuses.REFINING;
             } else {

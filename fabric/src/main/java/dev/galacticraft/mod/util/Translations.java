@@ -244,6 +244,14 @@ public interface Translations {
         String CANNOT_EAT_IN_NO_ATMOSPHERE = "config.galacticraft.lifesupport.cannot_eat_in_no_atmosphere";
         String CANNOT_EAT_WITH_MASK = "config.galacticraft.lifesupport.cannot_eat_with_mask";
 
+        String ROCKETS = "config.galacticraft.rockets";
+        String ROCKET_FUEL_TANK_CAPACITY = "config.galacticraft.rockets.fuel_tank_capacity";
+        String ROCKET_FUEL_TANK_CAPACITY_DESC = "config.galacticraft.rockets.fuel_tank_capacity.desc";
+        String ROCKET_BURN_TICKS_PER_BUCKET = "config.galacticraft.rockets.burn_ticks_per_bucket";
+        String ROCKET_BURN_TICKS_PER_BUCKET_DESC = "config.galacticraft.rockets.burn_ticks_per_bucket.desc";
+        String REFINERY_OIL_TO_FUEL_RATIO = "config.galacticraft.rockets.refinery_oil_to_fuel_ratio";
+        String REFINERY_OIL_TO_FUEL_RATIO_DESC = "config.galacticraft.rockets.refinery_oil_to_fuel_ratio.desc";
+
         String DIFFICULTY = "config.galacticraft.difficulty";
         String METEOR_SPAWN_MULTIPLIER = "config.galacticraft.difficulty.meteor_spawn_multiplier";
         String BOSS_HEALTH_MODIFIER = "config.galacticraft.difficulty.dungeon_boss_health_multiplier";
@@ -265,6 +273,7 @@ public interface Translations {
         String CANNED_FOOD_TEMPLATE = "item.galacticraft.canned_food.template";
 
         String FLUID_CANISTER_FILLED = "item.galacticraft.fluid_canister.filled";
+        String FLUID_CANISTER_INFINITE = "item.galacticraft.fluid_canister.infinite";
     }
 
     interface CelestialBody {

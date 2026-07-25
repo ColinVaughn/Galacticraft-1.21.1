@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +29,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -38,7 +40,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class AirlockSealBlock extends Block {
     public static final MapCodec<AirlockSealBlock> CODEC = simpleCodec(AirlockSealBlock::new);
-    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
+    // Must cover all six directions: horizontal airlocks (floor/ceiling hatches) seal with a flat, up/down facing pane.
+    public static final DirectionProperty FACING = BlockStateProperties.FACING;
 
 
     @Override
@@ -54,19 +57,25 @@ public class AirlockSealBlock extends Block {
 
     protected static final VoxelShape SHAPE_NORTH = Block.box(0.0, 0.0, 4.0, 16.0, 16.0, 12.0);
     protected static final VoxelShape SHAPE_EAST = Block.box(4.0, 0.0, 0.0, 12.0, 16.0, 16.0);
+    protected static final VoxelShape SHAPE_UP = Block.box(0.0, 4.0, 0.0, 16.0, 12.0, 16.0);
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
-        if (state.getValue(FACING) == Direction.NORTH || state.getValue(FACING) == Direction.SOUTH) {
-            return SHAPE_NORTH;
-        } else {
-            return SHAPE_EAST;
-        }
+        return switch (state.getValue(FACING).getAxis()) {
+            case X -> SHAPE_EAST;
+            case Y -> SHAPE_UP;
+            case Z -> SHAPE_NORTH;
+        };
     }
 
     @Override
     public BlockState rotate(BlockState blockState, Rotation rotation) {
         return blockState.setValue(FACING, rotation.rotate(blockState.getValue(FACING)));
+    }
+
+    @Override
+    public BlockState mirror(BlockState blockState, Mirror mirror) {
+        return blockState.rotate(mirror.getRotation(blockState.getValue(FACING)));
     }
 
     @Override

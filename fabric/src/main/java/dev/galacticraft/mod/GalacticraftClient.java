@@ -300,6 +300,7 @@ public class GalacticraftClient implements ClientModInitializer {
         ItemProperties.register(GCItems.FLUID_CANISTER, FluidCanisterItem.FILL_LEVEL, (stack, world, entity, seed) -> {
             FluidData data = stack.get(FLUID_DATA);
             if (data == null || data.amount() <= 0) return 0.0f;
+            if (FluidCanisterItem.isInfinite(stack)) return 1.0f;
 
             double percentage = (double) data.amount() / (double) ((FluidCanisterItem) stack.getItem()).capacity;
             return (float) (Math.ceil(percentage * 6.0) / 6.0);

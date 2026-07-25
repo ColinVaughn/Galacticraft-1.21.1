@@ -30,16 +30,23 @@ package dev.galacticraft.mod.content.entity.vehicle;
  * <p>A rocket's tank is measured here in "burn ticks" -- the number of ticks a tank holds rather
  * than a volume -- so the numbers stay exact and independent of the droplets-per-bucket constant.
  */
-final class RocketFlightLogic {
-    /** Capacity of a rocket's fuel tank, in buckets. */
-    static final int FUEL_TANK_CAPACITY_BUCKETS = 100;
+public final class RocketFlightLogic {
+    /**
+     * Capacity of a rocket's fuel tank, in buckets, before the config is consulted.
+     *
+     * @see dev.galacticraft.mod.api.config.Config#rocketFuelTankCapacity()
+     */
+    public static final int DEFAULT_FUEL_TANK_CAPACITY_BUCKETS = 100;
 
     /**
-     * How many ticks of powered flight one bucket of fuel provides. A climb from sea level to
-     * {@code ESCAPE_HEIGHT} takes roughly 1600 ticks, so a full tank covers about three trips --
-     * the same margin legacy Galacticraft gave its one-bucket tier 1 tank.
+     * How many ticks of powered flight one bucket of fuel provides, before the config is consulted.
+     * A climb from sea level to {@code ESCAPE_HEIGHT} takes roughly 1600 ticks, so a full tank
+     * covers about three trips -- the same margin legacy Galacticraft gave its one-bucket tier 1
+     * tank.
+     *
+     * @see dev.galacticraft.mod.api.config.Config#rocketBurnTicksPerBucket()
      */
-    static final int BURN_TICKS_PER_BUCKET = 50;
+    public static final int DEFAULT_BURN_TICKS_PER_BUCKET = 50;
 
     /** Ticks the rocket sits on the pad between ignition and lift-off. */
     static final int PRE_LAUNCH_WAIT_TICKS = 400;
@@ -64,8 +71,13 @@ final class RocketFlightLogic {
     }
 
     /** Total ticks of engine burn a full tank provides. */
+    static int burnTicksAvailable(int fuelTankCapacityBuckets, int burnTicksPerBucket) {
+        return fuelTankCapacityBuckets * burnTicksPerBucket;
+    }
+
+    /** Total ticks of engine burn a full tank provides at the shipped defaults. */
     static int burnTicksAvailable() {
-        return FUEL_TANK_CAPACITY_BUCKETS * BURN_TICKS_PER_BUCKET;
+        return burnTicksAvailable(DEFAULT_FUEL_TANK_CAPACITY_BUCKETS, DEFAULT_BURN_TICKS_PER_BUCKET);
     }
 
     /** Ticks of burn spent on the pad before the rocket ever moves. */

@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -172,8 +173,6 @@ public class AirlockControllerBlockEntity extends BlockEntity implements MenuPro
         int y = (this.lastProtocol.maxY + this.lastProtocol.minY) / 2;
         int z = (this.lastProtocol.maxZ + this.lastProtocol.minZ) / 2;
 
-        boolean facingNorth = (this.lastProtocol.maxX - this.lastProtocol.minX) == 0;
-
         BlockPos pos = new BlockPos(x, y, z);
         if (this.level.getBlockState(pos).isAir()) {
             this.level.playSound(null, pos, GCSounds.AIRLOCK_CLOSE, SoundSource.BLOCKS, 1.0F, 1.0F);
@@ -185,16 +184,14 @@ public class AirlockControllerBlockEntity extends BlockEntity implements MenuPro
                     for (z = this.protocol.minZ + 1; z <= this.protocol.maxZ - 1; z++) {
                         pos = new BlockPos(x, y, z);
                         if (this.level.getBlockState(pos).isAir()) {
-                            if (facingNorth) {
-                                this.level.setBlock(pos, GCBlocks.AIR_LOCK_SEAL.defaultBlockState().setValue(FACING, Direction.EAST), Block.UPDATE_ALL);
-                            } else {
-                                this.level.setBlock(pos, GCBlocks.AIR_LOCK_SEAL.defaultBlockState().setValue(FACING, Direction.NORTH), Block.UPDATE_ALL);
-                            }
+                            // A floor/ceiling hatch seals with a flat pane, not an upright one.
+                            this.level.setBlock(pos, GCBlocks.AIR_LOCK_SEAL.defaultBlockState().setValue(FACING, Direction.UP), Block.UPDATE_ALL);
                         }
                     }
                 }
             }
         } else {
+            boolean facingNorth = (this.lastProtocol.maxX - this.lastProtocol.minX) == 0;
             if (this.protocol.minX != this.protocol.maxX) {
                 for (x = this.protocol.minX + 1; x <= this.protocol.maxX - 1; x++) {
                     for (y = this.protocol.minY + 1; y <= this.protocol.maxY - 1; y++) {

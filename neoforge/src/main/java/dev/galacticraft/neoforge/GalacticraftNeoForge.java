@@ -70,6 +70,7 @@ import dev.galacticraft.neoforge.fluid.CanisterFluidHandler;
 import dev.galacticraft.mod.content.entity.data.GCEntityDataSerializers;
 import dev.galacticraft.mod.data.gen.SatelliteChunkGenerator;
 import dev.galacticraft.neoforge.fluid.GCNeoForgeFluidTypes;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.resources.ResourceLocation;
@@ -79,6 +80,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.ai.village.poi.PoiType;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FireBlock;
@@ -103,6 +105,7 @@ import net.minecraft.world.item.CreativeModeTabs;
 import dev.galacticraft.mod.village.VillagerPlatformHooks;
 import dev.galacticraft.mod.village.GCVillagerProfessions;
 import net.neoforged.neoforge.event.village.VillagerTradesEvent;
+import dev.galacticraft.mod.events.GCEventHandlers;
 import dev.galacticraft.mod.events.SleepPlatformHooks;
 import dev.galacticraft.mod.events.GCSleepEventHandlers;
 import net.neoforged.neoforge.event.entity.player.CanPlayerSleepEvent;
@@ -179,6 +182,7 @@ public final class GalacticraftNeoForge {
         NeoForge.EVENT_BUS.addListener(this::onCanContinueSleeping);
         NeoForge.EVENT_BUS.addListener(this::onPlayerWakeUp);
         NeoForge.EVENT_BUS.addListener(this::onBlockToolModification);
+        NeoForge.EVENT_BUS.addListener(this::extinguishPlacedBlock);
         initializeApi();
         BuiltinObjects.register();
         BuiltInRocketRegistries.initialize();
@@ -215,6 +219,28 @@ public final class GalacticraftNeoForge {
         if (event.getTabKey() == CreativeModeTabs.SPAWN_EGGS) {
             GCItems.spawnEggs().forEach(event::accept);
         }
+    }
+
+    /**
+     * Snuffs out fire sources placed by hand where there is no oxygen.
+     *
+     * <p>Galacticraft normally does this by wrapping the {@code BlockState.onPlace} call inside
+     * {@code LevelChunk.setBlockState}. NeoForge suppresses that call for entity-placed blocks — it
+     * raises {@code Level.captureBlockSnapshots} for the duration of the item use so placement can be
+     * cancelled, and only replays {@code onPlace} itself after this event has fired. The wrapped call
+     * site therefore never runs on this loader, which let hand-placed torches burn in a vacuum.
+     *
+     * <p>Only the single-block event is handled; multi-block placements (beds, doors) contain no fire
+     * sources.</p>
+     */
+    private void extinguishPlacedBlock(BlockEvent.EntityPlaceEvent event) {
+        if (event.isCanceled()) return;
+        if (!(event.getLevel() instanceof Level level) || level.isClientSide()) return;
+
+        BlockPos pos = event.getPos();
+        if (level.isBreathable(pos)) return;
+
+        GCEventHandlers.extinguishBlock(level, pos, event.getPlacedBlock());
     }
 
     private void onBlockToolModification(BlockEvent.BlockToolModificationEvent event) {

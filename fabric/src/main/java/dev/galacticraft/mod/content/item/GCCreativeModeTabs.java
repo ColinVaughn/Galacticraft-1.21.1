@@ -336,8 +336,14 @@ public class GCCreativeModeTabs {
                 output.accept(FLUID_CANISTER);
                 output.accept(FluidCanisterItem.getFilledCanister(FLUID_CANISTER, GCFluids.CRUDE_OIL));
                 output.accept(FluidCanisterItem.getFilledCanister(FLUID_CANISTER, GCFluids.FUEL));
+                output.accept(FluidCanisterItem.getFilledCanister(FLUID_CANISTER, GCFluids.SULFURIC_ACID));
                 output.accept(FluidCanisterItem.getFilledCanister(FLUID_CANISTER, Gases.METHANE));
                 output.accept(FluidCanisterItem.getFilledCanister(FLUID_CANISTER, GCFluids.LIQUID_OXYGEN));
+                output.accept(FluidCanisterItem.getInfiniteCanister(FLUID_CANISTER, GCFluids.CRUDE_OIL));
+                output.accept(FluidCanisterItem.getInfiniteCanister(FLUID_CANISTER, GCFluids.FUEL));
+                output.accept(FluidCanisterItem.getInfiniteCanister(FLUID_CANISTER, GCFluids.SULFURIC_ACID));
+                output.accept(FluidCanisterItem.getInfiniteCanister(FLUID_CANISTER, Gases.METHANE));
+                output.accept(FluidCanisterItem.getInfiniteCanister(FLUID_CANISTER, GCFluids.LIQUID_OXYGEN));
                 //output.accept(FluidCanisterItem.getFilledCanister(FLUID_CANISTER, GCFluids.LIQUID_NITROGEN)); // Liquid nitrogen not added yet
 
                 output.accept(SMALL_OXYGEN_TANK);

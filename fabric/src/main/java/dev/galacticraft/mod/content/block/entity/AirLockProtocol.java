@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -205,18 +206,31 @@ class AirLockProtocol {
     }
 
     private boolean incompleteFrameHorizontal() {
-        for (int x = this.minX + 1; x < this.maxX; x++) {
-            if (!this.isValidFrame(new BlockPos(x, this.maxY, this.maxZ))) {
-                return true;
-            } else if (!this.isValidFrame(new BlockPos(x, this.minY, this.maxZ))) {
+        // A horizontal frame is flat, so minY == maxY; the four edges differ in X/Z, not in Y.
+        final int y = this.minY;
+        return incompleteFrameHorizontal(this.minX, this.maxX, this.minZ, this.maxZ,
+                (x, z) -> this.isValidFrame(new BlockPos(x, y, z)));
+    }
+
+    /** Looks up whether the flat frame has an airlock block at a given horizontal position. */
+    @FunctionalInterface
+    interface FrameLookup {
+        boolean isFrame(int x, int z);
+    }
+
+    /**
+     * Walks all four edges of a flat frame. Split out from {@link #incompleteFrameHorizontal()} so the
+     * edge coverage can be verified without a world.
+     */
+    static boolean incompleteFrameHorizontal(int minX, int maxX, int minZ, int maxZ, FrameLookup lookup) {
+        for (int x = minX + 1; x < maxX; x++) {
+            if (!lookup.isFrame(x, minZ) || !lookup.isFrame(x, maxZ)) {
                 return true;
             }
         }
 
-        for (int z = this.minZ + 1; z < this.maxZ; z++) {
-            if (!this.isValidFrame(new BlockPos(this.maxX, this.maxY, z))) {
-                return true;
-            } else if (!this.isValidFrame(new BlockPos(this.maxX, this.minY, z))) {
+        for (int z = minZ + 1; z < maxZ; z++) {
+            if (!lookup.isFrame(minX, z) || !lookup.isFrame(maxX, z)) {
                 return true;
             }
         }

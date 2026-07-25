@@ -541,6 +541,7 @@ public class GCTranslationProvider extends TranslationProvider {
 
         this.item(GCItems.FLUID_CANISTER, "Empty Canister");
         this.add(Items.FLUID_CANISTER_FILLED, "%s Canister");
+        this.add(Items.FLUID_CANISTER_INFINITE, "Infinite %s Canister");
 
         // SMITHING TEMPLATES
         this.item(GCItems.TITANTIUM_UPGRADE_SMITHING_TEMPLATE, "Smithing Template");
@@ -1145,6 +1146,14 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(Config.PARROT_OXYGEN_CONSUMPTION_RATE, "Parrot Oxygen Consumption Rate/t");
         this.add(Config.CANNOT_EAT_IN_NO_ATMOSPHERE, "Cannot Eat In No Atmosphere");
         this.add(Config.CANNOT_EAT_WITH_MASK, "Cannot Eat With Mask Except From Cans");
+
+        this.add(Config.ROCKETS, "Rockets");
+        this.add(Config.ROCKET_FUEL_TANK_CAPACITY, "Rocket Fuel Tank Capacity");
+        this.add(Config.ROCKET_FUEL_TANK_CAPACITY_DESC, "How many buckets of fuel a rocket holds. Applies to newly built rockets; rockets already in your world keep the capacity they were built with.");
+        this.add(Config.ROCKET_BURN_TICKS_PER_BUCKET, "Flight Ticks Per Bucket");
+        this.add(Config.ROCKET_BURN_TICKS_PER_BUCKET_DESC, "How many ticks of powered flight one bucket of fuel provides. Raise this to make every launch cost less fuel. At the default of 50, leaving Earth burns about 32 buckets.");
+        this.add(Config.REFINERY_OIL_TO_FUEL_RATIO, "Refinery Oil To Fuel Ratio");
+        this.add(Config.REFINERY_OIL_TO_FUEL_RATIO_DESC, "Buckets of fuel a refinery produces per bucket of crude oil. Raise this to spend less oil without changing how far a bucket of fuel goes.");
 
         this.add(Config.DIFFICULTY, "Difficulty");
         this.add(Config.METEOR_SPAWN_MULTIPLIER, "Meteor Spawn Multiplier");

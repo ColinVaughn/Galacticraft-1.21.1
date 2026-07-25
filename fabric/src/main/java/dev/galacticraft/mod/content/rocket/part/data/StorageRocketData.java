@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,15 +24,30 @@
 package dev.galacticraft.mod.content.rocket.part.data;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-public sealed interface RocketUpgradeData permits ExplosiveRocketData, StorageRocketData {
+/**
+ * How many chests were installed in the rocket workbench when this rocket was built.
+ *
+ * <p>The registered storage upgrade only carries the <em>maximum</em> chest count, so the
+ * per-rocket count has to travel with the rocket itself; without it every rocket built with
+ * the storage upgrade would end up the same size.</p>
+ */
+public record StorageRocketData(
+        int chests
+) implements RocketUpgradeData {
 
-    Codec<RocketUpgradeData> DIRECT_CODEC =
-            Codec.STRING.dispatch(
-                    "type",
-                    RocketUpgradeData::typeName,
-                    RocketUpgradeDataType::mapCodecByName
-            );
+    public static final String TYPE_NAME = "storage";
 
-    String typeName();
+    public static final MapCodec<StorageRocketData> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+            Codec.INT.fieldOf("chests").forGetter(StorageRocketData::chests)
+    ).apply(instance, StorageRocketData::new));
+
+    public static final Codec<StorageRocketData> CODEC = MAP_CODEC.codec();
+
+    @Override
+    public String typeName() {
+        return TYPE_NAME;
+    }
 }

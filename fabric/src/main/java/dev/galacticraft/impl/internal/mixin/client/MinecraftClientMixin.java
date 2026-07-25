@@ -24,10 +24,12 @@ package dev.galacticraft.impl.internal.mixin.client;
 
 import dev.galacticraft.api.universe.celestialbody.CelestialBody;
 import dev.galacticraft.impl.accessor.SoundSystemAccessor;
+import dev.galacticraft.impl.internal.VirtualLevels;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ReceivingLevelScreen;
+import net.minecraft.client.main.GameConfig;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.core.Holder;
@@ -42,6 +44,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class MinecraftClientMixin {
     @Shadow
     public abstract SoundManager getSoundManager();
+
+    @Shadow
+    public ClientLevel level;
+
+    @Inject(method = "<init>", at = @At("RETURN"))
+    private void gc$trackCanonicalClientLevel(GameConfig gameConfig, CallbackInfo ci) {
+        // Lets common code tell a real level apart from another mod's wrapper of it without ever
+        // referencing Minecraft, which does not exist on a dedicated server.
+        VirtualLevels.setClientLevelSupplier(() -> this.level);
+    }
 
     @Inject(method = "setLevel", at = @At("RETURN"))
     private void updateSoundMultiplier(ClientLevel level, ReceivingLevelScreen.Reason reason, CallbackInfo ci) {

@@ -36,6 +36,7 @@ import dev.galacticraft.api.rocket.entity.Rocket;
 import dev.galacticraft.api.rocket.part.*;
 import dev.galacticraft.api.universe.celestialbody.CelestialBody;
 import dev.galacticraft.mod.Constant;
+import dev.galacticraft.mod.Galacticraft;
 import dev.galacticraft.mod.api.block.entity.FuelDock;
 import dev.galacticraft.mod.attachments.GCServerPlayer;
 import dev.galacticraft.mod.content.GCBlocks;
@@ -44,10 +45,12 @@ import dev.galacticraft.mod.content.GCRocketParts;
 import dev.galacticraft.mod.content.GCStats;
 import dev.galacticraft.mod.content.advancements.GCTriggers;
 import dev.galacticraft.mod.content.block.special.launchpad.AbstractLaunchPad;
+import dev.galacticraft.mod.content.block.special.launchpad.LaunchPadBlockEntity;
 import dev.galacticraft.mod.content.entity.data.GCEntityDataSerializers;
 import dev.galacticraft.mod.content.item.GCItems;
 import dev.galacticraft.mod.content.rocket.part.config.StorageUpgradeConfig;
 import dev.galacticraft.mod.content.rocket.part.data.ExplosiveRocketData;
+import dev.galacticraft.mod.content.rocket.part.data.StorageRocketData;
 import dev.galacticraft.mod.content.rocket.part.type.StorageUpgradeType;
 import dev.galacticraft.mod.events.RocketEvents;
 import dev.galacticraft.mod.network.s2c.OpenCelestialScreenPayload;
@@ -66,6 +69,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -78,6 +82,9 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.Container;
+import net.minecraft.world.Containers;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.item.PrimedTnt;
@@ -102,7 +109,7 @@ import java.util.Optional;
 import static dev.galacticraft.mod.content.entity.damage.GCDamageTypes.CRASH_LANDING;
 
 @SuppressWarnings("UnstableApiUsage")
-public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift, ControllableEntity {
+public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift, ControllableEntity, ContainerVehicle {
     private static final EntityDataAccessor<LaunchStage> STAGE = SynchedEntityData.defineId(RocketEntity.class, GCEntityDataSerializers.LAUNCH_STAGE);
     private static final EntityDataAccessor<Integer> TIME_AS_STATE = SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Float> THRUST = SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.FLOAT);
@@ -124,9 +131,24 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
     private final boolean debugMode = false && Platform.isDevelopmentEnvironment();
 
     private FuelDock linkedPad = null;
-    private final SimpleFluidTank tank = new SimpleFluidTank(FluidUtil.bucketsToDroplets(RocketFlightLogic.FUEL_TANK_CAPACITY_BUCKETS), () -> {
+    /**
+     * Where the pad was when the rocket was last saved. Kept separately because the dock itself
+     * cannot always be resolved at load time — an entity is deserialized while its chunk is still
+     * coming up, so the block entity lookup can come back empty — and without this the position
+     * would be dropped from the next save and the rocket would be orphaned for good.
+     */
+    private @Nullable BlockPos linkedPadPos = null;
+    // Read once, when the rocket is built: resizing a tank that already holds fuel would either
+    // spill it or invent it, so rockets already in a save keep the capacity they were built with.
+    private final SimpleFluidTank tank = new SimpleFluidTank(FluidUtil.bucketsToDroplets(Galacticraft.CONFIG.rocketFuelTankCapacity()), () -> {
         this.entityData.set(FUEL, getTank().getAmount());
     });
+
+    /**
+     * Cargo hold. Sized {@code storage slots + RESERVED_RETURN_STACKS}; the trailing reserved pair is
+     * never shown in the GUI and stays empty until the stacks are handed to the player on departure.
+     */
+    private SimpleContainer inventory = new SimpleContainer(GCServerPlayer.RESERVED_RETURN_STACKS);
 
     private int timeBeforeLaunch;
     private float timeSinceLaunch;
@@ -257,6 +279,17 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
     @Override
     public void setPad(FuelDock pad) {
         this.linkedPad = pad;
+        this.linkedPadPos = pad != null ? pad.getDockPos() : null;
+    }
+
+    /**
+     * Retries the dock lookup that {@link #readAdditionalSaveData} may not have been able to make.
+     */
+    private void resolveLinkedPad() {
+        if (this.linkedPad != null || this.linkedPadPos == null) return;
+        if (this.level().getBlockEntity(this.linkedPadPos) instanceof FuelDock pad) {
+            this.linkedPad = pad;
+        }
     }
 
     @Override
@@ -272,7 +305,10 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
 
     @Override
     public boolean isDockValid(FuelDock dock) {
-        return false;
+        // Must be a real answer, not a constant: LaunchPadBlockEntity#getDockedEntity relies on this
+        // to re-attach a rocket that resolved its own link to nothing, which is what every reload
+        // looks like when the pad's block entity is not reachable yet.
+        return dock instanceof LaunchPadBlockEntity pad && pad.getPadType() == LaunchPadBlockEntity.Type.ROCKET;
     }
 
     @Override
@@ -299,6 +335,11 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
     public void dropItems(DamageSource damageSource, boolean exploded) {
         if (!exploded) {
             this.spawnAtLocation(this.getDropItem());
+        }
+        // Cargo spills whether or not the rocket survived; it should never just vanish. Unlike
+        // spawnAtLocation, dropContents has no client-side guard of its own.
+        if (!this.level().isClientSide) {
+            Containers.dropContents(this.level(), this, this.getVehicleInventory());
         }
         this.remove(RemovalReason.KILLED);
     }
@@ -328,13 +369,86 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
         return this.tank;
     }
 
-    public int getReturnCargoSlotCount() {
-        int slots = GCServerPlayer.RESERVED_RETURN_STACKS;
+    /**
+     * Cargo slots the player can actually see and use, driven by how many chests were installed at
+     * the workbench. Zero for a rocket built without the storage upgrade.
+     */
+    public int getStorageSlotCount() {
         Holder<RocketUpgrade<?, ?>> upgrade = this.upgrade();
         if (upgrade != null && upgrade.value().type() instanceof StorageUpgradeType storageType && upgrade.value().config() instanceof StorageUpgradeConfig config) {
-            slots += storageType.getSlots(config);
+            return storageType.getSlots(config, this.getStorageChestCount());
         }
-        return slots;
+        return 0;
+    }
+
+    private int getStorageChestCount() {
+        // Rockets built before storage tiers existed carry no chest count; they were built from the
+        // workbench's single chest slot, so treat them as one chest.
+        return this.getRocketData().upgradeData()
+                .filter(StorageRocketData.class::isInstance)
+                .map(data -> ((StorageRocketData) data).chests())
+                .orElse(1);
+    }
+
+    /**
+     * The size of the stack list handed to the player on leaving the dimension: every cargo slot plus
+     * the two reserved slots that carry the rocket item and launch pad back down.
+     */
+    public int getReturnCargoSlotCount() {
+        return GCServerPlayer.RESERVED_RETURN_STACKS + this.getStorageSlotCount();
+    }
+
+    @Override
+    public int getCargoSlotCount() {
+        return this.getStorageSlotCount();
+    }
+
+    @Override
+    public Container getVehicleInventory() {
+        // The rocket's parts arrive by entity-data sync on the client and by NBT on the server, so the
+        // container is sized on demand rather than in the constructor.
+        int expected = this.getReturnCargoSlotCount();
+        if (this.inventory.getContainerSize() != expected) {
+            this.resizeInventory(expected);
+        }
+        return this.inventory;
+    }
+
+    /**
+     * Snapshots the hold for the trip down and empties it, so the cargo lives in exactly one place
+     * while the player is between dimensions.
+     */
+    private NonNullList<ItemStack> collectCargoForTransfer() {
+        Container hold = this.getVehicleInventory();
+        NonNullList<ItemStack> stacks = RocketCargoLogic.collectForTransfer(hold, this.getReturnCargoSlotCount());
+        hold.clearContent();
+        return stacks;
+    }
+
+    private void resizeInventory(int size) {
+        SimpleContainer previous = this.inventory;
+
+        // Never shrink past cargo that is actually there. The size is derived from the storage
+        // upgrade, and anything that stops that upgrade resolving for even one call — data not
+        // synced yet, a registry not reachable yet — would otherwise silently destroy the hold, with
+        // no way to get it back once the upgrade resolves again.
+        int occupied = 0;
+        for (int slot = 0; slot < previous.getContainerSize(); ++slot) {
+            if (!previous.getItem(slot).isEmpty()) {
+                occupied = slot + 1;
+            }
+        }
+        size = Math.max(size, occupied);
+        if (size == previous.getContainerSize()) return;
+
+        this.inventory = new SimpleContainer(size);
+        int shared = Math.min(previous.getContainerSize(), size);
+        for (int slot = 0; slot < shared; ++slot) {
+            ItemStack stack = previous.getItem(slot);
+            if (!stack.isEmpty()) {
+                this.inventory.setItem(slot, stack.copy());
+            }
+        }
     }
 
     @Override
@@ -636,6 +750,9 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
 
         if (level().isClientSide()) return;
 
+        // The pad's chunk may have finished loading after this rocket did.
+        this.resolveLinkedPad();
+
         if (getLaunchStage() == LaunchStage.LAUNCHED) this.timeSinceLaunch++;
         else this.timeSinceLaunch = 0;
 
@@ -717,7 +834,7 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
                 for (Entity entity : getPassengers()) {
                     if (entity instanceof ServerPlayer serverPlayer) {
                         GCServerPlayer gcPlayer = GCServerPlayer.get(serverPlayer);
-                        gcPlayer.setRocketStacks(NonNullList.withSize(this.getReturnCargoSlotCount(), ItemStack.EMPTY));
+                        gcPlayer.setRocketStacks(this.collectCargoForTransfer());
                         gcPlayer.setFuel(this.tank.getAmount());
 
                         var rocket = new ItemStack(GCItems.ROCKET);
@@ -726,7 +843,7 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
                         if (this.isCreative()) {
                             rocket.set(GCDataComponents.CREATIVE, true);
                         }
-                        gcPlayer.setRocketItem(rocket);
+                        gcPlayer.finishReturnInventory(rocket);
 
                         serverPlayer.galacticraft$openCelestialScreen(d);
                         NetworkManager.sendToPlayer(serverPlayer, new OpenCelestialScreenPayload(this.getRocketData(), this.level().galacticraft$getCelestialBody()));
@@ -849,7 +966,16 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
 
     @Override
     protected void readAdditionalSaveData(CompoundTag tag) {
-        this.setData(RocketData.CODEC.decode(NbtOps.INSTANCE, tag.getCompound("data")).mapOrElse(Pair::getFirst, e -> RocketPrefabs.TIER_1));
+        // Registry-aware ops are required, not optional: the part codecs are RegistryFileCodecs, and
+        // without a registry they cannot turn a saved id such as "galacticraft:tier_1" back into a
+        // holder. That failure sinks the whole record, and the fallback below would quietly hand
+        // back a bare tier 1 rocket — stripping the storage upgrade and every part with it.
+        RegistryOps<Tag> ops = RegistryOps.create(NbtOps.INSTANCE, this.registryAccess());
+        this.setData(RocketData.CODEC.decode(ops, tag.getCompound("data")).mapOrElse(Pair::getFirst, error -> {
+            Constant.LOGGER.error("Failed to load rocket data for {}, falling back to a tier 1 rocket: {}",
+                    this.getUUID(), error.message());
+            return RocketPrefabs.TIER_1;
+        }));
 
         if (tag.contains("Stage")) this.setLaunchStage(LaunchStage.valueOf(tag.getString("Stage")));
         if (tag.contains("Thrust")) this.setThrust(tag.getFloat("Thrust"));
@@ -861,13 +987,21 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
         if (tag.contains("CrashArmTimer")) this.crashArmTimer = tag.getInt("CrashArmTimer");
         if (tag.contains("Crashed")) this.crashed = tag.getBoolean("Crashed");
 
-        BlockEntity be = this.level().getBlockEntity(BlockPos.of(tag.getLong("Linked")));
-        if (be instanceof FuelDock pad) this.linkedPad = pad;
+        if (tag.contains("Linked")) {
+            this.linkedPadPos = BlockPos.of(tag.getLong("Linked"));
+            this.resolveLinkedPad();
+        }
+
+        // Sized off the rocket data decoded above, so this has to come after setData.
+        ContainerVehicle.loadInventory(tag, this.getVehicleInventory(), this.registryAccess());
     }
 
     @Override
     protected void addAdditionalSaveData(CompoundTag tag) {
-        DataResult<Tag> result = RocketData.CODEC.encodeStart(NbtOps.INSTANCE, getRocketData());
+        RegistryOps<Tag> ops = RegistryOps.create(NbtOps.INSTANCE, this.registryAccess());
+        DataResult<Tag> result = RocketData.CODEC.encodeStart(ops, getRocketData());
+        result.error().ifPresent(error -> Constant.LOGGER.error(
+                "Failed to save rocket data for {}: {}", this.getUUID(), error.message()));
         tag.put("data", result.getPartialOrThrow());
 
         tag.putString("Stage", getLaunchStage().name());
@@ -880,7 +1014,10 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
         tag.putInt("CrashArmTimer", this.crashArmTimer);
         tag.putBoolean("Crashed", this.crashed);
 
-        if (this.linkedPad != null) tag.putLong("Linked", this.linkedPad.getDockPos().asLong());
+        BlockPos padPos = this.linkedPad != null ? this.linkedPad.getDockPos() : this.linkedPadPos;
+        if (padPos != null) tag.putLong("Linked", padPos.asLong());
+
+        ContainerVehicle.saveInventory(tag, this.getVehicleInventory(), this.registryAccess());
     }
 
     public int getTimeBeforeLaunch() {
@@ -893,7 +1030,9 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
 
     /** Droplets of fuel the engines burn on a single tick of powered flight. */
     private static long fuelBurnPerTick() {
-        return FluidUtil.bucketsToDroplets(1) / RocketFlightLogic.BURN_TICKS_PER_BUCKET;
+        int burnTicksPerBucket = Galacticraft.CONFIG.rocketBurnTicksPerBucket();
+        if (burnTicksPerBucket <= 0) return FluidUtil.bucketsToDroplets(1);
+        return FluidUtil.bucketsToDroplets(1) / burnTicksPerBucket;
     }
 
     @Override public @Nullable Holder<RocketCone<?, ?>> cone() { return maybeGet(getRocketData().cone()); }

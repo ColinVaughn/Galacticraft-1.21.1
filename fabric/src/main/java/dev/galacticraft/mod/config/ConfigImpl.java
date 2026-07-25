@@ -26,6 +26,8 @@ import com.google.gson.*;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.Galacticraft;
 import dev.galacticraft.mod.api.config.Config;
+import dev.galacticraft.mod.content.block.entity.machine.RefineryFuelLogic;
+import dev.galacticraft.mod.content.entity.vehicle.RocketFlightLogic;
 import dev.galacticraft.mod.util.Translations;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
@@ -33,6 +35,7 @@ import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
 import me.shedaniel.clothconfig2.impl.builders.BooleanToggleBuilder;
 import me.shedaniel.clothconfig2.impl.builders.DoubleFieldBuilder;
 import me.shedaniel.clothconfig2.impl.builders.FloatFieldBuilder;
+import me.shedaniel.clothconfig2.impl.builders.IntFieldBuilder;
 import me.shedaniel.clothconfig2.impl.builders.LongFieldBuilder;
 import me.shedaniel.clothconfig2.impl.builders.SubCategoryBuilder;
 import dev.galacticraft.machinelib.api.transfer.FluidConstants;
@@ -106,6 +109,9 @@ public class ConfigImpl implements Config {
     private boolean machineDustEnabled = true;
     private boolean terrainDustEnabled = true;
     private double bossHealthMultiplier = 1.0;
+    private int rocketFuelTankCapacity = RocketFlightLogic.DEFAULT_FUEL_TANK_CAPACITY_BUCKETS;
+    private int rocketBurnTicksPerBucket = RocketFlightLogic.DEFAULT_BURN_TICKS_PER_BUCKET;
+    private double refineryOilToFuelRatio = RefineryFuelLogic.DEFAULT_OIL_TO_FUEL_RATIO;
     private boolean hideAlphaWarning = false;
     private boolean enableGcHouston = true;
     private boolean enableCreativeGearInv = true;
@@ -586,6 +592,33 @@ public class ConfigImpl implements Config {
 
     public void setBossHealthMultiplier(double bossHealthMultiplier) {
         this.bossHealthMultiplier = bossHealthMultiplier;
+    }
+
+    @Override
+    public int rocketFuelTankCapacity() {
+        return this.rocketFuelTankCapacity;
+    }
+
+    public void setRocketFuelTankCapacity(int rocketFuelTankCapacity) {
+        this.rocketFuelTankCapacity = rocketFuelTankCapacity;
+    }
+
+    @Override
+    public int rocketBurnTicksPerBucket() {
+        return this.rocketBurnTicksPerBucket;
+    }
+
+    public void setRocketBurnTicksPerBucket(int rocketBurnTicksPerBucket) {
+        this.rocketBurnTicksPerBucket = rocketBurnTicksPerBucket;
+    }
+
+    @Override
+    public double refineryOilToFuelRatio() {
+        return this.refineryOilToFuelRatio;
+    }
+
+    public void setRefineryOilToFuelRatio(double refineryOilToFuelRatio) {
+        this.refineryOilToFuelRatio = refineryOilToFuelRatio;
     }
 
     @Override
@@ -1181,6 +1214,40 @@ public class ConfigImpl implements Config {
                     .setTooltip(tooltipWithDesc.apply(Translations.Config.BOSS_HEALTH_MODIFIER, Translations.Config.BOSS_HEALTH_MODIFIER_DESC))
                     .setSaveConsumer(config::setBossHealthMultiplier)
                     .setDefaultValue(1)
+                    .build()
+            );
+
+            // --- ROCKET CONFIG ---
+
+            ConfigCategory rockets = b.getOrCreateCategory(Component.translatable(Translations.Config.ROCKETS));
+
+            rockets.addEntry(new IntFieldBuilder(
+                    Component.translatable(Translations.Config.RESET),
+                    label.apply(Translations.Config.ROCKET_FUEL_TANK_CAPACITY),
+                    config.rocketFuelTankCapacity())
+                    .setTooltip(tooltipWithDesc.apply(Translations.Config.ROCKET_FUEL_TANK_CAPACITY, Translations.Config.ROCKET_FUEL_TANK_CAPACITY_DESC))
+                    .setSaveConsumer(config::setRocketFuelTankCapacity)
+                    .setDefaultValue(RocketFlightLogic.DEFAULT_FUEL_TANK_CAPACITY_BUCKETS)
+                    .build()
+            );
+
+            rockets.addEntry(new IntFieldBuilder(
+                    Component.translatable(Translations.Config.RESET),
+                    label.apply(Translations.Config.ROCKET_BURN_TICKS_PER_BUCKET),
+                    config.rocketBurnTicksPerBucket())
+                    .setTooltip(tooltipWithDesc.apply(Translations.Config.ROCKET_BURN_TICKS_PER_BUCKET, Translations.Config.ROCKET_BURN_TICKS_PER_BUCKET_DESC))
+                    .setSaveConsumer(config::setRocketBurnTicksPerBucket)
+                    .setDefaultValue(RocketFlightLogic.DEFAULT_BURN_TICKS_PER_BUCKET)
+                    .build()
+            );
+
+            rockets.addEntry(new DoubleFieldBuilder(
+                    Component.translatable(Translations.Config.RESET),
+                    label.apply(Translations.Config.REFINERY_OIL_TO_FUEL_RATIO),
+                    config.refineryOilToFuelRatio())
+                    .setTooltip(tooltipWithDesc.apply(Translations.Config.REFINERY_OIL_TO_FUEL_RATIO, Translations.Config.REFINERY_OIL_TO_FUEL_RATIO_DESC))
+                    .setSaveConsumer(config::setRefineryOilToFuelRatio)
+                    .setDefaultValue(RefineryFuelLogic.DEFAULT_OIL_TO_FUEL_RATIO)
                     .build()
             );
 

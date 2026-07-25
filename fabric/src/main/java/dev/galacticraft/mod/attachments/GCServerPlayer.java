@@ -39,12 +39,14 @@ public class GCServerPlayer {
     private RocketData rocketData;
     public NonNullList<ItemStack> stacks = NonNullList.withSize(RESERVED_RETURN_STACKS, ItemStack.EMPTY);
     public long fuel;
+    private ItemStack launchpadStack = ItemStack.EMPTY;
 
     public static final Codec<GCServerPlayer> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             RocketData.CODEC.optionalFieldOf("rocket_data").forGetter(o -> Optional.ofNullable(o.rocketData)),
             Codec.LONG.fieldOf("fuel").forGetter(GCServerPlayer::getFuel),
-            ItemStack.OPTIONAL_CODEC.listOf().fieldOf("rocket_stacks").forGetter(GCServerPlayer::getRocketStacks)
-    ).apply(instance, (data, fuel, stacks) -> new GCServerPlayer(data.orElse(null), fuel, stacks)));
+            ItemStack.OPTIONAL_CODEC.listOf().fieldOf("rocket_stacks").forGetter(GCServerPlayer::getRocketStacks),
+            ItemStack.OPTIONAL_CODEC.optionalFieldOf("launchpad_stack", ItemStack.EMPTY).forGetter(GCServerPlayer::getLaunchpadStack)
+    ).apply(instance, (data, fuel, stacks, launchpad) -> new GCServerPlayer(data.orElse(null), fuel, stacks, launchpad)));
 
     public static GCServerPlayer get(ServerPlayer player) {
         return ((AttachmentTarget) player).getAttachedOrCreate(GCAttachments.SERVER_PLAYER, () -> new GCServerPlayer(player));
@@ -54,10 +56,11 @@ public class GCServerPlayer {
     public GCServerPlayer(ServerPlayer player) {
     }
 
-    public GCServerPlayer(RocketData data, long fuel, List<ItemStack> stacks) {
+    public GCServerPlayer(RocketData data, long fuel, List<ItemStack> stacks, ItemStack launchpadStack) {
         this.rocketData = data;
         this.fuel = fuel;
         this.stacks = NonNullList.of(ItemStack.EMPTY, stacks.toArray(ItemStack[]::new));
+        this.launchpadStack = launchpadStack.copy();
         this.ensureReturnStackSlots();
     }
 
@@ -88,18 +91,27 @@ public class GCServerPlayer {
 
     public void setRocketItem(ItemStack rocketItem) {
         this.ensureReturnStackSlots();
-        for (int stack = 0; stack < getRocketStacks().size(); stack++)
-            if (getRocketStacks().get(stack).isEmpty())
-                if (stack == getRocketStacks().size() - 1)
-                    getRocketStacks().set(stack, rocketItem);
+        getRocketStacks().set(getRocketStacks().size() - 1, rocketItem.copy());
+    }
+
+    public ItemStack getLaunchpadStack() {
+        return this.launchpadStack;
     }
 
     public void setLaunchpadStack(ItemStack launchpad) {
+        this.launchpadStack = launchpad == null ? ItemStack.EMPTY : launchpad.copy();
+    }
+
+    /**
+     * Writes the vehicle items into the two slots reserved at the end of the transferred cargo.
+     * The launch pad is kept separately until this point because the rocket replaces the cargo list
+     * when it reaches space.
+     */
+    public void finishReturnInventory(ItemStack rocketItem) {
         this.ensureReturnStackSlots();
-        for (int stack = 0; stack < getRocketStacks().size(); stack++)
-            if (getRocketStacks().get(stack).isEmpty())
-                if (stack == getRocketStacks().size() - 2)
-                    getRocketStacks().set(stack, launchpad == null ? ItemStack.EMPTY : launchpad);
+        getRocketStacks().set(getRocketStacks().size() - 2, this.launchpadStack.copy());
+        this.setRocketItem(rocketItem);
+        this.launchpadStack = ItemStack.EMPTY;
     }
 
     private void ensureReturnStackSlots() {

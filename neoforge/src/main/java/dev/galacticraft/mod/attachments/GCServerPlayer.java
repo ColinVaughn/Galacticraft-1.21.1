@@ -38,12 +38,14 @@ public class GCServerPlayer {
     private RocketData rocketData;
     public NonNullList<ItemStack> stacks = NonNullList.withSize(RESERVED_RETURN_STACKS, ItemStack.EMPTY);
     public long fuel;
+    private ItemStack launchpadStack = ItemStack.EMPTY;
 
     public static final Codec<GCServerPlayer> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             RocketData.CODEC.optionalFieldOf("rocket_data").forGetter(o -> Optional.ofNullable(o.rocketData)),
             Codec.LONG.fieldOf("fuel").forGetter(GCServerPlayer::getFuel),
-            ItemStack.OPTIONAL_CODEC.listOf().fieldOf("rocket_stacks").forGetter(GCServerPlayer::getRocketStacks)
-    ).apply(instance, (data, fuel, stacks) -> new GCServerPlayer(data.orElse(null), fuel, stacks)));
+            ItemStack.OPTIONAL_CODEC.listOf().fieldOf("rocket_stacks").forGetter(GCServerPlayer::getRocketStacks),
+            ItemStack.OPTIONAL_CODEC.optionalFieldOf("launchpad_stack", ItemStack.EMPTY).forGetter(GCServerPlayer::getLaunchpadStack)
+    ).apply(instance, (data, fuel, stacks, launchpad) -> new GCServerPlayer(data.orElse(null), fuel, stacks, launchpad)));
 
     public static GCServerPlayer get(ServerPlayer player) {
         return player.getData(GCAttachments.SERVER_PLAYER);
@@ -76,20 +78,27 @@ public class GCServerPlayer {
 
     public void setRocketItem(ItemStack rocketItem) {
         ensureReturnStackSlots();
-        for (int stack = 0; stack < stacks.size(); stack++) {
-            if (stacks.get(stack).isEmpty() && stack == stacks.size() - 1) {
-                stacks.set(stack, rocketItem);
-            }
-        }
+        stacks.set(stacks.size() - 1, rocketItem.copy());
+    }
+
+    public ItemStack getLaunchpadStack() {
+        return launchpadStack;
     }
 
     public void setLaunchpadStack(ItemStack launchpad) {
+        launchpadStack = launchpad == null ? ItemStack.EMPTY : launchpad.copy();
+    }
+
+    /**
+     * Writes the vehicle items into the two slots reserved at the end of the transferred cargo.
+     * The launch pad is kept separately until this point because the rocket replaces the cargo list
+     * when it reaches space.
+     */
+    public void finishReturnInventory(ItemStack rocketItem) {
         ensureReturnStackSlots();
-        for (int stack = 0; stack < stacks.size(); stack++) {
-            if (stacks.get(stack).isEmpty() && stack == stacks.size() - 2) {
-                stacks.set(stack, launchpad == null ? ItemStack.EMPTY : launchpad);
-            }
-        }
+        stacks.set(stacks.size() - 2, launchpadStack.copy());
+        setRocketItem(rocketItem);
+        launchpadStack = ItemStack.EMPTY;
     }
 
     private void ensureReturnStackSlots() {
@@ -105,10 +114,11 @@ public class GCServerPlayer {
     public GCServerPlayer(ServerPlayer player) {
     }
 
-    public GCServerPlayer(RocketData data, long fuel, List<ItemStack> stacks) {
+    public GCServerPlayer(RocketData data, long fuel, List<ItemStack> stacks, ItemStack launchpadStack) {
         this.rocketData = data;
         this.fuel = fuel;
         this.stacks = NonNullList.of(ItemStack.EMPTY, stacks.toArray(ItemStack[]::new));
+        this.launchpadStack = launchpadStack.copy();
         ensureReturnStackSlots();
     }
 }

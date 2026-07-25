@@ -24,8 +24,10 @@ package dev.galacticraft.mod.network.c2s;
 
 import dev.galacticraft.impl.network.c2s.C2SPayload;
 import dev.galacticraft.mod.Constant;
+import dev.galacticraft.mod.content.entity.vehicle.Buggy;
 import dev.galacticraft.mod.content.entity.vehicle.RocketEntity;
 import dev.galacticraft.mod.screen.RocketMenu;
+import net.minecraft.world.entity.Entity;
 import io.netty.buffer.ByteBuf;
 import dev.architectury.networking.NetworkManager;
 import dev.architectury.registry.menu.MenuRegistry;
@@ -45,11 +47,19 @@ public record OpenRocketPayload() implements C2SPayload {
 
     @Override
     public void handle(NetworkManager.@NotNull PacketContext context) {
-        ServerPlayer serverPlayer = (ServerPlayer) ((net.minecraft.server.level.ServerPlayer) context.getPlayer());
-        MenuRegistry.openExtendedMenu(serverPlayer, new SimpleMenuProvider(
-                (syncId, inventory, player) -> new RocketMenu(syncId, inventory, player,
-                        (RocketEntity) player.getVehicle()), Component.empty()),
-                buf -> buf.writeInt(serverPlayer.getVehicle().getId()));
+        if (!(context.getPlayer() instanceof ServerPlayer serverPlayer)) return;
+
+        // The keybind fires client-side, so the vehicle may already be gone by the time this lands.
+        Entity vehicle = serverPlayer.getVehicle();
+
+        if (vehicle instanceof RocketEntity rocket) {
+            MenuRegistry.openExtendedMenu(serverPlayer, new SimpleMenuProvider(
+                    (syncId, inventory, player) -> new RocketMenu(syncId, inventory, player, rocket), Component.empty()),
+                    buf -> buf.writeInt(rocket.getId()));
+        } else if (vehicle instanceof Buggy buggy) {
+            // Legacy opened whichever vehicle the player was riding from the same key.
+            MenuRegistry.openExtendedMenu(serverPlayer, buggy);
+        }
     }
 
     @Override

@@ -28,7 +28,11 @@ import dev.galacticraft.mod.accessor.ServerPlayerAccessor;
 import dev.galacticraft.mod.content.block.special.CryogenicChamberBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import com.mojang.datafixers.util.Pair;
+import dev.galacticraft.mod.Constant;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -81,7 +85,8 @@ public abstract class ServerPlayerMixin extends LivingEntityMixin implements Ser
         nbt.putBoolean("CelestialActive", this.celestialActive);
         if (this.rocketData != null) {
             CompoundTag nbt1 = new CompoundTag();
-            RocketData.CODEC.encode(this.rocketData, NbtOps.INSTANCE, nbt1);
+            RegistryOps<Tag> ops = RegistryOps.create(NbtOps.INSTANCE, this.registryAccess());
+            RocketData.CODEC.encode(this.rocketData, ops, nbt1);
             nbt.put("CelestialState", nbt1);
         }
     }
@@ -90,7 +95,14 @@ public abstract class ServerPlayerMixin extends LivingEntityMixin implements Ser
     private void readCelestialData(CompoundTag nbt, CallbackInfo ci) {
         this.celestialActive = nbt.getBoolean("CelestialActive");
         if (nbt.contains("CelestialState")) {
-            this.rocketData = RocketData.CODEC.decode(NbtOps.INSTANCE, nbt.getCompound("CelestialState")).getOrThrow().getFirst();
+            // Same registry requirement as the rocket entity. This one used getOrThrow, so a player
+            // saved mid-flight could not be loaded back at all.
+            RegistryOps<Tag> ops = RegistryOps.create(NbtOps.INSTANCE, this.registryAccess());
+            this.rocketData = RocketData.CODEC.decode(ops, nbt.getCompound("CelestialState"))
+                    .resultOrPartial(error -> Constant.LOGGER.error(
+                            "Failed to load celestial rocket data for {}: {}", this.getUUID(), error))
+                    .map(Pair::getFirst)
+                    .orElse(null);
         }
     }
 

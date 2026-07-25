@@ -36,4 +36,16 @@ public interface LevelBodyAccessor {
     default boolean galacticraft$hasDimensionTypeTag(TagKey<DimensionType> tag) {
         throw new RuntimeException("This should be overridden by mixin!");
     }
+
+    /**
+     * {@return whether this level is a throwaway copy of another level rather than a level the game
+     * is actually running}
+     * <p>
+     * Wrapper levels — Create's Ponder scenes and schematic previews, for instance — inherit the
+     * dimension key of the level they wrap, so without this check a preview opened on the Moon
+     * would inherit the Moon's gravity and atmosphere. Such levels report no celestial body.
+     */
+    default boolean galacticraft$isVirtualLevel() {
+        return false;
+    }
 }

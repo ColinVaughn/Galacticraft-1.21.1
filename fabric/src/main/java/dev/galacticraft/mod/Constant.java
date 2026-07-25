@@ -640,6 +640,9 @@ public interface Constant {
         ResourceLocation PLAYER_INVENTORY_SCREEN = id("textures/gui/player_inventory_screen.png");
         ResourceLocation PET_INVENTORY_SCREEN = id("textures/gui/pet_inventory_screen.png");
         ResourceLocation ROCKET_INVENTORY = id("textures/gui/rocket.png");
+        ResourceLocation ROCKET_INVENTORY_18 = id("textures/gui/rocket_18.png");
+        ResourceLocation ROCKET_INVENTORY_36 = id("textures/gui/rocket_36.png");
+        ResourceLocation ROCKET_INVENTORY_54 = id("textures/gui/rocket_54.png");
         ResourceLocation WARNING_SIGN = id("textures/gui/warning.png");
 
         ResourceLocation OXYGEN_COMPRESSOR_SCREEN = id("textures/gui/oxygen_compressor_screen.png");
@@ -861,6 +864,7 @@ public interface Constant {
 
         int CHEST_X = 44;
         int CHEST_Y = 140;
+        int CHEST_X_OFFSET = 18;
         int CHEST_U = 178;
         int CHEST_V = 0;
         int CHEST_WIDTH = 20;

@@ -36,7 +36,7 @@ import dev.galacticraft.machinelib.api.transfer.TransferType;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.Galacticraft;
 import dev.galacticraft.mod.content.GCBlockEntityTypes;
-import dev.galacticraft.mod.content.entity.vehicle.CargoRocketEntity;
+import dev.galacticraft.mod.content.entity.vehicle.ContainerVehicle;
 import dev.galacticraft.mod.screen.GCMenuTypes;
 import dev.galacticraft.mod.storage.ItemStoragePull;
 import net.minecraft.core.BlockPos;
@@ -90,12 +90,13 @@ public class CargoUnloaderBlockEntity extends MachineBlockEntity {
     protected @NotNull MachineStatus tick(@NotNull ServerLevel level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull ProfilerFiller profiler) {
         if (!this.energyStorage().canExtract(ENERGY_USAGE)) return MachineStatuses.NOT_ENOUGH_ENERGY;
 
-        CargoRocketEntity rocket = CargoRocketEntity.findDockedRocket(level, pos);
+        ContainerVehicle rocket = ContainerVehicle.findDocked(level, pos);
         if (rocket != null) {
             int remaining = (int) TRANSFER_RATE;
             int moved = 0;
             Container rocketInventory = rocket.getVehicleInventory();
-            for (int sourceSlot = 0; sourceSlot < rocketInventory.getContainerSize() && remaining > 0;
+            int cargoSlots = rocket.getCargoSlotCount();
+            for (int sourceSlot = 0; sourceSlot < cargoSlots && remaining > 0;
                  sourceSlot++) {
                 ItemStack stack = rocketInventory.getItem(sourceSlot);
                 if (stack.isEmpty()) continue;

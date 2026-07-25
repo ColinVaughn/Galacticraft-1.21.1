@@ -29,6 +29,7 @@ import dev.galacticraft.api.rocket.travelpredicate.ConfiguredTravelPredicate;
 import dev.galacticraft.api.rocket.travelpredicate.TravelPredicateType;
 import dev.galacticraft.impl.rocket.travelpredicate.config.ConstantTravelPredicateConfig;
 import dev.galacticraft.impl.rocket.travelpredicate.type.ConstantTravelPredicateType;
+import dev.galacticraft.mod.content.entity.vehicle.RocketCargoLogic;
 import dev.galacticraft.mod.content.rocket.part.config.StorageUpgradeConfig;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -40,8 +41,17 @@ public class StorageUpgradeType extends RocketUpgradeType<StorageUpgradeConfig> 
         super(StorageUpgradeConfig.CODEC);
     }
 
-    public int getSlots(@NotNull StorageUpgradeConfig config) {
-        return config.chests() * 27;
+    /**
+     * The cargo slots a rocket built with {@code chests} chests gets. {@link StorageUpgradeConfig#chests()}
+     * is the ceiling, so a rocket can never claim more storage than the upgrade allows.
+     */
+    public int getSlots(@NotNull StorageUpgradeConfig config, int chests) {
+        return RocketCargoLogic.storageSlots(chests, config.chests());
+    }
+
+    /** The cargo slots a fully upgraded rocket gets. */
+    public int getMaxSlots(@NotNull StorageUpgradeConfig config) {
+        return RocketCargoLogic.storageSlots(config.chests(), config.chests());
     }
 
     @Override

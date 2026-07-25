@@ -39,13 +39,20 @@ public final class CanisterFluidHandler implements IFluidHandlerItem {
     public CanisterFluidHandler(ItemStack stack) { this.stack = stack; }
     private long capacity() { return ((FluidCanisterItem) stack.getItem()).capacity; }
     private FluidData data() { return stack.get(FLUID_DATA); }
+    private boolean infinite() { return FluidCanisterItem.isInfinite(stack); }
     @Override public int getTanks() { return 1; }
     @Override public @NotNull FluidStack getFluidInTank(int tank) {
         FluidData data = data();
-        return tank == 0 && data != null ? stackOf(data.variant(), (int) (data.amount() / DROPLETS_PER_MB)) : FluidStack.EMPTY;
+        return tank == 0 && data != null
+                ? stackOf(data.variant(), infinite() ? Integer.MAX_VALUE : (int) (data.amount() / DROPLETS_PER_MB))
+                : FluidStack.EMPTY;
     }
-    @Override public int getTankCapacity(int tank) { return tank == 0 ? (int) (capacity() / DROPLETS_PER_MB) : 0; }
-    @Override public boolean isFluidValid(int tank, @NotNull FluidStack fluid) { return tank == 0 && !fluid.isEmpty() && !fluid.is(GCFluidTags.FLUID_CANISTER_EXCLUSIONS); }
+    @Override public int getTankCapacity(int tank) {
+        return tank == 0 ? infinite() ? Integer.MAX_VALUE : (int) (capacity() / DROPLETS_PER_MB) : 0;
+    }
+    @Override public boolean isFluidValid(int tank, @NotNull FluidStack fluid) {
+        return !infinite() && tank == 0 && !fluid.isEmpty() && !fluid.is(GCFluidTags.FLUID_CANISTER_EXCLUSIONS);
+    }
     @Override public int fill(@NotNull FluidStack fluid, FluidAction action) {
         if (!isFluidValid(0, fluid)) return 0;
         FluidStack stored = getFluidInTank(0);
@@ -64,6 +71,7 @@ public final class CanisterFluidHandler implements IFluidHandlerItem {
     @Override public @NotNull FluidStack drain(int amount, FluidAction action) {
         FluidData data = data();
         if (data == null || amount <= 0) return FluidStack.EMPTY;
+        if (infinite()) return stackOf(data.variant(), amount);
         long extracted = Math.min(data.amount(), (long) amount * DROPLETS_PER_MB);
         extracted = extracted / DROPLETS_PER_MB * DROPLETS_PER_MB;
         FluidStack result = stackOf(data.variant(), (int) (extracted / DROPLETS_PER_MB));

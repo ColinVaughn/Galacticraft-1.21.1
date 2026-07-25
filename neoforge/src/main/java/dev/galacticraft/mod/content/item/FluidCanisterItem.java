@@ -28,7 +28,6 @@ import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.content.GCFluids;
 import dev.galacticraft.mod.util.TooltipUtil;
 import dev.galacticraft.mod.util.Translations;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -36,6 +35,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
+import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -55,10 +55,21 @@ public class FluidCanisterItem extends Item {
         stack.set(FLUID_DATA, new FluidData(new MLFluidStack(fluid), ((FluidCanisterItem) item).capacity));
         return stack;
     }
+    public static ItemStack getInfiniteCanister(Item item, Fluid fluid) {
+        ItemStack stack = new ItemStack(item);
+        stack.set(FLUID_DATA, new FluidData(new MLFluidStack(fluid), Long.MAX_VALUE));
+        return stack;
+    }
+    public static boolean isInfinite(ItemStack stack) {
+        FluidData data = stack.get(FLUID_DATA);
+        return data != null && data.amount() == Long.MAX_VALUE;
+    }
     @Override public @NotNull Component getName(ItemStack stack) {
         FluidData data = stack.get(FLUID_DATA);
         if (data == null || data.variant().fluid() == Fluids.EMPTY) return super.getName(stack);
-        return Component.translatable(Translations.Items.FLUID_CANISTER_FILLED, fluidName(data.variant().fluid()));
+        return Component.translatable(isInfinite(stack)
+                ? Translations.Items.FLUID_CANISTER_INFINITE
+                : Translations.Items.FLUID_CANISTER_FILLED, fluidName(data));
     }
     @Override public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         FluidData data = stack.get(FLUID_DATA);
@@ -66,15 +77,22 @@ public class FluidCanisterItem extends Item {
             tooltip.add(Component.translatable(Translations.Tooltip.FLUID_CANISTER_EMPTY).setStyle(Constant.Text.DARK_GRAY_STYLE));
         } else {
             TooltipUtil.appendLabeledTooltip(Translations.Tooltip.FLUID_CANISTER_FLUID_INFO,
-                    fluidName(data.variant().fluid()), TooltipUtil.formatFluidRemaining(data.amount(), capacity), tooltip);
+                    fluidName(data), TooltipUtil.formatFluidRemaining(data.amount(), capacity), tooltip);
+        }
+        if (isInfinite(stack)) {
+            TooltipUtil.appendCreativeTooltip(tooltip, Constant.Text.LIGHT_PURPLE_STYLE);
         }
         super.appendHoverText(stack, context, tooltip, flag);
     }
-    private static Component fluidName(Fluid fluid) {
+    private static Component fluidName(FluidData data) {
+        Fluid fluid = data.variant().fluid();
         if (fluid.isSame(GCFluids.LIQUID_OXYGEN)) return Component.translatable(Translations.Tooltip.FLUID_CANISTER_LOX);
-        return Component.translatable(BuiltInRegistries.FLUID.getKey(fluid).toLanguageKey("fluid"));
+        FluidStack stack = new FluidStack(fluid, 1);
+        stack.applyComponents(data.variant().components());
+        return stack.getHoverName();
     }
-    @Override public boolean isBarVisible(ItemStack stack) { return true; }
+    @Override public boolean isBarVisible(ItemStack stack) { return !isInfinite(stack); }
+    @Override public boolean isFoil(ItemStack stack) { return isInfinite(stack) || super.isFoil(stack); }
     @Override public int getBarWidth(ItemStack stack) {
         CanisterStorageView storage = getStorage(stack);
         return Math.round(13.0F * (float) storage.amount / storage.capacity);

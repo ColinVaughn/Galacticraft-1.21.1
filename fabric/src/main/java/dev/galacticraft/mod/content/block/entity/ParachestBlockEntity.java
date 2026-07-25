@@ -40,7 +40,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
+import dev.galacticraft.mod.content.entity.vehicle.RocketCargoLogic;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.ContainerHelper;
@@ -56,7 +59,11 @@ public class ParachestBlockEntity extends RandomizableContainerBlockEntity imple
 
     public final SingleFluidStorage tank = SingleFluidStorage.withFixedCapacity(FluidConstants.BUCKET * 5, () -> {
     });
-    private NonNullList<ItemStack> inventory = NonNullList.withSize(3, ItemStack.EMPTY);
+    /** The launch pad, the rocket and the fuel container; everything before them is rocket cargo. */
+    public static final int NON_CARGO_SLOTS = 3;
+    private static final String SIZE_KEY = "size";
+
+    private NonNullList<ItemStack> inventory = NonNullList.withSize(NON_CARGO_SLOTS, ItemStack.EMPTY);
 
     public ParachestBlockEntity(BlockPos blockPos, BlockState blockState) {
         super(GCBlockEntityTypes.PARACHEST, blockPos, blockState);
@@ -65,15 +72,40 @@ public class ParachestBlockEntity extends RandomizableContainerBlockEntity imple
     @Override
     protected void loadAdditional(CompoundTag nbt, HolderLookup.Provider registryLookup) {
         super.loadAdditional(nbt, registryLookup);
-        this.inventory = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
+        // A parachest is however large the cargo it was dropped with, so the size has to be restored
+        // before the items are read into it — sizing off getContainerSize() here would only ever
+        // report the empty default this field starts at.
+        this.inventory = NonNullList.withSize(readSize(nbt), ItemStack.EMPTY);
+        ContainerHelper.loadAllItems(nbt, this.inventory, registryLookup);
         this.tank.readNbt(nbt, registryLookup);
     }
 
     @Override
     protected void saveAdditional(CompoundTag nbt, HolderLookup.Provider registryLookup) {
         super.saveAdditional(nbt, registryLookup);
+        nbt.putInt(SIZE_KEY, this.inventory.size());
         ContainerHelper.saveAllItems(nbt, this.inventory, registryLookup);
         this.tank.writeNbt(nbt, registryLookup);
+    }
+
+    /**
+     * Parachests saved before the size was written have to be sized from the items themselves.
+     * Rounded up to whole rows so the result is a shape {@code ParachestMenu} can lay out.
+     */
+    private static int readSize(CompoundTag nbt) {
+        if (nbt.contains(SIZE_KEY)) {
+            return Math.max(NON_CARGO_SLOTS, nbt.getInt(SIZE_KEY));
+        }
+
+        int highestSlot = -1;
+        ListTag items = nbt.getList("Items", Tag.TAG_COMPOUND);
+        for (int i = 0; i < items.size(); i++) {
+            highestSlot = Math.max(highestSlot, items.getCompound(i).getByte("Slot") & 255);
+        }
+
+        int cargo = Math.max(0, highestSlot + 1 - NON_CARGO_SLOTS);
+        int rows = (cargo + RocketCargoLogic.SLOTS_PER_ROW - 1) / RocketCargoLogic.SLOTS_PER_ROW;
+        return rows * RocketCargoLogic.SLOTS_PER_ROW + NON_CARGO_SLOTS;
     }
 
     @Override

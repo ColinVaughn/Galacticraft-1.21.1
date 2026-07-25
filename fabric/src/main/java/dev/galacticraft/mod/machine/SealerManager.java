@@ -60,6 +60,7 @@ public class SealerManager {
     private final Set<BlockPos> observedBlocks = new HashSet<>();
     private boolean sealUpdateQueued = false;
     private boolean hasUnsealedActiveSealers = false;
+    private boolean changingBreathability = false;
 
     public SealerManager(Level level) {
         this.level = level;
@@ -163,11 +164,16 @@ public class SealerManager {
         for (OxygenSealerBlockEntity sealer : this.sealers.values()) {
             sealer.setSealed(sealedSealers.contains(sealer));
         }
-        for (BlockPos pos : this.sealedBlocks) {
-            if (!nextSealedBlocks.contains(pos)) this.level.setBreathable(pos, false);
-        }
-        for (BlockPos pos : nextSealedBlocks) {
-            if (!this.sealedBlocks.contains(pos)) this.level.setBreathable(pos, true);
+        this.changingBreathability = true;
+        try {
+            for (BlockPos pos : this.sealedBlocks) {
+                if (!nextSealedBlocks.contains(pos)) this.level.setBreathable(pos, false);
+            }
+            for (BlockPos pos : nextSealedBlocks) {
+                if (!this.sealedBlocks.contains(pos)) this.level.setBreathable(pos, true);
+            }
+        } finally {
+            this.changingBreathability = false;
         }
 
         this.sealedBlocks.clear();
@@ -183,15 +189,22 @@ public class SealerManager {
 
         if (this.observedBlocks.isEmpty() || this.observedBlocks.contains(pos)) {
             this.sealUpdateQueued = true;
-            this.clearSealedBlocks();
+            if (!this.changingBreathability) {
+                this.clearSealedBlocks();
+            }
         }
     }
 
     private void clearSealedBlocks() {
-        for (BlockPos pos : this.sealedBlocks) this.level.setBreathable(pos, false);
-        this.sealedBlocks.clear();
-        for (OxygenSealerBlockEntity sealer : this.sealers.values()) {
-            sealer.setSealed(false);
+        this.changingBreathability = true;
+        try {
+            for (BlockPos pos : this.sealedBlocks) this.level.setBreathable(pos, false);
+            this.sealedBlocks.clear();
+            for (OxygenSealerBlockEntity sealer : this.sealers.values()) {
+                sealer.setSealed(false);
+            }
+        } finally {
+            this.changingBreathability = false;
         }
     }
 

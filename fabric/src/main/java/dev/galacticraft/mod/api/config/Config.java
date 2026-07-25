@@ -129,6 +129,24 @@ public interface Config {
 
     double bossHealthMultiplier();
 
+    /**
+     * Capacity of a rocket's fuel tank, in buckets. Applied when a rocket is constructed, so rockets
+     * already present in a save keep the capacity they were built with.
+     */
+    int rocketFuelTankCapacity();
+
+    /**
+     * Ticks of powered flight one bucket of fuel provides. Raising this makes every launch cost
+     * proportionally less fuel; at the default of 50 an Earth launch burns roughly 32 buckets.
+     */
+    int rocketBurnTicksPerBucket();
+
+    /**
+     * Buckets of fuel a refinery yields per bucket of crude oil. Raising this makes fuel cheaper to
+     * produce without changing how far a bucket goes.
+     */
+    double refineryOilToFuelRatio();
+
     boolean enableGcHouston();
 
     boolean enableCreativeGearInv();

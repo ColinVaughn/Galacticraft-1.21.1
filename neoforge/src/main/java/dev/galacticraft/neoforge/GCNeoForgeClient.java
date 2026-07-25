@@ -244,6 +244,7 @@ public final class GCNeoForgeClient {
             ItemProperties.register(GCItems.FLUID_CANISTER, FluidCanisterItem.FILL_LEVEL, (stack, world, entity, seed) -> {
                 FluidData data = stack.get(GCDataComponents.FLUID_DATA);
                 if (data == null || data.amount() <= 0) return 0.0F;
+                if (FluidCanisterItem.isInfinite(stack)) return 1.0F;
                 double percentage = (double) data.amount() / ((FluidCanisterItem) stack.getItem()).capacity;
                 return (float) (Math.ceil(percentage * 6.0) / 6.0);
             });
