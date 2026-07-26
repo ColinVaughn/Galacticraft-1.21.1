@@ -158,16 +158,11 @@ public class GCRocketRecipes extends FabricRecipeProvider {
                 .unlockedBy(getHasName(GCItems.TIER_1_HEAVY_DUTY_PLATE), has(GCItems.TIER_1_HEAVY_DUTY_PLATE))
                 .save(output);
 
-        RocketRecipeBuilder.create(GCItems.ROCKET)
-                .rocketData(RocketPrefabs.TIER_1_STORAGE_UPGRADE)
-                .cone(GCItems.NOSE_CONE)
-                .body(GCItems.TIER_1_HEAVY_DUTY_PLATE)
-                .bodyHeight(4)
-                .fins(GCItems.ROCKET_FIN)
-                .engine(GCItems.ROCKET_ENGINE)
-                .storage(GCItemTags.ROCKET_STORAGE_UPGRADE_ITEMS)
-                .unlockedBy(getHasName(GCItems.TIER_1_HEAVY_DUTY_PLATE), has(GCItems.TIER_1_HEAVY_DUTY_PLATE))
-                .save(output, getItemName(GCItems.ROCKET) + "_with_storage_upgrade");
+        // No dedicated "rocket + chest" recipe: the workbench's chest slots are an upgrade applied
+        // on top of whichever tier's recipe matched (RocketWorkbenchMenu#withWorkbenchUpgrade), so
+        // storage works for every tier and records how many chests were installed. A separate
+        // recipe could never match anyway - its storage ingredient made it need a 15th ingredient
+        // slot that the workbench does not have.
 
         RocketRecipeBuilder.create(GCItems.ROCKET)
                 .rocketData(RocketPrefabs.TIER_2)

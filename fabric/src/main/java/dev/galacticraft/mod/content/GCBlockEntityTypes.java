@@ -87,6 +87,7 @@ public class GCBlockEntityTypes {
     public static final BlockEntityType<CryogenicChamberPartBlockEntity> CRYOGENIC_CHAMBER_PART = register(Constant.Block.CRYOGENIC_CHAMBER_PART, CryogenicChamberPartBlockEntity::new, GCBlocks.CRYOGENIC_CHAMBER_PART);
     public static final BlockEntityType<DungeonSpawnerBlockEntity> DUNGEON_BOSS_SPAWNER = register(Constant.Block.BOSS_SPAWNER, DungeonSpawnerBlockEntity::new, GCBlocks.BOSS_SPAWNER);
     public static final BlockEntityType<VolcanoVentBlockEntity> VOLCANO_VENT = register(Constant.Block.VOLCANO_VENT, VolcanoVentBlockEntity::new, GCBlocks.VOLCANO_VENT);
+    public static final BlockEntityType<TreasureChestBlockEntity> TREASURE_CHEST = register(Constant.Block.TREASURE_CHEST, TreasureChestBlockEntity::new, GCBlocks.TREASURE_CHEST_TIER_1, GCBlocks.TREASURE_CHEST_TIER_2, GCBlocks.TREASURE_CHEST_TIER_3);
 
     // DECORATION
     public static final BlockEntityType<CannedFoodBlockEntity> CANNED_FOOD = register(Constant.Block.CANNED_FOOD, CannedFoodBlockEntity::new, GCBlocks.CANNED_FOOD);

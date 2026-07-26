@@ -22,29 +22,33 @@
 
 package dev.galacticraft.mod.structure.dungeon;
 
-import dev.galacticraft.mod.Constant;
+import dev.galacticraft.mod.content.GCBlocks;
+import dev.galacticraft.mod.content.GCLootTables;
 import dev.galacticraft.mod.structure.GCStructurePieceTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
-import net.minecraft.world.level.storage.loot.BuiltInLootTables;
-import net.minecraft.world.level.storage.loot.LootTable;
 
 public class RoomTreasure extends SizedPiece {
 
-    public static ResourceKey<LootTable> MOONCHEST = BuiltInLootTables.register(ResourceKey.create(Registries.LOOT_TABLE, Constant.id("dungeon_tier_1")));
+    public static Block treasureChestFor(int tier) {
+        return switch (tier) {
+            case 2 -> GCBlocks.TREASURE_CHEST_TIER_2;
+            case 3 -> GCBlocks.TREASURE_CHEST_TIER_3;
+            default -> GCBlocks.TREASURE_CHEST_TIER_1;
+        };
+    }
 
     public RoomTreasure(CompoundTag tag) {
         super(GCStructurePieceTypes.ROOM_TREASURE, tag);
@@ -97,9 +101,10 @@ public class RoomTreasure extends SizedPiece {
                     } else if (x == this.sizeX / 2 && y == 1 && z == this.sizeZ / 2) {
                         BlockPos blockpos = new BlockPos(this.getWorldX(x, z), this.getWorldY(y), this.getWorldZ(x, z));
                         if (chunkBox.isInside(blockpos)) {
-                            worldIn.setBlock(blockpos, Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, this.getDirection().getOpposite()), 2);
+                            int tier = this.configuration.getChestTier();
+                            worldIn.setBlock(blockpos, treasureChestFor(tier).defaultBlockState().setValue(ChestBlock.FACING, this.getDirection().getOpposite()), 2);
                             if (worldIn.getBlockEntity(blockpos) instanceof ChestBlockEntity treasureChest) {
-                                treasureChest.setLootTable(MOONCHEST, random.nextLong());
+                                treasureChest.setLootTable(GCLootTables.dungeonChest(tier), random.nextLong());
                             }
                         }
                     } else {

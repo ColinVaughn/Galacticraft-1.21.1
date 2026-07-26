@@ -589,7 +589,7 @@ public class GCAdvancementProvider extends FabricAdvancementProvider {
 
         AdvancementHolder moonDungeonKeyAdvancement = Advancement.Builder.advancement().parent(moonDungeonAdvancement)
                 .display(
-                        Items.TRIAL_KEY,
+                        GCItems.TIER_1_DUNGEON_KEY,
                         title(MOON_DUNGEON_KEY),
                         description(MOON_DUNGEON_KEY),
                         null,
@@ -598,7 +598,7 @@ public class GCAdvancementProvider extends FabricAdvancementProvider {
                         true,
                         false
                 )
-                .addCriterion("moon_dungeon_key", InventoryChangeTrigger.TriggerInstance.hasItems(Items.TRIAL_KEY))
+                .addCriterion("moon_dungeon_key", InventoryChangeTrigger.TriggerInstance.hasItems(GCItems.TIER_1_DUNGEON_KEY))
                 .save(consumer, Constant.MOD_ID + "/moon_dungeon_key");
 
         AdvancementHolder buggySchematicAdvancement = Advancement.Builder.advancement().parent(moonDungeonKeyAdvancement)

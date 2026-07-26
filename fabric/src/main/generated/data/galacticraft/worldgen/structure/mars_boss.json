@@ -10,6 +10,7 @@
     "brickBlock": {
       "Name": "galacticraft:mars_cobblestone"
     },
+    "chestTier": 2,
     "hallwayHeight": 5,
     "hallwayLengthMax": 16,
     "hallwayLengthMin": 8,

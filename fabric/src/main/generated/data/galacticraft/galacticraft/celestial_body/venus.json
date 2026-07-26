@@ -4,9 +4,12 @@
     "parent": "galacticraft:sol",
     "access_weight": 2,
     "atmosphere": {
-      "composition": {},
-      "pressure": 3.0E-15,
-      "temperature": 23.0
+      "composition": {
+        "galacticraft:carbon_dioxide": 965000.0,
+        "galacticraft:nitrogen": 35000.0
+      },
+      "pressure": 92.0,
+      "temperature": 464.0
     },
     "celestial_handler": "galacticraft:default",
     "day_length": 720000,

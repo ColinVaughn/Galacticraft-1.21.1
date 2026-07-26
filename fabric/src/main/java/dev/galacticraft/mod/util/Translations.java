@@ -254,6 +254,12 @@ public interface Translations {
 
         String DIFFICULTY = "config.galacticraft.difficulty";
         String METEOR_SPAWN_MULTIPLIER = "config.galacticraft.difficulty.meteor_spawn_multiplier";
+        String METEORS_ENABLED = "config.galacticraft.difficulty.meteors_enabled";
+        String METEORS_ENABLED_DESC = "config.galacticraft.difficulty.meteors_enabled.desc";
+        String METEOR_IMPACT_BLOCK_DAMAGE = "config.galacticraft.difficulty.meteor_impact_block_damage";
+        String METEOR_IMPACT_BLOCK_DAMAGE_DESC = "config.galacticraft.difficulty.meteor_impact_block_damage.desc";
+        String METEOR_MAX_CRATER_RADIUS = "config.galacticraft.difficulty.meteor_max_crater_radius";
+        String METEOR_MAX_CRATER_RADIUS_DESC = "config.galacticraft.difficulty.meteor_max_crater_radius.desc";
         String BOSS_HEALTH_MODIFIER = "config.galacticraft.difficulty.dungeon_boss_health_multiplier";
         String BOSS_HEALTH_MODIFIER_DESC = "config.galacticraft.difficulty.dungeon_boss_health_multiplier.desc";
     }
@@ -520,6 +526,10 @@ public interface Translations {
         String OXYGEN_SETUP_INVALID = "ui.galacticraft.oxygen.invalid_setup";
         String DUST_STORM_INCOMING = "ui.galacticraft.dust_storm.incoming";
         String DUST_STORM_CLEARING = "ui.galacticraft.dust_storm.clearing";
+        String METEOR_SHOWER_INCOMING = "ui.galacticraft.meteor_shower.incoming";
+        String METEOR_SHOWER_BEGAN = "ui.galacticraft.meteor_shower.began";
+        String METEOR_SHOWER_ENDED = "ui.galacticraft.meteor_shower.ended";
+        String METEOR_IMPACTOR_WARNING = "ui.galacticraft.meteor_shower.impactor";
         String ROCKET_FUEL = "ui.galacticraft.rocket.fuel";
         String ROCKET_FULL = "ui.galacticraft.rocket.full";
         String ROCKET_NO_FUEL = "ui.galacticraft.rocket.no_fuel";
@@ -542,6 +552,15 @@ public interface Translations {
 
     interface Boss {
         String SKELETON_BOSS_DESPAWN = "gui.skeleton_boss.message";
+    }
+
+    interface TreasureChest {
+        String LOCKED = "ui.galacticraft.treasure_chest.locked";
+    }
+
+    interface RocketWorkbench {
+        String MISSING_RESEARCH = "ui.galacticraft.rocket_workbench.missing_research";
+        String MISSING_RESEARCH_HINT = "ui.galacticraft.rocket_workbench.missing_research_hint";
     }
 
     interface Misc {

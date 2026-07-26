@@ -23,9 +23,9 @@
 package dev.galacticraft.mod.compat.jei.category;
 
 import dev.galacticraft.mod.client.gui.screen.ingame.RocketWorkbenchScreen;
+import dev.galacticraft.mod.client.util.LazyRocketEntity;
 import dev.galacticraft.mod.compat.jei.GCJEIRecipeTypes;
 import dev.galacticraft.mod.content.GCBlocks;
-import dev.galacticraft.mod.content.GCEntityTypes;
 import dev.galacticraft.mod.content.entity.vehicle.RocketEntity;
 import dev.galacticraft.mod.recipe.RocketRecipe;
 import dev.galacticraft.mod.util.Translations;
@@ -57,14 +57,13 @@ public class JEIRocketCategory implements IRecipeCategory<RocketRecipe> {
     private static final int PREVIEW_ROCKET_X = ROCKET_X - RECIPE_VIEWER_X;
     private static final int PREVIEW_ROCKET_Y = ROCKET_Y - RECIPE_VIEWER_Y;
 
-    public static RocketEntity ROCKET_ENTITY = new RocketEntity(GCEntityTypes.ROCKET, Minecraft.getInstance().level);
+    public static final LazyRocketEntity ROCKET_ENTITY = new LazyRocketEntity(90.0F);
 
     private final IDrawable icon, chestSprite;
 
     public JEIRocketCategory(IGuiHelper helper) {
         this.icon = helper.createDrawableItemStack(new ItemStack(GCBlocks.ROCKET_WORKBENCH));
         this.chestSprite = helper.createDrawable(SCREEN_TEXTURE, CHEST_U + 2, CHEST_V + 2, 16, 16);
-        ROCKET_ENTITY.setYRot(90.0F);
     }
 
     @Override
@@ -134,7 +133,10 @@ public class JEIRocketCategory implements IRecipeCategory<RocketRecipe> {
         graphics.blit(SCREEN_TEXTURE, OUTPUT_BORDER_X, OUTPUT_BORDER_Y, OUTPUT_U, OUTPUT_V, OUTPUT_WIDTH, OUTPUT_HEIGHT);
         graphics.blit(SCREEN_TEXTURE, PREVIEW_BACKGROUND_X, PREVIEW_BACKGROUND_Y, PREVIEW_U, PREVIEW_V, PREVIEW_WIDTH, PREVIEW_HEIGHT);
 
-        ROCKET_ENTITY.setYRot(ROCKET_ENTITY.getYRot() + 0.2F);
-        RocketWorkbenchScreen.renderEntityInInventory(graphics, PREVIEW_ROCKET_X, PREVIEW_ROCKET_Y, 15, SmithingScreen.ARMOR_STAND_ANGLE, null, ROCKET_ENTITY);
+        RocketEntity rocket = ROCKET_ENTITY.get();
+        if (rocket == null) return;
+
+        rocket.setYRot(rocket.getYRot() + 0.2F);
+        RocketWorkbenchScreen.renderEntityInInventory(graphics, PREVIEW_ROCKET_X, PREVIEW_ROCKET_Y, 15, SmithingScreen.ARMOR_STAND_ANGLE, null, rocket);
     }
 }

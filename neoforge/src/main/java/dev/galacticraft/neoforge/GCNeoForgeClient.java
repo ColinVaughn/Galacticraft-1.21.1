@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -58,8 +59,11 @@ import dev.galacticraft.mod.client.model.types.UnbakedObjModel;
 import dev.galacticraft.mod.client.particle.*;
 import dev.galacticraft.mod.client.render.block.entity.*;
 import dev.galacticraft.mod.client.render.entity.*;
+import dev.galacticraft.mod.client.render.MeteorSkyRenderer;
+import dev.galacticraft.mod.client.render.dimension.meteor.ClientMeteorShowers;
 import dev.galacticraft.mod.client.render.FootprintRenderer;
 import dev.galacticraft.mod.client.render.entity.feature.OxygenMaskRenderLayer;
+import dev.galacticraft.mod.client.render.entity.feature.ParachuteRenderLayer;
 import dev.galacticraft.mod.client.render.entity.feature.OxygenTanksRenderLayer;
 import dev.galacticraft.mod.client.render.entity.feature.ParrotOxygenGearRenderLayer;
 import dev.galacticraft.mod.client.render.entity.feature.PetOxygenMaskRenderLayer;
@@ -153,6 +157,7 @@ public final class GCNeoForgeClient {
         NeoForge.EVENT_BUS.addListener(GCNeoForgeClient::onRenderGui);
         NeoForge.EVENT_BUS.addListener(GCNeoForgeClient::onLogin);
         NeoForge.EVENT_BUS.addListener(FootprintRenderer::renderFootprints);
+        NeoForge.EVENT_BUS.addListener(MeteorSkyRenderer::renderStreaks);
         NeoForge.EVENT_BUS.addListener(GCNeoBlockOutlineRenderer::render);
         CapesClientRole.ensureLoadedAsync();
         CapeRegistry.bootstrap();
@@ -180,6 +185,7 @@ public final class GCNeoForgeClient {
             renderer.addLayer(new OxygenMaskRenderLayer(renderer));
             renderer.addLayer(new OxygenTanksRenderLayer(renderer));
             renderer.addLayer(new ParrotOxygenGearRenderLayer(renderer));
+            renderer.addLayer(new ParachuteRenderLayer(renderer));
         }
         LivingEntityRenderer wolf = (LivingEntityRenderer) event.getRenderer(EntityType.WOLF);
         wolf.addLayer(new PetOxygenMaskRenderLayer(wolf));
@@ -300,6 +306,7 @@ public final class GCNeoForgeClient {
         LanderOverlay.clientTick();
         ClientDustStorms.clientTick();
         ClientSolarFlares.clientTick();
+        ClientMeteorShowers.clientTick();
         var level = Minecraft.getInstance().level;
         if (level != null) {
             var manager = level.galacticraft$getFootprintManager();
@@ -401,6 +408,7 @@ public final class GCNeoForgeClient {
         event.registerBlockEntityRenderer(GCBlockEntityTypes.ROCKET_WORKBENCH, RocketWorkbenchBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(GCBlockEntityTypes.ASTRO_MINER_BASE, AstroMinerBaseBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(GCBlockEntityTypes.FLAG, FlagBlockEntityRenderer::new);
+        event.registerBlockEntityRenderer(GCBlockEntityTypes.TREASURE_CHEST, TreasureChestBlockEntityRenderer::new);
     }
 
     private static void registerLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {

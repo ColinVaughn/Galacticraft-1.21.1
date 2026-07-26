@@ -50,7 +50,9 @@ public abstract class PlayerListMixin {
     private void syncGalacticraftData(Connection connection, ServerPlayer player, CommonListenerCookie cookie, CallbackInfo ci) {
         galacticraft$syncGearInventory(player);
 
-        // Restore persisted rocket-part research on the joining client.
+        // Repair saves whose advancements completed before those advancements granted research,
+        // then restore the persisted rocket-part research on the joining client.
+        ServerResearchAccessor.galacticraft$backfillFromAdvancements(player);
         ((ServerResearchAccessor) player).galacticraft$syncResearch();
 
         // Sync the list of satellites with new players

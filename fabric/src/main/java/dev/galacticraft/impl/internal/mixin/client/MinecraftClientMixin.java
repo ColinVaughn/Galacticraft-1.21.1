@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,7 +62,9 @@ public abstract class MinecraftClientMixin {
         if (level != null) {
             Holder<CelestialBody<?, ?>> holder = level.galacticraft$getCelestialBody();
             if (holder != null) {
-                volume = holder.value().atmosphere().pressure();
+                // Capped at normal volume: the multiplier is there to mute a vacuum, not to
+                // amplify a dense atmosphere.
+                volume = Math.min(1.0F, holder.value().atmosphere().pressure());
             }
         }
 

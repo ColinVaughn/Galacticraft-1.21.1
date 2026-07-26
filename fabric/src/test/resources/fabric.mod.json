@@ -28,6 +28,7 @@
     "fabric-gametest": [
       "dev.galacticraft.mod.gametest.GratingTestSuite",
       "dev.galacticraft.mod.gametest.OxygenSealerTestSuite",
+      "dev.galacticraft.mod.gametest.ParachuteTestSuite",
       "dev.galacticraft.mod.gametest.PolishTestSuite",
       "dev.galacticraft.mod.gametest.RocketCargoTransferTestSuite",
       "dev.galacticraft.mod.gametest.RocketLaunchPadPersistenceTestSuite",

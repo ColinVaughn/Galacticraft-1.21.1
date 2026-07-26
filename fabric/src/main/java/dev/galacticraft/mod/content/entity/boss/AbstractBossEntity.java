@@ -23,6 +23,7 @@
 package dev.galacticraft.mod.content.entity.boss;
 
 import dev.galacticraft.mod.content.block.entity.DungeonSpawnerBlockEntity;
+import dev.galacticraft.mod.content.item.GCItems;
 import dev.galacticraft.mod.util.Translations;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -58,7 +59,13 @@ public abstract class AbstractBossEntity extends Monster {
 
     public abstract List<ItemStack> getGuaranteedLoot(RandomSource rand);
 
-    public abstract void dropKey();
+    /**
+     * Drops the key that unlocks this dungeon's treasure chest. The tier is taken from
+     * {@link #getChestTier()} so the key always matches the chest the dungeon generated.
+     */
+    public void dropKey() {
+        this.spawnAtLocation(new ItemStack(GCItems.dungeonKey(this.getChestTier())), 0.5F);
+    }
 
     public abstract BossEvent.BossBarColor getHealthBarColor();
 

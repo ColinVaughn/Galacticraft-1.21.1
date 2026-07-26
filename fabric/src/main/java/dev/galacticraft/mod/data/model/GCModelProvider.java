@@ -850,6 +850,9 @@ public class GCModelProvider extends FabricModelProvider {
         generator.generateFlatItem(GCItems.SHIELD_CONTROLLER, ModelTemplates.FLAT_ITEM);
         generator.generateFlatItem(GCItems.FREQUENCY_MODULE, ModelTemplates.FLAT_ITEM);
         generator.generateFlatItem(GCItems.EMERGENCY_KIT, ModelTemplates.FLAT_ITEM);
+        generator.generateFlatItem(GCItems.TIER_1_DUNGEON_KEY, ModelTemplates.FLAT_ITEM);
+        generator.generateFlatItem(GCItems.TIER_2_DUNGEON_KEY, ModelTemplates.FLAT_ITEM);
+        generator.generateFlatItem(GCItems.TIER_3_DUNGEON_KEY, ModelTemplates.FLAT_ITEM);
 
         generator.generateFlatItem(GCItems.THERMAL_PADDING_HELMET, ModelTemplates.FLAT_ITEM);
         generator.generateFlatItem(GCItems.THERMAL_PADDING_CHESTPIECE, ModelTemplates.FLAT_ITEM);

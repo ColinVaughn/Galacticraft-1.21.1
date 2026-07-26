@@ -35,6 +35,7 @@ import dev.galacticraft.mod.content.block.entity.RocketWorkbenchBlockEntity;
 import dev.galacticraft.mod.content.rocket.part.data.ExplosiveRocketData;
 import dev.galacticraft.mod.content.rocket.part.data.RocketUpgradeData;
 import dev.galacticraft.mod.content.rocket.part.data.StorageRocketData;
+import dev.galacticraft.api.rocket.part.RocketPart;
 import dev.galacticraft.mod.machine.storage.VariableSizedContainer;
 import dev.galacticraft.mod.recipe.GCRecipes;
 import dev.galacticraft.mod.recipe.RocketRecipe;
@@ -57,6 +58,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.EitherHolder;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -80,6 +82,8 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
     protected int recipeSize;
 
     public final Inventory playerInventory;
+
+    private List<Component> missingResearch = List.of();
 
     private boolean coneComplete;
     private boolean bodyComplete;
@@ -346,6 +350,12 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
         RecipeHolder<RocketRecipe> compatible = matched != null ? matched : this.findCompatibleRecipe();
         this.recipe = compatible != null ? compatible : this.baseRecipe;
 
+        // Worked out on both sides: an empty result slot otherwise gives the player no clue that
+        // research, rather than a missing part, is what is blocking the build.
+        this.missingResearch = matched == null
+                ? List.of()
+                : this.lockedParts(matched.value().result().getOrDefault(GCDataComponents.ROCKET_DATA, RocketPrefabs.TIER_1));
+
         // The server owns the result slot. Recomputing it on the client can erase the
         // synchronized result when research data has not arrived yet after login.
         if (this.workbench.getLevel() instanceof ServerLevel) {
@@ -379,26 +389,47 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
 
     /** Requires research unlocks for every structural part in the assembled rocket. */
     private boolean hasResearchedParts(RocketData data) {
-        Player player = this.playerInventory.player;
-        if (player == null) {
-            return true;
-        }
-        ResearchAccessor research = (ResearchAccessor) player;
-        HolderLookup.Provider lookup = player.level().registryAccess();
-        return partUnlocked(research, lookup, data.cone())
-                && partUnlocked(research, lookup, data.body())
-                && partUnlocked(research, lookup, data.fin())
-                && partUnlocked(research, lookup, data.booster())
-                && partUnlocked(research, lookup, data.engine());
+        return this.lockedParts(data).isEmpty();
     }
 
-    private static <T> boolean partUnlocked(ResearchAccessor research, HolderLookup.Provider lookup, Optional<EitherHolder<T>> part) {
+    /**
+     * Names the structural parts of {@code data} the player has not researched yet. Both sides can
+     * work this out - the client keeps its own copy of the player's unlocks - so the screen can
+     * explain an empty result slot without asking the server.
+     */
+    private List<Component> lockedParts(RocketData data) {
+        Player player = this.playerInventory.player;
+        if (player == null) {
+            return List.of();
+        }
+
+        ResearchAccessor research = (ResearchAccessor) player;
+        HolderLookup.Provider lookup = player.level().registryAccess();
+        List<Component> locked = new ArrayList<>();
+        addIfLocked(locked, research, lookup, data.cone());
+        addIfLocked(locked, research, lookup, data.body());
+        addIfLocked(locked, research, lookup, data.fin());
+        addIfLocked(locked, research, lookup, data.booster());
+        addIfLocked(locked, research, lookup, data.engine());
+        return locked;
+    }
+
+    private static <T extends RocketPart<?, ?>> void addIfLocked(List<Component> locked, ResearchAccessor research, HolderLookup.Provider lookup, Optional<EitherHolder<T>> part) {
         if (part.isEmpty()) {
-            return true;
+            return;
         }
         ResourceKey<T> key = part.get().unwrap(lookup).flatMap(Holder::unwrapKey).orElse(null);
         // Fail open if the registry lookup is missing; the server still validates the output.
-        return key == null || research.galacticraft$isUnlocked(GCRocketParts.recipeId(key));
+        if (key != null && !research.galacticraft$isUnlocked(GCRocketParts.recipeId(key))) {
+            locked.add(RocketPart.getName(key));
+        }
+    }
+
+    /**
+     * @return the parts blocking the current assembly, or empty if research is not what is stopping it.
+     */
+    public List<Component> getMissingResearch() {
+        return this.missingResearch;
     }
 
     @Override

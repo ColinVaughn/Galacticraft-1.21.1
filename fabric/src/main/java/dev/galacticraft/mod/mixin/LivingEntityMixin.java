@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,9 +30,13 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import dev.galacticraft.api.universe.celestialbody.CelestialBody;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.accessor.CryogenicAccessor;
+import dev.galacticraft.mod.accessor.ParachuteAccessor;
 import dev.galacticraft.mod.content.GCBlocks;
+import dev.galacticraft.mod.content.GCSounds;
 import dev.galacticraft.mod.content.block.special.TinLadderBlock;
 import dev.galacticraft.mod.content.item.CannedFoodItem;
+import dev.galacticraft.mod.content.item.ParachuteItem;
+import dev.galacticraft.mod.content.item.ParachuteLogic;
 import dev.galacticraft.mod.tag.GCDimensionTypeTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -41,6 +46,8 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.util.Mth;
+import net.minecraft.world.Container;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -64,7 +71,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Mixin(LivingEntity.class)
-public abstract class LivingEntityMixin extends Entity implements CryogenicAccessor {
+public abstract class LivingEntityMixin extends Entity implements CryogenicAccessor, ParachuteAccessor {
     @Shadow public abstract double getAttributeValue(Holder<Attribute> holder);
 
     @Unique
@@ -73,11 +80,20 @@ public abstract class LivingEntityMixin extends Entity implements CryogenicAcces
             LivingEntity.class, EntityDataSerializers.BOOLEAN
     );
 
+    @Unique
+    @SuppressWarnings("WrongEntityDataParameterClass")
+    private static final EntityDataAccessor<Boolean> IS_PARACHUTE_OPEN_ID = SynchedEntityData.defineId(
+            LivingEntity.class, EntityDataSerializers.BOOLEAN
+    );
+
     @Shadow
     public abstract void setYHeadRot(float f);
 
     @Unique
     public int cryogenicChamberCooldown;
+
+    @Unique
+    private boolean galacticraft$parachuteOpen;
 
     public LivingEntityMixin(EntityType<?> entityType, Level level) {
         super(entityType, level);
@@ -130,6 +146,93 @@ public abstract class LivingEntityMixin extends Entity implements CryogenicAcces
         compositeStateBuilder.define(IS_IN_CRYO_SLEEP_ID, false);
     }
 
+    @Inject(method = "defineSynchedData", at = @At("TAIL"))
+    private void gc$parachuteData(SynchedEntityData.Builder compositeStateBuilder, CallbackInfo ci) {
+        compositeStateBuilder.define(IS_PARACHUTE_OPEN_ID, false);
+    }
+
+    @Override
+    public boolean galacticraft$isParachuteOpen() {
+        return this.galacticraft$parachuteOpen;
+    }
+
+    @Override
+    public void galacticraft$setParachuteOpen(boolean open) {
+        this.galacticraft$parachuteOpen = open;
+        // Only the server may publish the state; a client that wrote to synced data would keep a wrong
+        // value until the server happened to send a change for that field.
+        if (!this.level().isClientSide()) {
+            this.entityData.set(IS_PARACHUTE_OPEN_ID, open);
+        }
+    }
+
+    @Override
+    public boolean galacticraft$isParachuteVisible() {
+        return this.galacticraft$parachuteOpen || this.entityData.get(IS_PARACHUTE_OPEN_ID);
+    }
+
+    /**
+     * Opens and flies an equipped parachute, as in Galacticraft Legacy. Runs on both sides from the same
+     * inputs - the gear inventory is synced, and each side knows the fall it is simulating - so the
+     * client slows the player it controls without waiting for the server to agree.
+     */
+    @Inject(method = "tick", at = @At("TAIL"))
+    private void gc$tickParachute(CallbackInfo ci) {
+        boolean wasOpen = this.galacticraft$parachuteOpen;
+        // Cheap out before touching the gear inventory: a short fall can never open a closed canopy.
+        if (!wasOpen && this.fallDistance <= ParachuteLogic.DEPLOY_FALL_DISTANCE) return;
+
+        LivingEntity entity = (LivingEntity) (Object) this;
+        boolean open = ParachuteLogic.shouldBeOpen(wasOpen, gc$hasParachuteEquipped(entity),
+                gc$parachutingSuppressed(entity), this.fallDistance);
+
+        if (open != wasOpen) {
+            this.galacticraft$setParachuteOpen(open);
+            if (open && !this.level().isClientSide() && !this.isSilent()) {
+                this.level().playSound(null, this.getX(), this.getY(), this.getZ(), GCSounds.PARACHUTE,
+                        entity.getSoundSource(), 1.0F, 1.0F);
+            }
+        }
+
+        if (open) {
+            Vec3 movement = this.getDeltaMovement();
+            double descent = ParachuteLogic.limitDescent(movement.y);
+            if (descent != movement.y) {
+                this.setDeltaMovement(movement.x, descent, movement.z);
+                this.hasImpulse = true;
+            }
+            this.resetFallDistance();
+        }
+    }
+
+    @Unique
+    private static boolean gc$hasParachuteEquipped(LivingEntity entity) {
+        Container accessories = entity.galacticraft$getAccessories();
+        for (int slot = 0; slot < accessories.getContainerSize(); slot++) {
+            if (accessories.getItem(slot).getItem() instanceof ParachuteItem) return true;
+        }
+        return false;
+    }
+
+    @Unique
+    private static boolean gc$parachutingSuppressed(LivingEntity entity) {
+        return entity.onGround() || entity.isInWater() || entity.isInLava() || entity.isPassenger()
+                || entity.isSpectator() || entity.isFallFlying()
+                || (entity instanceof Player player && player.getAbilities().flying);
+    }
+
+    /**
+     * A canopy that is already holding the wearer up absorbs the landing outright. Zeroing fall distance
+     * every tick almost covers this, but a client that delivers a burst of movement packets in one server
+     * tick can still bank enough distance to hurt.
+     */
+    @Inject(method = "causeFallDamage", at = @At("HEAD"), cancellable = true)
+    private void gc$parachuteAbsorbsFallDamage(float fallDistance, float multiplier, DamageSource source, CallbackInfoReturnable<Boolean> cir) {
+        if (this.galacticraft$parachuteOpen) {
+            cir.setReturnValue(false);
+        }
+    }
+
     @Inject(method = "setPosToBed", at = @At("HEAD"), cancellable = true)
     private void gc$setCryoSleepPos(BlockPos blockPos, CallbackInfo ci) {
         if (isInCryoSleep()) {
@@ -174,7 +277,9 @@ public abstract class LivingEntityMixin extends Entity implements CryogenicAcces
     private Vec3 gc$adjustAtmosphericDrag(Vec3 original) {
         Holder<CelestialBody<?, ?>> holder = this.level().galacticraft$getCelestialBody();
         if (holder != null) {
-            float drag = holder.value().atmosphere().pressure() / 2000.0F;
+            // Capped so a very dense atmosphere (Venus at 92 bar) stays noticeably thick to move
+            // through without bringing movement to a halt.
+            float drag = Math.min(0.02F, holder.value().atmosphere().pressure() / 2000.0F);
             return original.multiply(1.0F - drag, 1.0F - drag * 2.0F, 1.0F - drag);
         }
         return original;

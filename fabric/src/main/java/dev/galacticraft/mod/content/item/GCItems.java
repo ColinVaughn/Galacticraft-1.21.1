@@ -236,6 +236,22 @@ public class GCItems {
 
     public static final Item EMERGENCY_KIT = ITEMS.register(Constant.Item.EMERGENCY_KIT, new EmergencyKitItem(new Item.Properties().stacksTo(1)));
 
+    // DUNGEON KEYS
+    public static final Item TIER_1_DUNGEON_KEY = ITEMS.register(Constant.Item.TIER_1_DUNGEON_KEY, new DungeonKeyItem(1, new Item.Properties().rarity(Rarity.UNCOMMON)));
+    public static final Item TIER_2_DUNGEON_KEY = ITEMS.register(Constant.Item.TIER_2_DUNGEON_KEY, new DungeonKeyItem(2, new Item.Properties().rarity(Rarity.UNCOMMON)));
+    public static final Item TIER_3_DUNGEON_KEY = ITEMS.register(Constant.Item.TIER_3_DUNGEON_KEY, new DungeonKeyItem(3, new Item.Properties().rarity(Rarity.UNCOMMON)));
+
+    /**
+     * @return the dungeon key that unlocks a treasure chest of the given tier, clamped to a valid tier.
+     */
+    public static Item dungeonKey(int tier) {
+        return switch (tier) {
+            case 2 -> TIER_2_DUNGEON_KEY;
+            case 3 -> TIER_3_DUNGEON_KEY;
+            default -> TIER_1_DUNGEON_KEY;
+        };
+    }
+
     // SMITHING TEMPLATES
     public static final Item TITANTIUM_UPGRADE_SMITHING_TEMPLATE = ITEMS.register(Constant.Item.TITANTIUM_UPGRADE_SMITHING_TEMPLATE, new SmithingTemplateItem(
             Component.translatable(Translations.Misc.UPGRADE_TITANIUM_APPLIES_TO).withStyle(Constant.Text.BLUE_STYLE),

@@ -30,6 +30,8 @@ import dev.galacticraft.mod.content.GCEntityTypes;
 import dev.galacticraft.mod.content.entity.vehicle.RocketEntity;
 import dev.galacticraft.mod.machine.storage.VariableSizedContainer;
 import dev.galacticraft.mod.screen.RocketWorkbenchMenu;
+import dev.galacticraft.mod.util.Translations;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -44,9 +46,14 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static dev.galacticraft.mod.Constant.RocketWorkbench.*;
 
 public class RocketWorkbenchScreen extends AbstractContainerScreen<RocketWorkbenchMenu> implements VariableSizedContainer.Listener {
+    private static final Component MARKER = Component.literal("!");
+
     private static final int UI_WIDTH = 176;
     private static final int MAIN_UI_WIDTH = 176;
     private static final int UI_HEIGHT = 249;
@@ -124,7 +131,37 @@ public class RocketWorkbenchScreen extends AbstractContainerScreen<RocketWorkben
     public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
         this.entity.setYRot(this.entity.getYRot() + delta);
+        this.renderMissingResearchMarker(context);
         this.renderTooltip(context, mouseX, mouseY);
+        this.renderMissingResearchTooltip(context, mouseX, mouseY);
+    }
+
+    /**
+     * Marks the empty result slot when the assembly is complete but the player has not researched
+     * a part. Without it the slot just stays blank and looks like the parts are wrong.
+     */
+    private void renderMissingResearchMarker(GuiGraphics graphics) {
+        if (this.menu.getMissingResearch().isEmpty()) {
+            return;
+        }
+
+        graphics.drawCenteredString(this.font, MARKER, this.leftPos + OUTPUT_X + 8, this.topPos + OUTPUT_Y + 4, 0xFFFF5555);
+    }
+
+    private void renderMissingResearchTooltip(GuiGraphics graphics, int mouseX, int mouseY) {
+        List<Component> missing = this.menu.getMissingResearch();
+        if (missing.isEmpty() || !this.isHovering(OUTPUT_X, OUTPUT_Y, 16, 16, mouseX, mouseY)) {
+            return;
+        }
+
+        List<Component> lines = new ArrayList<>(missing.size() + 2);
+        lines.add(Component.translatable(Translations.RocketWorkbench.MISSING_RESEARCH).withStyle(ChatFormatting.RED));
+        for (Component part : missing) {
+            lines.add(Component.literal(" ").append(part).withStyle(ChatFormatting.GRAY));
+        }
+        lines.add(Component.translatable(Translations.RocketWorkbench.MISSING_RESEARCH_HINT).withStyle(ChatFormatting.DARK_GRAY));
+
+        graphics.renderComponentTooltip(this.font, lines, mouseX, mouseY);
     }
 
     @Override

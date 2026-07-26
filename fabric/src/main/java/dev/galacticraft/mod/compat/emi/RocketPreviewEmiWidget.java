@@ -25,15 +25,16 @@ package dev.galacticraft.mod.compat.emi;
 import dev.emi.emi.api.widget.Bounds;
 import dev.emi.emi.api.widget.Widget;
 import dev.galacticraft.mod.client.gui.screen.ingame.RocketWorkbenchScreen;
+import dev.galacticraft.mod.client.util.LazyRocketEntity;
 import dev.galacticraft.mod.content.entity.vehicle.RocketEntity;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.SmithingScreen;
 
 public class RocketPreviewEmiWidget extends Widget {
     private final Bounds bounds;
-    private final RocketEntity entity;
+    private final LazyRocketEntity entity;
 
-    public RocketPreviewEmiWidget(Bounds bounds, RocketEntity entity) {
+    public RocketPreviewEmiWidget(Bounds bounds, LazyRocketEntity entity) {
         this.bounds = bounds;
         this.entity = entity;
     }
@@ -45,7 +46,10 @@ public class RocketPreviewEmiWidget extends Widget {
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
-        this.entity.setYRot(this.entity.getYRot() + delta);
-        RocketWorkbenchScreen.renderEntityInInventory(graphics, this.bounds.x(), this.bounds.y(), 15, SmithingScreen.ARMOR_STAND_ANGLE, null, this.entity);
+        RocketEntity rocket = this.entity.get();
+        if (rocket == null) return;
+
+        rocket.setYRot(rocket.getYRot() + delta);
+        RocketWorkbenchScreen.renderEntityInInventory(graphics, this.bounds.x(), this.bounds.y(), 15, SmithingScreen.ARMOR_STAND_ANGLE, null, rocket);
     }
 }

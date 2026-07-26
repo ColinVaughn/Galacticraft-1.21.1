@@ -340,7 +340,8 @@
       ],
       "net/minecraft/class_1309": [
         "dev/galacticraft/api/accessor/GearInventoryProvider",
-        "dev/galacticraft/mod/accessor/CryogenicAccessor"
+        "dev/galacticraft/mod/accessor/CryogenicAccessor",
+        "dev/galacticraft/mod/accessor/ParachuteAccessor"
       ],
       "net/minecraft/class_1937": [
         "dev/galacticraft/api/accessor/LevelBodyAccessor",

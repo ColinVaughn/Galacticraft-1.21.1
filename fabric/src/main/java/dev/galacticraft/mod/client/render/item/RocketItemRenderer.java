@@ -29,7 +29,7 @@ import dev.galacticraft.api.component.GCDataComponents;
 import dev.galacticraft.api.entity.rocket.render.RocketPartRendererRegistry;
 import dev.galacticraft.api.rocket.RocketData;
 import dev.galacticraft.api.rocket.RocketPrefabs;
-import dev.galacticraft.mod.content.GCEntityTypes;
+import dev.galacticraft.mod.client.util.LazyRocketEntity;
 import dev.galacticraft.mod.content.entity.vehicle.RocketEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -40,18 +40,16 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
 public class RocketItemRenderer {
-    // NeoForge's Entity constructor reads its fluid-type registry. That registry
-    // is not available yet when client renderers are registered, so create the
-    // fake rendering entity on first use instead of during mod construction.
-    private RocketEntity rocket;
+    private final LazyRocketEntity lazyRocket = new LazyRocketEntity();
 
     public void render(ItemStack stack, ItemDisplayContext mode, PoseStack matrices, MultiBufferSource vertexConsumers, int light, int overlay) {
-        if (this.rocket == null) {
-            this.rocket = new RocketEntity(GCEntityTypes.ROCKET, null);
-        }
-        RocketData data = stack.has(GCDataComponents.ROCKET_DATA) ? stack.get(GCDataComponents.ROCKET_DATA) : RocketPrefabs.MISSING;
         ClientLevel level = Minecraft.getInstance().level;
-        rocket.setLevel(level);
+        RocketEntity rocket = this.lazyRocket.get();
+        if (level == null || rocket == null) {
+            return; // nothing to render the rocket against
+        }
+
+        RocketData data = stack.has(GCDataComponents.ROCKET_DATA) ? stack.get(GCDataComponents.ROCKET_DATA) : RocketPrefabs.MISSING;
         rocket.setData(data);
         rocket.setOldPosAndRot();
         matrices.pushPose();

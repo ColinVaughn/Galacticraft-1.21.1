@@ -274,6 +274,8 @@ public interface Constant {
         // Special
         String PARACHEST = "parachest";
         String SPACE_STATION_ARRIVAL = "space_station_arrival";
+        // Shared block entity type id for all three treasure chest tiers.
+        String TREASURE_CHEST = "treasure_chest";
         String TREASURE_CHEST_TIER_1 = "treasure_chest_tier_1";
         String TREASURE_CHEST_TIER_2 = "treasure_chest_tier_2";
         String TREASURE_CHEST_TIER_3 = "treasure_chest_tier_3";
@@ -567,6 +569,10 @@ public interface Constant {
         String INFINITE_OXYGEN_TANK = "infinite_oxygen_tank";
 
         String EMERGENCY_KIT = "emergency_kit";
+
+        String TIER_1_DUNGEON_KEY = "tier_1_dungeon_key";
+        String TIER_2_DUNGEON_KEY = "tier_2_dungeon_key";
+        String TIER_3_DUNGEON_KEY = "tier_3_dungeon_key";
 
         String THERMAL_PADDING_HELMET = "thermal_padding_helmet";
         String THERMAL_PADDING_CHESTPIECE = "thermal_padding_chestpiece";
@@ -1246,6 +1252,12 @@ public interface Constant {
     interface LootTable {
         String BASIC_MOON_RUINS_CHEST = "chests/moon_ruins/basic_chest";
         String MOON_CAVE_EXPEDITION_CACHE = "chests/moon_cave_expedition_cache";
+
+        // Not under chests/ for historical reasons: chests in already-generated dungeons store
+        // these ids in their NBT, so renaming them would empty every existing dungeon.
+        String DUNGEON_TIER_1 = "dungeon_tier_1";
+        String DUNGEON_TIER_2 = "dungeon_tier_2";
+        String DUNGEON_TIER_3 = "dungeon_tier_3";
     }
 
     interface Text {

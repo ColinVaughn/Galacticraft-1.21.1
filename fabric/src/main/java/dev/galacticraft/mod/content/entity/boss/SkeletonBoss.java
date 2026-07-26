@@ -325,10 +325,6 @@ public class SkeletonBoss extends AbstractBossEntity implements RangedAttackMob,
         return 1;
     }
 
-    @Override
-    public void dropKey() {
-        this.spawnAtLocation(new ItemStack(Items.TRIAL_KEY), 0.5F);
-    }
 
     @Override
     public BossEvent.BossBarColor getHealthBarColor() {

@@ -38,7 +38,6 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 
 import java.util.List;
@@ -89,10 +88,6 @@ public class CreeperBoss extends AbstractBossEntity {
         return 2;
     }
 
-    @Override
-    public void dropKey() {
-        this.spawnAtLocation(new ItemStack(Items.TRIAL_KEY), 0.5F);
-    }
 
     @Override
     public BossEvent.BossBarColor getHealthBarColor() {

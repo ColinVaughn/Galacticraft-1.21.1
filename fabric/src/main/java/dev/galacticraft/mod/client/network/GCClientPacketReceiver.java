@@ -39,6 +39,7 @@ public class GCClientPacketReceiver {
         register(CapeAssignmentsPacket.TYPE, CapeAssignmentsPacket.STREAM_CODEC);
         register(DustStormSyncPayload.TYPE, DustStormSyncPayload.STREAM_CODEC);
         register(SolarFlareSyncPayload.TYPE, SolarFlareSyncPayload.STREAM_CODEC);
+        register(MeteorShowerSyncPayload.TYPE, MeteorShowerSyncPayload.STREAM_CODEC);
         register(ServerStatisticsPayload.TYPE, ServerStatisticsPayload.STREAM_CODEC);
         register(GlobalStatisticsPayload.TYPE, GlobalStatisticsPayload.STREAM_CODEC);
     }

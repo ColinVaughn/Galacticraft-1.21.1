@@ -38,6 +38,7 @@ import dev.galacticraft.mod.client.render.block.entity.GCBlockEntityRenderer;
 import dev.galacticraft.mod.client.render.dimension.GCDimensionEffects;
 import dev.galacticraft.mod.client.render.entity.*;
 import dev.galacticraft.mod.client.render.entity.feature.OxygenMaskRenderLayer;
+import dev.galacticraft.mod.client.render.entity.feature.ParachuteRenderLayer;
 import dev.galacticraft.mod.client.render.entity.feature.OxygenTanksRenderLayer;
 import dev.galacticraft.mod.client.render.entity.feature.ParrotOxygenGearRenderLayer;
 import dev.galacticraft.mod.client.render.entity.feature.PetOxygenMaskRenderLayer;
@@ -352,6 +353,7 @@ public class GalacticraftClient implements ClientModInitializer {
                 registrationHelper.register(new OxygenMaskRenderLayer<>(playerRenderer));
                 registrationHelper.register(new OxygenTanksRenderLayer<>(playerRenderer));
                 registrationHelper.register(new ParrotOxygenGearRenderLayer<>(playerRenderer));
+                registrationHelper.register(new ParachuteRenderLayer<>(playerRenderer));
             } else if (entityType == EntityType.WOLF) {
                 var wolfRenderer = (RenderLayerParent<Wolf, EntityModel<Wolf>>) entityRenderer;
                 registrationHelper.register(new PetOxygenMaskRenderLayer<>(wolfRenderer));

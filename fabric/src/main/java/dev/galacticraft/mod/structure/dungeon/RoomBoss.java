@@ -153,6 +153,7 @@ public class RoomBoss extends SizedPiece {
     protected void addAdditionalSaveData(StructurePieceSerializationContext context, CompoundTag tag) {
         super.addAdditionalSaveData(context, tag);
 
+        tag.putBoolean("chestPosNull", this.chestPos == null);
         if (this.chestPos != null) {
             tag.putInt("chestX", this.chestPos.getX());
             tag.putInt("chestY", this.chestPos.getY());
@@ -163,7 +164,11 @@ public class RoomBoss extends SizedPiece {
     @Override
     protected void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
-        this.chestPos = new BlockPos(tag.getInt("chestX"), tag.getInt("chestY"), tag.getInt("chestZ"));
+        // Without this guard an absent chest position deserializes to (0, 0, 0), and the boss
+        // then hunts for its reward chest at the world origin. Matches DungeonSpawnerBlockEntity.
+        if (tag.contains("chestPosNull") ? !tag.getBoolean("chestPosNull") : tag.contains("chestX")) {
+            this.chestPos = new BlockPos(tag.getInt("chestX"), tag.getInt("chestY"), tag.getInt("chestZ"));
+        }
     }
 
     @Override

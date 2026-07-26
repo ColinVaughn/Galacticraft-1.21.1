@@ -23,6 +23,7 @@
 package dev.galacticraft.mod.compat.rei.client.category;
 
 import dev.galacticraft.mod.client.gui.screen.ingame.RocketWorkbenchScreen;
+import dev.galacticraft.mod.client.util.LazyRocketEntity;
 import dev.galacticraft.mod.content.entity.vehicle.RocketEntity;
 import me.shedaniel.math.Point;
 import me.shedaniel.rei.api.client.REIRuntime;
@@ -39,9 +40,9 @@ import static dev.galacticraft.mod.Constant.RocketWorkbench.*;
 
 public class RocketPreviewWidget extends Widget {
     private final int previewX, previewY, rocketX, rocketY;
-    private final RocketEntity entity;
+    private final LazyRocketEntity entity;
 
-    public RocketPreviewWidget(Point startPoint, RocketEntity entity) {
+    public RocketPreviewWidget(Point startPoint, LazyRocketEntity entity) {
         this.previewX = startPoint.x + PREVIEW_X;
         this.previewY = startPoint.y + PREVIEW_Y;
         this.rocketX = startPoint.x + ROCKET_X;
@@ -57,8 +58,11 @@ public class RocketPreviewWidget extends Widget {
             graphics.blit(SCREEN_TEXTURE, this.previewX, this.previewY, PREVIEW_U, PREVIEW_V, PREVIEW_WIDTH, PREVIEW_HEIGHT);
         }
 
-        this.entity.setYRot(this.entity.getYRot() + delta);
-        RocketWorkbenchScreen.renderEntityInInventory(graphics, this.rocketX, this.rocketY, 15, SmithingScreen.ARMOR_STAND_ANGLE, null, this.entity);
+        RocketEntity rocket = this.entity.get();
+        if (rocket == null) return;
+
+        rocket.setYRot(rocket.getYRot() + delta);
+        RocketWorkbenchScreen.renderEntityInInventory(graphics, this.rocketX, this.rocketY, 15, SmithingScreen.ARMOR_STAND_ANGLE, null, rocket);
     }
 
     @Override

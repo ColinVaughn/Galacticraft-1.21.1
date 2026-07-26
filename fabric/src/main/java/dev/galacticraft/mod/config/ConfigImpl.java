@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -93,6 +94,17 @@ public class ConfigImpl implements Config {
     private boolean cannotEatInNoAtmosphere = true;
     private boolean cannotEatWithMask = true;
     private float meteorSpawnMultiplier = 1.0f;
+    private boolean meteorsEnabled = true;
+    private int meteorSporadicInterval = 9000;
+    private int meteorShowerMeanInterval = 72000;
+    private int meteorShowerMinDuration = 3600;
+    private int meteorShowerMaxDuration = 9600;
+    private float meteorShowerIntensity = 1.0f;
+    private float meteorShowerPeakMultiplier = 60.0f;
+    private int meteorMaxConcurrent = 12;
+    private int meteorMaxCraterRadius = 12;
+    private boolean meteorImpactBlockDamage = true;
+    private boolean meteorFragmentation = true;
     private boolean dustStormsEnabled = true;
     private int dustStormMeanInterval = 36000;
     private int dustStormMinDuration = 2400;
@@ -448,6 +460,105 @@ public class ConfigImpl implements Config {
 
     public void setMeteorSpawnMultiplier(float meteorSpawnMultiplier) {
         this.meteorSpawnMultiplier = meteorSpawnMultiplier;
+    }
+
+    @Override
+    public boolean meteorsEnabled() {
+        return this.meteorsEnabled;
+    }
+
+    public void setMeteorsEnabled(boolean meteorsEnabled) {
+        this.meteorsEnabled = meteorsEnabled;
+    }
+
+    @Override
+    public int meteorSporadicInterval() {
+        return this.meteorSporadicInterval;
+    }
+
+    public void setMeteorSporadicInterval(int meteorSporadicInterval) {
+        this.meteorSporadicInterval = meteorSporadicInterval;
+    }
+
+    @Override
+    public int meteorShowerMeanInterval() {
+        return this.meteorShowerMeanInterval;
+    }
+
+    public void setMeteorShowerMeanInterval(int meteorShowerMeanInterval) {
+        this.meteorShowerMeanInterval = meteorShowerMeanInterval;
+    }
+
+    @Override
+    public int meteorShowerMinDuration() {
+        return this.meteorShowerMinDuration;
+    }
+
+    public void setMeteorShowerMinDuration(int meteorShowerMinDuration) {
+        this.meteorShowerMinDuration = meteorShowerMinDuration;
+    }
+
+    @Override
+    public int meteorShowerMaxDuration() {
+        return this.meteorShowerMaxDuration;
+    }
+
+    public void setMeteorShowerMaxDuration(int meteorShowerMaxDuration) {
+        this.meteorShowerMaxDuration = meteorShowerMaxDuration;
+    }
+
+    @Override
+    public float meteorShowerIntensity() {
+        return this.meteorShowerIntensity;
+    }
+
+    public void setMeteorShowerIntensity(float meteorShowerIntensity) {
+        this.meteorShowerIntensity = meteorShowerIntensity;
+    }
+
+    @Override
+    public float meteorShowerPeakMultiplier() {
+        return this.meteorShowerPeakMultiplier;
+    }
+
+    public void setMeteorShowerPeakMultiplier(float meteorShowerPeakMultiplier) {
+        this.meteorShowerPeakMultiplier = meteorShowerPeakMultiplier;
+    }
+
+    @Override
+    public int meteorMaxConcurrent() {
+        return this.meteorMaxConcurrent;
+    }
+
+    public void setMeteorMaxConcurrent(int meteorMaxConcurrent) {
+        this.meteorMaxConcurrent = meteorMaxConcurrent;
+    }
+
+    @Override
+    public int meteorMaxCraterRadius() {
+        return this.meteorMaxCraterRadius;
+    }
+
+    public void setMeteorMaxCraterRadius(int meteorMaxCraterRadius) {
+        this.meteorMaxCraterRadius = meteorMaxCraterRadius;
+    }
+
+    @Override
+    public boolean meteorImpactBlockDamage() {
+        return this.meteorImpactBlockDamage;
+    }
+
+    public void setMeteorImpactBlockDamage(boolean meteorImpactBlockDamage) {
+        this.meteorImpactBlockDamage = meteorImpactBlockDamage;
+    }
+
+    @Override
+    public boolean meteorFragmentation() {
+        return this.meteorFragmentation;
+    }
+
+    public void setMeteorFragmentation(boolean meteorFragmentation) {
+        this.meteorFragmentation = meteorFragmentation;
     }
 
     @Override
@@ -1204,6 +1315,38 @@ public class ConfigImpl implements Config {
                     .setSaveConsumer(config::setMeteorSpawnMultiplier)
                     .setDefaultValue(1.0f)
                     .setMin(Mth.EPSILON)
+                    .build()
+            );
+
+            difficulty.addEntry(new BooleanToggleBuilder(
+                    Component.translatable(Translations.Config.RESET),
+                    label.apply(Translations.Config.METEORS_ENABLED),
+                    config.meteorsEnabled())
+                    .setTooltip(tooltipWithDesc.apply(Translations.Config.METEORS_ENABLED, Translations.Config.METEORS_ENABLED_DESC))
+                    .setSaveConsumer(config::setMeteorsEnabled)
+                    .setDefaultValue(true)
+                    .build()
+            );
+
+            difficulty.addEntry(new BooleanToggleBuilder(
+                    Component.translatable(Translations.Config.RESET),
+                    label.apply(Translations.Config.METEOR_IMPACT_BLOCK_DAMAGE),
+                    config.meteorImpactBlockDamage())
+                    .setTooltip(tooltipWithDesc.apply(Translations.Config.METEOR_IMPACT_BLOCK_DAMAGE, Translations.Config.METEOR_IMPACT_BLOCK_DAMAGE_DESC))
+                    .setSaveConsumer(config::setMeteorImpactBlockDamage)
+                    .setDefaultValue(true)
+                    .build()
+            );
+
+            difficulty.addEntry(new IntFieldBuilder(
+                    Component.translatable(Translations.Config.RESET),
+                    label.apply(Translations.Config.METEOR_MAX_CRATER_RADIUS),
+                    config.meteorMaxCraterRadius())
+                    .setTooltip(tooltipWithDesc.apply(Translations.Config.METEOR_MAX_CRATER_RADIUS, Translations.Config.METEOR_MAX_CRATER_RADIUS_DESC))
+                    .setSaveConsumer(config::setMeteorMaxCraterRadius)
+                    .setDefaultValue(12)
+                    .setMin(1)
+                    .setMax(48)
                     .build()
             );
 

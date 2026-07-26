@@ -30,4 +30,19 @@ import net.minecraft.world.level.storage.loot.LootTable;
 public class GCLootTables {
     public static final ResourceKey<LootTable> BASIC_MOON_RUINS_CHEST = Constant.key(Registries.LOOT_TABLE, Constant.LootTable.BASIC_MOON_RUINS_CHEST);
     public static final ResourceKey<LootTable> MOON_CAVE_EXPEDITION_CACHE = Constant.key(Registries.LOOT_TABLE, Constant.LootTable.MOON_CAVE_EXPEDITION_CACHE);
+
+    public static final ResourceKey<LootTable> DUNGEON_TIER_1 = Constant.key(Registries.LOOT_TABLE, Constant.LootTable.DUNGEON_TIER_1);
+    public static final ResourceKey<LootTable> DUNGEON_TIER_2 = Constant.key(Registries.LOOT_TABLE, Constant.LootTable.DUNGEON_TIER_2);
+    public static final ResourceKey<LootTable> DUNGEON_TIER_3 = Constant.key(Registries.LOOT_TABLE, Constant.LootTable.DUNGEON_TIER_3);
+
+    /**
+     * @return the dungeon chest loot table for the given dungeon tier, clamped to a valid tier.
+     */
+    public static ResourceKey<LootTable> dungeonChest(int tier) {
+        return switch (tier) {
+            case 2 -> DUNGEON_TIER_2;
+            case 3 -> DUNGEON_TIER_3;
+            default -> DUNGEON_TIER_1;
+        };
+    }
 }

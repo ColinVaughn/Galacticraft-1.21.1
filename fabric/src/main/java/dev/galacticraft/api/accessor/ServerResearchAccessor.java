@@ -22,7 +22,15 @@
 
 package dev.galacticraft.api.accessor;
 
+import dev.galacticraft.impl.internal.accessor.AdvancementRewardsAccessor;
+import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.PlayerAdvancements;
+import net.minecraft.server.level.ServerPlayer;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public interface ServerResearchAccessor extends ResearchAccessor {
     void galacticraft$unlockRocketPartRecipes(ResourceLocation... id);
@@ -30,4 +38,36 @@ public interface ServerResearchAccessor extends ResearchAccessor {
     void galacticraft$unlearnRocketPartRecipes(ResourceLocation... id);
 
     void galacticraft$syncResearch();
+
+    /**
+     * Grants the rocket-part research of every advancement the player has already completed.
+     * <p>
+     * Advancement rewards only fire at the moment an advancement is completed, so a player who
+     * earned an advancement before its {@code rocket_parts} reward existed would never receive
+     * that research and could never craft the rocket it was supposed to unlock. Unlocking is
+     * idempotent, so this is a no-op for anyone whose rewards did fire.
+     *
+     * @return the recipes that were granted
+     */
+    static List<ResourceLocation> galacticraft$backfillFromAdvancements(ServerPlayer player) {
+        PlayerAdvancements progress = player.getAdvancements();
+        List<ResourceLocation> granted = new ArrayList<>();
+
+        for (AdvancementHolder holder : player.server.getAdvancements().getAllAdvancements()) {
+            if (!progress.getOrStartProgress(holder).isDone()) {
+                continue;
+            }
+
+            ResourceLocation[] rewards = ((AdvancementRewardsAccessor) (Object) holder.value().rewards()).getRocketPartRecipeRewards();
+            if (rewards != null) {
+                Collections.addAll(granted, rewards);
+            }
+        }
+
+        if (!granted.isEmpty()) {
+            ((ServerResearchAccessor) player).galacticraft$unlockRocketPartRecipes(granted.toArray(new ResourceLocation[0]));
+        }
+
+        return granted;
+    }
 }

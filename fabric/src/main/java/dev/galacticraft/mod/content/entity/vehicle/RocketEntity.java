@@ -832,6 +832,16 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
 
                 for (Entity entity : getPassengers()) {
                     if (entity instanceof ServerPlayer serverPlayer) {
+                        // The rocket menu is backed by this entity, so removing the rocket below
+                        // stops it being valid and the server's own stillValid sweep fires a
+                        // container-close a moment later - which would tear down the celestial map
+                        // we are about to open. Close it here instead, so the close reaches the
+                        // client ahead of the map packet, and so anything held on the cursor is
+                        // returned before the cargo transfer reads the hold.
+                        if (serverPlayer.containerMenu != serverPlayer.inventoryMenu) {
+                            serverPlayer.closeContainer();
+                        }
+
                         GCServerPlayer gcPlayer = GCServerPlayer.get(serverPlayer);
                         gcPlayer.setRocketStacks(this.collectCargoForTransfer());
                         gcPlayer.setFuel(this.tank.getAmount());

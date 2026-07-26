@@ -32,6 +32,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
 
 public class DungeonConfiguration {
+    private static final int DEFAULT_CHEST_TIER = 1;
     public static final Codec<DungeonConfiguration> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             BlockState.CODEC.fieldOf("brickBlock").forGetter(DungeonConfiguration::getBrickBlock),
             Codec.INT.fieldOf("yPosition").forGetter(DungeonConfiguration::getYPosition),
@@ -40,7 +41,9 @@ public class DungeonConfiguration {
             Codec.INT.fieldOf("hallwayHeight").forGetter(DungeonConfiguration::getHallwayHeight),
             Codec.INT.fieldOf("roomHeight").forGetter(DungeonConfiguration::getRoomHeight),
             BuiltInRegistries.STRUCTURE_PIECE.byNameCodec().fieldOf("bossRoom").forGetter(DungeonConfiguration::getBossRoom),
-            BuiltInRegistries.STRUCTURE_PIECE.byNameCodec().fieldOf("treasureRoom").forGetter(DungeonConfiguration::getTreasureRoom)
+            BuiltInRegistries.STRUCTURE_PIECE.byNameCodec().fieldOf("treasureRoom").forGetter(DungeonConfiguration::getTreasureRoom),
+            // Optional so structure JSONs written before dungeons were tiered still load.
+            Codec.intRange(1, 3).optionalFieldOf("chestTier", DEFAULT_CHEST_TIER).forGetter(DungeonConfiguration::getChestTier)
     ).apply(instance, DungeonConfiguration::new));
     private BlockState brickBlock;
     private int yPosition;
@@ -50,11 +53,16 @@ public class DungeonConfiguration {
     private int roomHeight;
     private StructurePieceType bossRoom;
     private StructurePieceType treasureRoom;
+    private int chestTier = DEFAULT_CHEST_TIER;
 
     public DungeonConfiguration() {
     }
 
     public DungeonConfiguration(BlockState brickBlock, int yPosition, int hallwayLengthMin, int hallwayLengthMax, int hallwayHeight, int roomHeight, StructurePieceType bossRoom, StructurePieceType treasureRoom) {
+        this(brickBlock, yPosition, hallwayLengthMin, hallwayLengthMax, hallwayHeight, roomHeight, bossRoom, treasureRoom, DEFAULT_CHEST_TIER);
+    }
+
+    public DungeonConfiguration(BlockState brickBlock, int yPosition, int hallwayLengthMin, int hallwayLengthMax, int hallwayHeight, int roomHeight, StructurePieceType bossRoom, StructurePieceType treasureRoom, int chestTier) {
         this.brickBlock = brickBlock;
         this.yPosition = yPosition;
         this.hallwayLengthMin = hallwayLengthMin;
@@ -63,6 +71,7 @@ public class DungeonConfiguration {
         this.roomHeight = roomHeight;
         this.bossRoom = bossRoom;
         this.treasureRoom = treasureRoom;
+        this.chestTier = chestTier;
     }
 
     public CompoundTag write(CompoundTag tagCompound) {
@@ -74,6 +83,7 @@ public class DungeonConfiguration {
         tagCompound.putInt("roomHeight", this.roomHeight);
         tagCompound.putString("bossRoom", BuiltInRegistries.STRUCTURE_PIECE.getKey(this.bossRoom).toString());
         tagCompound.putString("treasureRoom", BuiltInRegistries.STRUCTURE_PIECE.getKey(this.treasureRoom).toString());
+        tagCompound.putInt("chestTier", this.chestTier);
         return tagCompound;
     }
 
@@ -87,6 +97,8 @@ public class DungeonConfiguration {
             this.roomHeight = tagCompound.getInt("roomHeight");
             this.bossRoom = BuiltInRegistries.STRUCTURE_PIECE.get(ResourceLocation.tryParse(tagCompound.getString("bossRoom")));
             this.treasureRoom = BuiltInRegistries.STRUCTURE_PIECE.get(ResourceLocation.tryParse(tagCompound.getString("treasureRoom")));
+            // Absent in dungeons saved before tiering existed; those are all tier 1.
+            this.chestTier = tagCompound.contains("chestTier") ? tagCompound.getInt("chestTier") : DEFAULT_CHEST_TIER;
         } catch (Exception e) {
             System.err.println("Failed to read dungeon configuration from NBT");
             e.printStackTrace();
@@ -123,5 +135,12 @@ public class DungeonConfiguration {
 
     public StructurePieceType getTreasureRoom() {
         return treasureRoom;
+    }
+
+    /**
+     * @return the tier of this dungeon's chest loot, treasure chest and boss key (1-3).
+     */
+    public int getChestTier() {
+        return chestTier;
     }
 }

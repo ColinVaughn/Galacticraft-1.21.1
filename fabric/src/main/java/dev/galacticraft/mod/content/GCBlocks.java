@@ -361,6 +361,16 @@ public class GCBlocks {
     public static final Block CAVERNOUS_VINES_PLANT = BLOCKS.register(Constant.Block.CAVERNOUS_VINES_PLANT, new CavernousVinesPlantBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GREEN).noCollission().lightLevel(CavernousVines.emission(8)).instabreak().sound(SoundType.CAVE_VINES).pushReaction(PushReaction.DESTROY).dropsLike(CAVERNOUS_VINES)));
     public static final Block BOSS_SPAWNER = BLOCKS.registerWithItem(Constant.Block.BOSS_SPAWNER, new BossSpawner(BlockBehaviour.Properties.ofFullCopy(Blocks.SPAWNER).noLootTable().noCollission()));
 
+    // Dungeon reward chests. Worldgen-only, so no block item; a locked one is unbreakable
+    // (see TreasureChestBlock#getDestroyProgress) and an unlocked one is not worth dropping.
+    public static final Block TREASURE_CHEST_TIER_1 = BLOCKS.register(Constant.Block.TREASURE_CHEST_TIER_1, new TreasureChestBlock(1, treasureChestProperties()));
+    public static final Block TREASURE_CHEST_TIER_2 = BLOCKS.register(Constant.Block.TREASURE_CHEST_TIER_2, new TreasureChestBlock(2, treasureChestProperties()));
+    public static final Block TREASURE_CHEST_TIER_3 = BLOCKS.register(Constant.Block.TREASURE_CHEST_TIER_3, new TreasureChestBlock(3, treasureChestProperties()));
+
+    private static BlockBehaviour.Properties treasureChestProperties() {
+        return BlockBehaviour.Properties.ofFullCopy(Blocks.CHEST).strength(3.0F, 1200.0F).noLootTable();
+    }
+
     // MUTLIBLOCK PARTS
     public static final BaseEntityBlock SOLAR_PANEL_PART = BLOCKS.register(Constant.Block.SOLAR_PANEL_PART, new SolarPanelPartBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLUE).strength(-1.0F, 5.0F).noLootTable().sound(SoundType.METAL)));
     public static final BaseEntityBlock CRYOGENIC_CHAMBER_PART = BLOCKS.register(Constant.Block.CRYOGENIC_CHAMBER_PART, new CryogenicChamberPart(BlockBehaviour.Properties.of().noOcclusion().isSuffocating(GCBlocks::never).isViewBlocking(GCBlocks::never).mapColor(MapColor.COLOR_GRAY).strength(3.0F, 5.0F).noLootTable().sound(SoundType.METAL).requiresCorrectToolForDrops()));

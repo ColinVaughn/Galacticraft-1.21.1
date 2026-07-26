@@ -31,16 +31,12 @@ import dev.architectury.networking.NetworkManager;
 import dev.galacticraft.api.universe.celestialbody.CelestialBody;
 import dev.galacticraft.api.universe.celestialbody.landable.Landable;
 import dev.galacticraft.api.universe.celestialbody.landable.teleporter.CelestialTeleporter;
-import dev.galacticraft.mod.Constant;
-import dev.galacticraft.mod.Galacticraft;
-import dev.galacticraft.mod.content.GCCelestialBodies;
-import dev.galacticraft.mod.content.GCEntityTypes;
-import dev.galacticraft.mod.content.entity.FallingMeteorEntity;
 import dev.galacticraft.mod.misc.footprint.FootprintManager;
 import dev.galacticraft.mod.network.s2c.FootprintRemovedPacket;
 import dev.galacticraft.mod.statistics.GlobalStatisticsReporter;
 import dev.galacticraft.mod.tag.GCEntityTypeTags;
 import dev.galacticraft.mod.world.dimension.duststorm.MarsDustStormManager;
+import dev.galacticraft.mod.world.dimension.meteor.MeteorShowerManager;
 import dev.galacticraft.mod.world.dimension.solarflare.MercurySolarFlareManager;
 import dev.galacticraft.mod.util.Translations;
 import net.minecraft.core.BlockPos;
@@ -51,10 +47,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
@@ -73,7 +67,6 @@ public class GCEventHandlers {
         GCInteractionEventHandlers.init();
         GlobalStatisticsReporter.init();
         TickEvent.SERVER_LEVEL_POST.register(GCEventHandlers::onWorldTick);
-        TickEvent.SERVER_POST.register(GCEventHandlers::onServerTick);
     }
 
     public static void onPlayerChangePlanets(MinecraftServer server, ServerPlayer player, CelestialBody<?, ?> body, CelestialBody<?, ?> fromBody) {
@@ -105,6 +98,7 @@ public class GCEventHandlers {
         level.galacticraft$getSealerManager().tick();
         MarsDustStormManager.tick(level);
         MercurySolarFlareManager.tick(level);
+        MeteorShowerManager.tick(level);
     }
 
     private static void tickSatelliteReentryPlane(ServerLevel level) {
@@ -152,49 +146,6 @@ public class GCEventHandlers {
         return true;
     }
 
-    public static void onServerTick(MinecraftServer server) {
-        // throw meteors around players
-        server.getPlayerList().getPlayers().forEach(player -> {
-            ServerLevel level = player.serverLevel();
-            Holder<CelestialBody<?, ?>> celestialBody = level.galacticraft$getCelestialBody();
-            if (celestialBody == null || celestialBody.is(GCCelestialBodies.EARTH)) return;
-
-            // calculate frequency of meteors on current celestial body
-            float atmospherePressure = celestialBody.value().atmosphere().pressure();
-            float frequency = (atmospherePressure <= Mth.EPSILON) ? 5.0f : (atmospherePressure * 100.0f);
-            frequency /= Galacticraft.CONFIG.meteorSpawnMultiplier();
-
-            // throw meteor
-            int chance = Math.max(1, (int) (frequency * 750.0f));
-            if (level.random.nextInt(chance) == 0) {
-                throwMeteor(server, level, player, 1);
-            }
-
-            // throw bigger meteor if you're lucky enough
-            if (level.random.nextInt(chance * 3) == 0) {
-                throwMeteor(server, level, player, 6);
-            }
-        });
-    }
-
-    private static void throwMeteor(MinecraftServer server, ServerLevel level, Player targetPlayer, int meteorSize) {
-        Player nearestPlayer = level.getNearestPlayer(targetPlayer, 100.0);
-        if (nearestPlayer == null || nearestPlayer.getId() > targetPlayer.getId()) return;
-
-        int maxOffset = server.getPlayerList().getViewDistance() * Constant.Chunk.WIDTH - 1;
-
-        int offsetX = Math.min(maxOffset, level.random.nextInt(20) + 160);
-        int offsetZ = level.random.nextInt(20) - 10;
-        double deltaX = (level.random.nextDouble() - 0.5) * 2.0;
-        double deltaZ = (level.random.nextDouble() - 0.5) * 5.0;
-
-        FallingMeteorEntity meteor = new FallingMeteorEntity(GCEntityTypes.FALLING_METEOR, level);
-        meteor.setPos(targetPlayer.getX() + offsetX, level.getMaxBuildHeight() + 99.0, targetPlayer.getZ() + offsetZ);
-        meteor.setDeltaMovement(deltaX, 0.0, deltaZ);
-        meteor.setSize(meteorSize);
-
-        level.addFreshEntity(meteor);
-    }
 
     public static boolean extinguishBlock(Level level, BlockPos pos, BlockState oldState) {
         ExtinguishableBlockRegistry.Entry entry = ExtinguishableBlockRegistry.INSTANCE.get(oldState.getBlock());

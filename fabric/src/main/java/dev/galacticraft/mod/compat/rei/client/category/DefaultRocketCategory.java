@@ -25,8 +25,7 @@ package dev.galacticraft.mod.compat.rei.client.category;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.compat.rei.common.GalacticraftREIServerPlugin;
 import dev.galacticraft.mod.compat.rei.common.display.DefaultRocketDisplay;
-import dev.galacticraft.mod.content.GCEntityTypes;
-import dev.galacticraft.mod.content.entity.vehicle.RocketEntity;
+import dev.galacticraft.mod.client.util.LazyRocketEntity;
 import dev.galacticraft.mod.recipe.RocketRecipe;
 import dev.galacticraft.mod.util.Translations;
 import me.shedaniel.math.Point;
@@ -42,7 +41,6 @@ import me.shedaniel.rei.api.common.entry.EntryStack;
 import me.shedaniel.rei.api.common.util.EntryStacks;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -58,11 +56,7 @@ import static dev.galacticraft.mod.content.GCBlocks.ROCKET_WORKBENCH;
 public class DefaultRocketCategory implements DisplayCategory<DefaultRocketDisplay> {
     // Do not replace with Constant.SlotSprite.CHEST or it will be displayed as a missing texture!
     private static final ResourceLocation CHEST_SLOT_SPRITE = Constant.id("textures/gui/slot/chest.png");
-    public static RocketEntity ROCKET_ENTITY = new RocketEntity(GCEntityTypes.ROCKET, Minecraft.getInstance().level);
-
-    static {
-        ROCKET_ENTITY.setYRot(90.0F);
-    }
+    public static final LazyRocketEntity ROCKET_ENTITY = new LazyRocketEntity(90.0F);
 
     @Override
     public CategoryIdentifier<? extends DefaultRocketDisplay> getCategoryIdentifier() {

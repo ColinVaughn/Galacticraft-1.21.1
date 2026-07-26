@@ -108,16 +108,16 @@ public class GCStructures {
                 Heightmap.Types.WORLD_SURFACE_WG
         ));
         context.register(Moon.BOSS, new DungeonStructure(new Structure.StructureSettings(biomeLookup.getOrThrow(GCBiomeTags.MOON_BOSS_HAS_STRUCTURE)), new DungeonConfiguration(GCBlocks.MOON_DUNGEON_BRICK.defaultBlockState(), 25, 8, 16,
-                5, 6, GCStructurePieceTypes.ROOM_BOSS, GCStructurePieceTypes.ROOM_TREASURE)));
+                5, 6, GCStructurePieceTypes.ROOM_BOSS, GCStructurePieceTypes.ROOM_TREASURE, 1)));
         // Abandoned base dungeon floating in the asteroid field, built from dark decoration blocks.
         context.register(Asteroid.DUNGEON, new DungeonStructure(new Structure.StructureSettings(biomeLookup.getOrThrow(GCBiomeTags.ASTEROID_DUNGEON_HAS_STRUCTURE)), new DungeonConfiguration(GCBlocks.DARK_DECORATION.block().defaultBlockState(), 48, 8, 16,
-                5, 6, GCStructurePieceTypes.ROOM_BOSS, GCStructurePieceTypes.ROOM_TREASURE)));
+                5, 6, GCStructurePieceTypes.ROOM_BOSS, GCStructurePieceTypes.ROOM_TREASURE, 1)));
         // Mars dungeon: buried in the Mars rock, guarded by a giant Evolved Creeper boss.
         context.register(Mars.BOSS, new DungeonStructure(new Structure.StructureSettings(biomeLookup.getOrThrow(GCBiomeTags.MARS_BOSS_HAS_STRUCTURE)), new DungeonConfiguration(GCBlocks.MARS_COBBLESTONE.defaultBlockState(), 25, 8, 16,
-                5, 6, GCStructurePieceTypes.MARS_ROOM_BOSS, GCStructurePieceTypes.ROOM_TREASURE)));
+                5, 6, GCStructurePieceTypes.MARS_ROOM_BOSS, GCStructurePieceTypes.ROOM_TREASURE, 2)));
         // Venus dungeon: buried in the Venus rock, guarded by a giant Evolved Spider Queen boss.
         context.register(Venus.BOSS, new DungeonStructure(new Structure.StructureSettings(biomeLookup.getOrThrow(GCBiomeTags.VENUS_BOSS_HAS_STRUCTURE)), new DungeonConfiguration(GCBlocks.HARD_VENUS_ROCK.defaultBlockState(), 25, 8, 16,
-                5, 6, GCStructurePieceTypes.VENUS_ROOM_BOSS, GCStructurePieceTypes.ROOM_TREASURE)));
+                5, 6, GCStructurePieceTypes.VENUS_ROOM_BOSS, GCStructurePieceTypes.ROOM_TREASURE, 3)));
     }
 
     @Contract("_ -> new")

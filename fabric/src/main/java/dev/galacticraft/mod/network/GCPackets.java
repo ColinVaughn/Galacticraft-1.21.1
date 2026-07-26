@@ -46,6 +46,7 @@ public class GCPackets {
             registerS2C(CapeAssignmentsPacket.TYPE, CapeAssignmentsPacket.STREAM_CODEC);
             registerS2C(DustStormSyncPayload.TYPE, DustStormSyncPayload.STREAM_CODEC);
             registerS2C(SolarFlareSyncPayload.TYPE, SolarFlareSyncPayload.STREAM_CODEC);
+            registerS2C(MeteorShowerSyncPayload.TYPE, MeteorShowerSyncPayload.STREAM_CODEC);
             registerS2C(ServerStatisticsPayload.TYPE, ServerStatisticsPayload.STREAM_CODEC);
             registerS2C(GlobalStatisticsPayload.TYPE, GlobalStatisticsPayload.STREAM_CODEC);
         }

@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -133,11 +134,14 @@ public class GCEntityTypes {
             .clientTrackingRange(8)
             .build(Constant.id(Entity.ARCH_GREY).toString()));
 
-    public static final EntityType<FallingMeteorEntity> FALLING_METEOR = ENTITIES.register(Entity.FALLING_METEOR, EntityType.Builder.of(FallingMeteorEntity::new, MobCategory.MISC)
+    // Meteoroids cross several blocks per tick, so they need per-tick position updates and synced
+    // velocity for the client to interpolate them into anything but a strobing jump.
+    public static final EntityType<FallingMeteorEntity> FALLING_METEOR = ENTITIES.register(Entity.FALLING_METEOR, velocityUpdates(EntityType.Builder.of(FallingMeteorEntity::new, MobCategory.MISC)
             .clientTrackingRange(16)
-            .updateInterval(5)
+            .updateInterval(1), true)
             .sized(1.0f, 1.0f)
             .eyeHeight(0.5f)
+            .fireImmune()
             .build(Constant.id(Entity.FALLING_METEOR).toString()));
 
     public static final EntityType<BubbleEntity> BUBBLE = ENTITIES.register(Entity.BUBBLE, EntityType.Builder.of(BubbleEntity::new, MobCategory.MISC)

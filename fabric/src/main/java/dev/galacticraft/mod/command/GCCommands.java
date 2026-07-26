@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +31,7 @@ public class GCCommands {
         CommandRegistrationEvent.EVENT.register((dispatcher, registryAccess, environment) -> {
             DimensionTpCommand.register(dispatcher);
             DustStormCommand.register(dispatcher);
+            MeteorShowerCommand.register(dispatcher);
 
             if (Galacticraft.CONFIG.enableGcHouston()) {
                 GCHoustonCommand.register(dispatcher);

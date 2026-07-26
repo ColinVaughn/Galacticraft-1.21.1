@@ -365,6 +365,9 @@ public class GCTranslationProvider extends TranslationProvider {
         this.block(GCBlocks.CAVERNOUS_VINES, "Cavernous Vines");
         this.block(GCBlocks.CAVERNOUS_VINES_PLANT, "Cavernous Vines Plant");
         this.block(GCBlocks.BOSS_SPAWNER, "Boss Spawner");
+        this.block(GCBlocks.TREASURE_CHEST_TIER_1, "Tier 1 Treasure Chest");
+        this.block(GCBlocks.TREASURE_CHEST_TIER_2, "Tier 2 Treasure Chest");
+        this.block(GCBlocks.TREASURE_CHEST_TIER_3, "Tier 3 Treasure Chest");
 
         // MULTIBLOCK PARTS
         this.block(GCBlocks.SOLAR_PANEL_PART, "Solar Panel");
@@ -584,6 +587,10 @@ public class GCTranslationProvider extends TranslationProvider {
 
         this.item(GCItems.SHIELD_CONTROLLER, "Shield Controller");
         this.item(GCItems.FREQUENCY_MODULE, "Frequency Module");
+
+        this.item(GCItems.TIER_1_DUNGEON_KEY, "Tier 1 Dungeon Key");
+        this.item(GCItems.TIER_2_DUNGEON_KEY, "Tier 2 Dungeon Key");
+        this.item(GCItems.TIER_3_DUNGEON_KEY, "Tier 3 Dungeon Key");
 
         this.item(GCItems.THERMAL_PADDING_HELMET, "Thermal Padding Helm");
         this.item(GCItems.THERMAL_PADDING_CHESTPIECE, "Thermal Padding Chestpiece");
@@ -985,6 +992,10 @@ public class GCTranslationProvider extends TranslationProvider {
                 "%s was seared by a solar flare while trying to escape %s");
 
         this.add(Boss.SKELETON_BOSS_DESPAWN, "Boss despawned, don't leave the boss room while fighting! Re-enter room to respawn boss.");
+        this.add(TreasureChest.LOCKED, "This chest is locked. You need a Tier %s Dungeon Key.");
+
+        this.add(RocketWorkbench.MISSING_RESEARCH, "You have not researched:");
+        this.add(RocketWorkbench.MISSING_RESEARCH_HINT, "Complete the advancement that unlocks the part.");
     }
 
     protected void generateRocketPartTranslations() {
@@ -1157,6 +1168,12 @@ public class GCTranslationProvider extends TranslationProvider {
 
         this.add(Config.DIFFICULTY, "Difficulty");
         this.add(Config.METEOR_SPAWN_MULTIPLIER, "Meteor Spawn Multiplier");
+        this.add(Config.METEORS_ENABLED, "Meteors And Meteor Showers");
+        this.add(Config.METEORS_ENABLED_DESC, "Whether Meteoroids Fall At All, On Any Celestial Body");
+        this.add(Config.METEOR_IMPACT_BLOCK_DAMAGE, "Meteor Impacts Break Blocks");
+        this.add(Config.METEOR_IMPACT_BLOCK_DAMAGE_DESC, "When Off, Impacts Still Hurt And Leave Meteorites But Never Dig Craters");
+        this.add(Config.METEOR_MAX_CRATER_RADIUS, "Maximum Crater Radius");
+        this.add(Config.METEOR_MAX_CRATER_RADIUS_DESC, "Upper Limit In Blocks On A Crater, However Energetic The Impact");
         this.add(Config.BOSS_HEALTH_MODIFIER, "Boss Health Modifier");
         this.add(Config.BOSS_HEALTH_MODIFIER_DESC, "Multiplies All GC5 Bosses Health By This Value");
 
@@ -1337,6 +1354,10 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(Ui.OXYGEN_SETUP_INVALID, "Oxygen Setup is Invalid!");
         this.add(Ui.DUST_STORM_INCOMING, "Dust Storm Incoming — %ss");
         this.add(Ui.DUST_STORM_CLEARING, "Dust Storm Clearing — %ss");
+        this.add(Ui.METEOR_SHOWER_INCOMING, "Meteor shower incoming");
+        this.add(Ui.METEOR_SHOWER_BEGAN, "The meteor shower has begun");
+        this.add(Ui.METEOR_SHOWER_ENDED, "The meteor shower has passed");
+        this.add(Ui.METEOR_IMPACTOR_WARNING, "Large impactor inbound — take cover!");
         this.add("subtitles.galacticraft.ambient.dust_storm", "Wind howls");
         this.add(Ui.ROCKET_FUEL, "Fuel:");
         this.add(Ui.ROCKET_FULL, "% full");

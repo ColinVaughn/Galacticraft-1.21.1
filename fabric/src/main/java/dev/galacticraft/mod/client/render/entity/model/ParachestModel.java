@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -73,6 +74,14 @@ public class ParachestModel extends HierarchicalModel<ParachestEntity> {
 
     @Override
     public void setupAnim(ParachestEntity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
+        this.setupParachutePose();
+    }
+
+    /**
+     * Opens the canopy into its hanging pose. Independent of the parachest, so a player wearing a
+     * parachute can be strung up under the same mesh.
+     */
+    public void setupParachutePose() {
         this.parachute[0].yRot = 0.0F;
         this.parachute[2].yRot = 0.0F;
         this.parachuteStrings[0].yRot = 0.0F;

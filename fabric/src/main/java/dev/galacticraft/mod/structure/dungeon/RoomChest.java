@@ -22,11 +22,11 @@
 
 package dev.galacticraft.mod.structure.dungeon;
 
+import dev.galacticraft.mod.content.GCLootTables;
 import dev.galacticraft.mod.structure.GCStructurePieceTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.StructureManager;
@@ -36,7 +36,6 @@ import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
-import net.minecraft.world.level.storage.loot.LootTable;
 
 public class RoomChest extends RoomEmpty {
     public RoomChest(CompoundTag tag) {
@@ -50,23 +49,23 @@ public class RoomChest extends RoomEmpty {
     @Override
     public void postProcess(WorldGenLevel worldIn, StructureManager structureManager, ChunkGenerator chunkGenerator, RandomSource rand, BoundingBox boundingBox, ChunkPos pos, BlockPos pivot) {
         super.postProcess(worldIn, structureManager, chunkGenerator, rand, boundingBox, pos, pivot);
-//        if (super.postProcess(worldIn, structureManager, chunkGenerator, rand, boundingBox, pos, pivot)) {
+
         int chestX = this.sizeX / 2;
         int chestY = 1;
         int chestZ = this.sizeZ / 2;
-        this.placeBlock(worldIn, Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, this.getDirection().getOpposite()), chestX, chestY, chestZ, boundingBox);
-
         BlockPos blockpos = new BlockPos(this.getWorldX(chestX, chestZ), this.getWorldY(chestY), this.getWorldZ(chestX, chestZ));
-        ChestBlockEntity chest = (ChestBlockEntity) worldIn.getBlockEntity(blockpos);
 
-        if (chest != null) {
-            ResourceKey<LootTable> chesttype = RoomTreasure.MOONCHEST;
-//                if (worldIn.provider instanceof IGalacticraftWorldProvider) {
-//                    chesttype = ((IGalacticraftWorldProvider) worldIn.provider).getDungeonChestType();
-//                }
-            chest.setLootTable(chesttype, rand.nextLong());
+        // A chest room can straddle a chunk border, so postProcess runs more than once for it.
+        // Only touch the chest on the pass that actually owns its position, otherwise the loot
+        // seed gets re-rolled and the block entity may not even be reachable from this region.
+        if (!boundingBox.isInside(blockpos)) {
+            return;
         }
 
-//        }
+        this.placeBlock(worldIn, Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, this.getDirection().getOpposite()), chestX, chestY, chestZ, boundingBox);
+
+        if (worldIn.getBlockEntity(blockpos) instanceof ChestBlockEntity chest) {
+            chest.setLootTable(GCLootTables.dungeonChest(this.configuration.getChestTier()), rand.nextLong());
+        }
     }
 }

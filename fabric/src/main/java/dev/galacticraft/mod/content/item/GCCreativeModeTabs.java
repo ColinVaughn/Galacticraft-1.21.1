@@ -367,6 +367,10 @@ public class GCCreativeModeTabs {
 
                 output.accept(EMERGENCY_KIT);
 
+                output.accept(TIER_1_DUNGEON_KEY);
+                output.accept(TIER_2_DUNGEON_KEY);
+                output.accept(TIER_3_DUNGEON_KEY);
+
                 // MATERIALS
                 output.accept(RAW_TIN);
                 output.accept(RAW_ALUMINUM);

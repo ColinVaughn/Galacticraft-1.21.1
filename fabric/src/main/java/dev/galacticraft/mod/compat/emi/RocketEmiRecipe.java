@@ -27,10 +27,8 @@ import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.Bounds;
 import dev.emi.emi.api.widget.WidgetHolder;
-import dev.galacticraft.mod.content.GCEntityTypes;
-import dev.galacticraft.mod.content.entity.vehicle.RocketEntity;
+import dev.galacticraft.mod.client.util.LazyRocketEntity;
 import dev.galacticraft.mod.recipe.RocketRecipe;
-import net.minecraft.client.Minecraft;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeHolder;
 
@@ -51,11 +49,7 @@ public class RocketEmiRecipe extends BasicEmiRecipe {
     private final int bodyHeight;
     private final boolean hasBoosters;
     private static final EmiIngredient EMPTY = EmiIngredient.of(Ingredient.EMPTY);
-    public static RocketEntity ROCKET_ENTITY = new RocketEntity(GCEntityTypes.ROCKET, Minecraft.getInstance().level);
-
-    static {
-        ROCKET_ENTITY.setYRot(90.0F);
-    }
+    public static final LazyRocketEntity ROCKET_ENTITY = new LazyRocketEntity(90.0F);
 
     public RocketEmiRecipe(RecipeHolder<RocketRecipe> holder) {
         super(GalacticraftEmiPlugin.ROCKET, holder.id(), RECIPE_VIEWER_WIDTH, RECIPE_VIEWER_HEIGHT);

@@ -10,6 +10,7 @@
     "brickBlock": {
       "Name": "galacticraft:hard_venus_rock"
     },
+    "chestTier": 3,
     "hallwayHeight": 5,
     "hallwayLengthMax": 16,
     "hallwayLengthMin": 8,

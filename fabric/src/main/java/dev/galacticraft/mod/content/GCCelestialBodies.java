@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -210,9 +211,13 @@ public class GCCelestialBodies {
                 DefaultCelestialRingDisplayType.INSTANCE.configure(new DefaultCelestialRingDisplayConfig()),
                 GCDimensions.VENUS,
                 teleporters.getOrThrow(GCTeleporterTypes.LANDER_CELESTIAL_TELEPORTER),
+                // Venus is not a vacuum: 92 bar of 464 C carbon dioxide, the densest atmosphere of
+                // any rocky planet. It had been carrying a copy of the Moon's placeholder values.
                 new GasComposition.Builder()
-                        .temperature(23.0)
-                        .pressure(3.0E-15F)
+                        .temperature(464.0)
+                        .pressure(92.0F)
+                        .gas(Gases.CARBON_DIOXIDE_ID, 965000.000)
+                        .gas(Gases.NITROGEN_ID, 35000.000)
                         .build(),
                 0.91F,
                 GCCelestialHandlers.DEFAULT,

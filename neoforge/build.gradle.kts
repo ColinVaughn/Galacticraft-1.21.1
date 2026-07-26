@@ -33,6 +33,7 @@ val neoReplacedFabricSources = setOf(
     "dev/galacticraft/mod/client/model/types/UnbakedObjModel.java",
     "dev/galacticraft/mod/client/render/entity/model/GCEntityModelLayer.java",
     "dev/galacticraft/mod/client/render/FootprintRenderer.java",
+    "dev/galacticraft/mod/client/render/MeteorSkyRenderer.java",
     "dev/galacticraft/mod/client/GCKeyBinds.java",
     "dev/galacticraft/mod/api/wire/Wire.java",
     "dev/galacticraft/mod/api/wire/WireNetwork.java",

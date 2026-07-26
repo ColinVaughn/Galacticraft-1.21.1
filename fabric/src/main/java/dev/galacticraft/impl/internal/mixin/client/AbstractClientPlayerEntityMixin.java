@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -75,7 +76,9 @@ public abstract class AbstractClientPlayerEntityMixin implements ClientResearchA
         SimpleContainer inv = new GearInventory();
         inv.addListener((inventory) -> {
             Holder<CelestialBody<?, ?>> holder = this.clientLevel.galacticraft$getCelestialBody();
-            float volume = holder != null ? holder.value().atmosphere().pressure() : 1.0F;
+            // The multiplier exists to mute a vacuum, so a dense atmosphere is capped at normal
+            // volume rather than scaling Venus's 92 bar into a deafening 92x.
+            float volume = holder != null ? Math.min(1.0F, holder.value().atmosphere().pressure()) : 1.0F;
             if (volume != 1.0F) {
                 for (int i = 0; i < inventory.getContainerSize(); i++) {
                     ItemStack stack = inventory.getItem(i);

@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -96,6 +97,28 @@ public interface Config {
     boolean cannotEatInNoAtmosphere();
 
     float meteorSpawnMultiplier();
+
+    boolean meteorsEnabled();
+
+    int meteorSporadicInterval();
+
+    int meteorShowerMeanInterval();
+
+    int meteorShowerMinDuration();
+
+    int meteorShowerMaxDuration();
+
+    float meteorShowerIntensity();
+
+    float meteorShowerPeakMultiplier();
+
+    int meteorMaxConcurrent();
+
+    int meteorMaxCraterRadius();
+
+    boolean meteorImpactBlockDamage();
+
+    boolean meteorFragmentation();
 
     boolean dustStormsEnabled();
 
