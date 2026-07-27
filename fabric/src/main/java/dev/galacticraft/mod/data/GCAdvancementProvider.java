@@ -612,7 +612,7 @@ public class GCAdvancementProvider extends FabricAdvancementProvider {
                         true,
                         false
                 )
-                .addCriterion("buggy_schematic", InventoryChangeTrigger.TriggerInstance.hasItems(GCItems.MOON_BUGGY_SCHEMATIC))
+                .addCriterion("buggy_schematic", UnlockSchematicTrigger.TriggerInstance.unlocked(GCItems.MOON_BUGGY_SCHEMATIC))
                 .save(consumer, Constant.MOD_ID + "/buggy_schematic");
 
         AdvancementHolder buggyAdvancement = Advancement.Builder.advancement().parent(buggySchematicAdvancement)
@@ -629,8 +629,9 @@ public class GCAdvancementProvider extends FabricAdvancementProvider {
                 .addCriterion("crafted_buggy", InventoryChangeTrigger.TriggerInstance.hasItems(GCItems.BUGGY))
                 .save(consumer, Constant.MOD_ID + "/buggy");
 
-        // Obtaining the Tier 2 rocket schematic (dropped by the Moon dungeon boss) is what
-        // unlocks the tier-2 rocket parts, so defeating the boss gates travel to Mars/Venus.
+        // Spending the Tier 2 rocket schematic in the rocket workbench is what unlocks the tier-2
+        // rocket parts, so defeating the Moon dungeon boss gates travel to Mars/Venus. Legacy
+        // Galacticraft consumed the schematic the same way; merely carrying it does nothing.
         AdvancementHolder tier2SchematicAdvancement = Advancement.Builder.advancement().parent(moonDungeonKeyAdvancement)
                 .display(
                         GCItems.TIER_2_ROCKET_SCHEMATIC,
@@ -652,11 +653,11 @@ public class GCAdvancementProvider extends FabricAdvancementProvider {
                         GCRocketParts.TIER_2_FIN,
                         GCRocketParts.TIER_2_ENGINE
                 ))
-                .addCriterion("tier_2_rocket_schematic", InventoryChangeTrigger.TriggerInstance.hasItems(GCItems.TIER_2_ROCKET_SCHEMATIC))
+                .addCriterion("tier_2_rocket_schematic", UnlockSchematicTrigger.TriggerInstance.unlocked(GCItems.TIER_2_ROCKET_SCHEMATIC))
                 .save(consumer, Constant.MOD_ID + "/tier_2_rocket_schematic");
 
-        // The Tier 3 rocket schematic (dropped by the Mars dungeon boss) unlocks the tier-3
-        // rocket parts, gating travel to the asteroids and Mercury.
+        // Spending the Tier 3 rocket schematic (dropped by the Mars dungeon boss) unlocks the
+        // tier-3 rocket parts, gating travel to the asteroids and Mercury.
         AdvancementHolder tier3SchematicAdvancement = Advancement.Builder.advancement().parent(tier2SchematicAdvancement)
                 .display(
                         GCItems.TIER_3_ROCKET_SCHEMATIC,
@@ -675,7 +676,7 @@ public class GCAdvancementProvider extends FabricAdvancementProvider {
                         GCRocketParts.TIER_3_ENGINE,
                         GCRocketParts.TIER_3_BOOSTER
                 ))
-                .addCriterion("tier_3_rocket_schematic", InventoryChangeTrigger.TriggerInstance.hasItems(GCItems.TIER_3_ROCKET_SCHEMATIC))
+                .addCriterion("tier_3_rocket_schematic", UnlockSchematicTrigger.TriggerInstance.unlocked(GCItems.TIER_3_ROCKET_SCHEMATIC))
                 .save(consumer, Constant.MOD_ID + "/tier_3_rocket_schematic");
     }
 

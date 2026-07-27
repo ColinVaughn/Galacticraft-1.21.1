@@ -26,7 +26,10 @@ import dev.galacticraft.common.GalacticraftCommon;
 import dev.galacticraft.mod.Galacticraft;
 import dev.galacticraft.mod.content.GCBlockPlatformHooks;
 import dev.galacticraft.mod.content.GCBlocks;
+import dev.galacticraft.mod.content.GCSpawnPlacements;
 import dev.galacticraft.mod.content.EntityAttributePlatformHooks;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.SpawnPlacements;
 import dev.galacticraft.mod.data.OxygenBlockDataManager;
 import dev.galacticraft.mod.storage.ItemFluidTransfer;
 import dev.galacticraft.mod.storage.ItemStoragePull;
@@ -143,6 +146,8 @@ public final class GalacticraftFabric implements ModInitializer {
         FabricOxygenTankExtractor.register();
         GalacticraftCommon.init();
         new Galacticraft().onInitialize();
+        // After the mod's own initializer, so the entity types being restricted exist.
+        registerSpawnPlacements();
         ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
             @Override
             public ResourceLocation getFabricId() {
@@ -154,5 +159,21 @@ public final class GalacticraftFabric implements ModInitializer {
                 OxygenBlockDataManager.INSTANCE.onResourceManagerReload(manager);
             }
         });
+    }
+
+    /**
+     * Installs the mob spawning rules from {@link GCSpawnPlacements}. NeoForge has an event for this;
+     * Fabric has only vanilla's own registration method, reached through the access widener.
+     */
+    private static void registerSpawnPlacements() {
+        for (GCSpawnPlacements.Placement<?> placement : GCSpawnPlacements.all()) {
+            register(placement);
+        }
+    }
+
+    // Separate method so the wildcard is captured into a type variable; SpawnPlacements.register needs
+    // the entity type and its predicate to agree on one mob type.
+    private static <T extends Mob> void register(GCSpawnPlacements.Placement<T> placement) {
+        SpawnPlacements.register(placement.type(), placement.placement(), placement.heightmap(), placement.predicate());
     }
 }

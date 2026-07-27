@@ -58,8 +58,15 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class ConfigImpl implements Config {
+    private static final int CURRENT_CONFIG_VERSION = 1;
+    private static final int LEGACY_METEOR_SHOWER_MEAN_INTERVAL = 72000;
+    private static final float LEGACY_METEOR_SHOWER_PEAK_MULTIPLIER = 60.0f;
+    private static final int DEFAULT_METEOR_SHOWER_MEAN_INTERVAL = 144000;
+    private static final float DEFAULT_METEOR_SHOWER_PEAK_MULTIPLIER = 12.0f;
+
     private transient final Gson gson;
     private transient final File file;
+    private int configVersion = 0;
     private boolean debugLog = false;
     private long wireMaxTransferPerTick = 128;
     private long heavyWireMaxTransferPerTick = 256;
@@ -77,6 +84,7 @@ public class ConfigImpl implements Config {
     private long oxygenDecompressorEnergyConsumptionRate = 15;
     private long oxygenSealerEnergyConsumptionRate = 10;
     private long oxygenSealerOxygenConsumptionRate = 1000;
+    private long oxygenSealerUnsealedOxygenConsumptionRate = 6000;
     private long maxSealingPower = 1024;
     private long refineryEnergyConsumptionRate = 60;
     private long fuelLoaderEnergyConsumptionRate = 15;
@@ -96,11 +104,11 @@ public class ConfigImpl implements Config {
     private float meteorSpawnMultiplier = 1.0f;
     private boolean meteorsEnabled = true;
     private int meteorSporadicInterval = 9000;
-    private int meteorShowerMeanInterval = 72000;
+    private int meteorShowerMeanInterval = DEFAULT_METEOR_SHOWER_MEAN_INTERVAL;
     private int meteorShowerMinDuration = 3600;
     private int meteorShowerMaxDuration = 9600;
     private float meteorShowerIntensity = 1.0f;
-    private float meteorShowerPeakMultiplier = 60.0f;
+    private float meteorShowerPeakMultiplier = DEFAULT_METEOR_SHOWER_PEAK_MULTIPLIER;
     private int meteorMaxConcurrent = 12;
     private int meteorMaxCraterRadius = 12;
     private boolean meteorImpactBlockDamage = true;
@@ -302,6 +310,15 @@ public class ConfigImpl implements Config {
 
     public void setOxygenSealerOxygenConsumptionRate(long amount) {
         this.oxygenSealerOxygenConsumptionRate = amount;
+    }
+
+    @Override
+    public long oxygenSealerUnsealedOxygenConsumptionRate() {
+        return oxygenSealerUnsealedOxygenConsumptionRate;
+    }
+
+    public void setOxygenSealerUnsealedOxygenConsumptionRate(long amount) {
+        this.oxygenSealerUnsealedOxygenConsumptionRate = amount;
     }
 
     @Override
@@ -786,10 +803,23 @@ public class ConfigImpl implements Config {
 
         try (FileReader reader = new FileReader(file, StandardCharsets.UTF_8)) {
             this.gson.fromJson(reader, ConfigImpl.class);
+            this.migrateConfig();
             this.save();
         } catch (IOException | JsonSyntaxException e) {
             Constant.LOGGER.error("Failed to load config.", e);
         }
+    }
+
+    private void migrateConfig() {
+        if (this.configVersion >= CURRENT_CONFIG_VERSION) return;
+
+        if (this.meteorShowerMeanInterval == LEGACY_METEOR_SHOWER_MEAN_INTERVAL) {
+            this.meteorShowerMeanInterval = DEFAULT_METEOR_SHOWER_MEAN_INTERVAL;
+        }
+        if (Float.compare(this.meteorShowerPeakMultiplier, LEGACY_METEOR_SHOWER_PEAK_MULTIPLIER) == 0) {
+            this.meteorShowerPeakMultiplier = DEFAULT_METEOR_SHOWER_PEAK_MULTIPLIER;
+        }
+        this.configVersion = CURRENT_CONFIG_VERSION;
     }
 
     @Override
@@ -1049,6 +1079,16 @@ public class ConfigImpl implements Config {
                     .setTooltip(tooltipSingularSub.apply(Translations.Config.OXYGEN_SEALER_OXYGEN_CONSUMPTION_RATE))
                     .setSaveConsumer(config::setOxygenSealerOxygenConsumptionRate)
                     .setDefaultValue(1000)
+                    .build()
+            );
+
+            machines.add(new LongFieldBuilder(
+                    Component.translatable(Translations.Config.RESET),
+                    labelSub.apply(Translations.Config.OXYGEN_SEALER_UNSEALED_OXYGEN_CONSUMPTION_RATE),
+                    config.oxygenSealerUnsealedOxygenConsumptionRate())
+                    .setTooltip(tooltipSingularSub.apply(Translations.Config.OXYGEN_SEALER_UNSEALED_OXYGEN_CONSUMPTION_RATE))
+                    .setSaveConsumer(config::setOxygenSealerUnsealedOxygenConsumptionRate)
+                    .setDefaultValue(6000)
                     .build()
             );
 

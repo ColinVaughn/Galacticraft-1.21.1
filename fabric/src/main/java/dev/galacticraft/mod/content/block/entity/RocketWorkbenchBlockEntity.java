@@ -22,10 +22,12 @@
 
 package dev.galacticraft.mod.content.block.entity;
 
+import dev.galacticraft.api.item.Schematic;
 import dev.galacticraft.mod.content.GCBlockEntityTypes;
 import dev.galacticraft.mod.machine.storage.VariableSizedContainer;
 import dev.galacticraft.mod.screen.RocketWorkbenchMenu;
 import dev.galacticraft.mod.tag.GCItemTags;
+import net.minecraft.resources.ResourceLocation;
 import dev.architectury.registry.menu.ExtendedMenuProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -87,6 +89,23 @@ public class RocketWorkbenchBlockEntity extends BlockEntity implements ExtendedM
         }
     };
 
+    /**
+     * The unlock well on the "add new schematic" page, holding one schematic at a time. Legacy kept
+     * this in its own {@code ContainerSchematic} and dropped it the moment the page was closed; here
+     * it belongs to the block so that flipping pages does not spit the schematic onto the floor.
+     */
+    public final SimpleContainer schematic = new SimpleContainer(1) {
+        @Override
+        public boolean canPlaceItem(int slot, ItemStack stack) {
+            return stack.getItem() instanceof Schematic;
+        }
+
+        @Override
+        public int getMaxStackSize() {
+            return 1;
+        }
+    };
+
     private static boolean isExplosive(ItemStack stack) {
         return stack.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof TntBlock;
     }
@@ -98,6 +117,7 @@ public class RocketWorkbenchBlockEntity extends BlockEntity implements ExtendedM
         super(GCBlockEntityTypes.ROCKET_WORKBENCH, pos, state);
         this.ingredients.addListener(this);
         this.chests.addListener(sender -> this.setChanged());
+        this.schematic.addListener(sender -> this.setChanged());
     }
 
     @Override
@@ -108,6 +128,7 @@ public class RocketWorkbenchBlockEntity extends BlockEntity implements ExtendedM
         if (!outputTag.isEmpty()) tag.put("Output", outputTag.getFirst());
         tag.put("Inventory", this.ingredients.toTag(registryLookup));
         tag.put("Chests", this.chests.createTag(registryLookup));
+        tag.put("Schematic", this.schematic.createTag(registryLookup));
     }
 
     @Override
@@ -120,6 +141,7 @@ public class RocketWorkbenchBlockEntity extends BlockEntity implements ExtendedM
         }
         this.ingredients.readTag(tag.getCompound("Inventory"), registryLookup);
         this.chests.fromTag(tag.getList("Chests", Tag.TAG_COMPOUND), registryLookup);
+        this.schematic.fromTag(tag.getList("Schematic", Tag.TAG_COMPOUND), registryLookup);
     }
 
     public void resizeInventory(int newSize) {
@@ -147,6 +169,30 @@ public class RocketWorkbenchBlockEntity extends BlockEntity implements ExtendedM
         return new RocketWorkbenchMenu(i, this, inventory);
     }
 
+    /**
+     * A provider that opens this workbench on a specific page, so flipping the book can reopen the
+     * menu rather than rebuilding a live one's slots.
+     */
+    public ExtendedMenuProvider menuOn(ResourceLocation page) {
+        RocketWorkbenchBlockEntity workbench = this;
+        return new ExtendedMenuProvider() {
+            @Override
+            public @NotNull Component getDisplayName() {
+                return workbench.getDisplayName();
+            }
+
+            @Override
+            public AbstractContainerMenu createMenu(int syncId, Inventory inventory, Player player) {
+                return new RocketWorkbenchMenu(syncId, workbench, inventory, page);
+            }
+
+            @Override
+            public void saveExtraData(net.minecraft.network.FriendlyByteBuf buf) {
+                RocketWorkbenchMenu.OpeningData.CODEC.encode(buf, new RocketWorkbenchMenu.OpeningData(workbench.getBlockPos(), java.util.Optional.of(page)));
+            }
+        };
+    }
+
     @Override
     public void onSizeChanged() {
         this.setChanged();
@@ -159,6 +205,6 @@ public class RocketWorkbenchBlockEntity extends BlockEntity implements ExtendedM
 
     @Override
     public void saveExtraData(net.minecraft.network.FriendlyByteBuf buf) {
-        RocketWorkbenchMenu.OpeningData.CODEC.encode(buf, new RocketWorkbenchMenu.OpeningData(this.getBlockPos()));
+        RocketWorkbenchMenu.OpeningData.CODEC.encode(buf, new RocketWorkbenchMenu.OpeningData(this.getBlockPos(), java.util.Optional.empty()));
     }
 }

@@ -40,9 +40,8 @@ public class RocketRecipeHandler implements StandardRecipeHandler<RocketWorkbenc
 
     @Override
     public List<Slot> getInputSources(RocketWorkbenchMenu handler) {
-        List<Slot> list = this.getCraftingSlots(handler);
-        // Skip the output slot
-        int invStart = list.size() + 1;
+        List<Slot> list = new ArrayList<>(this.getCraftingSlots(handler));
+        int invStart = handler.firstPlayerSlot();
         // Add inventory + hotbar slots
         for (int i = invStart; i < invStart + 36; i++) {
             list.add(handler.getSlot(i));
@@ -50,19 +49,18 @@ public class RocketRecipeHandler implements StandardRecipeHandler<RocketWorkbenc
         return list;
     }
 
+    /**
+     * Only the ingredient wells. The upgrade wells beside them are a modifier rather than part of
+     * the recipe, so transferring into them would install a chest the player did not ask for.
+     */
     @Override
     public List<Slot> getCraftingSlots(RocketWorkbenchMenu handler) {
-        List<Slot> list = new ArrayList<>();
-        // Less than or equal to to include the chest slot
-        for (int i = 0; i <= handler.getRecipeSize(); i++) {
-            list.add(handler.getSlot(i));
-        }
-        return list;
+        return handler.ingredientSlots();
     }
 
     @Override
     public Slot getOutputSlot(RocketWorkbenchMenu handler) {
-        return handler.getSlot(handler.getRecipeSize() + 1);
+        return handler.resultSlot();
     }
 
     @Override

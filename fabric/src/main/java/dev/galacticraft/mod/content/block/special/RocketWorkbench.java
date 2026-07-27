@@ -117,6 +117,7 @@ public class RocketWorkbench extends BaseEntityBlock {
             if (blockEntity instanceof RocketWorkbenchBlockEntity workbench) {
                 Containers.dropContents(level, pos, workbench.ingredients);
                 Containers.dropContents(level, pos, workbench.chests);
+                Containers.dropContents(level, pos, workbench.schematic);
             }
             super.onRemove(state, level, pos, newState, moved);
         }

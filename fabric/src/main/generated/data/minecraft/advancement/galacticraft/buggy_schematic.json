@@ -3,13 +3,11 @@
   "criteria": {
     "buggy_schematic": {
       "conditions": {
-        "items": [
-          {
-            "items": "galacticraft:moon_buggy_schematic"
-          }
-        ]
+        "schematic": {
+          "items": "galacticraft:moon_buggy_schematic"
+        }
       },
-      "trigger": "minecraft:inventory_changed"
+      "trigger": "galacticraft:unlock_schematic"
     }
   },
   "display": {

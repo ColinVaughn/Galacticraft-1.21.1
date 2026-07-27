@@ -29,8 +29,8 @@ import dev.galacticraft.mod.content.GCBlocks;
 import dev.galacticraft.mod.content.GCRocketParts;
 import dev.galacticraft.mod.content.block.entity.RocketWorkbenchBlockEntity;
 import dev.galacticraft.mod.content.item.GCItems;
-import dev.galacticraft.mod.recipe.GCRecipes;
-import dev.galacticraft.mod.recipe.RocketRecipe;
+import dev.galacticraft.mod.machine.workbench.WorkbenchPages;
+import dev.galacticraft.mod.recipe.WorkbenchRecipe;
 import dev.galacticraft.mod.screen.RocketWorkbenchMenu;
 import dev.galacticraft.mod.Constant;
 import io.netty.buffer.Unpooled;
@@ -250,30 +250,43 @@ public class RocketWorkbenchTestSuite implements GalacticraftGameTest {
     }
 
     /**
-     * Every rocket recipe is offered to the player through JEI/EMI, so every rocket recipe has to
-     * be satisfiable with the slots the workbench actually has.
+     * Every workbench recipe is offered to the player through JEI/EMI, so every one of them has to
+     * be satisfiable with the wells its page actually draws. A recipe with more ingredients than
+     * wells can never be completed, and the extra ingredients are invisible.
      */
     @GameTest(template = EMPTY_STRUCTURE)
-    public void everyRocketRecipeIsReachableInTheWorkbench(GameTestHelper context) {
+    public void everyWorkbenchRecipeFillsExactlyTheWellsItsPageDraws(GameTestHelper context) {
         BlockPos workbenchPos = new BlockPos(1, 1, 1);
-        context.setBlock(workbenchPos, GCBlocks.ROCKET_WORKBENCH);
 
-        RocketWorkbenchBlockEntity workbench = context.getBlockEntity(workbenchPos);
-        ServerPlayer player = context.makeMockServerPlayerInLevel();
-        RocketWorkbenchMenu menu = new RocketWorkbenchMenu(1, workbench, player.getInventory());
-        int slots = workbench.ingredients.getContainerSize();
-        menu.removed(player);
-
-        for (RecipeHolder<RocketRecipe> holder : context.getLevel().getRecipeManager().getAllRecipesFor(GCRecipes.ROCKET_TYPE)) {
-            int required = holder.value().getIngredients().size();
-            if (required != slots) {
-                context.fail("Recipe " + holder.id() + " needs " + required
-                        + " ingredient slots but the workbench only ever has " + slots
-                        + ", so it can never be crafted", workbenchPos);
+        for (RecipeHolder<? extends WorkbenchRecipe> holder : WorkbenchPages.recipes(context.getLevel())) {
+            int ingredients = holder.value().getIngredients().size();
+            int wells = holder.value().ingredientSlots().size();
+            if (ingredients != wells) {
+                context.fail("Recipe " + holder.id() + " lists " + ingredients
+                        + " ingredients but its page draws " + wells + " wells, so it can never be crafted", workbenchPos);
                 return;
             }
         }
 
         context.succeed();
+    }
+
+    /** Only the tier-1 rocket may be built without first unlocking a schematic, as in legacy. */
+    @GameTest(template = EMPTY_STRUCTURE)
+    public void onlyTheTierOneRocketPageNeedsNoSchematic(GameTestHelper context) {
+        BlockPos workbenchPos = new BlockPos(1, 1, 1);
+
+        List<ResourceLocation> free = new java.util.ArrayList<>();
+        for (RecipeHolder<? extends WorkbenchRecipe> holder : WorkbenchPages.recipes(context.getLevel())) {
+            if (holder.value().schematic().isEmpty()) {
+                free.add(holder.id());
+            }
+        }
+
+        if (free.equals(List.of(Constant.id("rocket/rocket")))) {
+            context.succeed();
+        } else {
+            context.fail("Expected only the tier-1 rocket page to be schematic-free, got " + free, workbenchPos);
+        }
     }
 }

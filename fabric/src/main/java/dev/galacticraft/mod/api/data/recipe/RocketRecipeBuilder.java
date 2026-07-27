@@ -39,6 +39,8 @@ public class RocketRecipeBuilder extends GCRecipeBuilder<RocketRecipeBuilder> {
     private Ingredient boosters = Ingredient.EMPTY;
     private Ingredient storage = Ingredient.EMPTY;
     private RocketData rocketData;
+    private java.util.Optional<Item> schematic = java.util.Optional.empty();
+    private int sortOrder;
 
     protected RocketRecipeBuilder(ItemLike result, int count) {
         super("rocket/", null, result, count);
@@ -113,6 +115,17 @@ public class RocketRecipeBuilder extends GCRecipeBuilder<RocketRecipeBuilder> {
         return this;
     }
 
+    /** The schematic that has to be consumed in the workbench before this page appears. */
+    public RocketRecipeBuilder schematic(ItemLike schematic) {
+        this.schematic = java.util.Optional.of(schematic.asItem());
+        return this;
+    }
+
+    public RocketRecipeBuilder sortOrder(int sortOrder) {
+        this.sortOrder = sortOrder;
+        return this;
+    }
+
     public RocketRecipeBuilder rocketData(RocketData rocketData) {
         this.rocketData = rocketData;
         return this;
@@ -126,6 +139,6 @@ public class RocketRecipeBuilder extends GCRecipeBuilder<RocketRecipeBuilder> {
 
         ItemStack result = new ItemStack(this.result, this.count);
         result.set(GCDataComponents.ROCKET_DATA, this.rocketData);
-        return new RocketRecipe(this.group, result, this.bodyHeight, this.body, this.cone, this.engine, this.fins, this.boosters, this.storage);
+        return new RocketRecipe(this.group, result, this.bodyHeight, this.body, this.cone, this.engine, this.fins, this.boosters, this.storage, this.schematic, this.sortOrder);
     }
 }

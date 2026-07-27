@@ -1,0 +1,60 @@
+{
+  "type": "galacticraft:schematic_crafting",
+  "ingredients": [
+    {
+      "item": "galacticraft:heavy_plating"
+    },
+    {
+      "item": "galacticraft:heavy_plating"
+    },
+    {
+      "item": "galacticraft:heavy_plating"
+    },
+    {
+      "item": "galacticraft:heavy_plating"
+    },
+    {
+      "item": "galacticraft:heavy_plating"
+    },
+    {
+      "item": "galacticraft:buggy_seat"
+    },
+    {
+      "item": "galacticraft:heavy_plating"
+    },
+    {
+      "item": "galacticraft:heavy_plating"
+    },
+    {
+      "item": "galacticraft:heavy_plating"
+    },
+    {
+      "item": "galacticraft:heavy_plating"
+    },
+    {
+      "item": "galacticraft:heavy_plating"
+    },
+    {
+      "item": "galacticraft:heavy_plating"
+    },
+    {
+      "item": "galacticraft:buggy_wheel"
+    },
+    {
+      "item": "galacticraft:buggy_wheel"
+    },
+    {
+      "item": "galacticraft:buggy_wheel"
+    },
+    {
+      "item": "galacticraft:buggy_wheel"
+    }
+  ],
+  "layout": "buggy",
+  "result": {
+    "count": 1,
+    "id": "galacticraft:buggy"
+  },
+  "schematic": "galacticraft:moon_buggy_schematic",
+  "sort_order": 10
+}

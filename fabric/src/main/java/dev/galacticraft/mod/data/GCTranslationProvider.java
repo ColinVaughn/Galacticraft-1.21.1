@@ -253,6 +253,7 @@ public class GCTranslationProvider extends TranslationProvider {
         this.block(GCBlocks.SEALABLE_ALUMINUM_WIRE, "Sealable Aluminum Wire");
         this.block(GCBlocks.HEAVY_SEALABLE_ALUMINUM_WIRE, "Heavy Sealable Aluminum Wire");
         this.block(GCBlocks.GLASS_FLUID_PIPE, "Glass Fluid Pipe");
+        this.block(GCBlocks.SEALABLE_GLASS_FLUID_PIPE, "Sealable Glass Fluid Pipe");
         this.block(GCBlocks.FUELING_PAD, "Fueling Pad");
         this.block(GCBlocks.ROCKET_LAUNCH_PAD, "Rocket Launch Pad");
         this.block(GCBlocks.ROCKET_WORKBENCH, "Rocket Workbench");
@@ -262,6 +263,13 @@ public class GCTranslationProvider extends TranslationProvider {
             PipeColor color = entry.getKey();
             if (color != PipeColor.CLEAR) {
                 this.block(entry.getValue(), TranslationProvider.normalizeName(color.getName()) + " Stained Glass Fluid Pipe");
+            }
+        }
+
+        for (Map.Entry<PipeColor, Block> entry : GCBlocks.SEALABLE_GLASS_FLUID_PIPES.entrySet()) {
+            PipeColor color = entry.getKey();
+            if (color != PipeColor.CLEAR) {
+                this.block(entry.getValue(), TranslationProvider.normalizeName(color.getName()) + " Sealable Stained Glass Fluid Pipe");
             }
         }
 
@@ -996,6 +1004,15 @@ public class GCTranslationProvider extends TranslationProvider {
 
         this.add(RocketWorkbench.MISSING_RESEARCH, "You have not researched:");
         this.add(RocketWorkbench.MISSING_RESEARCH_HINT, "Complete the advancement that unlocks the part.");
+        this.add(RocketWorkbench.PAGE_ADD_SCHEMATIC, "Add New Schematic");
+        this.add(RocketWorkbench.PAGE_BUGGY, "Moon Buggy");
+        this.add(RocketWorkbench.PAGE_CARGO_ROCKET, "Cargo Rocket");
+        this.add(RocketWorkbench.PAGE_ASTRO_MINER, "Astro Miner");
+        this.add(RocketWorkbench.BUTTON_BACK, "Back");
+        this.add(RocketWorkbench.BUTTON_NEXT, "Next");
+        this.add(RocketWorkbench.BUTTON_UNLOCK, "Unlock Schematic");
+        this.add(RocketWorkbench.SCHEMATIC_SLOT_HINT, "Place a schematic here and press Unlock Schematic to add its page to this workbench.");
+        this.add(RocketWorkbench.SCHEMATIC_ALREADY_UNLOCKED, "You have already unlocked this schematic.");
     }
 
     protected void generateRocketPartTranslations() {
@@ -1142,6 +1159,7 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(Config.OXYGEN_DECOMPRESSOR_ENERGY_CONSUMPTION_RATE, "Oxygen Decompressor Energy Consumption Rate/t");
         this.add(Config.OXYGEN_SEALER_ENERGY_CONSUMPTION_RATE, "Oxygen Sealer Energy Consumption Rate/t");
         this.add(Config.OXYGEN_SEALER_OXYGEN_CONSUMPTION_RATE, "Oxygen Sealer Oxygen Consumption Rate/t");
+        this.add(Config.OXYGEN_SEALER_UNSEALED_OXYGEN_CONSUMPTION_RATE, "Oxygen Sealer Unsealed Oxygen Consumption Rate/t");
         this.add(Config.MAX_SEALING_POWER, "Maximum Sealing Power");
         this.add(Config.REFINERY_ENERGY_CONSUMPTION_RATE, "Refinery Energy Consumption Rate/t");
         this.add(Config.FUEL_LOADER_ENERGY_CONSUMPTION_RATE, "Fuel Loader Energy Consumption Rate/t");

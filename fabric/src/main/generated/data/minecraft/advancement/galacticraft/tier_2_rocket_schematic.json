@@ -3,13 +3,11 @@
   "criteria": {
     "tier_2_rocket_schematic": {
       "conditions": {
-        "items": [
-          {
-            "items": "galacticraft:tier_2_rocket_schematic"
-          }
-        ]
+        "schematic": {
+          "items": "galacticraft:tier_2_rocket_schematic"
+        }
       },
-      "trigger": "minecraft:inventory_changed"
+      "trigger": "galacticraft:unlock_schematic"
     }
   },
   "display": {

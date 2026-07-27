@@ -1,6 +1,3 @@
 {
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "galacticraft:item/schematic_buggy"
-  }
+  "parent": "minecraft:builtin/entity"
 }

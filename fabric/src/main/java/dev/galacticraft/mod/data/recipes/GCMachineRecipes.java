@@ -487,6 +487,20 @@ public class GCMachineRecipes extends FabricRecipeProvider {
                 .emiDefaultRecipe(true)
                 .save(output);
 
+        // Sealable fluid pipes, cased the same way the wire above is, and per colour so that a coloured
+        // line keeps its colour through the wall. Dyeing one in-world swaps it for another sealable pipe,
+        // so these are the only recipes needed to reach every colour.
+        for (PipeColor color : PipeColor.values()) {
+            ItemLike pipe = GCBlocks.GLASS_FLUID_PIPES.get(color);
+            GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.SEALABLE_GLASS_FLUID_PIPES.get(color), 6)
+                    .define('T', GCBlocks.TIN_DECORATION)
+                    .define('P', pipe)
+                    .pattern("TPT")
+                    .unlockedBy(getHasName(pipe), has(pipe))
+                    .emiDefaultRecipe(color.equals(PipeColor.CLEAR))
+                    .save(output);
+        }
+
         GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.WALKWAY, 5)
                 .define('T', GCItems.COMPRESSED_TITANIUM)
                 .pattern("TTT")

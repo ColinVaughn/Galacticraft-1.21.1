@@ -62,9 +62,12 @@ public class OxygenSealerBlockEntity extends MachineBlockEntity {
     public static final int SEAL_CHECK_TIME = 20;
 
     private boolean isSealed = false;
-    private boolean hasEnergy = false;
-    private boolean hasOxygen = false;
-    private boolean blocked = false;
+    /**
+     * Whether this sealer is in a position to hold a space: powered, gassed, its vent clear and not
+     * switched off. One flag rather than one per reason, so that no path out of the tick can leave a
+     * stale answer behind - a sealer that is not running must not go on holding a room.
+     */
+    private boolean canSeal = false;
 
     private static final StorageSpec SPEC = StorageSpec.of(
             MachineItemStorage.spec(
@@ -118,40 +121,40 @@ public class OxygenSealerBlockEntity extends MachineBlockEntity {
     protected @NotNull MachineStatus tick(@NotNull ServerLevel level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull ProfilerFiller profiler) {
         // Check if the machine has enough energy
         if (!this.energyStorage().canExtract(Galacticraft.CONFIG.oxygenSealerEnergyConsumptionRate())) {
-            this.hasEnergy = false;
+            this.canSeal = false;
             return MachineStatuses.NOT_ENOUGH_ENERGY;
         }
-        this.hasEnergy = true;
 
         // Check if the oxygen tank is empty
         if (this.fluidStorage().slot(OXYGEN_TANK).isEmpty()) {
-            this.hasOxygen = false;
+            this.canSeal = false;
             return GCMachineStatuses.NOT_ENOUGH_OXYGEN;
         }
-        this.hasOxygen = true;
 
         if (!level.getBlockState(pos.offset(0, 1, 0)).isAir()) {
-            this.blocked = true;
+            this.canSeal = false;
             return GCMachineStatuses.BLOCKED;
         }
-        this.blocked = false;
+        this.canSeal = true;
 
-        if (this.hasEnergy) {
-            this.consumeEnergy();
-        }
+        this.consumeEnergy();
 
         if (this.isSealed) {
-            // Consume oxygen if sealed
-            this.consumeOxygen();
+            // A sealed room only needs topping up.
+            this.consumeOxygen(Galacticraft.CONFIG.oxygenSealerOxygenConsumptionRate());
             return GCMachineStatuses.SEALED;
-        } else {
-            return GCMachineStatuses.AREA_TOO_LARGE;
         }
+        // Running without a room to hold means venting into the open, which as in Galacticraft Legacy
+        // costs several times more than maintaining a seal - a leak should be worth finding.
+        this.consumeOxygen(Galacticraft.CONFIG.oxygenSealerUnsealedOxygenConsumptionRate());
+        return GCMachineStatuses.AREA_TOO_LARGE;
     }
 
     @Override
     protected void tickDisabled(@NotNull ServerLevel level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull ProfilerFiller profiler) {
         super.tickDisabled(level, pos, state, profiler);
+        // Switched off, so it spends nothing - and must not go on holding a room for free either.
+        this.canSeal = false;
     }
 
     @Override
@@ -168,8 +171,8 @@ public class OxygenSealerBlockEntity extends MachineBlockEntity {
         return new OxygenSealerMenu(syncId, player, this);
     }
 
-    private void consumeOxygen() {
-        this.fluidStorage().slot(OXYGEN_TANK).extract(Galacticraft.CONFIG.oxygenSealerOxygenConsumptionRate());
+    private void consumeOxygen(long amount) {
+        this.fluidStorage().slot(OXYGEN_TANK).extract(amount);
     }
 
     private void consumeEnergy() {
@@ -184,16 +187,9 @@ public class OxygenSealerBlockEntity extends MachineBlockEntity {
         this.isSealed = sealed;
     }
 
-    public boolean hasEnergy() {
-        return this.hasEnergy;
-    }
-
-    public boolean hasOxygen() {
-        return this.hasOxygen;
-    }
-
-    public boolean isBlocked() {
-        return this.blocked;
+    /** {@return whether this sealer is running and so able to hold part of a space} */
+    public boolean canSeal() {
+        return this.canSeal;
     }
 
     public int getSealTickTime() {

@@ -1,27 +1,54 @@
 {
-  "type": "minecraft:crafting_shaped",
-  "category": "misc",
-  "key": {
-    "D": {
-      "item": "galacticraft:desh_ingot"
-    },
-    "I": {
-      "item": "galacticraft:compressed_iron"
-    },
-    "P": {
+  "type": "galacticraft:schematic_crafting",
+  "ingredients": [
+    {
       "item": "galacticraft:heavy_plating"
     },
-    "S": {
-      "item": "galacticraft:compressed_steel"
+    {
+      "item": "galacticraft:orion_drive"
+    },
+    {
+      "item": "galacticraft:heavy_plating"
+    },
+    {
+      "item": "galacticraft:orion_drive"
+    },
+    {
+      "item": "galacticraft:heavy_plating"
+    },
+    {
+      "item": "galacticraft:advanced_wafer"
+    },
+    {
+      "item": "minecraft:chest"
+    },
+    {
+      "item": "minecraft:chest"
+    },
+    {
+      "item": "galacticraft:orion_drive"
+    },
+    {
+      "item": "galacticraft:orion_drive"
+    },
+    {
+      "item": "galacticraft:heavy_plating"
+    },
+    {
+      "item": "galacticraft:orion_drive"
+    },
+    {
+      "item": "galacticraft:beam_core"
+    },
+    {
+      "tag": "galacticraft:flags"
     }
-  },
-  "pattern": [
-    "PSP",
-    "IDI",
-    "PSP"
   ],
+  "layout": "astro_miner",
   "result": {
     "count": 1,
     "id": "galacticraft:astro_miner"
-  }
+  },
+  "schematic": "galacticraft:astro_miner_schematic",
+  "sort_order": 50
 }

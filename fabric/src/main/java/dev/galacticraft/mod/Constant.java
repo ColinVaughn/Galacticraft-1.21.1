@@ -353,6 +353,25 @@ public interface Constant {
         String RED_GLASS_FLUID_PIPE = "red_glass_fluid_pipe";
         String BLACK_GLASS_FLUID_PIPE = "black_glass_fluid_pipe";
 
+        // SEALABLE GLASS FLUID PIPES
+        String SEALABLE_GLASS_FLUID_PIPE = "sealable_glass_fluid_pipe";
+        String WHITE_SEALABLE_GLASS_FLUID_PIPE = "white_sealable_glass_fluid_pipe";
+        String ORANGE_SEALABLE_GLASS_FLUID_PIPE = "orange_sealable_glass_fluid_pipe";
+        String MAGENTA_SEALABLE_GLASS_FLUID_PIPE = "magenta_sealable_glass_fluid_pipe";
+        String LIGHT_BLUE_SEALABLE_GLASS_FLUID_PIPE = "light_blue_sealable_glass_fluid_pipe";
+        String YELLOW_SEALABLE_GLASS_FLUID_PIPE = "yellow_sealable_glass_fluid_pipe";
+        String LIME_SEALABLE_GLASS_FLUID_PIPE = "lime_sealable_glass_fluid_pipe";
+        String PINK_SEALABLE_GLASS_FLUID_PIPE = "pink_sealable_glass_fluid_pipe";
+        String GRAY_SEALABLE_GLASS_FLUID_PIPE = "gray_sealable_glass_fluid_pipe";
+        String LIGHT_GRAY_SEALABLE_GLASS_FLUID_PIPE = "light_gray_sealable_glass_fluid_pipe";
+        String CYAN_SEALABLE_GLASS_FLUID_PIPE = "cyan_sealable_glass_fluid_pipe";
+        String PURPLE_SEALABLE_GLASS_FLUID_PIPE = "purple_sealable_glass_fluid_pipe";
+        String BLUE_SEALABLE_GLASS_FLUID_PIPE = "blue_sealable_glass_fluid_pipe";
+        String BROWN_SEALABLE_GLASS_FLUID_PIPE = "brown_sealable_glass_fluid_pipe";
+        String GREEN_SEALABLE_GLASS_FLUID_PIPE = "green_sealable_glass_fluid_pipe";
+        String RED_SEALABLE_GLASS_FLUID_PIPE = "red_sealable_glass_fluid_pipe";
+        String BLACK_SEALABLE_GLASS_FLUID_PIPE = "black_sealable_glass_fluid_pipe";
+
         // Pad Blocks
         String FUELING_PAD = "fueling_pad";
         String ROCKET_LAUNCH_PAD = "rocket_launch_pad";
@@ -860,6 +879,34 @@ public interface Constant {
 
     interface RocketWorkbench {
         ResourceLocation SCREEN_TEXTURE = id("textures/gui/rocket_workbench.png");
+
+        /** Every page of the flip-book is drawn at the same width; only the height varies. */
+        int PAGE_WIDTH = 176;
+
+        int ROCKET_PAGE_HEIGHT = 249;
+        int ROCKET_INVENTORY_Y = 167;
+        int ROCKET_HOTBAR_Y = 225;
+
+        /**
+         * Legacy's "add new schematic" page. Its background is 27px taller than the container
+         * origin used to be, which is why every slot here sits 27px lower than in legacy's source.
+         */
+        ResourceLocation ADD_SCHEMATIC_TEXTURE = id("textures/gui/schematic_page.png");
+        int ADD_SCHEMATIC_HEIGHT = 220;
+        int ADD_SCHEMATIC_SLOT_X = 80;
+        int ADD_SCHEMATIC_SLOT_Y = 28;
+        int ADD_SCHEMATIC_INVENTORY_Y = 95;
+        int ADD_SCHEMATIC_HOTBAR_Y = 153;
+        int UNLOCK_BUTTON_X = 42;
+        int UNLOCK_BUTTON_Y = 58;
+        int UNLOCK_BUTTON_WIDTH = 92;
+
+        /** Legacy drew the page-flip buttons just outside the panel, stacked on the left. */
+        int FLIP_BUTTON_X = -42;
+        int FLIP_BUTTON_Y = 0;
+        int FLIP_BUTTON_SPACING = 25;
+        int FLIP_BUTTON_WIDTH = 40;
+        int BUTTON_HEIGHT = 20;
 
         int CENTER_X = 53;
 
@@ -1373,6 +1420,7 @@ public interface Constant {
         String ELECTRIC_BLASTING = "electric_blasting";
         String CANNING = "canning";
         String ROCKET = "rocket";
+        String SCHEMATIC_CRAFTING = "schematic_crafting";
 
         interface Serializer {
             String FABRICATION = "fabrication";
@@ -1381,6 +1429,7 @@ public interface Constant {
             String COMPRESSING_SHAPED = "compressing_shaped";
             String CANNING = "canning";
             String ROCKET = "rocket";
+            String SCHEMATIC_CRAFTING = "schematic_crafting";
             String EMERGENCY_KIT = "crafting_special_emergencykit";
         }
     }
@@ -1499,5 +1548,6 @@ public interface Constant {
         String SAFE_LANDING = "safe_landing";
         String FIND_MOON_BOSS = "boss_moon";
         String CREATE_SPACE_STATION = "create_space_station";
+        String UNLOCK_SCHEMATIC = "unlock_schematic";
     }
 }

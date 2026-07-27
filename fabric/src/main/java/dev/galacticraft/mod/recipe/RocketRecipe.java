@@ -26,12 +26,19 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.galacticraft.api.rocket.part.RocketPartTypes;
+import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.content.GCBlocks;
+import dev.galacticraft.mod.machine.workbench.WorkbenchPageDisplay;
+import dev.galacticraft.mod.machine.workbench.WorkbenchSlot;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
@@ -39,10 +46,11 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static dev.galacticraft.mod.Constant.RocketWorkbench.CENTER_X;
 
-public class RocketRecipe implements Recipe<RecipeInput> {
+public class RocketRecipe implements WorkbenchRecipe {
     private final String group;
     private final ItemStack result;
 
@@ -55,7 +63,14 @@ public class RocketRecipe implements Recipe<RecipeInput> {
 
     private final int bodyHeight;
 
+    private final Optional<Item> schematic;
+    private final int sortOrder;
+
     public RocketRecipe(String group, ItemStack result, int bodyHeight, Ingredient body, Ingredient cone, Ingredient engine, Ingredient fins, Ingredient boosters, Ingredient storage) {
+        this(group, result, bodyHeight, body, cone, engine, fins, boosters, storage, Optional.empty(), 0);
+    }
+
+    public RocketRecipe(String group, ItemStack result, int bodyHeight, Ingredient body, Ingredient cone, Ingredient engine, Ingredient fins, Ingredient boosters, Ingredient storage, Optional<Item> schematic, int sortOrder) {
         this.group = group;
         this.result = result;
 
@@ -66,6 +81,47 @@ public class RocketRecipe implements Recipe<RecipeInput> {
         this.fins = fins;
         this.boosters = boosters;
         this.storage = storage;
+
+        this.schematic = schematic;
+        this.sortOrder = sortOrder;
+    }
+
+    @Override
+    public Optional<Item> schematic() {
+        return this.schematic;
+    }
+
+    @Override
+    public int sortOrder() {
+        return this.sortOrder;
+    }
+
+    @Override
+    public List<WorkbenchSlot> ingredientSlots() {
+        List<Ingredient> ingredients = this.getIngredients();
+        List<RocketSlotData> positions = slotData(this.bodyHeight, !this.boosters.isEmpty());
+        List<WorkbenchSlot> slots = new ArrayList<>(positions.size());
+        for (int i = 0; i < positions.size() && i < ingredients.size(); i++) {
+            RocketSlotData data = positions.get(i);
+            slots.add(new WorkbenchSlot(data.x(), data.y(), ingredients.get(i), background(data), data.mirror()));
+        }
+        return slots;
+    }
+
+    @Override
+    public WorkbenchPageDisplay display() {
+        return WorkbenchPageDisplay.rocket(this.result.getHoverName());
+    }
+
+    private static ResourceLocation background(RocketSlotData data) {
+        return switch (data.partType()) {
+            case CONE -> Constant.SlotSprite.ROCKET_CONE;
+            case BODY -> Constant.SlotSprite.ROCKET_PLATING;
+            case BOOSTER -> Constant.SlotSprite.ROCKET_BOOSTER;
+            case FIN -> data.mirror() ? Constant.SlotSprite.ROCKET_FIN_RIGHT : Constant.SlotSprite.ROCKET_FIN_LEFT;
+            case ENGINE -> Constant.SlotSprite.ROCKET_ENGINE;
+            default -> null;
+        };
     }
 
     @Override
@@ -223,6 +279,9 @@ public class RocketRecipe implements Recipe<RecipeInput> {
     public static class Serializer implements RecipeSerializer<RocketRecipe> {
         public static final Serializer INSTANCE = new Serializer();
 
+        private static final StreamCodec<RegistryFriendlyByteBuf, Optional<Item>> SCHEMATIC_STREAM_CODEC =
+                ByteBufCodecs.registry(Registries.ITEM).apply(ByteBufCodecs::optional);
+
         public static final MapCodec<RocketRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
                 Codec.STRING.optionalFieldOf("group", "").forGetter(r -> r.group),
                 ItemStack.CODEC.fieldOf("result").forGetter(r -> r.result),
@@ -232,7 +291,9 @@ public class RocketRecipe implements Recipe<RecipeInput> {
                 Ingredient.CODEC.fieldOf("engine").forGetter(r -> r.engine),
                 Ingredient.CODEC.fieldOf("fins").forGetter(r -> r.fins),
                 Ingredient.CODEC.optionalFieldOf("boosters", Ingredient.EMPTY).forGetter(recipe -> recipe.boosters),
-                Ingredient.CODEC.optionalFieldOf("storage", Ingredient.EMPTY).forGetter(recipe -> recipe.storage)
+                Ingredient.CODEC.optionalFieldOf("storage", Ingredient.EMPTY).forGetter(recipe -> recipe.storage),
+                BuiltInRegistries.ITEM.byNameCodec().optionalFieldOf("schematic").forGetter(recipe -> recipe.schematic),
+                Codec.INT.optionalFieldOf("sort_order", 0).forGetter(recipe -> recipe.sortOrder)
         ).apply(instance, RocketRecipe::new));
 
         // RocketRecipe has too many fields for StreamCodec.composite oops
@@ -248,7 +309,9 @@ public class RocketRecipe implements Recipe<RecipeInput> {
                         Ingredient.CONTENTS_STREAM_CODEC.decode(buf),
                         Ingredient.CONTENTS_STREAM_CODEC.decode(buf),
                         Ingredient.CONTENTS_STREAM_CODEC.decode(buf),
-                        Ingredient.CONTENTS_STREAM_CODEC.decode(buf)
+                        Ingredient.CONTENTS_STREAM_CODEC.decode(buf),
+                        SCHEMATIC_STREAM_CODEC.decode(buf),
+                        ByteBufCodecs.INT.decode(buf)
                 );
             }
 
@@ -263,6 +326,8 @@ public class RocketRecipe implements Recipe<RecipeInput> {
                 Ingredient.CONTENTS_STREAM_CODEC.encode(buf, r.fins);
                 Ingredient.CONTENTS_STREAM_CODEC.encode(buf, r.boosters);
                 Ingredient.CONTENTS_STREAM_CODEC.encode(buf, r.storage);
+                SCHEMATIC_STREAM_CODEC.encode(buf, r.schematic);
+                ByteBufCodecs.INT.encode(buf, r.sortOrder);
             }
         };
 

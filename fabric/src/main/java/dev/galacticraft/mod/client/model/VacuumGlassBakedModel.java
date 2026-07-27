@@ -23,6 +23,7 @@
 package dev.galacticraft.mod.client.model;
 
 import dev.galacticraft.mod.Constant;
+import dev.galacticraft.mod.content.GCBlocks;
 import net.fabricmc.fabric.api.renderer.v1.mesh.MutableQuadView;
 import net.fabricmc.fabric.api.renderer.v1.mesh.QuadEmitter;
 import net.fabricmc.fabric.api.renderer.v1.model.FabricBakedModel;
@@ -57,10 +58,14 @@ public class VacuumGlassBakedModel implements BakedModel, FabricBakedModel {
     private static final float FRAME_THICKNESS = 2.0f / 16.0f;
 
     private final TextureAtlasSprite glass;
+    private final TextureAtlasSprite clearGlass;
+    private final TextureAtlasSprite strongGlass;
     private final TextureAtlasSprite frame;
 
     public VacuumGlassBakedModel(Function<Material, TextureAtlasSprite> textureGetter) {
         this.glass = textureGetter.apply(new Material(InventoryMenu.BLOCK_ATLAS, Constant.id("block/vacuum_glass_vanilla")));
+        this.clearGlass = textureGetter.apply(new Material(InventoryMenu.BLOCK_ATLAS, Constant.id("block/vacuum_glass_clear")));
+        this.strongGlass = textureGetter.apply(new Material(InventoryMenu.BLOCK_ATLAS, Constant.id("block/vacuum_glass_strong")));
         this.frame = textureGetter.apply(new Material(InventoryMenu.BLOCK_ATLAS, Constant.id("block/aluminum_decoration")));
     }
 
@@ -119,8 +124,11 @@ public class VacuumGlassBakedModel implements BakedModel, FabricBakedModel {
         boolean south = state.getValue(BlockStateProperties.SOUTH);
         boolean west = state.getValue(BlockStateProperties.WEST);
         int horizontal = (north ? 1 : 0) + (east ? 1 : 0) + (south ? 1 : 0) + (west ? 1 : 0);
+        TextureAtlasSprite glass = state.is(GCBlocks.CLEAR_VACUUM_GLASS)
+                ? this.clearGlass
+                : state.is(GCBlocks.STRONG_VACUUM_GLASS) ? this.strongGlass : this.glass;
         RenderContext.QuadTransform glassTransform = quad -> {
-            quad.spriteBake(this.glass, MutableQuadView.BAKE_LOCK_UV); //todo glass UVs
+            quad.spriteBake(glass, MutableQuadView.BAKE_LOCK_UV); //todo glass UVs
             return true;
         };
         RenderContext.QuadTransform aluminumTransform = quad -> {
@@ -197,7 +205,7 @@ public class VacuumGlassBakedModel implements BakedModel, FabricBakedModel {
                     context.popTransform();
                 } else {
                     context.pushTransform(quad -> {
-                        quad.spriteBake(this.glass, MutableQuadView.BAKE_ROTATE_NONE);
+                        quad.spriteBake(glass, MutableQuadView.BAKE_ROTATE_NONE);
                         return true;
                     });
                     emitCornerPane(emitter, east, down, north, up);

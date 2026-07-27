@@ -186,6 +186,10 @@ public class GCModelProvider extends FabricModelProvider {
 
         generator.createTrivialCube(GCBlocks.SEALABLE_ALUMINUM_WIRE);
         generator.createTrivialCube(GCBlocks.HEAVY_SEALABLE_ALUMINUM_WIRE);
+        // Full cubes, so they need none of the connected-pipe model machinery above.
+        for (Block pipe : GCBlocks.SEALABLE_GLASS_FLUID_PIPES.values()) {
+            generator.createTrivialCube(pipe);
+        }
         createLaunchPadBlock(GCBlocks.FUELING_PAD, generator);
         createLaunchPadBlock(GCBlocks.ROCKET_LAUNCH_PAD, generator);
         this.createRocketWorkbench(generator);

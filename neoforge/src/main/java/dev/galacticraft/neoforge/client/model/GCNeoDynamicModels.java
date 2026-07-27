@@ -30,6 +30,7 @@ import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
 import net.minecraft.client.renderer.block.model.ItemTransform;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -62,15 +63,22 @@ public final class GCNeoDynamicModels {
         replace(event, GCBlocks.GLASS_FLUID_PIPE, Constant.id("block/glass_fluid_pipe"), 0.125F);
         replace(event, GCBlocks.ALUMINUM_WIRE, Constant.id("block/aluminum_wire"), 0.125F);
         replace(event, GCBlocks.HEAVY_ALUMINUM_WIRE, Constant.id("block/heavy_aluminum_wire"), 0.1875F);
-        var glass = event.getTextureGetter().apply(new Material(InventoryMenu.BLOCK_ATLAS, Constant.id("block/vacuum_glass_vanilla")));
         var frame = event.getTextureGetter().apply(new Material(InventoryMenu.BLOCK_ATLAS, Constant.id("block/aluminum_decoration")));
-        var vacuumGlass = new VacuumGlassBakedModelNeoForge(glass, frame);
-        event.getModels().replaceAll((location, model) ->
-                location.id().equals(Constant.BakedModel.VACUUM_GLASS_MODEL) && !"inventory".equals(location.variant())
-                        ? vacuumGlass
-                        : model);
+        replaceVacuumGlass(event, GCBlocks.VACUUM_GLASS, Constant.id("block/vacuum_glass_vanilla"), frame);
+        replaceVacuumGlass(event, GCBlocks.CLEAR_VACUUM_GLASS, Constant.id("block/vacuum_glass_clear"), frame);
+        replaceVacuumGlass(event, GCBlocks.STRONG_VACUUM_GLASS, Constant.id("block/vacuum_glass_strong"), frame);
         ResourceLocation cannedFood = BuiltInRegistries.BLOCK.getKey(GCBlocks.CANNED_FOOD);
         event.getModels().replaceAll((location, model) -> location.id().equals(cannedFood) ? new CannedFoodBakedModelNeoForge(model) : model);
+    }
+
+    private static void replaceVacuumGlass(ModelEvent.ModifyBakingResult event, Block block,
+                                           ResourceLocation texture,
+                                           TextureAtlasSprite frame) {
+        ResourceLocation id = BuiltInRegistries.BLOCK.getKey(block);
+        var glass = event.getTextureGetter().apply(new Material(InventoryMenu.BLOCK_ATLAS, texture));
+        var replacement = new VacuumGlassBakedModelNeoForge(glass, frame);
+        event.getModels().replaceAll((location, model) ->
+                location.id().equals(id) && !"inventory".equals(location.variant()) ? replacement : model);
     }
 
     private static void replace(ModelEvent.ModifyBakingResult event, Block block, ResourceLocation texture, float radius) {

@@ -55,10 +55,18 @@ import java.util.List;
  */
 public final class MeteorSkyStreaks {
     private static final int MAX_STREAKS = 220;
+    /** Candidate paths tried for each requested streak before giving up. */
+    private static final int MAX_SPAWN_ATTEMPTS = 3;
+    /** Shorter paths look like flashes rather than meteors. */
+    private static final int MIN_LIFETIME = 8;
     /** Distance from the camera the streaks are drawn at, in blocks. */
     private static final double SKY_DISTANCE = 90.0;
-    /** Streaks below this elevation are dropped; they would be buried in terrain anyway. */
-    private static final double MIN_ELEVATION = 0.12;
+    /**
+     * Sine of the lowest elevation at which a streak may be drawn. Keeping the entire trail at
+     * least fifteen degrees above the horizon prevents a sky-layer quad from appearing to meet
+     * nearby terrain.
+     */
+    private static final double MIN_ELEVATION = Math.sin(Math.toRadians(15.0));
     /** Streaks per tick with no shower running — roughly one every fifteen seconds. */
     private static final float SPORADIC_RATE = 0.0035f;
     /** Additional streaks per tick at a full-intensity shower peak. */
@@ -128,6 +136,14 @@ public final class MeteorSkyStreaks {
     }
 
     private static Streak spawn(Vec3 radiant, float intensity) {
+        for (int attempt = 0; attempt < MAX_SPAWN_ATTEMPTS; attempt++) {
+            Streak streak = createCandidate(radiant, intensity);
+            if (streak != null) return streak;
+        }
+        return null;
+    }
+
+    private static Streak createCandidate(Vec3 radiant, float intensity) {
         // Meteors appear at an angular distance from the radiant and stream directly away from it.
         double angle = Math.toRadians(12.0 + RANDOM.nextDouble() * 70.0);
         double azimuth = RANDOM.nextDouble() * Math.PI * 2.0;
@@ -138,7 +154,6 @@ public final class MeteorSkyStreaks {
                 .add(basisU.scale(Math.cos(azimuth) * Math.sin(angle)))
                 .add(basisV.scale(Math.sin(azimuth) * Math.sin(angle)))
                 .normalize();
-
         if (origin.y < MIN_ELEVATION) return null;
 
         // Great-circle tangent at the origin, pointing away from the radiant.
@@ -150,6 +165,15 @@ public final class MeteorSkyStreaks {
         float trail = 2.5f + RANDOM.nextFloat() * 4.0f;
         float brightness = (0.35f + RANDOM.nextFloat() * 0.5f) * (0.7f + intensity * 0.3f);
         int lifetime = 10 + RANDOM.nextInt(14);
+
+        // Checking only the origin lets a downward-moving streak cross the horizon later in its
+        // life. Shorten its brightness envelope so it fades out before reaching the cutoff. The
+        // normalized tangent path has no interior elevation minimum, so its endpoint is sufficient.
+        while (lifetime >= MIN_LIFETIME
+                && origin.add(travel.scale(lifetime * speed)).normalize().y < MIN_ELEVATION) {
+            lifetime--;
+        }
+        if (lifetime < MIN_LIFETIME) return null;
         return new Streak(origin, travel, speed, trail, brightness, lifetime);
     }
 
@@ -189,7 +213,9 @@ public final class MeteorSkyStreaks {
 
             Vec3 headDir = streak.directionAt(at);
             Vec3 tailDir = streak.directionAt(Math.max(0.0f, at - streak.trail));
-            if (headDir.y < MIN_ELEVATION && tailDir.y < MIN_ELEVATION) continue;
+            // Never draw a partial quad through the horizon. Spawn-time validation should make
+            // this redundant, but retaining the guard keeps interpolation and future paths safe.
+            if (headDir.y < MIN_ELEVATION || tailDir.y < MIN_ELEVATION) continue;
 
             Vec3 head = headDir.scale(SKY_DISTANCE);
             Vec3 tail = tailDir.scale(SKY_DISTANCE);

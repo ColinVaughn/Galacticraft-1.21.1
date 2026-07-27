@@ -83,6 +83,10 @@ subprojects {
 
     tasks.withType<Javadoc>().configureEach {
         options.encoding = "UTF-8"
+        // Mixins, accessors and registry plumbing make up most of the public surface here, and a doc
+        // comment on every shadowed field would say nothing. Drop doclint's "missing" group so the
+        // groups that catch real errors (bad @link targets, malformed HTML) stay visible.
+        (options as StandardJavadocDocletOptions).addBooleanOption("Xdoclint:all,-missing", true)
     }
 
     tasks.withType<Jar>().configureEach {

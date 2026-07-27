@@ -375,7 +375,8 @@ public class Buggy extends GCVehicle implements ContainerListener, ContainerVehi
 
     @Override
     public void saveExtraData(FriendlyByteBuf buf) {
-        buf.writeVarInt(this.getId());
+        BuggyMenu.OpeningData.STREAM_CODEC.encode(buf,
+                new BuggyMenu.OpeningData(this.getId(), this.inventory.getContainerSize()));
     }
 
     @Override

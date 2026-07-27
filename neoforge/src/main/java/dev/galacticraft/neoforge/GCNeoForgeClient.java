@@ -174,7 +174,7 @@ public final class GCNeoForgeClient {
                 return GCNeoItemRenderer.INSTANCE;
             }
         };
-        event.registerItem(extension, GCItems.ROCKET, GCItems.ASTRO_MINER, GCItems.CARGO_ROCKET, GCBlocks.PARACHEST.asItem());
+        event.registerItem(extension, GCItems.ROCKET, GCItems.ASTRO_MINER, GCItems.CARGO_ROCKET, GCItems.BUGGY, GCBlocks.PARACHEST.asItem());
         event.registerItem(extension, GCItems.FLAGS.colorMap().values().toArray(net.minecraft.world.item.Item[]::new));
     }
 

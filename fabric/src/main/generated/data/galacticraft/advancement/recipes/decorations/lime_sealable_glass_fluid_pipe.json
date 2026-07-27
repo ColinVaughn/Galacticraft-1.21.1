@@ -1,11 +1,11 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_heavy_plating": {
+    "has_lime_glass_fluid_pipe": {
       "conditions": {
         "items": [
           {
-            "items": "galacticraft:heavy_plating"
+            "items": "galacticraft:lime_glass_fluid_pipe"
           }
         ]
       },
@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "galacticraft:cargo_rocket"
+        "recipe": "galacticraft:lime_sealable_glass_fluid_pipe"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -21,12 +21,12 @@
   "requirements": [
     [
       "has_the_recipe",
-      "has_heavy_plating"
+      "has_lime_glass_fluid_pipe"
     ]
   ],
   "rewards": {
     "recipes": [
-      "galacticraft:cargo_rocket"
+      "galacticraft:lime_sealable_glass_fluid_pipe"
     ]
   }
 }

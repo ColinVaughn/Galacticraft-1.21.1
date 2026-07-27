@@ -23,6 +23,9 @@
 package dev.galacticraft.mod.screen;
 
 import dev.galacticraft.mod.content.entity.vehicle.Buggy;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.Entity;
@@ -39,8 +42,8 @@ public class BuggyMenu extends AbstractContainerMenu {
     private final int storageSlots;
     private final int storageRows;
 
-    public BuggyMenu(int syncId, Inventory playerInventory, int entityId) {
-        this(syncId, playerInventory, resolveBuggy(playerInventory.player.level(), entityId));
+    public BuggyMenu(int syncId, Inventory playerInventory, OpeningData data) {
+        this(syncId, playerInventory, resolveBuggy(playerInventory.player.level(), data.entityId()), data.storageSlots());
     }
 
     private static Buggy resolveBuggy(Level level, int entityId) {
@@ -49,18 +52,24 @@ public class BuggyMenu extends AbstractContainerMenu {
     }
 
     public BuggyMenu(int syncId, Inventory playerInventory, Buggy buggy) {
+        this(syncId, playerInventory, buggy, buggy == null ? 0 : buggy.getVehicleInventory().getContainerSize());
+    }
+
+    private BuggyMenu(int syncId, Inventory playerInventory, Buggy buggy, int storageSlots) {
         super(GCMenuTypes.BUGGY, syncId);
         this.buggy = buggy;
-        this.container = buggy != null ? buggy.getVehicleInventory() : new SimpleContainer(0);
-        this.storageSlots = this.container.getContainerSize();
-        this.storageRows = this.storageSlots / 9;
+        Container buggyInventory = buggy == null ? null : buggy.getVehicleInventory();
+        this.container = buggyInventory != null && buggyInventory.getContainerSize() == storageSlots
+                ? buggyInventory
+                : new SimpleContainer(storageSlots);
+        this.storageSlots = storageSlots;
+        this.storageRows = (this.storageSlots + 8) / 9;
         this.container.startOpen(playerInventory.player);
 
-        for (int row = 0; row < this.storageRows; row++) {
-            for (int column = 0; column < 9; column++) {
-                this.addSlot(new Slot(this.container, column + row * 9,
-                        8 + column * 18, 50 + row * 18));
-            }
+        for (int slot = 0; slot < this.storageSlots; slot++) {
+            int row = slot / 9;
+            int column = slot % 9;
+            this.addSlot(new Slot(this.container, slot, 8 + column * 18, 50 + row * 18));
         }
 
         int playerInventoryY = 63 + this.storageRows * 18;
@@ -119,5 +128,17 @@ public class BuggyMenu extends AbstractContainerMenu {
 
     public int getStorageRows() {
         return this.storageRows;
+    }
+
+    /**
+     * Includes the authoritative storage size because the menu-open packet can be handled before
+     * the client receives the buggy's latest variant entity data.
+     */
+    public record OpeningData(int entityId, int storageSlots) {
+        public static final StreamCodec<ByteBuf, OpeningData> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.VAR_INT, OpeningData::entityId,
+                ByteBufCodecs.VAR_INT, OpeningData::storageSlots,
+                OpeningData::new
+        );
     }
 }

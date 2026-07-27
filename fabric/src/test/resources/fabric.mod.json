@@ -26,7 +26,11 @@
   "environment": "*",
   "entrypoints": {
     "fabric-gametest": [
+      "dev.galacticraft.mod.gametest.BuggyItemTestSuite",
+    "dev.galacticraft.mod.gametest.DimensionTimeTestSuite",
       "dev.galacticraft.mod.gametest.GratingTestSuite",
+      "dev.galacticraft.mod.gametest.MachineEnergyTransferTestSuite",
+    "dev.galacticraft.mod.gametest.MonsterSpawnRuleTestSuite",
       "dev.galacticraft.mod.gametest.OxygenSealerTestSuite",
       "dev.galacticraft.mod.gametest.ParachuteTestSuite",
       "dev.galacticraft.mod.gametest.PolishTestSuite",
@@ -49,6 +53,8 @@
       "dev.galacticraft.mod.gametest.machine.RefineryTestSuite",
       "dev.galacticraft.mod.gametest.PipeTestSuite",
       "dev.galacticraft.mod.gametest.RocketWorkbenchTestSuite",
+      "dev.galacticraft.mod.gametest.RocketWorkbenchSchematicTestSuite",
+    "dev.galacticraft.mod.gametest.SealablePipeTestSuite",
       "dev.galacticraft.mod.gametest.WireTestSuite"
     ]
   },

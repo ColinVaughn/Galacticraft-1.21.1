@@ -228,6 +228,10 @@ public class GCBlockLootTableProvider extends FabricBlockLootTableProvider {
             this.dropSelf(pipe);
         }
 
+        for (Block pipe : GCBlocks.SEALABLE_GLASS_FLUID_PIPES.values()) {
+            this.dropSelf(pipe);
+        }
+
         this.dropSelf(GCBlocks.VACUUM_GLASS);
         this.dropSelf(GCBlocks.CLEAR_VACUUM_GLASS);
         this.dropSelf(GCBlocks.STRONG_VACUUM_GLASS);

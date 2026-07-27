@@ -31,6 +31,7 @@ import net.minecraft.util.RandomSource;
 import org.junit.jupiter.api.Test;
 
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -83,6 +84,30 @@ class MeteorShowerStateTest {
                 assertEquals(0.0f, intensity, EPS, "no activity outside an active shower");
             }
         }
+    }
+
+    @Test
+    void naturalShowerPeaksVaryAndStayBelowOne() {
+        MeteorShowerState state = new MeteorShowerState();
+        RandomSource random = RandomSource.create(23);
+        Set<Float> peaks = new HashSet<>();
+        int showerCount = 0;
+        MeteorShowerPhase previous = state.phase();
+
+        for (int tick = 0; tick < 50_000 && showerCount < 8; tick++) {
+            state.tick(random, TUNING);
+            if (state.phase() == MeteorShowerPhase.INCOMING && previous != MeteorShowerPhase.INCOMING) {
+                float peak = state.peakIntensity();
+                assertTrue(peak >= 0.55f, "natural peak below its minimum: " + peak);
+                assertTrue(peak < 1.0f, "natural peak was pinned to one: " + peak);
+                peaks.add(peak);
+                showerCount++;
+            }
+            previous = state.phase();
+        }
+
+        assertEquals(8, showerCount, "test should observe several natural showers");
+        assertTrue(peaks.size() > 1, "natural showers should not all roll the same peak");
     }
 
     @Test

@@ -130,8 +130,9 @@ public final class MeteorShowerCommand {
         MeteorShowerState state = MeteorShowerState.get(level);
         int live = level.getEntities(GCEntityTypes.FALLING_METEOR, entity -> true).size();
         ctx.getSource().sendSuccess(() -> Component.literal(String.format(
-                "Meteor shower: phase=%s, intensity=%.2f, subsides in %ds, %d meteoroid(s) in flight.",
-                state.phase(), state.currentIntensity(), state.remainingShowerTicks() / 20, live)), false);
+                "Meteor shower: phase=%s, current intensity=%.2f, peak intensity=%.2f, subsides in %ds, %d meteoroid(s) in flight.",
+                state.phase(), state.currentIntensity(), state.peakIntensity(),
+                state.remainingShowerTicks() / 20, live)), false);
         return 1;
     }
 

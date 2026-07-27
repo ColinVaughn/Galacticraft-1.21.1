@@ -24,6 +24,7 @@ package dev.galacticraft.neoforge.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.galacticraft.mod.client.render.item.AstroMinerItemRenderer;
+import dev.galacticraft.mod.client.render.item.BuggyItemRenderer;
 import dev.galacticraft.mod.client.render.item.CargoRocketItemRenderer;
 import dev.galacticraft.mod.client.render.item.FlagItemRenderer;
 import dev.galacticraft.mod.client.render.item.RocketItemRenderer;
@@ -45,6 +46,7 @@ public final class GCNeoItemRenderer extends BlockEntityWithoutLevelRenderer {
     private final RocketItemRenderer rocket = new RocketItemRenderer();
     private final AstroMinerItemRenderer astroMiner = new AstroMinerItemRenderer();
     private final CargoRocketItemRenderer cargoRocket = new CargoRocketItemRenderer();
+    private final BuggyItemRenderer buggy = new BuggyItemRenderer();
     private final FlagItemRenderer flag = new FlagItemRenderer();
 
     private GCNeoItemRenderer() {
@@ -56,6 +58,7 @@ public final class GCNeoItemRenderer extends BlockEntityWithoutLevelRenderer {
         if (stack.is(GCItems.ROCKET)) rocket.render(stack, context, poses, buffers, light, overlay);
         else if (stack.is(GCItems.ASTRO_MINER)) astroMiner.render(stack, context, poses, buffers, light, overlay);
         else if (stack.is(GCItems.CARGO_ROCKET)) cargoRocket.render(stack, context, poses, buffers, light, overlay);
+        else if (stack.is(GCItems.BUGGY)) buggy.render(stack, context, poses, buffers, light, overlay);
         else if (stack.is(GCBlocks.PARACHEST.asItem())) Minecraft.getInstance().getBlockRenderer().renderSingleBlock(
                 GCBlocks.PARACHEST.defaultBlockState().setValue(ParachestBlock.COLOR,
                         stack.getOrDefault(DataComponents.BASE_COLOR, DyeColor.WHITE)), poses, buffers, light, overlay);

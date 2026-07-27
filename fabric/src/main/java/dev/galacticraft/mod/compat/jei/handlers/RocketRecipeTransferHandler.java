@@ -71,16 +71,19 @@ public class RocketRecipeTransferHandler implements IRecipeTransferHandler<Rocke
 
         int ingredientsSize = recipe.getIngredients().size();
         int recipeSize = menu.getRecipeSize();
-        if (ingredientsSize != recipeSize && ingredientsSize != recipeSize + 1) {
+        // The open page has to be the one this recipe belongs to; a tier-2 recipe cannot be
+        // transferred into the tier-1 page's wells.
+        if (ingredientsSize != recipeSize) {
             return this.handlerHelper.createUserErrorWithTooltip(Component.translatable(Translations.Tooltip.INCORRECT_NUMBER_OF_SLOTS));
         }
 
+        // Only the ingredient wells; the upgrade wells beside them are a modifier, not ingredients.
         IRecipeTransferInfo<RocketWorkbenchMenu, RocketRecipe> info = this.handlerHelper.createBasicRecipeTransferInfo(
                 this.getContainerClass(),
                 this.getMenuType().orElse(null),
                 this.getRecipeType(),
-                0, recipeSize + 1, // Input slots (plus one for chest slot)
-                recipeSize + 2, 36 // Player inventory + hotbar slots
+                0, recipeSize, // Ingredient wells
+                menu.firstPlayerSlot(), 36 // Player inventory + hotbar slots
         );
         IRecipeTransferHandler<RocketWorkbenchMenu, RocketRecipe> handler = this.handlerHelper.createUnregisteredRecipeTransferHandler(info);
         return handler.transferRecipe(menu, recipe, recipeSlotsView, player, maxTransfer, doTransfer);

@@ -25,6 +25,8 @@ package dev.galacticraft.mod.data.recipes;
 import dev.galacticraft.api.rocket.RocketPrefabs;
 import dev.galacticraft.mod.api.data.recipe.GCShapedRecipeBuilder;
 import dev.galacticraft.mod.api.data.recipe.RocketRecipeBuilder;
+import dev.galacticraft.mod.api.data.recipe.SchematicCraftingRecipeBuilder;
+import dev.galacticraft.mod.machine.workbench.WorkbenchLayout;
 import dev.galacticraft.mod.content.GCBlocks;
 import dev.galacticraft.mod.content.item.GCItems;
 import dev.galacticraft.mod.tag.GCItemTags;
@@ -171,6 +173,8 @@ public class GCRocketRecipes extends FabricRecipeProvider {
                 .bodyHeight(4)
                 .fins(GCItems.ROCKET_FIN)
                 .engine(GCItems.ROCKET_ENGINE)
+                .schematic(GCItems.TIER_2_ROCKET_SCHEMATIC)
+                .sortOrder(20)
                 .unlockedBy(getHasName(GCItems.TIER_2_HEAVY_DUTY_PLATE), has(GCItems.TIER_2_HEAVY_DUTY_PLATE))
                 .save(output, getItemName(GCItems.ROCKET) + "_tier_2");
 
@@ -181,8 +185,63 @@ public class GCRocketRecipes extends FabricRecipeProvider {
                 .bodyHeight(4)
                 .fins(GCItems.HEAVY_ROCKET_FIN)
                 .engine(GCItems.HEAVY_ROCKET_ENGINE)
+                .schematic(GCItems.TIER_3_ROCKET_SCHEMATIC)
+                .sortOrder(30)
                 .unlockedBy(getHasName(GCItems.TIER_3_HEAVY_DUTY_PLATE), has(GCItems.TIER_3_HEAVY_DUTY_PLATE))
                 .save(output, getItemName(GCItems.ROCKET) + "_tier_3");
+
+        this.buildVehiclePages(output);
+    }
+
+    /**
+     * The workbench pages legacy Galacticraft unlocked with a schematic. Slot order follows legacy's
+     * containers exactly, so the parts sit in the wells its GUI textures paint.
+     */
+    private void buildVehiclePages(RecipeOutput output) {
+        // Legacy ContainerBuggyBench: three columns of plating with the seat in the middle column,
+        // then the four wheels. Storage goes in the upgrade wells, not the recipe.
+        SchematicCraftingRecipeBuilder.create(WorkbenchLayout.BUGGY, GCItems.BUGGY)
+                .slots(4, GCItems.TIER_1_HEAVY_DUTY_PLATE)
+                .slot(GCItems.TIER_1_HEAVY_DUTY_PLATE)
+                .slot(GCItems.BUGGY_SEAT)
+                .slots(2, GCItems.TIER_1_HEAVY_DUTY_PLATE)
+                .slots(4, GCItems.TIER_1_HEAVY_DUTY_PLATE)
+                .slots(4, GCItems.BUGGY_WHEEL)
+                .schematic(GCItems.MOON_BUGGY_SCHEMATIC)
+                .sortOrder(10)
+                .unlockedBy(getHasName(GCItems.MOON_BUGGY_SCHEMATIC), has(GCItems.MOON_BUGGY_SCHEMATIC))
+                .save(output, getItemName(GCItems.BUGGY));
+
+        // Legacy ContainerSchematicCargoRocket: an unmanned tier-2 hull - no cockpit, so an advanced
+        // wafer flies it instead.
+        SchematicCraftingRecipeBuilder.create(WorkbenchLayout.CARGO_ROCKET, GCItems.CARGO_ROCKET)
+                .slot(GCItems.NOSE_CONE)
+                .slot(GCItems.ADVANCED_WAFER)
+                .slots(6, GCItems.TIER_2_HEAVY_DUTY_PLATE)
+                .slots(2, GCItems.ROCKET_FIN)
+                .slot(GCItems.ROCKET_ENGINE)
+                .slots(2, GCItems.ROCKET_FIN)
+                .schematic(GCItems.CARGO_ROCKET_SCHEMATIC)
+                .sortOrder(40)
+                .unlockedBy(getHasName(GCItems.CARGO_ROCKET_SCHEMATIC), has(GCItems.CARGO_ROCKET_SCHEMATIC))
+                .save(output, getItemName(GCItems.CARGO_ROCKET));
+
+        // Legacy RecipeManagerAsteroids: plating and orion drives in three hull layers, a wafer and
+        // two chests amidships, then the beam core and flag pole that make up the mining lasers.
+        SchematicCraftingRecipeBuilder.create(WorkbenchLayout.ASTRO_MINER, GCItems.ASTRO_MINER)
+                .slots(GCItems.TIER_1_HEAVY_DUTY_PLATE, GCItems.ORION_DRIVE, GCItems.TIER_1_HEAVY_DUTY_PLATE, GCItems.ORION_DRIVE)
+                .slot(GCItems.TIER_1_HEAVY_DUTY_PLATE)
+                .slot(GCItems.ADVANCED_WAFER)
+                .slot(Items.CHEST)
+                .slot(Items.CHEST)
+                .slot(GCItems.ORION_DRIVE)
+                .slots(GCItems.ORION_DRIVE, GCItems.TIER_1_HEAVY_DUTY_PLATE, GCItems.ORION_DRIVE)
+                .slot(GCItems.BEAM_CORE)
+                .slot(GCItemTags.FLAGS)
+                .schematic(GCItems.ASTRO_MINER_SCHEMATIC)
+                .sortOrder(50)
+                .unlockedBy(getHasName(GCItems.ASTRO_MINER_SCHEMATIC), has(GCItems.ASTRO_MINER_SCHEMATIC))
+                .save(output, getItemName(GCItems.ASTRO_MINER));
     }
 
     @Override

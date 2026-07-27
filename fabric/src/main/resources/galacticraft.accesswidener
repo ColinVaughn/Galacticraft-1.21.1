@@ -22,6 +22,9 @@ extendable class net/minecraft/world/SimpleMenuProvider
 accessible method net/minecraft/data/models/model/ModelTemplates            createItem (Ljava/lang/String;[Lnet/minecraft/data/models/model/TextureSlot;)Lnet/minecraft/data/models/model/ModelTemplate;
 accessible method net/minecraft/world/level/block/BaseRailBlock             shouldBeRemoved (Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/Level;Lnet/minecraft/world/level/block/state/properties/RailShape;)Z
 accessible method net/minecraft/stats/Stats                                 makeCustomStat (Ljava/lang/String;Lnet/minecraft/stats/StatFormatter;)Lnet/minecraft/resources/ResourceLocation;
+# Vanilla registers every mob's spawning rules through this and offers no other way in. NeoForge has
+# RegisterSpawnPlacementsEvent for it; on Fabric the private method is the only door.
+accessible method net/minecraft/world/entity/SpawnPlacements                register (Lnet/minecraft/world/entity/EntityType;Lnet/minecraft/world/entity/SpawnPlacementType;Lnet/minecraft/world/level/levelgen/Heightmap$Types;Lnet/minecraft/world/entity/SpawnPlacements$SpawnPredicate;)V
 
 # private final fields
 accessible field net/minecraft/data/models/BlockModelGenerators texturedModels Ljava/util/Map;

@@ -1,0 +1,93 @@
+/*
+ * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+package dev.galacticraft.mod.machine;
+
+import dev.galacticraft.machinelib.api.block.entity.MachineBlockEntity;
+import dev.galacticraft.machinelib.api.machine.configuration.IOConfig;
+import dev.galacticraft.machinelib.api.storage.MachineEnergyStorage;
+import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
+import dev.galacticraft.machinelib.api.transfer.ResourceType;
+import dev.galacticraft.machinelib.api.util.BlockFace;
+import org.jetbrains.annotations.Nullable;
+
+/**
+ * Gives a machine a face configuration that works before anyone has configured it.
+ *
+ * <p>A machine's faces all start blank, and a blank face carries nothing: the energy lookup returns
+ * nothing for it, so a wire will not connect to the machine, a neighbouring machine cannot push power
+ * into it, and it cannot push power out. Left that way, a freshly placed machine is inert until every
+ * face it needs has been set by hand in the configuration tab - which is easy to miss, and the machine
+ * gives no sign that it is what is wrong.
+ *
+ * <p>Galacticraft Legacy had no configuration tab at all; each machine simply had fixed sides for power
+ * in and out. Rather than picking one face per machine, the default here follows what the machine's own
+ * energy storage says it can do: something that can only be filled takes power on every side, something
+ * that can only be drained gives it on every side, and a battery does both. That is derived from the
+ * storage spec, so a machine added later is covered without a table to update.
+ *
+ * @see dev.galacticraft.mod.mixin.MachineBlockEntityMixin where this is applied
+ */
+public final class MachineFaceDefaults {
+    private MachineFaceDefaults() {}
+
+    /**
+     * {@return the flow a machine with these external transfer rates should offer on its faces, or null
+     * if it exchanges no energy with the world at all}
+     */
+    public static @Nullable ResourceFlow defaultEnergyFlow(long insertionRate, long extractionRate) {
+        if (insertionRate > 0L && extractionRate > 0L) return ResourceFlow.BOTH;
+        if (insertionRate > 0L) return ResourceFlow.INPUT;
+        if (extractionRate > 0L) return ResourceFlow.OUTPUT;
+        return null;
+    }
+
+    /** {@return whether every face is still blank, meaning nobody has configured this machine} */
+    public static boolean isUnconfigured(IOConfig config) {
+        for (BlockFace face : BlockFace.values()) {
+            if (config.get(face).getType() != ResourceType.NONE) return false;
+        }
+        return true;
+    }
+
+    /**
+     * Applies the default face configuration to {@code machine}, unless it already has one.
+     *
+     * <p>A machine whose every face is blank is treated as never configured, including one loaded from a
+     * save written before this existed - that is what lets machines already placed in a world start
+     * working. The cost is that blanking every face by hand is not a way to isolate a machine, since it
+     * reads as unconfigured; redstone control is.
+     */
+    public static void apply(MachineBlockEntity machine) {
+        IOConfig config = machine.getIOConfig();
+        if (!isUnconfigured(config)) return;
+
+        MachineEnergyStorage energy = machine.energyStorage();
+        ResourceFlow flow = defaultEnergyFlow(energy.externalInsertionRate(), energy.externalExtractionRate());
+        if (flow == null) return;
+
+        for (BlockFace face : BlockFace.values()) {
+            config.get(face).setOption(ResourceType.ENERGY, flow);
+        }
+    }
+}

@@ -46,6 +46,7 @@ import dev.galacticraft.mod.client.render.entity.feature.PetOxygenTanksRenderLay
 import dev.galacticraft.mod.client.render.entity.model.GCEntityModelLayer;
 import dev.galacticraft.mod.client.render.entity.rocket.RocketEntityRenderer;
 import dev.galacticraft.mod.client.render.item.AstroMinerItemRenderer;
+import dev.galacticraft.mod.client.render.item.BuggyItemRenderer;
 import dev.galacticraft.mod.client.render.item.CargoRocketItemRenderer;
 import dev.galacticraft.mod.client.render.item.FlagItemRenderer;
 import dev.galacticraft.mod.client.render.item.RocketItemRenderer;
@@ -310,6 +311,7 @@ public class GalacticraftClient implements ClientModInitializer {
         BuiltinItemRendererRegistry.INSTANCE.register(GCItems.ROCKET, new RocketItemRenderer()::render);
         BuiltinItemRendererRegistry.INSTANCE.register(GCItems.ASTRO_MINER, new AstroMinerItemRenderer()::render);
         BuiltinItemRendererRegistry.INSTANCE.register(GCItems.CARGO_ROCKET, new CargoRocketItemRenderer()::render);
+        BuiltinItemRendererRegistry.INSTANCE.register(GCItems.BUGGY, new BuggyItemRenderer()::render);
         for (Item flag : GCItems.FLAGS.colorMap().values()) {
             BuiltinItemRendererRegistry.INSTANCE.register(flag, new FlagItemRenderer()::render);
         }

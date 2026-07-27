@@ -48,6 +48,7 @@ import dev.galacticraft.impl.network.GCApiServerPacketReceivers;
 import dev.galacticraft.mod.Galacticraft;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.content.GCEntityTypes;
+import dev.galacticraft.mod.content.GCSpawnPlacements;
 import dev.galacticraft.mod.content.GCRegistry;
 import dev.galacticraft.mod.content.GCBlocks;
 import dev.galacticraft.mod.content.GCBlockPlatformHooks;
@@ -77,11 +78,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.SpawnPlacementTypes;
-import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.village.poi.PoiType;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FireBlock;
 import net.neoforged.bus.api.IEventBus;
@@ -359,18 +358,17 @@ public final class GalacticraftNeoForge {
     }
 
     private void registerSpawnPlacements(RegisterSpawnPlacementsEvent event) {
-        event.register(GCEntityTypes.EVOLVED_ZOMBIE, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-                Monster::checkMonsterSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);
-        event.register(GCEntityTypes.EVOLVED_CREEPER, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-                Monster::checkMonsterSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);
-        event.register(GCEntityTypes.EVOLVED_SKELETON, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-                Monster::checkMonsterSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);
-        event.register(GCEntityTypes.EVOLVED_SPIDER, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-                Monster::checkMonsterSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);
-        event.register(GCEntityTypes.EVOLVED_ENDERMAN, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-                Monster::checkMonsterSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);
-        event.register(GCEntityTypes.EVOLVED_WITCH, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-                Monster::checkMonsterSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);
+        // The table is shared with Fabric so the two loaders cannot disagree about where mobs spawn.
+        for (GCSpawnPlacements.Placement<?> placement : GCSpawnPlacements.all()) {
+            register(event, placement);
+        }
+    }
+
+    // Separate method so the wildcard is captured into a type variable; the entity type and its
+    // predicate have to agree on one mob type.
+    private static <T extends Mob> void register(RegisterSpawnPlacementsEvent event, GCSpawnPlacements.Placement<T> placement) {
+        event.register(placement.type(), placement.placement(), placement.heightmap(), placement.predicate(),
+                RegisterSpawnPlacementsEvent.Operation.REPLACE);
     }
 
     /** Registers Galacticraft's non-MachineLib storages through native NeoForge capabilities. */

@@ -29,6 +29,7 @@ import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.api.block.entity.PipeColor;
 import dev.galacticraft.mod.content.GCBlockRegistry;
 import dev.galacticraft.mod.content.GCFluids;
+import dev.galacticraft.mod.content.entity.vehicle.Buggy;
 import dev.galacticraft.mod.util.Translations;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponents;
@@ -255,6 +256,9 @@ public class GCCreativeModeTabs {
                 output.accept(HEAVY_SEALABLE_ALUMINUM_WIRE);
                 for (PipeColor color : PipeColor.byRainbowOrder()) {
                     output.accept(GLASS_FLUID_PIPES.get(color));
+                }
+                for (PipeColor color : PipeColor.byRainbowOrder()) {
+                    output.accept(SEALABLE_GLASS_FLUID_PIPES.get(color));
                 }
                 output.accept(ROCKET_LAUNCH_PAD);
                 output.accept(FUELING_PAD);
@@ -503,6 +507,13 @@ public class GCCreativeModeTabs {
 
                 // CARGO ROCKET
                 output.accept(CARGO_ROCKET);
+
+                // BUGGIES, one per cargo fitting, since the fitting is a component rather than an item
+                for (Buggy.BuggyType variant : Buggy.BuggyType.values()) {
+                    var buggy = new ItemStack(BUGGY);
+                    buggy.set(GCDataComponents.BUGGY_TYPE, variant.getId());
+                    output.accept(buggy);
+                }
 
                 // SCHEMATICS
                 output.accept(BASIC_ROCKET_CONE_SCHEMATIC);

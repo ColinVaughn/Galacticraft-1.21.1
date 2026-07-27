@@ -29,6 +29,7 @@ import dev.galacticraft.mod.content.advancements.critereon.FindMoonBossTrigger;
 import dev.galacticraft.mod.content.advancements.critereon.LaunchRocketTrigger;
 import dev.galacticraft.mod.content.advancements.critereon.LeaveRocketDuringCountdownTrigger;
 import dev.galacticraft.mod.content.advancements.critereon.SafeLandingTrigger;
+import dev.galacticraft.mod.content.advancements.critereon.UnlockSchematicTrigger;
 import net.minecraft.advancements.CriterionTrigger;
 import net.minecraft.core.registries.BuiltInRegistries;
 
@@ -39,6 +40,7 @@ public class GCTriggers {
     public static final SafeLandingTrigger SAFE_LANDING = TRIGGERS.register(Triggers.SAFE_LANDING, new SafeLandingTrigger());
     public static final FindMoonBossTrigger FIND_MOON_BOSS = TRIGGERS.register(Triggers.FIND_MOON_BOSS, new FindMoonBossTrigger());
     public static final CreateSpaceStationTrigger CREATE_SPACE_STATION = TRIGGERS.register(Triggers.CREATE_SPACE_STATION, new CreateSpaceStationTrigger());
+    public static final UnlockSchematicTrigger UNLOCK_SCHEMATIC = TRIGGERS.register(Triggers.UNLOCK_SCHEMATIC, new UnlockSchematicTrigger());
 
     public static void register() {
     }

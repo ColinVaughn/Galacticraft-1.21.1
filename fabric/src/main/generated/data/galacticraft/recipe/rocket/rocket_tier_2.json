@@ -24,5 +24,7 @@
     },
     "count": 1,
     "id": "galacticraft:rocket"
-  }
+  },
+  "schematic": "galacticraft:tier_2_rocket_schematic",
+  "sort_order": 20
 }

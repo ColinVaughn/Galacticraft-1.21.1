@@ -1,11 +1,11 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_heavy_plating": {
+    "has_cargo_rocket_schematic": {
       "conditions": {
         "items": [
           {
-            "items": "galacticraft:heavy_plating"
+            "items": "galacticraft:cargo_rocket_schematic"
           }
         ]
       },
@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "galacticraft:astro_miner"
+        "recipe": "galacticraft:cargo_rocket"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -21,12 +21,12 @@
   "requirements": [
     [
       "has_the_recipe",
-      "has_heavy_plating"
+      "has_cargo_rocket_schematic"
     ]
   ],
   "rewards": {
     "recipes": [
-      "galacticraft:astro_miner"
+      "galacticraft:cargo_rocket"
     ]
   }
 }

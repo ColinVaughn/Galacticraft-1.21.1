@@ -64,6 +64,8 @@ public interface Config {
 
     long oxygenSealerOxygenConsumptionRate();
 
+    long oxygenSealerUnsealedOxygenConsumptionRate();
+
     long maxSealingPower();
 
     long refineryEnergyConsumptionRate();

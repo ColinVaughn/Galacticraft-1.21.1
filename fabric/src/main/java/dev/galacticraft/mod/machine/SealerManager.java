@@ -41,6 +41,13 @@ public class SealerManager {
         private final List<OxygenSealerBlockEntity> sealers = new ArrayList<>();
         private final Set<BlockPos> blocksToSeal = new HashSet<>();
         private final Deque<BlockPos> floodFillQueue = new ArrayDeque<>();
+        /**
+         * Whether the flood fill found a boundary in every direction within the sealers' volume budget.
+         * An empty queue is not a substitute for this: a fill that stops early because it has joined a
+         * space that is already known to be enclosed still has queued positions, and every one of them
+         * lies inside that space.
+         */
+        private boolean enclosed = false;
 
         public SpaceToSeal(OxygenSealerBlockEntity sealer) {
             sealers.add(sealer);
@@ -48,7 +55,7 @@ public class SealerManager {
         }
 
         public boolean willSealSucceed() {
-            return floodFillQueue.isEmpty();
+            return enclosed;
         }
 
     }
@@ -105,13 +112,14 @@ public class SealerManager {
         Set<OxygenSealerBlockEntity> activeSealers = Collections.newSetFromMap(new IdentityHashMap<>());
         for (Map.Entry<BlockPos, OxygenSealerBlockEntity> entry : this.sealers.entrySet()) {
             OxygenSealerBlockEntity sealer = entry.getValue();
-            if (!sealer.hasEnergy()) continue;
-            if (!sealer.hasOxygen()) continue;
-            if (sealer.isBlocked()) continue;
+            if (!sealer.canSeal()) continue;
             activeSealers.add(sealer);
 
             // Flood fill to find all blocks this sealer is trying to seal
             SpaceToSeal spaceToSeal = new SpaceToSeal(sealer);
+            // Draining the queue means every direction ran into a boundary; only the volume budget
+            // running out leaves the space genuinely open.
+            boolean withinBudget = true;
             while (!spaceToSeal.floodFillQueue.isEmpty()) {
                 BlockPos pos = spaceToSeal.floodFillQueue.pollFirst();
                 if (spaceToSeal.blocksToSeal.contains(pos)) continue;
@@ -148,8 +156,12 @@ public class SealerManager {
                 if (willAlreadySeal) break;
 
                 // If the space has become too large to fill, stop performing flood fill
-                if (spaceToSeal.blocksToSeal.size() > spaceToSeal.sealers.size() * MAX_SEALER_VOLUME) break;
+                if (spaceToSeal.blocksToSeal.size() > spaceToSeal.sealers.size() * MAX_SEALER_VOLUME) {
+                    withinBudget = false;
+                    break;
+                }
             }
+            spaceToSeal.enclosed = withinBudget;
             spacesToSeal.add(spaceToSeal);
         }
 
@@ -245,24 +257,16 @@ public class SealerManager {
         this.sealUpdateQueued = true;
     }
 
+    /** Watches one sealer for the moment it starts or stops being able to hold a space. */
     private static final class SealerState {
         private boolean initialized;
-        private boolean hasEnergy;
-        private boolean hasOxygen;
-        private boolean blocked;
+        private boolean canSeal;
 
         private boolean update(OxygenSealerBlockEntity sealer) {
-            boolean hasEnergy = sealer.hasEnergy();
-            boolean hasOxygen = sealer.hasOxygen();
-            boolean blocked = sealer.isBlocked();
-            boolean changed = !this.initialized
-                    || this.hasEnergy != hasEnergy
-                    || this.hasOxygen != hasOxygen
-                    || this.blocked != blocked;
+            boolean canSeal = sealer.canSeal();
+            boolean changed = !this.initialized || this.canSeal != canSeal;
             this.initialized = true;
-            this.hasEnergy = hasEnergy;
-            this.hasOxygen = hasOxygen;
-            this.blocked = blocked;
+            this.canSeal = canSeal;
             return changed;
         }
     }

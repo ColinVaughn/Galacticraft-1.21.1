@@ -25,11 +25,13 @@ package dev.galacticraft.mod.config;
 import dev.galacticraft.mod.content.block.entity.machine.RefineryFuelLogic;
 import dev.galacticraft.mod.content.entity.vehicle.RocketFlightLogic;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Base64;
 import java.util.Random;
@@ -40,6 +42,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ConfigImplTest {
     private static final File CONFIG_FILE = Path.of(".", ".test_config.json").toFile();
+
+    @TempDir
+    Path tempDir;
 
     @Test
     public void create() {
@@ -138,6 +143,38 @@ class ConfigImplTest {
         assertEquals(64, config.rocketFuelTankCapacity());
         assertEquals(200, config.rocketBurnTicksPerBucket());
         assertEquals(3.0, config.refineryOilToFuelRatio());
+    }
+
+    @Test
+    void migratesLegacyMeteorDefaults() throws IOException {
+        Path file = this.tempDir.resolve("galacticraft.json");
+        Files.writeString(file, """
+                {
+                  "meteor_shower_mean_interval": 72000,
+                  "meteor_shower_peak_multiplier": 60.0
+                }
+                """);
+
+        ConfigImpl config = new ConfigImpl(file.toFile());
+
+        assertEquals(144000, config.meteorShowerMeanInterval());
+        assertEquals(12.0f, config.meteorShowerPeakMultiplier());
+    }
+
+    @Test
+    void preservesCustomizedMeteorSettingsDuringMigration() throws IOException {
+        Path file = this.tempDir.resolve("galacticraft.json");
+        Files.writeString(file, """
+                {
+                  "meteor_shower_mean_interval": 90000,
+                  "meteor_shower_peak_multiplier": 20.0
+                }
+                """);
+
+        ConfigImpl config = new ConfigImpl(file.toFile());
+
+        assertEquals(90000, config.meteorShowerMeanInterval());
+        assertEquals(20.0f, config.meteorShowerPeakMultiplier());
     }
 
     private static void writeConfig(String config) {

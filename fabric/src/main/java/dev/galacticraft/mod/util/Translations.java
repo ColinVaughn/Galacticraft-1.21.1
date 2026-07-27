@@ -228,6 +228,7 @@ public interface Translations {
         String OXYGEN_DECOMPRESSOR_ENERGY_CONSUMPTION_RATE = "config.galacticraft.energy.machines.oxygen_decompressor_energy_consumption_rate";
         String OXYGEN_SEALER_ENERGY_CONSUMPTION_RATE = "config.galacticraft.energy.machines.oxygen_sealer_energy_consumption_rate";
         String OXYGEN_SEALER_OXYGEN_CONSUMPTION_RATE = "config.galacticraft.energy.machines.oxygen_sealer_oxygen_consumption_rate";
+        String OXYGEN_SEALER_UNSEALED_OXYGEN_CONSUMPTION_RATE = "config.galacticraft.energy.machines.oxygen_sealer_unsealed_oxygen_consumption_rate";
         String MAX_SEALING_POWER = "config.galacticraft.machines.max_sealing_power";
         String REFINERY_ENERGY_CONSUMPTION_RATE = "config.galacticraft.energy.machines.refinery_energy_consumption_rate";
         String FUEL_LOADER_ENERGY_CONSUMPTION_RATE = "config.galacticraft.energy.machines.fuel_loader_energy_consumption_rate";
@@ -561,6 +562,18 @@ public interface Translations {
     interface RocketWorkbench {
         String MISSING_RESEARCH = "ui.galacticraft.rocket_workbench.missing_research";
         String MISSING_RESEARCH_HINT = "ui.galacticraft.rocket_workbench.missing_research_hint";
+
+        String PAGE_ADD_SCHEMATIC = "ui.galacticraft.rocket_workbench.page.add_schematic";
+        String PAGE_BUGGY = "ui.galacticraft.rocket_workbench.page.buggy";
+        String PAGE_CARGO_ROCKET = "ui.galacticraft.rocket_workbench.page.cargo_rocket";
+        String PAGE_ASTRO_MINER = "ui.galacticraft.rocket_workbench.page.astro_miner";
+
+        String BUTTON_BACK = "ui.galacticraft.rocket_workbench.button.back";
+        String BUTTON_NEXT = "ui.galacticraft.rocket_workbench.button.next";
+        String BUTTON_UNLOCK = "ui.galacticraft.rocket_workbench.button.unlock";
+
+        String SCHEMATIC_SLOT_HINT = "ui.galacticraft.rocket_workbench.schematic_slot_hint";
+        String SCHEMATIC_ALREADY_UNLOCKED = "ui.galacticraft.rocket_workbench.schematic_already_unlocked";
     }
 
     interface Misc {

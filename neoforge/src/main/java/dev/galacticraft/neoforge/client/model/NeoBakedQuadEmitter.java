@@ -74,10 +74,7 @@ final class NeoBakedQuadEmitter {
             case NORTH -> pos(0, 1.0F - left, top, depth).pos(1, 1.0F - left, bottom, depth).pos(2, 1.0F - right, bottom, depth).pos(3, 1.0F - right, top, depth);
         }
         if (!this.explicitUv) {
-            uv(0, left * 16.0F, top * 16.0F);
-            uv(1, left * 16.0F, bottom * 16.0F);
-            uv(2, right * 16.0F, bottom * 16.0F);
-            uv(3, right * 16.0F, top * 16.0F);
+            lockUv(face);
             this.explicitUv = false;
         }
         return this;
@@ -104,6 +101,32 @@ final class NeoBakedQuadEmitter {
 
     NeoBakedQuadEmitter cullFace(Direction face) {
         return nominalFace(face);
+    }
+
+    /**
+     * Projects UVs from vertex positions in the same orientation as Fabric's
+     * {@code BAKE_LOCK_UV}. This is required for non-axis-aligned junction quads
+     * and also keeps rotated cardinal faces aligned to the block texture.
+     */
+    NeoBakedQuadEmitter lockUv() {
+        return lockUv(this.nominalFace != null ? this.nominalFace : calculateFacing());
+    }
+
+    private NeoBakedQuadEmitter lockUv(Direction face) {
+        for (int vertex = 0; vertex < 4; vertex++) {
+            float x = this.positions[vertex][0];
+            float y = this.positions[vertex][1];
+            float z = this.positions[vertex][2];
+            switch (face) {
+                case EAST -> uv(vertex, (1 - z) * 16, (1 - y) * 16);
+                case WEST -> uv(vertex, z * 16, (1 - y) * 16);
+                case SOUTH -> uv(vertex, x * 16, (1 - y) * 16);
+                case NORTH -> uv(vertex, (1 - x) * 16, (1 - y) * 16);
+                case DOWN -> uv(vertex, x * 16, (1 - z) * 16);
+                case UP -> uv(vertex, x * 16, z * 16);
+            }
+        }
+        return this;
     }
 
     void emit() {

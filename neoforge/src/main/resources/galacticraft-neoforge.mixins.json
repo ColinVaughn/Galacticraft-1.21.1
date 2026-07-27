@@ -18,6 +18,7 @@
     "BucketItemMixin",
     "CakeBlockMixin",
     "ChangeOverTimeBlockMixin",
+    "DerivedLevelDataMixin",
     "DimensionTransitionMixin",
     "DimensionTypeMixin",
     "EntityMixin",
@@ -28,6 +29,7 @@
     "LevelMixin",
     "LivingEntityAccessor",
     "LivingEntityMixin",
+    "MachineBlockEntityMixin",
     "MapBannerMixin",
     "MapItemMixin",
     "MultiNoiseBiomeSourceParameterListPresetAccessor",
@@ -35,7 +37,8 @@
     "ServerLevelMixin",
     "ServerPlayerMixin",
     "SpiderMixin",
-    "StructureAccessor"
+    "StructureAccessor",
+    "TimeCommandMixin"
   ],
   "client": [
     "client.AbstractClientPlayerMixin",

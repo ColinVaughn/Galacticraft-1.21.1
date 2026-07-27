@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,21 +25,31 @@ package dev.galacticraft.mod.screen;
 
 import com.mojang.datafixers.util.Pair;
 import dev.galacticraft.api.accessor.ResearchAccessor;
+import dev.galacticraft.api.accessor.ServerResearchAccessor;
 import dev.galacticraft.api.component.GCDataComponents;
 import dev.galacticraft.api.inventory.MirroredSlot;
+import dev.galacticraft.api.item.Schematic;
 import dev.galacticraft.api.rocket.RocketData;
 import dev.galacticraft.api.rocket.RocketPrefabs;
+import dev.galacticraft.api.rocket.part.RocketPart;
 import dev.galacticraft.api.rocket.part.RocketUpgrade;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.content.GCRocketParts;
 import dev.galacticraft.mod.content.block.entity.RocketWorkbenchBlockEntity;
+import dev.galacticraft.mod.content.entity.vehicle.Buggy;
+import dev.galacticraft.mod.content.item.GCItems;
 import dev.galacticraft.mod.content.rocket.part.data.ExplosiveRocketData;
 import dev.galacticraft.mod.content.rocket.part.data.RocketUpgradeData;
 import dev.galacticraft.mod.content.rocket.part.data.StorageRocketData;
-import dev.galacticraft.api.rocket.part.RocketPart;
+import dev.galacticraft.mod.content.advancements.GCTriggers;
 import dev.galacticraft.mod.machine.storage.VariableSizedContainer;
-import dev.galacticraft.mod.recipe.GCRecipes;
+import dev.galacticraft.mod.machine.workbench.WorkbenchLayout;
+import dev.galacticraft.mod.machine.workbench.WorkbenchPage;
+import dev.galacticraft.mod.machine.workbench.WorkbenchPageDisplay;
+import dev.galacticraft.mod.machine.workbench.WorkbenchPages;
+import dev.galacticraft.mod.machine.workbench.WorkbenchSlot;
 import dev.galacticraft.mod.recipe.RocketRecipe;
+import dev.galacticraft.mod.recipe.WorkbenchRecipe;
 import dev.galacticraft.mod.tag.GCItemTags;
 import dev.galacticraft.mod.world.inventory.RocketResultSlot;
 import io.netty.buffer.ByteBuf;
@@ -46,10 +57,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerListener;
 import net.minecraft.world.entity.player.Inventory;
@@ -58,10 +72,9 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.EitherHolder;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.block.TntBlock;
 import org.jetbrains.annotations.NotNull;
@@ -74,14 +87,26 @@ import java.util.function.Predicate;
 
 import static dev.galacticraft.mod.Constant.RocketWorkbench.*;
 
+/**
+ * The rocket workbench, which is a flip-book of schematic pages as legacy Galacticraft's NASA
+ * workbench was.
+ *
+ * <p>Each page is one recipe and lays out its own slots, so the menu is rebuilt - by reopening -
+ * whenever the player turns a page. The last page is always the unlock page, where a schematic is
+ * consumed to reveal the page it belongs to.
+ */
 public class RocketWorkbenchMenu extends AbstractContainerMenu implements VariableSizedContainer.Listener, ContainerListener {
-    public final RocketWorkbenchBlockEntity workbench;
-    public RecipeHolder<RocketRecipe> recipe;
-    private final RecipeHolder<RocketRecipe> baseRecipe;
-    private final List<RecipeHolder<RocketRecipe>> recipes;
-    protected int recipeSize;
+    public static final int BUTTON_BACK = 0;
+    public static final int BUTTON_NEXT = 1;
+    public static final int BUTTON_UNLOCK = 2;
 
+    public final RocketWorkbenchBlockEntity workbench;
     public final Inventory playerInventory;
+
+    private final List<WorkbenchPage> pages;
+    private final WorkbenchPage page;
+    private final @Nullable RecipeHolder<? extends WorkbenchRecipe> recipe;
+    private final WorkbenchPageDisplay display;
 
     private List<Component> missingResearch = List.of();
 
@@ -92,15 +117,18 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
     private boolean engineComplete;
 
     private Slot coneSlot;
-    private List<Slot> bodySlots;
-    private List<Slot> boosterSlots;
-    private List<Slot> finSlots;
+    private List<Slot> bodySlots = List.of();
+    private List<Slot> boosterSlots = List.of();
+    private List<Slot> finSlots = List.of();
     private Slot engineSlot;
 
     public RocketWorkbenchMenu(int syncId, RocketWorkbenchBlockEntity workbench, Inventory playerInventory) {
+        this(syncId, workbench, playerInventory, null);
+    }
+
+    public RocketWorkbenchMenu(int syncId, RocketWorkbenchBlockEntity workbench, Inventory playerInventory, @Nullable ResourceLocation pageId) {
         super(GCMenuTypes.ROCKET_WORKBENCH, syncId);
         this.playerInventory = playerInventory;
-
         this.workbench = workbench;
 
         // Add client-side listeners via RocketWorkbenchScreen
@@ -109,74 +137,236 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
             this.workbench.chests.addListener(this);
         }
 
-        var recipeManager = playerInventory.player.level().getRecipeManager();
-        this.baseRecipe = (RecipeHolder<RocketRecipe>) recipeManager.byKey(Constant.id("rocket/rocket")).get();
-        this.recipe = this.baseRecipe;
-        this.recipes = recipeManager.getAllRecipesFor(GCRecipes.ROCKET_TYPE);
-        this.recipeSize = this.baseRecipe.value().getIngredients().size();
+        this.pages = pagesIncluding(playerInventory.player, pageId);
+        this.page = resolvePage(this.pages, pageId);
+        this.recipe = this.page.id().equals(WorkbenchPages.ADD_SCHEMATIC_ID)
+                ? null
+                : WorkbenchPages.recipe(playerInventory.player.level(), this.page.id());
+        this.display = this.recipe != null ? this.recipe.value().display() : WorkbenchPageDisplay.addSchematic();
+
+        // The unlock page has no ingredient wells; resizing to zero there would tip a half-built
+        // rocket onto the floor just for looking at the schematic page.
+        if (this.recipe != null) {
+            this.workbench.resizeInventory(this.ingredientCount());
+        }
         this.addSlots();
-        this.workbench.resizeInventory(this.recipeSize);
+        this.returnIncompatibleIngredients();
+        this.onItemChanged();
     }
 
     public RocketWorkbenchMenu(int syncId, Inventory playerInventory, OpeningData data) {
-        this(syncId, (RocketWorkbenchBlockEntity) playerInventory.player.level().getBlockEntity(data.pos), playerInventory);
+        this(syncId, (RocketWorkbenchBlockEntity) playerInventory.player.level().getBlockEntity(data.pos), playerInventory, data.page.orElse(null));
+    }
+
+    /**
+     * The player's pages, plus {@code pageId} itself if it names a real recipe the player is not
+     * shown yet.
+     *
+     * <p>The server picks the page and both sides lay their slots out from it. A client whose
+     * research has not caught up would otherwise build a different page from the server, and its
+     * slot indices would no longer line up - items would appear in the wrong wells. Trusting the
+     * requested page keeps the two in step; the server is still the one that decides what opens.
+     */
+    private static List<WorkbenchPage> pagesIncluding(Player player, @Nullable ResourceLocation pageId) {
+        List<WorkbenchPage> pages = WorkbenchPages.visible(player.level(), player);
+        if (pageId == null || pages.stream().anyMatch(page -> page.id().equals(pageId))) {
+            return pages;
+        }
+
+        RecipeHolder<? extends WorkbenchRecipe> requested = WorkbenchPages.recipe(player.level(), pageId);
+        if (requested == null) {
+            return pages;
+        }
+
+        List<WorkbenchPage> candidates = new ArrayList<>(pages);
+        candidates.removeIf(page -> page.id().equals(WorkbenchPages.ADD_SCHEMATIC_ID));
+        candidates.add(WorkbenchPages.page(requested));
+        return WorkbenchPages.order(candidates, id -> true);
+    }
+
+    /**
+     * Falls back to the first page the player can see. A page can vanish between opening and
+     * reopening - an operator revoking research, or a datapack reload - and legacy always had page 0
+     * to fall back on.
+     */
+    private static WorkbenchPage resolvePage(List<WorkbenchPage> pages, @Nullable ResourceLocation pageId) {
+        if (pageId != null) {
+            for (WorkbenchPage page : pages) {
+                if (page.id().equals(pageId)) return page;
+            }
+        }
+        return pages.getFirst();
+    }
+
+    private int ingredientCount() {
+        return this.recipe == null ? 0 : this.recipe.value().ingredientSlots().size();
+    }
+
+    public WorkbenchPage page() {
+        return this.page;
+    }
+
+    public List<WorkbenchPage> pages() {
+        return this.pages;
+    }
+
+    public WorkbenchPageDisplay display() {
+        return this.display;
+    }
+
+    /**
+     * @param direction {@code 1} for the next page, {@code -1} for the previous
+     * @return the page that button reaches, or null if this is already the end of the book
+     */
+    public @Nullable WorkbenchPage adjacentPage(int direction) {
+        int index = this.pages.indexOf(this.page) + direction;
+        return index >= 0 && index < this.pages.size() ? this.pages.get(index) : null;
     }
 
     protected void addSlots() {
-        RocketRecipe recipe = this.recipe.value();
-
-        this.bodySlots = new ArrayList<>();
-        this.boosterSlots = new ArrayList<>();
-        this.finSlots = new ArrayList<>();
-
-        int nextSlot = 0;
-        for (RocketRecipe.RocketSlotData data : RocketRecipe.slotData(recipe.bodyHeight(), !recipe.boosters().isEmpty())) {
-            switch (data.partType()) {
-                case CONE: {
-                    this.coneSlot = this.addSlot(new FilteredSlot(this.workbench.ingredients, nextSlot, data.x(), data.y(), this.recipeCompatiblePart(nextSlot)).withBackground(Constant.SlotSprite.ROCKET_CONE));
-                    break;
-                }
-                case BODY: {
-                    this.bodySlots.add(this.addSlot(new FilteredSlot(this.workbench.ingredients, nextSlot, data.x(), data.y(), this.recipeCompatiblePart(nextSlot)).withBackground(Constant.SlotSprite.ROCKET_PLATING)));
-                    break;
-                }
-                case BOOSTER: {
-                    this.boosterSlots.add(this.addSlot(new FilteredSlot(this.workbench.ingredients, nextSlot, data.x(), data.y(), this.recipeCompatiblePart(nextSlot)).withBackground(Constant.SlotSprite.ROCKET_BOOSTER)));
-                    break;
-                }
-                case FIN: {
-                    if (data.mirror()) {
-                        this.finSlots.add(this.addSlot(new MirroredFilteredSlot(this.workbench.ingredients, nextSlot, data.x(), data.y(), this.recipeCompatiblePart(nextSlot)).withBackground(Constant.SlotSprite.ROCKET_FIN_RIGHT)));
-                    } else {
-                        this.finSlots.add(this.addSlot(new FilteredSlot(this.workbench.ingredients, nextSlot, data.x(), data.y(), this.recipeCompatiblePart(nextSlot)).withBackground(Constant.SlotSprite.ROCKET_FIN_LEFT)));
-                    }
-                    break;
-                }
-                case ENGINE: {
-                    this.engineSlot = this.addSlot(new FilteredSlot(this.workbench.ingredients, nextSlot, data.x(), data.y(), this.recipeCompatiblePart(nextSlot)).withBackground(Constant.SlotSprite.ROCKET_ENGINE));
-                    break;
-                }
-            }
-            ++nextSlot;
+        if (this.recipe != null) {
+            this.addIngredientSlots(this.recipe.value());
+        } else {
+            this.addSlot(new FilteredSlot(this.workbench.schematic, 0, ADD_SCHEMATIC_SLOT_X, ADD_SCHEMATIC_SLOT_Y,
+                    stack -> stack.getItem() instanceof Schematic
+                            && WorkbenchPages.pageUnlockedBy(this.playerInventory.player.level(), stack.getItem()) != null));
         }
 
-        for (int chest = 0; chest < RocketWorkbenchBlockEntity.CHEST_SLOTS; ++chest) {
+        List<WorkbenchLayout.Position> chests = this.display.chestSlots();
+        for (int chest = 0; chest < chests.size() && chest < RocketWorkbenchBlockEntity.CHEST_SLOTS; ++chest) {
             final int index = chest;
-            this.addSlot(new FilteredSlot(this.workbench.chests, index, CHEST_X + index * CHEST_X_OFFSET, CHEST_Y, stack -> this.workbench.chests.canPlaceItem(index, stack))
-                    .withBackground(Constant.SlotSprite.CHEST));
+            this.addSlot(new FilteredSlot(this.workbench.chests, index, chests.get(chest).x(), chests.get(chest).y(),
+                    stack -> this.workbench.chests.canPlaceItem(index, stack)).withBackground(Constant.SlotSprite.CHEST));
         }
 
-        this.addSlot(new RocketResultSlot(this, this.workbench.output, 0, OUTPUT_X, OUTPUT_Y));
+        if (this.display.resultSlot() != null) {
+            this.addSlot(new RocketResultSlot(this, this.workbench.output, 0, this.display.resultSlot().x(), this.display.resultSlot().y()));
+        }
 
         for (int row = 0; row < 3; ++row) {
             for (int column = 0; column < 9; ++column) {
-                this.addSlot(new Slot(this.playerInventory, column + row * 9 + 9, column * 18 + 8, row * 18 + 167));
+                this.addSlot(new Slot(this.playerInventory, column + row * 9 + 9, column * 18 + 8, row * 18 + this.display.playerInventoryY()));
             }
         }
 
-        // Player Hotbar
         for (int column = 0; column < 9; ++column) {
-            this.addSlot(new Slot(this.playerInventory, column, column * 18 + 8, 225));
+            this.addSlot(new Slot(this.playerInventory, column, column * 18 + 8, this.display.hotbarY()));
+        }
+    }
+
+    /**
+     * Hands back any part the page just turned to will not accept. Without this a tier-1 plate left
+     * over from another page sits in a tier-2 well that refuses to take it, silently blocking a
+     * build the player cannot see anything wrong with.
+     */
+    private void returnIncompatibleIngredients() {
+        if (this.recipe == null || !(this.workbench.getLevel() instanceof ServerLevel)) return;
+
+        for (Slot slot : this.slots) {
+            if (slot.container != this.workbench.ingredients) continue;
+
+            ItemStack stack = slot.getItem();
+            if (!stack.isEmpty() && !slot.mayPlace(stack)) {
+                slot.set(ItemStack.EMPTY);
+                if (!this.playerInventory.add(stack)) {
+                    this.playerInventory.player.drop(stack, false);
+                }
+            }
+        }
+    }
+
+    private void addIngredientSlots(WorkbenchRecipe recipe) {
+        List<WorkbenchSlot> slots = recipe.ingredientSlots();
+        List<RocketRecipe.RocketSlotData> rocketSlots = recipe instanceof RocketRecipe rocket
+                ? RocketRecipe.slotData(rocket.bodyHeight(), !rocket.boosters().isEmpty())
+                : List.of();
+
+        List<Slot> body = new ArrayList<>();
+        List<Slot> boosters = new ArrayList<>();
+        List<Slot> fins = new ArrayList<>();
+
+        for (int index = 0; index < slots.size(); index++) {
+            WorkbenchSlot data = slots.get(index);
+            Predicate<ItemStack> filter = data.ingredient()::test;
+            FilteredSlot slot = data.mirrored()
+                    ? new MirroredFilteredSlot(this.workbench.ingredients, index, data.x(), data.y(), filter)
+                    : new FilteredSlot(this.workbench.ingredients, index, data.x(), data.y(), filter);
+            if (data.background() != null) slot.withBackground(data.background());
+            this.addSlot(slot);
+
+            if (index < rocketSlots.size()) {
+                switch (rocketSlots.get(index).partType()) {
+                    case CONE -> this.coneSlot = slot;
+                    case BODY -> body.add(slot);
+                    case BOOSTER -> boosters.add(slot);
+                    case FIN -> fins.add(slot);
+                    case ENGINE -> this.engineSlot = slot;
+                    default -> { }
+                }
+            }
+        }
+
+        this.bodySlots = body;
+        this.boosterSlots = boosters;
+        this.finSlots = fins;
+    }
+
+    @Override
+    public boolean clickMenuButton(Player player, int id) {
+        return switch (id) {
+            case BUTTON_BACK -> this.flip(player, -1);
+            case BUTTON_NEXT -> this.flip(player, 1);
+            case BUTTON_UNLOCK -> this.unlockSchematic(player);
+            default -> false;
+        };
+    }
+
+    private boolean flip(Player player, int direction) {
+        WorkbenchPage target = this.adjacentPage(direction);
+        if (target == null) return false;
+
+        this.openPage(player, target.id());
+        return true;
+    }
+
+    /**
+     * Legacy's {@code S_UNLOCK_NEW_SCHEMATIC}: read the unlock slot, record the page against the
+     * player and spend the schematic. Refuses anything that unlocks nothing, so a misplaced item is
+     * never destroyed.
+     */
+    private boolean unlockSchematic(Player player) {
+        if (!(player instanceof ServerPlayer serverPlayer)) return false;
+
+        ItemStack stack = this.workbench.schematic.getItem(0);
+        if (!(stack.getItem() instanceof Schematic)) return false;
+
+        Item schematic = stack.getItem();
+        RecipeHolder<? extends WorkbenchRecipe> unlocked = WorkbenchPages.pageUnlockedBy(player.level(), schematic);
+        if (unlocked == null) return false;
+
+        ResourceLocation unlockId = WorkbenchPages.unlockId(BuiltInRegistries.ITEM.getKey(schematic));
+        if (((ResearchAccessor) player).galacticraft$isUnlocked(unlockId)) {
+            // Creative players are considered to know every page, and survival players may insert
+            // a second copy of a schematic they already spent. In either case the button should
+            // still turn to that schematic's page instead of appearing to do nothing.
+            this.openPage(player, unlocked.id());
+            return true;
+        }
+
+        ((ServerResearchAccessor) serverPlayer).galacticraft$unlockRocketPartRecipes(unlockId);
+        GCTriggers.UNLOCK_SCHEMATIC.trigger(serverPlayer, stack);
+        stack.shrink(1);
+        this.workbench.schematic.setItem(0, stack);
+        this.workbench.schematic.setChanged();
+
+        this.openPage(player, unlocked.id());
+        return true;
+    }
+
+    /** Reopening keeps the client's slot list in step with the server's; legacy reopened too. */
+    private void openPage(Player player, ResourceLocation pageId) {
+        if (player instanceof ServerPlayer serverPlayer && serverPlayer.connection != null) {
+            dev.architectury.registry.menu.MenuRegistry.openExtendedMenu(serverPlayer, this.workbench.menuOn(pageId));
         }
     }
 
@@ -192,53 +382,8 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
     }
 
     protected boolean isIngredient(ItemStack stack) {
-        return this.recipes.stream().anyMatch(holder ->
-                holder.value().getIngredients().stream().distinct().anyMatch(ingredient -> ingredient.test(stack)));
-    }
-
-    /** Accept a part only when at least one rocket recipe remains possible. */
-    private Predicate<ItemStack> recipeCompatiblePart(int targetSlot) {
-        return stack -> this.recipes.stream().anyMatch(holder -> {
-            List<Ingredient> ingredients = holder.value().getIngredients();
-            return targetSlot < ingredients.size()
-                    && ingredients.get(targetSlot).test(stack)
-                    && this.currentItemsMatch(holder.value(), targetSlot);
-        });
-    }
-
-    private boolean currentItemsMatch(RocketRecipe recipe, int ignoredSlot) {
-        List<Ingredient> ingredients = recipe.getIngredients();
-        for (int slot = 0; slot < this.workbench.ingredients.getTargetSize(); slot++) {
-            if (slot == ignoredSlot) continue;
-
-            ItemStack existing = this.workbench.ingredients.getItem(slot);
-            if (!existing.isEmpty() && (slot >= ingredients.size() || !ingredients.get(slot).test(existing))) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /** Returns a recipe that can still be completed with the currently inserted parts. */
-    private RecipeHolder<RocketRecipe> findCompatibleRecipe() {
-        for (RecipeHolder<RocketRecipe> holder : this.recipes) {
-            if (this.currentItemsMatch(holder.value(), -1)) {
-                return holder;
-            }
-        }
-        return null;
-    }
-
-    /** Returns the first rocket recipe that matches the current workbench contents. */
-    private RecipeHolder<RocketRecipe> findMatchingRecipe() {
-        var input = this.workbench.ingredients.asInput();
-        var level = this.workbench.getLevel();
-        for (RecipeHolder<RocketRecipe> holder : this.recipes) {
-            if (holder.value().matches(input, level)) {
-                return holder;
-            }
-        }
-        return null;
+        if (this.recipe == null) return false;
+        return this.recipe.value().getIngredients().stream().distinct().anyMatch(ingredient -> ingredient.test(stack));
     }
 
     protected boolean isWorkbenchInventory(int slotIndex) {
@@ -246,7 +391,25 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
     }
 
     public int getRecipeSize() {
-        return this.recipeSize;
+        return this.ingredientCount();
+    }
+
+    /**
+     * The page's ingredient wells, in slot order. Recipe viewers fill these when transferring a
+     * recipe, and must not stray into the upgrade wells beside them.
+     */
+    public List<Slot> ingredientSlots() {
+        return this.slots.stream().filter(slot -> slot.container == this.workbench.ingredients).toList();
+    }
+
+    /** @return the slot the crafted item appears in, or null on a page that crafts nothing. */
+    public @Nullable Slot resultSlot() {
+        return this.slots.stream().filter(slot -> slot.container == this.workbench.output).findFirst().orElse(null);
+    }
+
+    /** The first of the player's own 36 slots. */
+    public int firstPlayerSlot() {
+        return this.slots.size() - 9 * 4;
     }
 
     @Override
@@ -263,7 +426,7 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
                 }
             } else {
                 if (this.isIngredient(stack)) {
-                    if (!this.moveItemStackTo(stack, 0, this.recipeSize, false)) {
+                    if (!this.moveItemStackTo(stack, 0, this.ingredientCount(), false)) {
                         return ItemStack.EMPTY;
                     }
                 } else if (!this.moveItemStackTo(stack, 0, slots - 9 * 4, false)) {
@@ -294,12 +457,7 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
             upgradeData = Optional.of(new ExplosiveRocketData(BuiltInRegistries.BLOCK.getKey(tntBlock)));
         } else {
             // Chests may go in any of the three slots; the rocket's cargo scales with how many are installed.
-            int chests = 0;
-            for (int slot = 0; slot < this.workbench.chests.getContainerSize(); ++slot) {
-                if (this.workbench.chests.getItem(slot).is(GCItemTags.ROCKET_STORAGE_UPGRADE_ITEMS)) {
-                    ++chests;
-                }
-            }
+            int chests = this.installedChests();
 
             if (chests > 0) {
                 upgrade = Optional.of(new EitherHolder<>(GCRocketParts.STORAGE_UPGRADE));
@@ -319,8 +477,20 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
         );
     }
 
+    private int installedChests() {
+        int chests = 0;
+        for (int slot = 0; slot < this.workbench.chests.getContainerSize(); ++slot) {
+            if (this.workbench.chests.getItem(slot).is(GCItemTags.ROCKET_STORAGE_UPGRADE_ITEMS)) {
+                ++chests;
+            }
+        }
+        return chests;
+    }
+
     public RocketData previewRocket() {
-        RocketData data = this.recipe.value().result().getOrDefault(GCDataComponents.ROCKET_DATA, RocketPrefabs.TIER_1);
+        RocketData data = this.recipe != null
+                ? this.recipe.value().getResultItem(this.registries()).getOrDefault(GCDataComponents.ROCKET_DATA, RocketPrefabs.TIER_1)
+                : RocketPrefabs.TIER_1;
         RocketData withParts = new RocketData(
                 this.coneComplete ? data.cone() : Optional.empty(),
                 this.bodyComplete ? data.body() : Optional.empty(),
@@ -346,29 +516,17 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
 
     @Override
     public void onItemChanged() {
-        RecipeHolder<RocketRecipe> matched = this.findMatchingRecipe();
-        RecipeHolder<RocketRecipe> compatible = matched != null ? matched : this.findCompatibleRecipe();
-        this.recipe = compatible != null ? compatible : this.baseRecipe;
+        boolean matches = this.recipe != null && this.recipe.value().matches(this.workbench.ingredients.asInput(), this.workbench.getLevel());
 
         // Worked out on both sides: an empty result slot otherwise gives the player no clue that
         // research, rather than a missing part, is what is blocking the build.
-        this.missingResearch = matched == null
-                ? List.of()
-                : this.lockedParts(matched.value().result().getOrDefault(GCDataComponents.ROCKET_DATA, RocketPrefabs.TIER_1));
+        this.missingResearch = matches ? this.lockedParts(this.resultRocketData()) : List.of();
 
         // The server owns the result slot. Recomputing it on the client can erase the
         // synchronized result when research data has not arrived yet after login.
         if (this.workbench.getLevel() instanceof ServerLevel) {
-            if (matched != null) {
-                ItemStack result = matched.value().result();
-                RocketData base = result.getOrDefault(GCDataComponents.ROCKET_DATA, RocketPrefabs.TIER_1);
-                if (this.hasResearchedParts(base)) {
-                    ItemStack output = result.copy();
-                    output.set(GCDataComponents.ROCKET_DATA, this.withWorkbenchUpgrade(base));
-                    this.workbench.output.setItem(0, output);
-                } else {
-                    this.workbench.output.clearContent();
-                }
+            if (matches && this.missingResearch.isEmpty()) {
+                this.workbench.output.setItem(0, this.buildResult());
             } else {
                 this.workbench.output.clearContent();
             }
@@ -381,15 +539,44 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
         this.engineComplete = this.slotMatchesRecipe(this.engineSlot);
     }
 
-    private boolean slotMatchesRecipe(Slot slot) {
-        List<Ingredient> ingredients = this.recipe.value().getIngredients();
-        int index = slot.getContainerSlot();
-        return index < ingredients.size() && ingredients.get(index).test(slot.getItem());
+    private HolderLookup.Provider registries() {
+        return this.playerInventory.player.level().registryAccess();
     }
 
-    /** Requires research unlocks for every structural part in the assembled rocket. */
-    private boolean hasResearchedParts(RocketData data) {
-        return this.lockedParts(data).isEmpty();
+    /**
+     * The rocket this page builds, or null if it builds something else. A buggy or an astro miner
+     * carries no rocket data, and must not be gated on rocket-part research it has nothing to do
+     * with - defaulting to tier-1 data here would block those pages for anyone who has not
+     * researched a tier-1 rocket.
+     */
+    private @Nullable RocketData resultRocketData() {
+        if (this.recipe == null) return null;
+        return this.recipe.value().getResultItem(this.registries()).get(GCDataComponents.ROCKET_DATA);
+    }
+
+    /** Applies the page's upgrade wells to the crafted item: rocket cargo, or a buggy's storage. */
+    private ItemStack buildResult() {
+        ItemStack result = this.recipe.value().getResultItem(this.registries()).copy();
+
+        if (result.has(GCDataComponents.ROCKET_DATA)) {
+            result.set(GCDataComponents.ROCKET_DATA, this.withWorkbenchUpgrade(result.get(GCDataComponents.ROCKET_DATA)));
+        } else if (result.is(GCItems.BUGGY)) {
+            // Legacy's buggy bench read its addon wells as the buggy's storage tier.
+            int storage = 0;
+            for (int slot = 0; slot < this.workbench.chests.getContainerSize(); ++slot) {
+                if (this.workbench.chests.getItem(slot).is(GCItems.BUGGY_STORAGE)) ++storage;
+            }
+            result.set(GCDataComponents.BUGGY_TYPE, Math.min(storage, Buggy.BuggyType.STORAGE_36.getId()));
+        }
+
+        return result;
+    }
+
+    private boolean slotMatchesRecipe(Slot slot) {
+        if (slot == null || this.recipe == null) return false;
+        List<WorkbenchSlot> slots = this.recipe.value().ingredientSlots();
+        int index = slot.getContainerSlot();
+        return index < slots.size() && slots.get(index).ingredient().test(slot.getItem());
     }
 
     /**
@@ -397,9 +584,9 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
      * work this out - the client keeps its own copy of the player's unlocks - so the screen can
      * explain an empty result slot without asking the server.
      */
-    private List<Component> lockedParts(RocketData data) {
+    private List<Component> lockedParts(@Nullable RocketData data) {
         Player player = this.playerInventory.player;
-        if (player == null) {
+        if (data == null || player == null) {
             return List.of();
         }
 
@@ -473,7 +660,11 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
         }
     }
 
-    public record OpeningData(BlockPos pos) {
-        public static final StreamCodec<ByteBuf, OpeningData> CODEC = BlockPos.STREAM_CODEC.map(OpeningData::new, OpeningData::pos);
+    public record OpeningData(BlockPos pos, Optional<ResourceLocation> page) {
+        public static final StreamCodec<ByteBuf, OpeningData> CODEC = StreamCodec.composite(
+                BlockPos.STREAM_CODEC, OpeningData::pos,
+                ByteBufCodecs.optional(ResourceLocation.STREAM_CODEC), OpeningData::page,
+                OpeningData::new
+        );
     }
 }
