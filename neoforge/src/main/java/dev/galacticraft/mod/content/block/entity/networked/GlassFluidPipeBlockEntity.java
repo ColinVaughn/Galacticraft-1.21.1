@@ -40,6 +40,7 @@ import java.util.List;
 public class GlassFluidPipeBlockEntity extends PipeBlockEntity implements Connected, Pullable {
     public static final List<Block> COMPATIBLE_BLOCKS = Util.make(new ArrayList<>(), list -> {
         list.addAll(GCBlocks.GLASS_FLUID_PIPES.values());
+        list.addAll(GCBlocks.SEALABLE_GLASS_FLUID_PIPES.values());
         list.add(GCBlocks.FLUID_PIPE_WALKWAY);
     });
     private boolean pull;
