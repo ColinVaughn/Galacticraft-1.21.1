@@ -69,13 +69,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FuelLoaderBlockEntity extends MachineBlockEntity {
-    public static final long TRANSFER_RATE = 500;
+    public static final long TRANSFER_RATE = FuelLoaderTransferLogic.TRANSFER_RATE;
     public static final int CHARGE_SLOT = 0;
     public static final int FUEL_INPUT_SLOT = 1;
     public static final int FUEL_TANK = 0;
     public static final int NUM_BUCKETS = 50;
     public static final long MAX_FUEL = FluidUtil.bucketsToDroplets(NUM_BUCKETS);
-    public static final int MAX_PROGRESS = 81 * 2;
+    public static final int MAX_PROGRESS = FuelLoaderTransferLogic.MAX_PROGRESS;
 
     private static final StorageSpec SPEC = StorageSpec.of(
             MachineItemStorage.spec(
@@ -168,20 +168,29 @@ public class FuelLoaderBlockEntity extends MachineBlockEntity {
 
         FluidResourceSlot slot = this.fluidStorage().slot(FUEL_TANK);
 
-        {
-            long insert = this.linkedRocket.getFuelTank().insert(slot.getResource(), slot.getComponents(), Math.min(TRANSFER_RATE, slot.getAmount()));
-            if (insert > 0) {
-                this.incrementProgress(true);
-                this.energyStorage().extract(Galacticraft.CONFIG.fuelLoaderEnergyConsumptionRate());
-                if (this.progress < MAX_PROGRESS) {
-                    return GCMachineStatuses.PREPARING;
-                }
-                slot.extract(insert);
-                return GCMachineStatuses.LOADING;
-            }
+        // Room is measured rather than probed with a real insert: an insert commits, and during the
+        // spin-up phase below there is no matching extract to pay for it.
+        long room = this.linkedRocket.getFuelTankCapacity() - this.linkedRocket.getFuelTankAmount();
+        if (room <= 0) {
             this.incrementProgress(false);
             return GCMachineStatuses.FUEL_TANK_FULL;
         }
+
+        this.incrementProgress(true);
+        this.energyStorage().extract(Galacticraft.CONFIG.fuelLoaderEnergyConsumptionRate());
+        if (this.progress < MAX_PROGRESS) {
+            return GCMachineStatuses.PREPARING;
+        }
+
+        long move = FuelLoaderTransferLogic.transferableFuel(slot.getAmount(), room, this.progress);
+        long inserted = this.linkedRocket.getFuelTank().insert(slot.getResource(), slot.getComponents(), move);
+        if (inserted <= 0) {
+            // The vehicle has room but will not take this fluid.
+            return GCMachineStatuses.FUEL_TANK_FULL;
+        }
+        // Must always follow the insert: whatever the vehicle accepted leaves this tank.
+        slot.extract(inserted);
+        return GCMachineStatuses.LOADING;
     }
 
     @Override

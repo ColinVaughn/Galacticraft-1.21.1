@@ -112,6 +112,7 @@ public class ConfigImpl implements Config {
     private int meteorMaxConcurrent = 12;
     private int meteorMaxCraterRadius = 12;
     private boolean meteorImpactBlockDamage = true;
+    private java.util.List<String> meteorImpactBlockDamageExceptions = new java.util.ArrayList<>();
     private boolean meteorFragmentation = true;
     private boolean dustStormsEnabled = true;
     private int dustStormMeanInterval = 36000;
@@ -567,6 +568,16 @@ public class ConfigImpl implements Config {
 
     public void setMeteorImpactBlockDamage(boolean meteorImpactBlockDamage) {
         this.meteorImpactBlockDamage = meteorImpactBlockDamage;
+    }
+
+    @Override
+    public java.util.List<String> meteorImpactBlockDamageExceptions() {
+        return this.meteorImpactBlockDamageExceptions != null
+                ? this.meteorImpactBlockDamageExceptions : java.util.Collections.emptyList();
+    }
+
+    public void setMeteorImpactBlockDamageExceptions(java.util.List<String> meteorImpactBlockDamageExceptions) {
+        this.meteorImpactBlockDamageExceptions = new java.util.ArrayList<>(meteorImpactBlockDamageExceptions);
     }
 
     @Override
@@ -1375,6 +1386,15 @@ public class ConfigImpl implements Config {
                     .setTooltip(tooltipWithDesc.apply(Translations.Config.METEOR_IMPACT_BLOCK_DAMAGE, Translations.Config.METEOR_IMPACT_BLOCK_DAMAGE_DESC))
                     .setSaveConsumer(config::setMeteorImpactBlockDamage)
                     .setDefaultValue(true)
+                    .build()
+            );
+
+            difficulty.addEntry(ConfigEntryBuilder.create().startStrList(
+                    label.apply(Translations.Config.METEOR_IMPACT_BLOCK_DAMAGE_EXCEPTIONS),
+                    config.meteorImpactBlockDamageExceptions())
+                    .setTooltip(tooltipWithDesc.apply(Translations.Config.METEOR_IMPACT_BLOCK_DAMAGE_EXCEPTIONS, Translations.Config.METEOR_IMPACT_BLOCK_DAMAGE_EXCEPTIONS_DESC))
+                    .setSaveConsumer(config::setMeteorImpactBlockDamageExceptions)
+                    .setDefaultValue(java.util.Collections.emptyList())
                     .build()
             );
 

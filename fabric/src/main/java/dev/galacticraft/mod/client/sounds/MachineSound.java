@@ -36,8 +36,10 @@ public class MachineSound extends AbstractTickableSoundInstance {
     protected TransitionState transitionState = TransitionState.STARTING;
     protected final int startTransitionTicks, endTransitionTicks;
     protected int transitionTick = 0;
-    protected final float maxVolume;
+    protected float maxVolume;
     protected final SoundEvent event;
+    /** Set once the fade-out has completed, so the sound is only handed back to the manager once. */
+    private boolean finished = false;
 
     public MachineSound(MachineBlockEntity machine, SoundEvent event, SoundCallback callback, float maxVolume) {
         super(event, SoundSource.BLOCKS, SoundInstance.createUnseededRandom());
@@ -59,12 +61,8 @@ public class MachineSound extends AbstractTickableSoundInstance {
 
     @Override
     public void tick() {
-        if (this.machine instanceof MachineBlockEntity blockEntity && blockEntity.isRemoved()) {
+        if (this.machine.isRemoved()) {
             this.end();
-        }
-        if (this.machine == null) {
-            this.callback.onFinished(this);
-            return;
         }
         switch (this.transitionState) {
             case STARTING:
@@ -76,7 +74,11 @@ public class MachineSound extends AbstractTickableSoundInstance {
                 break;
             case ENDING:
                 this.transitionTick++;
-                if (this.transitionTick > this.endTransitionTicks) {
+                if (this.transitionTick > this.endTransitionTicks && !this.finished) {
+                    this.finished = true;
+                    // Marks the instance stopped so the sound engine drops it and frees its channel
+                    // on this same tick, rather than leaving a silent loop holding one forever.
+                    this.stop();
                     this.callback.onFinished(this);
                 }
                 break;
@@ -84,6 +86,23 @@ public class MachineSound extends AbstractTickableSoundInstance {
                 break;
         }
         this.modulateSoundforTransition();
+    }
+
+    public SoundEvent event() {
+        return this.event;
+    }
+
+    /** Whether this sound is winding down and will hand itself back to the manager shortly. */
+    public boolean isFading() {
+        return this.transitionState == TransitionState.ENDING;
+    }
+
+    /**
+     * Retunes a running loop. A machine that changes status without changing sound keeps the loop
+     * it already has, so its volume has to be adjustable in place.
+     */
+    public void setMaxVolume(float maxVolume) {
+        this.maxVolume = maxVolume;
     }
 
     protected void setPosition() {

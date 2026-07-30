@@ -439,7 +439,11 @@ public interface Constant {
         String BACTERIAL_ACID_STILL = "bacterial_acid_still";
         String SULFURIC_ACID_FLOWING = "sulfuric_acid_flowing";
         String SULFURIC_ACID_STILL = "sulfuric_acid_still";
-        String OXYGEN_GAS = "oxygen_gas";
+        String OXYGEN_STILL = "oxygen";
+        /**
+         * Registry name of the liquid oxygen fluid. This is <em>not</em> a texture name -- the
+         * oxygen sprite is {@link #OXYGEN_STILL}, and there is no {@code liquid_oxygen.png}.
+         */
         String LIQUID_OXYGEN = "liquid_oxygen";
 
         static ResourceLocation fluidId(String s) {

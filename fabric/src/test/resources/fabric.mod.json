@@ -27,11 +27,15 @@
   "entrypoints": {
     "fabric-gametest": [
       "dev.galacticraft.mod.gametest.BuggyItemTestSuite",
+      "dev.galacticraft.mod.gametest.CannedFoodEatingTestSuite",
+      "dev.galacticraft.mod.gametest.CreativeOxygenTestSuite",
     "dev.galacticraft.mod.gametest.DimensionTimeTestSuite",
+      "dev.galacticraft.mod.gametest.DungeonBossDefeatTestSuite",
       "dev.galacticraft.mod.gametest.GratingTestSuite",
       "dev.galacticraft.mod.gametest.MachineEnergyTransferTestSuite",
     "dev.galacticraft.mod.gametest.MonsterSpawnRuleTestSuite",
       "dev.galacticraft.mod.gametest.OxygenSealerTestSuite",
+      "dev.galacticraft.mod.gametest.OxygenStorageModuleTestSuite",
       "dev.galacticraft.mod.gametest.ParachuteTestSuite",
       "dev.galacticraft.mod.gametest.PolishTestSuite",
       "dev.galacticraft.mod.gametest.RocketCargoTransferTestSuite",

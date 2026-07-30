@@ -63,6 +63,10 @@ public final class MeteorImpact {
     private static final double RIM_JITTER = 0.18;
     /** Entities within this multiple of the crater radius are caught in the blast. */
     private static final double BLAST_RATIO = 1.6;
+    /** Strewn-field radius as a fraction of the crater the strike would otherwise have dug. */
+    private static final double STREWN_RATIO = 0.75;
+    /** Placement attempts per block of a strewn field, so a crowded surface still gets a fair try. */
+    private static final int STREWN_ATTEMPTS_PER_BLOCK = 8;
 
     private MeteorImpact() {
     }
@@ -89,11 +93,11 @@ public final class MeteorImpact {
         announce(level, location, radius);
         damageEntities(level, location, radius, energy);
 
-        if (Galacticraft.CONFIG.meteorImpactBlockDamage()) {
+        if (MeteorImpactRules.blockDamageEnabled(level)) {
             List<BlockPos> floor = excavate(level, impact, radius, seed);
             deposit(level, floor, type, random, survivingVoxels, totalVoxels);
         } else {
-            depositOnSurface(level, impact, type, random);
+            scatter(level, impact, radius, type, random, survivingVoxels, totalVoxels);
         }
     }
 
@@ -168,12 +172,29 @@ public final class MeteorImpact {
         return floor;
     }
 
+    /**
+     * How much of the body is left as recoverable blocks: what survived the fall, capped by what
+     * the body was made of and by the space there is to put it.
+     *
+     * <p>Shared by the crater and the strewn field so a dimension that forbids block damage pays
+     * out exactly what a cratering one would.
+     */
+    public static int depositCount(int survivingVoxels, int totalVoxels, int availableSlots) {
+        if (availableSlots <= 0) return 0;
+        return Mth.clamp(survivingVoxels, 1, Math.max(1, Math.min(totalVoxels, availableSlots)));
+    }
+
+    /** Radius the meteorite is strewn over when no crater is dug, in blocks. */
+    public static int strewnRadius(int craterRadius) {
+        return Math.max(1, Math.min(craterRadius, Mth.ceil(craterRadius * STREWN_RATIO)));
+    }
+
     /** Scatters the surviving body through the crater floor as recoverable blocks. */
     private static void deposit(ServerLevel level, List<BlockPos> floor, MeteoroidClass type, RandomSource random,
                                 int survivingVoxels, int totalVoxels) {
         if (floor.isEmpty()) return;
 
-        int target = Mth.clamp(survivingVoxels, 1, Math.max(1, Math.min(totalVoxels, floor.size())));
+        int target = depositCount(survivingVoxels, totalVoxels, floor.size());
         for (int i = 0; i < target; i++) {
             BlockPos pos = floor.get(random.nextInt(floor.size()));
             if (!level.getBlockState(pos).isAir()) continue;
@@ -181,12 +202,52 @@ public final class MeteorImpact {
         }
     }
 
-    /** Fallback when block damage is off: leave the meteorite sitting on the surface. */
-    private static void depositOnSurface(ServerLevel level, BlockPos impact, MeteoroidClass type, RandomSource random) {
-        BlockPos surface = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, impact);
-        if (level.isEmptyBlock(surface)) {
-            level.setBlock(surface, MeteoroidPalette.depositState(type, random), Block.UPDATE_ALL);
+    /**
+     * The no-block-damage path: lay the meteorite out as a strewn field on top of the ground
+     * instead of digging it in.
+     *
+     * <p>Blocks only ever go where the surface is already replaceable — air, grass, snow, a
+     * flower — so a strike over someone's base leaves the base alone. The count matches what the
+     * crater would have deposited, which is the point: the dimension gives up its terrain damage
+     * without giving up its loot.
+     */
+    private static void scatter(ServerLevel level, BlockPos impact, int craterRadius, MeteoroidClass type,
+                                RandomSource random, int survivingVoxels, int totalVoxels) {
+        int radius = strewnRadius(craterRadius);
+        List<BlockPos> surface = surfaceCandidates(level, impact, radius);
+        if (surface.isEmpty()) return;
+
+        int target = depositCount(survivingVoxels, totalVoxels, surface.size());
+        int attempts = target * STREWN_ATTEMPTS_PER_BLOCK;
+        int placed = 0;
+
+        for (int attempt = 0; attempt < attempts && placed < target; attempt++) {
+            BlockPos pos = surface.get(random.nextInt(surface.size()));
+            if (!level.getBlockState(pos).canBeReplaced()) continue; // taken by an earlier fragment
+            level.setBlock(pos, MeteoroidPalette.depositState(type, random), Block.UPDATE_ALL);
+            placed++;
         }
+    }
+
+    /** Surface positions around the impact that a meteorite may be dropped onto without loss. */
+    private static List<BlockPos> surfaceCandidates(ServerLevel level, BlockPos impact, int radius) {
+        List<BlockPos> candidates = new ArrayList<>();
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dz = -radius; dz <= radius; dz++) {
+                if (dx * dx + dz * dz > radius * radius) continue;
+
+                cursor.set(impact.getX() + dx, impact.getY(), impact.getZ() + dz);
+                // OCEAN_FLOOR ignores fluids, so a meteorite settles on the seabed rather than
+                // floating on the waves, and lands inside grass or snow rather than on top of it.
+                BlockPos pos = level.getHeightmapPos(Heightmap.Types.OCEAN_FLOOR, cursor);
+                if (level.isOutsideBuildHeight(pos)) continue;
+                if (!level.getBlockState(pos).canBeReplaced()) continue;
+                candidates.add(pos);
+            }
+        }
+        return candidates;
     }
 
     /** Stable per-column noise in {@code [-1, 1]} so a crater's rim is the same every time it loads. */

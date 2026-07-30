@@ -115,7 +115,7 @@ public final class GCNeoForgeFluidTypes {
                 Constant.Fluid.fluidId(Constant.Fluid.FUEL_FLOWING)), FUEL);
         event.registerFluidType(textures(Constant.Fluid.fluidId(Constant.Fluid.SULFURIC_ACID_STILL),
                 Constant.Fluid.fluidId(Constant.Fluid.SULFURIC_ACID_FLOWING)), SULFURIC_ACID);
-        ResourceLocation oxygen = Constant.Fluid.fluidId(Constant.Fluid.LIQUID_OXYGEN);
+        ResourceLocation oxygen = Constant.Fluid.fluidId(Constant.Fluid.OXYGEN_STILL);
         // Gases have no world-rendered fluid sprites, but inventory integrations such as REI
         // still require every non-empty FluidType to provide non-null atlas texture locations.
         event.registerFluidType(textures(oxygen, oxygen), LIQUID_OXYGEN, GAS);

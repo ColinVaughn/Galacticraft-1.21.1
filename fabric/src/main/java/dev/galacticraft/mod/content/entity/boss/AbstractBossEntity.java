@@ -48,6 +48,7 @@ public abstract class AbstractBossEntity extends Monster {
 
     public int entitiesWithin;
     public int entitiesWithinLast;
+    private boolean defeatRecorded;
 
     private final ServerBossEvent bossEvent = new ServerBossEvent(this.getDisplayName(), getHealthBarColor(), BossEvent.BossBarOverlay.PROGRESS);
 
@@ -106,7 +107,7 @@ public abstract class AbstractBossEntity extends Monster {
 //            }
 //        }
 
-       if (this.deathTime == 200 && !this.level().isClientSide) {
+       if (this.deathTime >= 200 && !this.level().isClientSide) {
 //            i = 20;
 //
 //            while (i > 0) {
@@ -115,20 +116,35 @@ public abstract class AbstractBossEntity extends Monster {
 //                this.world.spawnEntity(new EntityXPOrb(this.world, this.posX, this.posY, this.posZ, j));
 //            }
 //
-            this.fillRewardChest();
-            this.dropKey();
+            this.recordDefeat();
 
             this.level().broadcastEntityEvent(this, EntityEvent.POOF);
             this.remove(Entity.RemovalReason.KILLED);
-
-            if (this.spawner != null) {
-                this.spawner.isBossDefeated = true;
-                this.spawner.boss = null;
-                this.spawner.spawned = false;
-                this.spawner.lastKillTime = Util.getMillis();
-                this.spawner.setChanged();
-            }
        }
+    }
+
+    /**
+     * Hands out this kill's rewards and marks the dungeon cleared, once. Normally this happens when
+     * the death animation runs out, but the animation lasts ten seconds and anything that destroys
+     * the corpse before then - despawning because the room emptied, {@code /kill}, a mod - would
+     * otherwise throw the kill away and let the boss respawn.
+     */
+    private void recordDefeat() {
+        if (this.defeatRecorded) {
+            return;
+        }
+        this.defeatRecorded = true;
+
+        this.fillRewardChest();
+        this.dropKey();
+
+        if (this.spawner != null) {
+            this.spawner.isBossDefeated = true;
+            this.spawner.boss = null;
+            this.spawner.spawned = false;
+            this.spawner.lastKillTime = Util.getMillis();
+            this.spawner.setChanged();
+        }
     }
 
     private void fillRewardChest() {
@@ -192,7 +208,10 @@ public abstract class AbstractBossEntity extends Monster {
             this.setHealth(this.getHealth());
         }
 
-        if (this.spawner != null) {
+        // aiStep keeps running throughout the death animation, so this check has to skip a boss that
+        // is already dead - otherwise finishing the boss off from outside the room (a thrown potion,
+        // a lingering cloud, lava) despawns the corpse as an escape and undoes the kill.
+        if (this.spawner != null && !this.isDeadOrDying()) {
             List<Player> playersWithin = this.level().getEntitiesOfClass(Player.class, this.spawner.getRangeBounds());
 
             this.entitiesWithin = playersWithin.size();
@@ -219,10 +238,17 @@ public abstract class AbstractBossEntity extends Monster {
 
     @Override
     public void remove(RemovalReason reason) {
-        if (this.spawner != null && reason == RemovalReason.DISCARDED) {
-            this.spawner.isBossDefeated = false;
-            this.spawner.boss = null;
-            this.spawner.spawned = false;
+        // Reasons that do not destroy the entity (chunk unload) are left alone: the boss is coming
+        // back to finish its death animation, and rewarding here would hand out the loot twice.
+        if (this.spawner != null && !this.level().isClientSide && reason.shouldDestroy()) {
+            if (this.isDeadOrDying()) {
+                this.recordDefeat();
+            } else if (reason == RemovalReason.DISCARDED) {
+                // Gave up on the room while still alive, so it gets to respawn.
+                this.spawner.isBossDefeated = false;
+                this.spawner.boss = null;
+                this.spawner.spawned = false;
+            }
         }
 
         super.remove(reason);

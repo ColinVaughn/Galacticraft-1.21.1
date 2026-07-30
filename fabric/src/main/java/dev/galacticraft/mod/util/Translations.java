@@ -259,6 +259,8 @@ public interface Translations {
         String METEORS_ENABLED_DESC = "config.galacticraft.difficulty.meteors_enabled.desc";
         String METEOR_IMPACT_BLOCK_DAMAGE = "config.galacticraft.difficulty.meteor_impact_block_damage";
         String METEOR_IMPACT_BLOCK_DAMAGE_DESC = "config.galacticraft.difficulty.meteor_impact_block_damage.desc";
+        String METEOR_IMPACT_BLOCK_DAMAGE_EXCEPTIONS = "config.galacticraft.difficulty.meteor_impact_block_damage_exceptions";
+        String METEOR_IMPACT_BLOCK_DAMAGE_EXCEPTIONS_DESC = "config.galacticraft.difficulty.meteor_impact_block_damage_exceptions.desc";
         String METEOR_MAX_CRATER_RADIUS = "config.galacticraft.difficulty.meteor_max_crater_radius";
         String METEOR_MAX_CRATER_RADIUS_DESC = "config.galacticraft.difficulty.meteor_max_crater_radius.desc";
         String BOSS_HEALTH_MODIFIER = "config.galacticraft.difficulty.dungeon_boss_health_multiplier";

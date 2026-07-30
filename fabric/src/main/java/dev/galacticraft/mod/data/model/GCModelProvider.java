@@ -854,9 +854,9 @@ public class GCModelProvider extends FabricModelProvider {
         generator.generateFlatItem(GCItems.SHIELD_CONTROLLER, ModelTemplates.FLAT_ITEM);
         generator.generateFlatItem(GCItems.FREQUENCY_MODULE, ModelTemplates.FLAT_ITEM);
         generator.generateFlatItem(GCItems.EMERGENCY_KIT, ModelTemplates.FLAT_ITEM);
-        generator.generateFlatItem(GCItems.TIER_1_DUNGEON_KEY, ModelTemplates.FLAT_ITEM);
-        generator.generateFlatItem(GCItems.TIER_2_DUNGEON_KEY, ModelTemplates.FLAT_ITEM);
-        generator.generateFlatItem(GCItems.TIER_3_DUNGEON_KEY, ModelTemplates.FLAT_ITEM);
+        // The dungeon keys are hand-written 3D models under models/item, ported from Legacy. Their
+        // textures are UV sheets for that geometry rather than sprites, so a flat item model renders
+        // them as an unreadable coloured square.
 
         generator.generateFlatItem(GCItems.THERMAL_PADDING_HELMET, ModelTemplates.FLAT_ITEM);
         generator.generateFlatItem(GCItems.THERMAL_PADDING_CHESTPIECE, ModelTemplates.FLAT_ITEM);

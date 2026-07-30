@@ -1190,6 +1190,8 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(Config.METEORS_ENABLED_DESC, "Whether Meteoroids Fall At All, On Any Celestial Body");
         this.add(Config.METEOR_IMPACT_BLOCK_DAMAGE, "Meteor Impacts Break Blocks");
         this.add(Config.METEOR_IMPACT_BLOCK_DAMAGE_DESC, "When Off, Impacts Still Hurt And Leave Meteorites But Never Dig Craters");
+        this.add(Config.METEOR_IMPACT_BLOCK_DAMAGE_EXCEPTIONS, "Block Damage Exceptions");
+        this.add(Config.METEOR_IMPACT_BLOCK_DAMAGE_EXCEPTIONS_DESC, "Dimension IDs That Do The Opposite Of The Setting Above, Such As minecraft:overworld");
         this.add(Config.METEOR_MAX_CRATER_RADIUS, "Maximum Crater Radius");
         this.add(Config.METEOR_MAX_CRATER_RADIUS_DESC, "Upper Limit In Blocks On A Crater, However Energetic The Impact");
         this.add(Config.BOSS_HEALTH_MODIFIER, "Boss Health Modifier");

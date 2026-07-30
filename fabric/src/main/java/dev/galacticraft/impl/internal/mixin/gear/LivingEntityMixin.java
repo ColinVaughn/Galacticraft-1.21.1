@@ -341,6 +341,14 @@ public abstract class LivingEntityMixin extends Entity implements GearInventoryP
         }
         this.galacticraft$oxygenUseCacheTick = this.tickCount;
 
+        // Creative and spectator players are already exempt from suffocation, so spending their
+        // tank buys them nothing and destroys an item they are carrying. Guarding here rather than
+        // at each call site covers every route into the only place a player's tank is drained.
+        if ((LivingEntity) (Object) this instanceof Player player
+                && (player.getAbilities().invulnerable || player.isSpectator())) {
+            return this.galacticraft$cachedOxygenUse = true;
+        }
+
         Container gear = this.galacticraft$getGearInv();
         boolean hasEquippedSetup = gear.getContainerSize() > GCAccessorySlots.OXYGEN_GEAR_SLOT
                 && gear.getItem(GCAccessorySlots.OXYGEN_MASK_SLOT).is(GCItemTags.OXYGEN_MASKS)

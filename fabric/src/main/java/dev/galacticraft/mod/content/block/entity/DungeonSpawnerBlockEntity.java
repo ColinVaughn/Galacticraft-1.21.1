@@ -113,7 +113,10 @@ public class DungeonSpawnerBlockEntity extends BlockEntity implements Spawner {
             // After 15 minutes a new boss is able to be spawned
         }
 
-        final List<? extends Entity> l = level.getEntities(bossType, this.range15, Entity::isAlive);
+        // Includes a boss that is dead but still playing out its death animation. It has to stay
+        // linked to this spawner, or a save and reload during those ten seconds loses the kill and
+        // the dungeon hands out a fresh boss.
+        final List<? extends Entity> l = level.getEntities(bossType, this.range15, e -> !e.isRemoved());
 
         for (final Entity e : l) {
             this.boss = (AbstractBossEntity) e;

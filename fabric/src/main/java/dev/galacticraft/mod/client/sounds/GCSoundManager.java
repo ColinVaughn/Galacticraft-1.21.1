@@ -28,18 +28,26 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.HashMap;
+import java.util.Map;
 
 public class GCSoundManager implements SoundCallback {
 
     private static final Minecraft client = Minecraft.getInstance();
     private static GCSoundManager instance;
-    private final List<MachineSound> activeSounds = new ArrayList<>();
+    /**
+     * The one live looping sound per machine, keyed by position.
+     *
+     * <p>At most one entry per machine is the whole point. This was a list searched by sound event,
+     * which returned the first match; because most statuses share {@code MACHINE_BUZZ}, a machine
+     * flipping between two of them kept re-ending the instance that was already fading and left the
+     * live one running, stacking a new loop on every flip until the sound engine ran out of
+     * channels and the game fell silent for good.
+     */
+    private final Map<BlockPos, MachineSound> activeSounds = new HashMap<>();
 
     private GCSoundManager() {}
 
@@ -50,49 +58,58 @@ public class GCSoundManager implements SoundCallback {
         return instance;
     }
 
-    // for removing the sound but not the entity
+    /** A sound has finished fading out: release it and forget it, unless it was already replaced. */
     @Override
     public <T extends MachineSound> void onFinished(T soundInstance) {
-        this.stop(soundInstance);
-    }
-
-    // Plays a sound instance, if it doesn't already exist in the list
-    public <T extends MachineSound> void play(T soundInstance) {
-        if (this.activeSounds.contains(soundInstance)) return;
-        BlockEntity entity = soundInstance.machine;
-        if (entity.getLevel().isClientSide) {
-            client.getSoundManager().play(soundInstance);
-            this.activeSounds.add(soundInstance);
-        }
-    }
-
-    // Stops a sound immediately. in most cases it is preferred to use
-    // the sound's ending phase, which will clean it up after completion
-    public <T extends MachineSound> void stop(T soundInstance) {
         client.getSoundManager().stop(soundInstance);
-        this.activeSounds.remove(soundInstance);
-    }
-
-    public Optional<MachineSound> getSoundFromEntity(BlockEntity entity, MachineStatus status, boolean isActive) {
-        for (var activeSound : this.activeSounds) {
-            if (activeSound.machine == entity && Objects.equals(GCSoundMap.get(status, (MachineBlockEntity) entity), activeSound.event)) {
-                return Optional.of(activeSound);
-            }
-        }
-        return Optional.empty();
+        this.activeSounds.remove(soundInstance.machine.getBlockPos(), soundInstance);
     }
 
     public static void onStatusChanged(Minecraft minecraft, LocalPlayer player, BlockPos pos, MachineStatus status, MachineStatus oldStatus) {
-        MachineBlockEntity machine = (MachineBlockEntity) minecraft.level.getBlockEntity(pos);
+        if (minecraft.level == null) return;
+        if (!(minecraft.level.getBlockEntity(pos) instanceof MachineBlockEntity machine)) return;
+
         GCSoundManager manager = GCSoundManager.getInstance();
-        boolean isActive = status.getType().isActive();
-        float maxVolume = isActive ? 1.0F : 0.2F;
-        // Stop old sound (if there is one)
-        manager.getSoundFromEntity(machine, oldStatus, isActive).ifPresent(oldSound -> oldSound.end());
-        // Play new sound (if there is one)
-        SoundEvent newSound = GCSoundMap.get(status, machine);
-        if (newSound != null) {
-        manager.play(new MachineSound(machine, newSound, manager, maxVolume));
+        manager.apply(machine, GCSoundMap.get(status, machine), status.getType().isActive() ? 1.0F : 0.2F);
+    }
+
+    /** Brings this machine's looping sound in line with what its new status calls for. */
+    private void apply(MachineBlockEntity machine, @Nullable SoundEvent next, float maxVolume) {
+        BlockPos pos = machine.getBlockPos();
+        MachineSound current = this.activeSounds.get(pos);
+
+        // A sound left over from a previous world would sit on the same position as an unrelated
+        // machine, so anything not belonging to this block entity is treated as gone.
+        if (current != null && current.machine != machine) {
+            current.end();
+            this.activeSounds.remove(pos, current);
+            current = null;
         }
+
+        switch (MachineSoundPolicy.decide(current == null ? null : current.event(),
+                current != null && current.isFading(), next)) {
+            case NOTHING -> {
+            }
+            case KEEP -> current.setMaxVolume(maxVolume);
+            case STOP -> {
+                current.end();
+                this.activeSounds.remove(pos, current);
+            }
+            case RESTART -> {
+                current.end();
+                this.activeSounds.remove(pos, current);
+                this.start(machine, next, maxVolume);
+            }
+            case START -> this.start(machine, next, maxVolume);
+        }
+    }
+
+    private void start(MachineBlockEntity machine, SoundEvent event, float maxVolume) {
+        Level level = machine.getLevel();
+        if (level == null || !level.isClientSide) return;
+
+        MachineSound sound = new MachineSound(machine, event, this, maxVolume);
+        client.getSoundManager().play(sound);
+        this.activeSounds.put(machine.getBlockPos(), sound);
     }
 }

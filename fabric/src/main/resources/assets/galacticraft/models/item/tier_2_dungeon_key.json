@@ -1,0 +1,6 @@
+{
+  "parent": "galacticraft:item/template_dungeon_key",
+  "textures": {
+    "key": "galacticraft:item/tier_2_dungeon_key"
+  }
+}

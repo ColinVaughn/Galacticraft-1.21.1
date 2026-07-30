@@ -85,6 +85,10 @@ public abstract class ServerPlayerMixin extends Player implements GearInventoryP
 
     @Inject(method = "tick", at = @At("TAIL"))
     private void galacticraft_parrotOxygenCheck(CallbackInfo ci) {
+        // A creative or spectator player's parrot must not burn its tank either, or it ends up
+        // thrown off their shoulder for running out of air they never needed to spend.
+        if (this.getAbilities().invulnerable || this.isSpectator()) return;
+
         CompoundTag leftParrot = this.getShoulderEntityLeft();
         CompoundTag rightParrot = this.getShoulderEntityRight();
         if ((!leftParrot.isEmpty() || !rightParrot.isEmpty())

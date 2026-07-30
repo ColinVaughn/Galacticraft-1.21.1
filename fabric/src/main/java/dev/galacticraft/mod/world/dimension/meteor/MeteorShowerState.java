@@ -58,6 +58,8 @@ public class MeteorShowerState extends SavedData {
     private float radiantYaw = 0.0f;
     /** Elevation of the radiant above the horizon, in degrees. */
     private float radiantPitch = 45.0f;
+    /** An op's answer for this dimension on whether strikes may break blocks. */
+    private MeteorImpactRules.Override blockDamageOverride = MeteorImpactRules.Override.DEFAULT;
 
     public MeteorShowerState() {
         super();
@@ -176,6 +178,16 @@ public class MeteorShowerState extends SavedData {
         return this.radiantPitch;
     }
 
+    /** This dimension's block-damage override; {@code DEFAULT} leaves the decision to the config. */
+    public MeteorImpactRules.Override blockDamageOverride() {
+        return this.blockDamageOverride;
+    }
+
+    public void setBlockDamageOverride(MeteorImpactRules.Override override) {
+        this.blockDamageOverride = override;
+        setDirty();
+    }
+
     // --- Debug hooks (used by the /meteorshower command) ---
 
     /** Jumps straight to the peak of a shower at the given intensity, skipping the forecast. */
@@ -227,6 +239,7 @@ public class MeteorShowerState extends SavedData {
         tag.putInt("waning", this.waningDuration);
         tag.putFloat("radiant_yaw", this.radiantYaw);
         tag.putFloat("radiant_pitch", this.radiantPitch);
+        tag.putByte("block_damage_override", this.blockDamageOverride.id());
         return tag;
     }
 
@@ -241,6 +254,8 @@ public class MeteorShowerState extends SavedData {
         state.waningDuration = tag.getInt("waning");
         state.radiantYaw = tag.getFloat("radiant_yaw");
         state.radiantPitch = tag.contains("radiant_pitch") ? tag.getFloat("radiant_pitch") : 45.0f;
+        // Absent in saves written before the override existed, and a missing byte reads as 0 (DEFAULT).
+        state.blockDamageOverride = MeteorImpactRules.Override.byId(tag.getByte("block_damage_override"));
         return state;
     }
 

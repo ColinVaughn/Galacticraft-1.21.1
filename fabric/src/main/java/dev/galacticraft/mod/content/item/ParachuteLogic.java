@@ -37,28 +37,33 @@ public final class ParachuteLogic {
      */
     public static final double DESCENT_SPEED = 1.0D;
 
-    /** How far the wearer has to fall (in blocks) before the canopy opens. */
-    public static final float DEPLOY_FALL_DISTANCE = 1.0F;
-
     private ParachuteLogic() {
     }
 
     /**
      * Decides whether the canopy is open this tick.
      *
+     * <p>The canopy opens once the fall has gone further than the wearer could land from unhurt, so it
+     * stays out of the way of jumping and hopping down ledges and is out by the time a fall could do harm.
+     * Reading that limit off the wearer rather than fixing it here keeps the trigger honest wherever they
+     * are: Galacticraft stretches the safe fall distance in low gravity, which is also where the same jump
+     * carries far enough to have tripped a fixed trigger.
+     *
      * <p>Once open it latches, because an open canopy clears the wearer's fall distance every tick and
      * the trigger condition would otherwise stop holding immediately.
      *
-     * @param open          whether the canopy was open last tick
-     * @param hasParachute  whether a parachute is still equipped in an accessory slot
-     * @param suppressed    whether something rules out parachuting - standing on the ground, swimming,
-     *                      riding a vehicle, spectating, or flying under some other power
-     * @param fallDistance  the wearer's current fall distance, in blocks
+     * @param open              whether the canopy was open last tick
+     * @param hasParachute      whether a parachute is still equipped in an accessory slot
+     * @param suppressed        whether something rules out parachuting - standing on the ground, swimming,
+     *                          riding a vehicle, spectating, or flying under some other power
+     * @param fallDistance      the wearer's current fall distance, in blocks
+     * @param safeFallDistance  how far the wearer can fall unhurt, in blocks - vanilla's
+     *                          {@code Attributes.SAFE_FALL_DISTANCE}, as adjusted for local gravity
      * @return whether the canopy should be open
      */
-    public static boolean shouldBeOpen(boolean open, boolean hasParachute, boolean suppressed, float fallDistance) {
+    public static boolean shouldBeOpen(boolean open, boolean hasParachute, boolean suppressed, float fallDistance, double safeFallDistance) {
         if (!hasParachute || suppressed) return false;
-        return open || fallDistance > DEPLOY_FALL_DISTANCE;
+        return open || fallDistance > safeFallDistance;
     }
 
     /**

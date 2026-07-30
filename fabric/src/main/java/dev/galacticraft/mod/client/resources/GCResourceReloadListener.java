@@ -22,6 +22,7 @@
 
 package dev.galacticraft.mod.client.resources;
 
+import dev.galacticraft.api.gas.GasFluid;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.client.render.entity.BubbleEntityRenderer;
 import dev.galacticraft.mod.content.GCFluids;
@@ -33,9 +34,11 @@ import net.fabricmc.fabric.api.resource.ResourceReloadListenerKeys;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.level.material.Fluid;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -61,10 +64,19 @@ public class GCResourceReloadListener implements SimpleSynchronousResourceReload
         BubbleEntityRenderer.bubbleModel = null;
 
         FluidRenderHandler oxygen = (view, pos, state) -> new TextureAtlasSprite[]{
-                atlas.apply(Constant.Fluid.fluidId(Constant.Fluid.LIQUID_OXYGEN)),
-                atlas.apply(Constant.Fluid.fluidId(Constant.Fluid.LIQUID_OXYGEN))
+                atlas.apply(Constant.Fluid.fluidId(Constant.Fluid.OXYGEN_STILL)),
+                atlas.apply(Constant.Fluid.fluidId(Constant.Fluid.OXYGEN_STILL))
         };
 
         FluidRenderHandlerRegistry.INSTANCE.register(GCFluids.LIQUID_OXYGEN, oxygen);
+
+        // Gases are never rendered in the world, but machine tanks still ask for a sprite. Without
+        // a handler Fabric hands back nothing and the tank draws empty, so mirror what the NeoForge
+        // side does for its shared GAS fluid type and give every gas the oxygen sprite.
+        for (Fluid fluid : BuiltInRegistries.FLUID) {
+            if (fluid instanceof GasFluid) {
+                FluidRenderHandlerRegistry.INSTANCE.register(fluid, oxygen);
+            }
+        }
     }
 }

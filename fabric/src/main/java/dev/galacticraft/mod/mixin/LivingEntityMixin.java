@@ -179,12 +179,15 @@ public abstract class LivingEntityMixin extends Entity implements CryogenicAcces
     @Inject(method = "tick", at = @At("TAIL"))
     private void gc$tickParachute(CallbackInfo ci) {
         boolean wasOpen = this.galacticraft$parachuteOpen;
-        // Cheap out before touching the gear inventory: a short fall can never open a closed canopy.
-        if (!wasOpen && this.fallDistance <= ParachuteLogic.DEPLOY_FALL_DISTANCE) return;
+        // Cheap out before touching the gear inventory: someone who is not falling at all cannot open a
+        // closed canopy. An open one is still checked every tick, since it holds its own fall distance at
+        // zero and only closes on the way out of this method.
+        if (!wasOpen && this.fallDistance <= 0.0F) return;
 
         LivingEntity entity = (LivingEntity) (Object) this;
         boolean open = ParachuteLogic.shouldBeOpen(wasOpen, gc$hasParachuteEquipped(entity),
-                gc$parachutingSuppressed(entity), this.fallDistance);
+                gc$parachutingSuppressed(entity), this.fallDistance,
+                this.getAttributeValue(Attributes.SAFE_FALL_DISTANCE));
 
         if (open != wasOpen) {
             this.galacticraft$setParachuteOpen(open);

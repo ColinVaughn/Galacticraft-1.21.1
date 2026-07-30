@@ -157,6 +157,11 @@ public class CannedFoodItem extends Item {
     public @NotNull ItemStack finishUsingItem(ItemStack itemStack, Level level, LivingEntity livingEntity) {
         if (!level.isClientSide) {
             int consumingItems = getNumberToBeConsumed(itemStack, (Player) livingEntity);
+            // A can carries a zero-nutrition placeholder component; what it is actually worth comes
+            // from its contents. This has to be derived here, on the server, because the component
+            // override that reports it is client-side and never reaches the player's food data.
+            // Must be read before anything below feeds the player, since it scales to their hunger.
+            FoodProperties eaten = getCanFoodProperties(itemStack, (Player) livingEntity);
             DataComponentMap components = itemStack.getComponents();
             List<ItemStack> stream = getContents(itemStack);
             int toConsume = consumingItems;
@@ -174,7 +179,13 @@ public class CannedFoodItem extends Item {
                 toConsume -= itemCount;
                 if (toConsume == 0) break;
             }
-            super.finishUsingItem(itemStack, level, livingEntity);
+            if (eaten != null) {
+                // Applies the derived nutrition, saturation and effects, and consumes the can the
+                // same way Item#finishUsingItem would have.
+                livingEntity.eat(level, itemStack, eaten);
+            } else {
+                super.finishUsingItem(itemStack, level, livingEntity);
+            }
             if (livingEntity instanceof ServerPlayer serverPlayer) {
                 CriteriaTriggers.CONSUME_ITEM.trigger(serverPlayer, itemStack);
                 serverPlayer.awardStat(Stats.ITEM_USED.get(this));

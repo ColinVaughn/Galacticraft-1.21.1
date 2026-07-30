@@ -25,6 +25,9 @@ package dev.galacticraft.mod.machine;
 
 import dev.galacticraft.machinelib.api.block.entity.MachineBlockEntity;
 import dev.galacticraft.machinelib.api.machine.configuration.IOConfig;
+import dev.galacticraft.machinelib.api.storage.MachineFluidStorage;
+import dev.galacticraft.machinelib.api.storage.slot.FluidResourceSlot;
+import dev.galacticraft.machinelib.api.transfer.TransferType;
 import dev.galacticraft.machinelib.api.storage.MachineEnergyStorage;
 import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
 import dev.galacticraft.machinelib.api.transfer.ResourceType;
@@ -62,6 +65,34 @@ public final class MachineFaceDefaults {
         return null;
     }
 
+    /**
+     * {@return the flow a machine's tanks should offer on its faces, or null if none of them
+     * exchanges fluid with the world}
+     *
+     * <p>Derived from the tanks themselves, the same way the energy flow is derived from the energy
+     * storage's transfer rates. A machine whose only tank is a hidden internal buffer offers
+     * nothing; one holding a stock for others to draw on offers it on every side.
+     */
+    public static @Nullable ResourceFlow defaultFluidFlow(MachineFluidStorage storage) {
+        boolean insert = false;
+        boolean extract = false;
+        for (FluidResourceSlot slot : storage) {
+            TransferType mode = slot.transferMode();
+            insert |= mode.externalInsertion();
+            extract |= mode.externalExtraction();
+        }
+
+        if (insert && extract) return ResourceFlow.BOTH;
+        if (insert) return ResourceFlow.INPUT;
+        if (extract) return ResourceFlow.OUTPUT;
+        return null;
+    }
+
+    /** {@return a flow that permits everything both of these do} */
+    private static ResourceFlow combine(ResourceFlow a, ResourceFlow b) {
+        return a == b ? a : ResourceFlow.BOTH;
+    }
+
     /** {@return whether every face is still blank, meaning nobody has configured this machine} */
     public static boolean isUnconfigured(IOConfig config) {
         for (BlockFace face : BlockFace.values()) {
@@ -83,11 +114,32 @@ public final class MachineFaceDefaults {
         if (!isUnconfigured(config)) return;
 
         MachineEnergyStorage energy = machine.energyStorage();
-        ResourceFlow flow = defaultEnergyFlow(energy.externalInsertionRate(), energy.externalExtractionRate());
-        if (flow == null) return;
+        ResourceFlow energyFlow = defaultEnergyFlow(energy.externalInsertionRate(), energy.externalExtractionRate());
+        ResourceFlow fluidFlow = defaultFluidFlow(machine.fluidStorage());
+
+        ResourceType type;
+        ResourceFlow flow;
+        if (energyFlow != null && fluidFlow != null) {
+            // A face carries one resource type, and there is no energy-and-fluid pairing, so a
+            // machine that does both has to use ANY. Nothing is loosened by that: what may actually
+            // cross a face is still decided by each storage's own transfer rates and slot types.
+            type = ResourceType.ANY;
+            flow = combine(energyFlow, fluidFlow);
+        } else if (energyFlow != null) {
+            type = ResourceType.ENERGY;
+            flow = energyFlow;
+        } else if (fluidFlow != null) {
+            // Machines with no energy at all - the oxygen storage module, the fluid tank - used to
+            // fall out here with every face left blank, which made them airtight in both
+            // directions: a blank face exposes no tank, so nothing could fill or drain them.
+            type = ResourceType.FLUID;
+            flow = fluidFlow;
+        } else {
+            return;
+        }
 
         for (BlockFace face : BlockFace.values()) {
-            config.get(face).setOption(ResourceType.ENERGY, flow);
+            config.get(face).setOption(type, flow);
         }
     }
 }

@@ -51,9 +51,6 @@ public abstract class GameRendererMixin implements GameRendererAccessor {
     private static final float DEPTH_FAR = 32.0F * 16.0F * 4.0F;
 
     @Unique
-    private static final ResourceLocation MOON_POST_EFFECT = Constant.id("shaders/post/moon.json");
-
-    @Unique
     private static final ResourceLocation MARS_POST_EFFECT = Constant.id("shaders/post/mars.json");
 
     @Unique
@@ -117,10 +114,6 @@ public abstract class GameRendererMixin implements GameRendererAccessor {
                 && !desiredEffect.equals(this.galacticraft$failedPlanetPostEffect)) {
             ((GameRendererInvoker) this).galacticraft$invokeLoadEffect(desiredEffect);
         }
-
-        if (MOON_POST_EFFECT.equals(this.galacticraft$activePlanetPostEffect) && this.postEffect != null) {
-            this.postEffect.setUniform("Exposure", LunarSkyExposure.value());
-        }
     }
 
     @Inject(method = "loadEffect", at = @At("RETURN"))
@@ -154,14 +147,13 @@ public abstract class GameRendererMixin implements GameRendererAccessor {
     @Unique
     private ResourceLocation galacticraft$getPlanetPostEffect() {
         if (this.minecraft.level == null) return null;
-        if (this.minecraft.level.dimension().equals(GCDimensions.MOON)) return MOON_POST_EFFECT;
         if (this.minecraft.level.dimension().equals(GCDimensions.MARS)) return MARS_POST_EFFECT;
         return null;
     }
 
     @Unique
     private static boolean galacticraft$isPlanetPostEffect(ResourceLocation effect) {
-        return effect.equals(MOON_POST_EFFECT) || effect.equals(MARS_POST_EFFECT);
+        return effect.equals(MARS_POST_EFFECT);
     }
 
     @Override

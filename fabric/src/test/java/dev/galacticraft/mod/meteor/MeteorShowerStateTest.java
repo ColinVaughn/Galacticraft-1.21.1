@@ -23,10 +23,12 @@
 
 package dev.galacticraft.mod.meteor;
 
+import dev.galacticraft.mod.world.dimension.meteor.MeteorImpactRules;
 import dev.galacticraft.mod.world.dimension.meteor.MeteorShowerCurve;
 import dev.galacticraft.mod.world.dimension.meteor.MeteorShowerPhase;
 import dev.galacticraft.mod.world.dimension.meteor.MeteorShowerState;
 import dev.galacticraft.mod.world.dimension.meteor.MeteorShowerTuning;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.RandomSource;
 import org.junit.jupiter.api.Test;
 
@@ -200,6 +202,30 @@ class MeteorShowerStateTest {
         float waneEnd = MeteorShowerCurve.intensity(MeteorShowerPhase.WANING, 100, 100, 0.9f);
         assertEquals(0.9f, waneStart, EPS);
         assertEquals(0.0f, waneEnd, EPS);
+    }
+
+    @Test
+    void aFreshStateLetsTheConfigDecideBlockDamage() {
+        assertEquals(MeteorImpactRules.Override.DEFAULT, new MeteorShowerState().blockDamageOverride());
+    }
+
+    @Test
+    void theBlockDamageOverrideSurvivesTheNbtRoundTrip() {
+        for (MeteorImpactRules.Override override : MeteorImpactRules.Override.values()) {
+            MeteorShowerState state = new MeteorShowerState();
+            state.setBlockDamageOverride(override);
+
+            MeteorShowerState reloaded = MeteorShowerState.load(state.save(new CompoundTag(), null), null);
+            assertEquals(override, reloaded.blockDamageOverride());
+        }
+    }
+
+    @Test
+    void aSaveWrittenBeforeTheOverrideExistedLoadsAsDefault() {
+        CompoundTag legacy = new MeteorShowerState().save(new CompoundTag(), null);
+        legacy.remove("block_damage_override");
+
+        assertEquals(MeteorImpactRules.Override.DEFAULT, MeteorShowerState.load(legacy, null).blockDamageOverride());
     }
 
     @Test
