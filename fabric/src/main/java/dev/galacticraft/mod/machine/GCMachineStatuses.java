@@ -59,6 +59,16 @@ public final class GCMachineStatuses {
     // Oxygen - Bubble Distributor
     public static final MachineStatus DISTRIBUTING = MachineStatus.create(Translations.MachineStatus.DISTRIBUTING, ChatFormatting.GREEN, MachineStatus.Type.WORKING);
 
+    public static final MachineStatus TERRAFORMING = MachineStatus.create(Translations.MachineStatus.TERRAFORMING, ChatFormatting.GREEN, MachineStatus.Type.WORKING);
+    public static final MachineStatus BUBBLE_EXPANDING = MachineStatus.create(Translations.MachineStatus.BUBBLE_EXPANDING, ChatFormatting.YELLOW, MachineStatus.Type.PARTIALLY_WORKING);
+    public static final MachineStatus TERRAFORMER_DISABLED = MachineStatus.create(Translations.MachineStatus.TERRAFORMER_DISABLED, ChatFormatting.GOLD, MachineStatus.Type.OTHER);
+    public static final MachineStatus NOT_ENOUGH_WATER = MachineStatus.create(Translations.MachineStatus.NOT_ENOUGH_WATER, ChatFormatting.RED, MachineStatus.Type.MISSING_FLUIDS);
+    public static final MachineStatus NOT_ENOUGH_BONE_MEAL = MachineStatus.create(Translations.MachineStatus.NOT_ENOUGH_BONE_MEAL, ChatFormatting.RED, MachineStatus.Type.MISSING_ITEMS);
+    public static final MachineStatus NOT_ENOUGH_SEEDS = MachineStatus.create(Translations.MachineStatus.NOT_ENOUGH_SEEDS, ChatFormatting.RED, MachineStatus.Type.MISSING_ITEMS);
+    public static final MachineStatus NOT_ENOUGH_SAPLINGS = MachineStatus.create(Translations.MachineStatus.NOT_ENOUGH_SAPLINGS, ChatFormatting.RED, MachineStatus.Type.MISSING_ITEMS);
+    public static final MachineStatus NO_VALID_TREE_BLOCKS = MachineStatus.create(Translations.MachineStatus.NO_VALID_TREE_BLOCKS, ChatFormatting.RED, MachineStatus.Type.OTHER);
+    public static final MachineStatus NO_VALID_GRASS_BLOCKS = MachineStatus.create(Translations.MachineStatus.NO_VALID_GRASS_BLOCKS, ChatFormatting.RED, MachineStatus.Type.OTHER);
+
     // Refinery
     public static final MachineStatus REFINING = MachineStatus.create(Translations.MachineStatus.REFINING, ChatFormatting.GREEN, MachineStatus.Type.WORKING);
     public static final MachineStatus MISSING_OIL = MachineStatus.create(Translations.MachineStatus.MISSING_OIL, ChatFormatting.RED, MachineStatus.Type.MISSING_FLUIDS);

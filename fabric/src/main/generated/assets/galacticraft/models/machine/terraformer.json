@@ -1,0 +1,13 @@
+{
+  "data": {
+    "back": "galacticraft:block/terraformer_0",
+    "bottom": "galacticraft:block/terraformer_machine",
+    "front": "galacticraft:block/terraformer_0",
+    "left": "galacticraft:block/terraformer_machine",
+    "particle": "galacticraft:block/terraformer_machine",
+    "right": "galacticraft:block/terraformer_machine_input",
+    "top": "galacticraft:block/terraformer_machine"
+  },
+  "loader": "machinelib:machine",
+  "machinelib:type": "machine"
+}

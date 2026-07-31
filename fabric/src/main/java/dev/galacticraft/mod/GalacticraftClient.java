@@ -146,6 +146,7 @@ public class GalacticraftClient implements ClientModInitializer {
         MenuRegistry.registerScreenFactory(GCMenuTypes.PLAYER_INV_GC, GCPlayerInventoryScreen::new);
         MenuRegistry.registerScreenFactory(GCMenuTypes.PET_INV_GC, GCPetInventoryScreen::new);
         MenuRegistry.registerScreenFactory(GCMenuTypes.OXYGEN_BUBBLE_DISTRIBUTOR, OxygenBubbleDistributorScreen::new);
+        MenuRegistry.registerScreenFactory(GCMenuTypes.TERRAFORMER, TerraformerScreen::new);
         MenuRegistry.registerScreenFactory(GCMenuTypes.OXYGEN_STORAGE_MODULE, OxygenStorageModuleScreen::new);
         MenuRegistry.registerScreenFactory(GCMenuTypes.OXYGEN_SEALER, OxygenSealerScreen::new);
         MenuRegistry.registerScreenFactory(GCMenuTypes.FUEL_LOADER, FuelLoaderScreen::new);

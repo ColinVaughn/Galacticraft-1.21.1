@@ -23,11 +23,16 @@
 
 package dev.galacticraft.mod.machine;
 
+import dev.galacticraft.machinelib.api.machine.configuration.IOConfig;
 import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
+import dev.galacticraft.machinelib.api.transfer.ResourceType;
+import dev.galacticraft.machinelib.api.util.BlockFace;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * The defaults are read off each machine's own energy storage spec, so these pin that reading against
@@ -56,5 +61,33 @@ class MachineFaceDefaultsTest {
     @Test
     void aMachineThatExchangesNoPowerIsLeftAlone() {
         assertNull(MachineFaceDefaults.defaultEnergyFlow(0L, 0L));
+    }
+
+    @Test
+    void terraformerKeepsItsAuthoredFrontAndBackTextures() {
+        IOConfig config = new IOConfig();
+
+        MachineFaceDefaults.applyTerraformer(config);
+
+        assertEquals(ResourceType.NONE, config.get(BlockFace.FRONT).getType());
+        assertEquals(ResourceType.NONE, config.get(BlockFace.BACK).getType());
+        assertEquals(ResourceType.ENERGY, config.get(BlockFace.RIGHT).getType());
+        assertEquals(ResourceFlow.INPUT, config.get(BlockFace.RIGHT).getFlow());
+        for (BlockFace face : new BlockFace[]{BlockFace.LEFT, BlockFace.TOP, BlockFace.BOTTOM}) {
+            assertEquals(ResourceType.ANY, config.get(face).getType());
+            assertEquals(ResourceFlow.BOTH, config.get(face).getFlow());
+        }
+    }
+
+    @Test
+    void oldUniformTerraformerFacesAreRecognizedForMigration() {
+        IOConfig config = new IOConfig();
+        for (BlockFace face : BlockFace.values()) {
+            config.get(face).setOption(ResourceType.ANY, ResourceFlow.INPUT);
+        }
+
+        assertTrue(MachineFaceDefaults.isOldTerraformerDefault(config));
+        config.get(BlockFace.FRONT).setOption(ResourceType.NONE, ResourceFlow.BOTH);
+        assertFalse(MachineFaceDefaults.isOldTerraformerDefault(config));
     }
 }

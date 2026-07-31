@@ -52,6 +52,7 @@ public final class GCApiLookupProviders {
                 GCBlockEntityTypes.OXYGEN_DECOMPRESSOR,
                 GCBlockEntityTypes.OXYGEN_SEALER,
                 GCBlockEntityTypes.OXYGEN_BUBBLE_DISTRIBUTOR,
+                GCBlockEntityTypes.TERRAFORMER,
                 GCBlockEntityTypes.ENERGY_STORAGE_MODULE,
                 GCBlockEntityTypes.ENERGY_STORAGE_CLUSTER,
                 GCBlockEntityTypes.FOOD_CANNER,

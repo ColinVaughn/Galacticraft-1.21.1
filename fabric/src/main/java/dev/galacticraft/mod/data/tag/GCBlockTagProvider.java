@@ -460,6 +460,7 @@ public class GCBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                 GCBlocks.OXYGEN_COLLECTOR,
                 GCBlocks.OXYGEN_SEALER,
                 GCBlocks.OXYGEN_BUBBLE_DISTRIBUTOR,
+                GCBlocks.TERRAFORMER,
                 GCBlocks.OXYGEN_DECOMPRESSOR,
                 GCBlocks.OXYGEN_COMPRESSOR,
                 GCBlocks.OXYGEN_STORAGE_MODULE,
@@ -468,6 +469,13 @@ public class GCBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                 GCBlocks.PAINTER,
                 GCBlocks.DECONSTRUCTOR,
                 GCBlocks.ROCKET_WORKBENCH
+        );
+
+        this.tag(GCBlockTags.TERRAFORMABLE).add(
+                GCBlocks.MOON_TURF,
+                GCBlocks.MARS_SURFACE_ROCK,
+                GCBlocks.SOFT_VENUS_ROCK,
+                GCBlocks.HARD_VENUS_ROCK
         );
 
         this.tag(GCBlockTags.GLASS_FLUID_PIPES).add(GCBlocks.GLASS_FLUID_PIPE).addTag(GCBlockTags.STAINED_GLASS_FLUID_PIPES);

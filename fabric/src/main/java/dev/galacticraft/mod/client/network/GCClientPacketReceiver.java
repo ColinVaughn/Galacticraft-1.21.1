@@ -32,6 +32,7 @@ public class GCClientPacketReceiver {
     public static void register() {
         register(BubbleSizePayload.TYPE, BubbleSizePayload.STREAM_CODEC);
         register(BubbleUpdatePayload.TYPE, BubbleUpdatePayload.STREAM_CODEC);
+        register(TerraformerUpdatePayload.TYPE, TerraformerUpdatePayload.STREAM_CODEC);
         register(OpenCelestialScreenPayload.TYPE, OpenCelestialScreenPayload.STREAM_CODEC);
         register(FootprintPacket.TYPE, FootprintPacket.STREAM_CODEC);
         register(FootprintRemovedPacket.TYPE, FootprintRemovedPacket.STREAM_CODEC);

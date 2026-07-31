@@ -55,11 +55,8 @@ public class DungeonStart extends EntranceCrater {
             attachedComponents.clear();
             componentBounds.clear();
             componentBounds.add(this.boundingBox);
-//            listIn.clear();
-            listIn.addPiece(this);
             DungeonPiece next = getNextPiece(this, rand);
             while (next != null) {
-                listIn.addPiece(next);
                 attachedComponents.add(next);
                 componentBounds.add(next.getBoundingBox());
 
@@ -78,6 +75,16 @@ public class DungeonStart extends EntranceCrater {
             int xPos = this.boundingBox.minX() + (this.boundingBox.maxX() - this.boundingBox.minX()) / 2;
             int zPos = this.boundingBox.minZ() + (this.boundingBox.maxZ() - this.boundingBox.minZ()) / 2;
             System.err.println("Could not find valid dungeon layout! This is a bug, please report it, including your world seed (/seed) and dungeon location (" + xPos + ", " + zPos + ")");
+        }
+
+        // Only the layout we settled on reaches the collector. Attempts above are discarded by
+        // clearing componentBounds, so each one is laid out with no knowledge of the previous
+        // ones; adding pieces as they were built left every abandoned corridor and room to
+        // generate straight through the dungeon we kept. A StructurePieceAccessor cannot take
+        // pieces back out, so nothing may be handed to it until the retry loop is done.
+        // This piece itself is already in the collector, added by DungeonStructure.
+        for (StructurePiece piece : attachedComponents) {
+            listIn.addPiece(piece);
         }
 
         super.addChildren(componentIn, listIn, rand);

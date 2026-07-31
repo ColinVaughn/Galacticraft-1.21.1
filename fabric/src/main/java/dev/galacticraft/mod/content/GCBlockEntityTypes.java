@@ -63,6 +63,7 @@ public class GCBlockEntityTypes {
     public static final BlockEntityType<OxygenDecompressorBlockEntity> OXYGEN_DECOMPRESSOR = register(Constant.Block.OXYGEN_DECOMPRESSOR, OxygenDecompressorBlockEntity::new, GCBlocks.OXYGEN_DECOMPRESSOR);
     public static final BlockEntityType<OxygenSealerBlockEntity> OXYGEN_SEALER = register(Constant.Block.OXYGEN_SEALER, OxygenSealerBlockEntity::new, GCBlocks.OXYGEN_SEALER);
     public static final BlockEntityType<OxygenBubbleDistributorBlockEntity> OXYGEN_BUBBLE_DISTRIBUTOR = register(Constant.Block.OXYGEN_BUBBLE_DISTRIBUTOR, OxygenBubbleDistributorBlockEntity::new, GCBlocks.OXYGEN_BUBBLE_DISTRIBUTOR);
+    public static final BlockEntityType<TerraformerBlockEntity> TERRAFORMER = register(Constant.Block.TERRAFORMER, TerraformerBlockEntity::new, GCBlocks.TERRAFORMER);
     public static final BlockEntityType<OxygenDetectorBlockEntity> OXYGEN_DETECTOR = register(Constant.Block.OXYGEN_DETECTOR, OxygenDetectorBlockEntity::new, GCBlocks.OXYGEN_DETECTOR);
 
     // RESOURCE STORAGE

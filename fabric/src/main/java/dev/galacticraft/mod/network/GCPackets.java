@@ -39,6 +39,7 @@ public class GCPackets {
         if (Platform.getEnvironment() == Env.SERVER) {
             registerS2C(BubbleSizePayload.TYPE, BubbleSizePayload.STREAM_CODEC);
             registerS2C(BubbleUpdatePayload.TYPE, BubbleUpdatePayload.STREAM_CODEC);
+            registerS2C(TerraformerUpdatePayload.TYPE, TerraformerUpdatePayload.STREAM_CODEC);
             registerS2C(OpenCelestialScreenPayload.TYPE, OpenCelestialScreenPayload.STREAM_CODEC);
             registerS2C(FootprintPacket.TYPE, FootprintPacket.STREAM_CODEC);
             registerS2C(FootprintRemovedPacket.TYPE, FootprintRemovedPacket.STREAM_CODEC);
@@ -54,6 +55,7 @@ public class GCPackets {
         registerC2S(AirlockPlayerNamePayload.TYPE, AirlockPlayerNamePayload.STREAM_CODEC);
         registerC2S(BubbleMaxPayload.TYPE, BubbleMaxPayload.STREAM_CODEC);
         registerC2S(BubbleVisibilityPayload.TYPE, BubbleVisibilityPayload.STREAM_CODEC);
+        registerC2S(TerraformerTogglePayload.TYPE, TerraformerTogglePayload.STREAM_CODEC);
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, ControlEntityPayload.TYPE, ControlEntityPayload.STREAM_CODEC,
                 (payload, context) -> context.queue(() -> payload.apply((ServerPlayer) context.getPlayer())));
         registerC2S(EjectCanPayload.TYPE, EjectCanPayload.STREAM_CODEC);

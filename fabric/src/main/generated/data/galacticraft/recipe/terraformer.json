@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "V": {
+      "item": "galacticraft:oxygen_concentrator"
+    },
+    "W": {
+      "item": "galacticraft:compressed_desh"
+    },
+    "X": {
+      "tag": "c:ingots/desh"
+    },
+    "Z": {
+      "item": "galacticraft:tin_canister"
+    }
+  },
+  "pattern": [
+    "XWX",
+    "XZX",
+    "WVW"
+  ],
+  "result": {
+    "count": 1,
+    "id": "galacticraft:terraformer"
+  }
+}

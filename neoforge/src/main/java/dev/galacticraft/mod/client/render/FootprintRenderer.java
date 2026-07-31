@@ -59,6 +59,10 @@ public final class FootprintRenderer {
 
         PoseStack poses = event.getPoseStack();
         poses.pushPose();
+        // AFTER_LEVEL runs after LevelRenderer has removed the camera transform, and NeoForge
+        // supplies a fresh identity pose stack for this stage. Restore the view rotation so
+        // camera-relative footprint positions remain anchored to the world when the camera turns.
+        poses.mulPose(event.getModelViewMatrix());
         RenderSystem.setShaderTexture(0, FOOTPRINT_TEXTURE);
         RenderSystem.depthMask(true);
         RenderSystem.enableDepthTest();

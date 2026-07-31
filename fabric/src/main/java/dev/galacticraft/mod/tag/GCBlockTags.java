@@ -107,6 +107,7 @@ public class GCBlockTags {
     public static final TagKey<Block> RAW_TITANIUM_BLOCKS = commonTag("storage_blocks/raw_titanium");
 
     public static final TagKey<Block> MACHINES = galacticraftTag("machines");
+    public static final TagKey<Block> TERRAFORMABLE = galacticraftTag("terraformable");
     public static final TagKey<Block> GLASS_FLUID_PIPES = galacticraftTag("glass_fluid_pipes");
     public static final TagKey<Block> STAINED_GLASS_FLUID_PIPES = galacticraftTag("glass_fluid_pipes/stained");
 

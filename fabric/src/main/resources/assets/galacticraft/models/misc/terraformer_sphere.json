@@ -1,0 +1,5 @@
+{
+  "galacticraft:type": "galacticraft:obj",
+  "model": "galacticraft:models/misc/sphere.obj",
+  "mtl": "galacticraft:models/misc/terraformer_sphere.mtl"
+}

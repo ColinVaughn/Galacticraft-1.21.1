@@ -442,6 +442,17 @@ public class GCModelProvider extends FabricModelProvider {
 
         createFullCubeActiveMachine(generator, GCBlocks.OXYGEN_COLLECTOR);
         createFullCubeActiveMachine(generator, GCBlocks.OXYGEN_BUBBLE_DISTRIBUTOR);
+        MachineModelGenerator.createTrivialMachine(generator, GCBlocks.TERRAFORMER,
+                TextureProvider.builder(Constant.MOD_ID)
+                        .front("block/terraformer_0")
+                        .back("block/terraformer_0")
+                        .left("block/terraformer_machine")
+                        .right("block/terraformer_machine_input")
+                        .top("block/terraformer_machine")
+                        .bottom("block/terraformer_machine")
+                        .particle("block/terraformer_machine")
+                        .build()
+        );
 
         generator.createNonTemplateModelBlock(GCBlocks.CRUDE_OIL);
         generator.createNonTemplateModelBlock(GCBlocks.FUEL);

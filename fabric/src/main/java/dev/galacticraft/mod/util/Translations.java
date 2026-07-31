@@ -429,6 +429,15 @@ public interface Translations {
         String AREA_TOO_LARGE = "ui.galacticraft.status.area_too_large";
         String SEALED = "ui.galacticraft.status.sealed";
         String DISTRIBUTING = "ui.galacticraft.status.distributing";
+        String TERRAFORMING = "ui.galacticraft.status.terraforming";
+        String BUBBLE_EXPANDING = "ui.galacticraft.status.bubble_expanding";
+        String TERRAFORMER_DISABLED = "ui.galacticraft.status.terraformer_disabled";
+        String NOT_ENOUGH_WATER = "ui.galacticraft.status.not_enough_water";
+        String NOT_ENOUGH_BONE_MEAL = "ui.galacticraft.status.not_enough_bone_meal";
+        String NOT_ENOUGH_SEEDS = "ui.galacticraft.status.not_enough_seeds";
+        String NOT_ENOUGH_SAPLINGS = "ui.galacticraft.status.not_enough_saplings";
+        String NO_VALID_TREE_BLOCKS = "ui.galacticraft.status.no_valid_tree_blocks";
+        String NO_VALID_GRASS_BLOCKS = "ui.galacticraft.status.no_valid_grass_blocks";
         String REFINING = "ui.galacticraft.status.refining";
         String MISSING_OIL = "ui.galacticraft.status.missing_oil";
         String FUEL_TANK_FULL = "ui.galacticraft.status.fuel_tank_full";
@@ -516,6 +525,11 @@ public interface Translations {
         String BUBBLE_NOT_VISIBLE = "ui.galacticraft.bubble_distributor.not_visible";
         String BUBBLE_TARGET_SIZE = "ui.galacticraft.bubble_distributor.size";
         String BUBBLE_VISIBLE = "ui.galacticraft.bubble_distributor.visible";
+        String TERRAFORMER_ENABLE_TREES = "ui.galacticraft.terraformer.enable_trees";
+        String TERRAFORMER_DISABLE_TREES = "ui.galacticraft.terraformer.disable_trees";
+        String TERRAFORMER_ENABLE_GRASS = "ui.galacticraft.terraformer.enable_grass";
+        String TERRAFORMER_DISABLE_GRASS = "ui.galacticraft.terraformer.disable_grass";
+        String TERRAFORMER_BUBBLE_VISIBLE = "ui.galacticraft.terraformer.bubble_visible";
 
         String COLLECTING = "ui.galacticraft.machine.collecting";
         String CURRENT_OXYGEN = "ui.galacticraft.machine.current_oxygen";

@@ -401,6 +401,7 @@ public class GCTranslationProvider extends TranslationProvider {
         this.block(GCBlocks.OXYGEN_COLLECTOR, "Oxygen Collector");
         this.block(GCBlocks.OXYGEN_SEALER, "Oxygen Sealer");
         this.block(GCBlocks.OXYGEN_BUBBLE_DISTRIBUTOR, "Bubble Distributor");
+        this.block(GCBlocks.TERRAFORMER, "Terraformer");
         this.block(GCBlocks.OXYGEN_DECOMPRESSOR, "Oxygen Decompressor");
         this.block(GCBlocks.OXYGEN_COMPRESSOR, "Oxygen Compressor");
         this.block(GCBlocks.OXYGEN_STORAGE_MODULE, "Oxygen Storage Module");
@@ -1090,6 +1091,7 @@ public class GCTranslationProvider extends TranslationProvider {
         this.blockDesc(GCBlocks.GLOWSTONE_TORCH, "Provides light, even in areas without oxygen.");
         this.blockDesc(GCBlocks.MOON_CHEESE_WHEEL, "Can be placed and eaten like a cake. Made with all-natural Moon cheese.");
         this.blockDesc(GCBlocks.OXYGEN_BUBBLE_DISTRIBUTOR, "Creates a breathable bubble of oxygen in a small area.");
+        this.blockDesc(GCBlocks.TERRAFORMER, "Used to add greenery to distant planets, adding grass, trees, and water when supplied with the correct materials.");
         this.blockDesc(GCBlocks.OXYGEN_DECOMPRESSOR, "Empties oxygen tanks.");
         this.blockDesc(GCBlocks.OXYGEN_COLLECTOR, "Collects oxygen from nearby crops and trees.");
         this.blockDesc(GCBlocks.OXYGEN_COMPRESSOR, "Fills oxygen tanks.");
@@ -1276,6 +1278,15 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(MachineStatus.AREA_TOO_LARGE, "Area Too Large");
         this.add(MachineStatus.SEALED, "Sealed");
         this.add(MachineStatus.DISTRIBUTING, "Distributing");
+        this.add(MachineStatus.TERRAFORMING, "Terraforming");
+        this.add(MachineStatus.BUBBLE_EXPANDING, "Bubble Expanding");
+        this.add(MachineStatus.TERRAFORMER_DISABLED, "Disabled");
+        this.add(MachineStatus.NOT_ENOUGH_WATER, "Not Enough Water");
+        this.add(MachineStatus.NOT_ENOUGH_BONE_MEAL, "Not Enough Bone Meal");
+        this.add(MachineStatus.NOT_ENOUGH_SEEDS, "Not Enough Seeds");
+        this.add(MachineStatus.NOT_ENOUGH_SAPLINGS, "Not Enough Saplings");
+        this.add(MachineStatus.NO_VALID_TREE_BLOCKS, "Trees: No Valid Blocks");
+        this.add(MachineStatus.NO_VALID_GRASS_BLOCKS, "Grass: No Valid Blocks");
         this.add(MachineStatus.REFINING, "Refining");
         this.add(MachineStatus.MISSING_OIL, "Missing Oil");
         this.add(MachineStatus.FUEL_TANK_FULL, "Fuel Tank Full");
@@ -1361,6 +1372,11 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(Ui.BUBBLE_NOT_VISIBLE, "Bubble Not Visible");
         this.add(Ui.BUBBLE_TARGET_SIZE, "Target Size: ");
         this.add(Ui.BUBBLE_VISIBLE, "Bubble Visible");
+        this.add(Ui.TERRAFORMER_ENABLE_TREES, "Enable Trees");
+        this.add(Ui.TERRAFORMER_DISABLE_TREES, "Disable Trees");
+        this.add(Ui.TERRAFORMER_ENABLE_GRASS, "Enable Grass");
+        this.add(Ui.TERRAFORMER_DISABLE_GRASS, "Disable Grass");
+        this.add(Ui.TERRAFORMER_BUBBLE_VISIBLE, "Bubble Visible");
 
         this.add(Ui.COLLECTING, "Collecting: %s/s");
         this.add(Ui.CURRENT_OXYGEN, "Oxygen: %s");

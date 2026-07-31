@@ -662,6 +662,7 @@ public interface Constant {
         ResourceLocation COAL_GENERATOR_SCREEN = id("textures/gui/coal_generator_screen.png");
         ResourceLocation SOLAR_PANEL_SCREEN = id("textures/gui/solar_panel_screen.png");
         ResourceLocation REFINERY_SCREEN = id("textures/gui/refinery_screen.png");
+        ResourceLocation TERRAFORMER_SCREEN = id("textures/gui/terraformer.png");
         ResourceLocation ENERGY_STORAGE_MODULE_SCREEN = id("textures/gui/energy_storage_module_screen.png");
         ResourceLocation OXYGEN_COLLECTOR_SCREEN = id("textures/gui/oxygen_collector_screen.png");
         ResourceLocation ROCKET_SELECTION = id("textures/gui/rocket_part_selection.png");
@@ -1277,6 +1278,7 @@ public interface Constant {
         String ELECTRIC_ARC_FURNACE_MENU = "electric_arc_furnace_menu";
         String OXYGEN_COLLECTOR_MENU = "oxygen_collector_menu";
         String BUBBLE_DISTRIBUTOR_MENU = "bubble_distributor_menu";
+        String TERRAFORMER_MENU = "terraformer_menu";
         String OXYGEN_COMPRESSOR_MENU = "oxygen_compressor_menu";
         String FOOD_CANNER_MENU = "food_canner_menu";
         String OXYGEN_DECOMPRESSOR_MENU = "oxygen_decompressor_menu";
@@ -1360,6 +1362,10 @@ public interface Constant {
         String STORAGE = "StorageStack";
         String SIZE = "Size";
         String MAX_SIZE = "MaxSize";
+        String BUBBLE_SIZE = "BubbleSize";
+        String USE_COUNT = "UseCountArray";
+        String TREES_DISABLED = "TreesDisabled";
+        String GRASS_DISABLED = "GrassDisabled";
         String VISIBLE = "Visible";
         String FUEL_TIME = "FuelTime";
         String FUEL_LENGTH = "FuelLength";

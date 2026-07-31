@@ -218,6 +218,18 @@ public class GCMachineRecipes extends FabricRecipeProvider {
                 .emiDefaultRecipe(true)
                 .save(output);
 
+        GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.TERRAFORMER)
+                .define('X', GCItemTags.DESH_INGOTS)
+                .define('W', GCItems.COMPRESSED_DESH)
+                .define('Z', GCItems.TIN_CANISTER)
+                .define('V', GCItems.OXYGEN_CONCENTRATOR)
+                .pattern("XWX")
+                .pattern("XZX")
+                .pattern("WVW")
+                .unlockedBy(getHasName(GCItems.OXYGEN_CONCENTRATOR), has(GCItems.OXYGEN_CONCENTRATOR))
+                .emiDefaultRecipe(true)
+                .save(output);
+
         GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.OXYGEN_COLLECTOR)
                 .define('S', GCItems.COMPRESSED_STEEL)
                 .define('F', GCItems.OXYGEN_FAN)

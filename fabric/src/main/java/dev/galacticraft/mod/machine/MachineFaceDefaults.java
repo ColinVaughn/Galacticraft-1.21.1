@@ -32,6 +32,7 @@ import dev.galacticraft.machinelib.api.storage.MachineEnergyStorage;
 import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
 import dev.galacticraft.machinelib.api.transfer.ResourceType;
 import dev.galacticraft.machinelib.api.util.BlockFace;
+import dev.galacticraft.mod.content.block.entity.machine.TerraformerBlockEntity;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -102,6 +103,38 @@ public final class MachineFaceDefaults {
     }
 
     /**
+     * {@return whether this is the generic face profile previously assigned to a newly placed
+     * terraformer}
+     */
+    static boolean isOldTerraformerDefault(IOConfig config) {
+        for (BlockFace face : BlockFace.values()) {
+            if (config.get(face).getType() != ResourceType.ANY
+                    || config.get(face).getFlow() != ResourceFlow.INPUT) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Applies the closest MachineLib representation of the fixed ports from Galacticraft Legacy.
+     *
+     * <p>The front and back remain unconfigured so the two authored terraformer panel textures are
+     * not replaced by generic I/O textures. The right is the fixed electrical input. The remaining
+     * utility faces accept fluid and inventory automation; BOTH is safe here because the individual
+     * storage slots still decide whether a resource may actually enter or leave.
+     */
+    static void applyTerraformer(IOConfig config) {
+        for (BlockFace face : BlockFace.values()) {
+            config.get(face).setOption(ResourceType.NONE, ResourceFlow.BOTH);
+        }
+        config.get(BlockFace.RIGHT).setOption(ResourceType.ENERGY, ResourceFlow.INPUT);
+        config.get(BlockFace.LEFT).setOption(ResourceType.ANY, ResourceFlow.BOTH);
+        config.get(BlockFace.TOP).setOption(ResourceType.ANY, ResourceFlow.BOTH);
+        config.get(BlockFace.BOTTOM).setOption(ResourceType.ANY, ResourceFlow.BOTH);
+    }
+
+    /**
      * Applies the default face configuration to {@code machine}, unless it already has one.
      *
      * <p>A machine whose every face is blank is treated as never configured, including one loaded from a
@@ -111,6 +144,14 @@ public final class MachineFaceDefaults {
      */
     public static void apply(MachineBlockEntity machine) {
         IOConfig config = machine.getIOConfig();
+
+        if (machine instanceof TerraformerBlockEntity) {
+            if (isUnconfigured(config) || isOldTerraformerDefault(config)) {
+                applyTerraformer(config);
+            }
+            return;
+        }
+
         if (!isUnconfigured(config)) return;
 
         MachineEnergyStorage energy = machine.energyStorage();

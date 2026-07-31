@@ -123,6 +123,7 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.minecraft.client.Minecraft;
 import dev.galacticraft.neoforge.fluid.GCNeoForgeFluidTypes;
 import dev.galacticraft.neoforge.client.GCNeoBubbleDistributorRenderer;
+import dev.galacticraft.neoforge.client.GCNeoTerraformerRenderer;
 import dev.galacticraft.neoforge.client.GCNeoModelReloadListener;
 import dev.galacticraft.neoforge.client.GCNeoItemRenderer;
 import dev.galacticraft.neoforge.client.GCNeoBlockOutlineRenderer;
@@ -354,6 +355,7 @@ public final class GCNeoForgeClient {
         event.register(GCMenuTypes.PLAYER_INV_GC, GCPlayerInventoryScreen::new);
         event.register(GCMenuTypes.PET_INV_GC, GCPetInventoryScreen::new);
         event.register(GCMenuTypes.OXYGEN_BUBBLE_DISTRIBUTOR, OxygenBubbleDistributorScreen::new);
+        event.register(GCMenuTypes.TERRAFORMER, TerraformerScreen::new);
         event.register(GCMenuTypes.OXYGEN_STORAGE_MODULE, OxygenStorageModuleScreen::new);
         event.register(GCMenuTypes.OXYGEN_SEALER, OxygenSealerScreen::new);
         event.register(GCMenuTypes.FUEL_LOADER, FuelLoaderScreen::new);
@@ -405,6 +407,7 @@ public final class GCNeoForgeClient {
         event.registerBlockEntityRenderer(GCBlockEntityTypes.ADVANCED_SOLAR_PANEL, SolarPanelBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(GCBlockEntityTypes.GLASS_FLUID_PIPE, FluidPipeBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(GCBlockEntityTypes.OXYGEN_BUBBLE_DISTRIBUTOR, GCNeoBubbleDistributorRenderer::new);
+        event.registerBlockEntityRenderer(GCBlockEntityTypes.TERRAFORMER, GCNeoTerraformerRenderer::new);
         event.registerBlockEntityRenderer(GCBlockEntityTypes.ROCKET_WORKBENCH, RocketWorkbenchBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(GCBlockEntityTypes.ASTRO_MINER_BASE, AstroMinerBaseBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(GCBlockEntityTypes.FLAG, FlagBlockEntityRenderer::new);
