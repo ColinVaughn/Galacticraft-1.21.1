@@ -394,6 +394,11 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
         return this.ingredientCount();
     }
 
+    /** @return whether {@code recipe} is the build page this menu currently has open. */
+    public boolean isCurrentRecipe(WorkbenchRecipe recipe) {
+        return this.recipe != null && this.recipe.value() == recipe;
+    }
+
     /**
      * The page's ingredient wells, in slot order. Recipe viewers fill these when transferring a
      * recipe, and must not stray into the upgrade wells beside them.

@@ -23,6 +23,7 @@
 
 package dev.galacticraft.mod.machine.workbench;
 
+import dev.galacticraft.mod.Constant;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -82,6 +83,29 @@ class WorkbenchLayoutTest {
                         layout + " slot " + slot + " is outside the " + layout.imageWidth() + "px wide panel");
                 assertTrue(slot.y() >= 0 && slot.y() + SLOT <= layout.imageHeight(),
                         layout + " slot " + slot + " is outside the " + layout.imageHeight() + "px tall panel");
+            }
+        }
+    }
+
+    /**
+     * Recipe viewers crop away the player inventory, but every painted ingredient and result well
+     * still has to remain visible. Astro Miner's left laser well is the page's leftmost slot and is
+     * the regression guard for viewers that previously reused the narrower rocket crop.
+     */
+    @Test
+    void everyCraftingSlotFitsTheSchematicRecipeViewerCrop() {
+        int left = Constant.RocketWorkbench.SCHEMATIC_RECIPE_VIEWER_X;
+        int right = left + Constant.RocketWorkbench.SCHEMATIC_RECIPE_VIEWER_WIDTH;
+
+        for (WorkbenchLayout layout : WorkbenchLayout.values()) {
+            int bottom = Math.min(Constant.RocketWorkbench.RECIPE_VIEWER_HEIGHT, layout.playerInventoryY());
+            List<WorkbenchLayout.Position> crafting = new ArrayList<>(layout.ingredientSlots());
+            crafting.add(layout.resultSlot());
+            for (WorkbenchLayout.Position slot : crafting) {
+                assertTrue(slot.x() - 1 >= left && slot.x() + SLOT <= right,
+                        layout + " slot " + slot + " is outside the recipe viewer's horizontal crop");
+                assertTrue(slot.y() - 1 >= 0 && slot.y() + SLOT <= bottom,
+                        layout + " slot " + slot + " is outside the recipe viewer's vertical crop");
             }
         }
     }

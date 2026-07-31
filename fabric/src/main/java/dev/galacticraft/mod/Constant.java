@@ -649,6 +649,7 @@ public interface Constant {
         String FALLING_SULFURIC_ACID = "falling_sulfuric_acid";
 
         String CRYOGENIC_PARTICLE = "cryogenic_particle";
+        String OXYGEN = "oxygen";
         String LANDER_FLAME = "lander_flame_particle";
         String SPARK = "spark";
         String LAUNCH_SMOKE = "launch_smoke";
@@ -956,6 +957,10 @@ public interface Constant {
         int RECIPE_VIEWER_Y = 26;
         int RECIPE_VIEWER_WIDTH = 149;
         int RECIPE_VIEWER_HEIGHT = 134;
+
+        /** Legacy schematic pages extend farther left than the rocket layout. */
+        int SCHEMATIC_RECIPE_VIEWER_X = 7;
+        int SCHEMATIC_RECIPE_VIEWER_WIDTH = PAGE_WIDTH - SCHEMATIC_RECIPE_VIEWER_X;
     }
 
     interface BubbleDistributor {

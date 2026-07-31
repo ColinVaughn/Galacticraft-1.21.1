@@ -24,7 +24,7 @@ package dev.galacticraft.mod.client.gui.overlay;
 
 import dev.galacticraft.mod.client.render.dimension.solarflare.ClientSolarFlares;
 import dev.galacticraft.mod.content.entity.vehicle.LanderEntity;
-import dev.galacticraft.mod.content.item.GCItems;
+import dev.galacticraft.mod.tag.GCItemTags;
 import dev.galacticraft.mod.world.dimension.GCDimensions;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -54,7 +54,7 @@ public class SolarFlareOverlay {
         boolean sheltered = mc.level.isBreathable(player.blockPosition().above())
                 || player.getVehicle() instanceof LanderEntity;
         if (intensity > 0.05F && !sheltered && !player.isSpectator()) {
-            boolean glasses = player.getItemBySlot(EquipmentSlot.HEAD).is(GCItems.SENSOR_GLASSES);
+            boolean glasses = player.getItemBySlot(EquipmentSlot.HEAD).is(GCItemTags.SENSOR_GLASSES);
             float alphaF = Math.min(0.55F, intensity * 0.6F);
             if (glasses) alphaF *= 0.45F;
             int topAlpha = (int) (alphaF * 255.0F);

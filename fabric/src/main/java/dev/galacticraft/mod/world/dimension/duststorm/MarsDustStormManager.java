@@ -30,7 +30,7 @@ import dev.galacticraft.mod.content.block.special.CryogenicChamberBlock;
 import dev.galacticraft.mod.content.block.special.CryogenicChamberPart;
 import dev.galacticraft.mod.content.entity.damage.GCDamageTypes;
 import dev.galacticraft.mod.content.entity.vehicle.LanderEntity;
-import dev.galacticraft.mod.content.item.GCItems;
+import dev.galacticraft.mod.tag.GCItemTags;
 import dev.architectury.networking.NetworkManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -157,7 +157,7 @@ public final class MarsDustStormManager {
         if (level.isBreathable(eyePos)) return;
 
         boolean sealed = player.galacticraft$hasMaskAndGear();
-        boolean glasses = player.getItemBySlot(EquipmentSlot.HEAD).is(GCItems.SENSOR_GLASSES);
+        boolean glasses = player.getItemBySlot(EquipmentSlot.HEAD).is(GCItemTags.SENSOR_GLASSES);
 
         // Vision loss in thick dust unless the sensor glasses cut through it.
         if (intensity > 0.65f && !glasses) {

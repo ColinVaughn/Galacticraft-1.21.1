@@ -299,6 +299,7 @@ public final class GCNeoForgeClient {
     private static void registerKeyMappings(RegisterKeyMappingsEvent event) {
         event.register(GCKeyBinds.OPEN_CELESTIAL_SCREEN);
         event.register(GCKeyBinds.OPEN_ROCKET_INVENTORY);
+        event.register(GCKeyBinds.TOGGLE_SENSOR_GLASSES_MODE);
     }
 
     private static void onClientTick(ClientTickEvent.Post event) {
@@ -308,6 +309,7 @@ public final class GCNeoForgeClient {
         ClientDustStorms.clientTick();
         ClientSolarFlares.clientTick();
         ClientMeteorShowers.clientTick();
+        SensorGlassesOverlay.clientTick(Minecraft.getInstance());
         var level = Minecraft.getInstance().level;
         if (level != null) {
             var manager = level.galacticraft$getFootprintManager();
@@ -319,6 +321,7 @@ public final class GCNeoForgeClient {
         OxygenOverlay.onHudRender(event.getGuiGraphics(), event.getPartialTick());
         DustStormOverlay.onHudRender(event.getGuiGraphics(), event.getPartialTick());
         SolarFlareOverlay.onHudRender(event.getGuiGraphics(), event.getPartialTick());
+        SensorGlassesOverlay.onHudRender(event.getGuiGraphics(), event.getPartialTick());
         RocketOverlay.onHudRender(event.getGuiGraphics(), event.getPartialTick());
         LanderOverlay.onRenderHud(event.getGuiGraphics(), event.getPartialTick());
         CountdownOverlay.renderCountdown(event.getGuiGraphics(), event.getPartialTick());
@@ -438,6 +441,7 @@ public final class GCNeoForgeClient {
         event.registerSpriteSet(GCParticleTypes.DRIPPING_SULFURIC_ACID, DrippingSulfuricAcidProvider::new);
         event.registerSpriteSet(GCParticleTypes.FALLING_SULFURIC_ACID, FallingSulfuricAcidProvider::new);
         event.registerSpriteSet(GCParticleTypes.CRYOGENIC_PARTICLE, CryoFreezeParticle.Provider::new);
+        event.registerSpriteSet(GCParticleTypes.OXYGEN, OxygenParticle.Provider::new);
         event.registerSpriteSet(GCParticleTypes.LANDER_FLAME_PARTICLE, LanderParticle.Provider::new);
         event.registerSpriteSet(GCParticleTypes.SPARK_PARTICLE, SparksParticle.Provider::new);
         event.registerSpriteSet(GCParticleTypes.LAUNCH_SMOKE_PARTICLE, LaunchSmokeParticle.Provider::new);

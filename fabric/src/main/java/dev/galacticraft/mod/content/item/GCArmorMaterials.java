@@ -38,7 +38,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 public class GCArmorMaterials {
-    public static final Holder<ArmorMaterial> SENSOR_GLASSES = register(Constant.id("sensor_glasses"), 0, 0, 0, 0, 0, 9, SoundEvents.ARMOR_EQUIP_IRON, 0.0F, 0.0F, () -> Ingredient.of(GCItems.METEORIC_IRON_INGOT));
+    public static final Holder<ArmorMaterial> SENSOR_GLASSES = register(Constant.id("sensor_glasses"), 0, 0, 0, 0, 0, 0, SoundEvents.ARMOR_EQUIP_IRON, 0.0F, 0.0F, () -> Ingredient.EMPTY);
     public static final Holder<ArmorMaterial> HEAVY_DUTY = register(Constant.id("heavy_duty"), 3, 6, 8, 3, 30, 9, SoundEvents.ARMOR_EQUIP_IRON, 1.0F, 1.0F, () -> Ingredient.of(GCItems.COMPRESSED_STEEL));
     public static final Holder<ArmorMaterial> DESH = register(Constant.id("desh"), 4, 7, 9, 4, 42, 12, SoundEvents.ARMOR_EQUIP_IRON, 3.0F, 2.0F, () -> Ingredient.of(GCItems.DESH_INGOT));
     public static final Holder<ArmorMaterial> TITANIUM = register(Constant.id("titanium"), 5, 7, 10, 5, 26, 20, SoundEvents.ARMOR_EQUIP_IRON, 1.0F, 0.0F, () -> Ingredient.of(GCItems.COMPRESSED_TITANIUM));

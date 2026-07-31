@@ -1201,6 +1201,10 @@ public class GCTranslationProvider extends TranslationProvider {
 
         this.add(Keybindings.ROCKET_INVENTORY, "Open Rocket Inventory");
         this.add(Keybindings.OPEN_CELESTIAL_SCREEN, "Open Celestial Map");
+        this.add(Keybindings.SENSOR_GLASSES_MODE, "Toggle Sensor Goggles Mode");
+        this.add(Ui.SENSOR_ADVANCED, "Advanced Mode");
+        this.add(Ui.SENSOR_ADVANCED_ON, "ON");
+        this.add(Ui.SENSOR_ADVANCED_OFF, "OFF");
     }
 
     protected void generateSpaceRaceTranslations() {

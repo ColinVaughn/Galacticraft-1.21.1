@@ -25,7 +25,7 @@ package dev.galacticraft.mod.compat.jei;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.recipe.CompressingRecipe;
 import dev.galacticraft.mod.recipe.FabricationRecipe;
-import dev.galacticraft.mod.recipe.RocketRecipe;
+import dev.galacticraft.mod.recipe.WorkbenchRecipe;
 import mezz.jei.api.recipe.RecipeType;
 import net.minecraft.world.item.crafting.BlastingRecipe;
 import net.minecraft.world.item.crafting.SmeltingRecipe;
@@ -37,5 +37,5 @@ public interface GCJEIRecipeTypes {
     RecipeType<SmeltingRecipe> ELECTRIC_SMELTING = RecipeType.create(Constant.MOD_ID, Constant.Recipe.ELECTRIC_SMELTING, SmeltingRecipe.class);
     RecipeType<BlastingRecipe> ELECTRIC_BLASTING = RecipeType.create(Constant.MOD_ID, Constant.Recipe.ELECTRIC_BLASTING, BlastingRecipe.class);
     RecipeType<CanningRecipe> CANNING = RecipeType.create(Constant.MOD_ID, Constant.Recipe.CANNING, CanningRecipe.class);
-    RecipeType<RocketRecipe> ROCKET = RecipeType.create(Constant.MOD_ID, Constant.Recipe.ROCKET, RocketRecipe.class);
+    RecipeType<WorkbenchRecipe> ROCKET = RecipeType.create(Constant.MOD_ID, Constant.Recipe.ROCKET, WorkbenchRecipe.class);
 }

@@ -23,6 +23,7 @@
 package dev.galacticraft.mod.client;
 
 import dev.architectury.networking.NetworkManager;
+import dev.galacticraft.mod.client.gui.overlay.SensorGlassesOverlay;
 import dev.galacticraft.mod.client.gui.screen.ingame.CelestialSelectionScreen;
 import dev.galacticraft.mod.content.entity.vehicle.Buggy;
 import dev.galacticraft.mod.content.entity.vehicle.RocketEntity;
@@ -38,6 +39,8 @@ public final class GCKeyBinds {
             Translations.Keybindings.OPEN_CELESTIAL_SCREEN, GLFW.GLFW_KEY_M, KeyMapping.CATEGORY_MISC);
     public static final KeyMapping OPEN_ROCKET_INVENTORY = new KeyMapping(
             Translations.Keybindings.ROCKET_INVENTORY, GLFW.GLFW_KEY_F, KeyMapping.CATEGORY_INVENTORY);
+    public static final KeyMapping TOGGLE_SENSOR_GLASSES_MODE = new KeyMapping(
+            Translations.Keybindings.SENSOR_GLASSES_MODE, GLFW.GLFW_KEY_K, KeyMapping.CATEGORY_MISC);
 
     public static void handleKeybinds(Minecraft client) {
         if (client.level == null || client.player == null || client.screen != null) return;
@@ -49,6 +52,9 @@ public final class GCKeyBinds {
             if (vehicle instanceof RocketEntity || vehicle instanceof Buggy) {
                 NetworkManager.sendToServer(OpenRocketPayload.INSTANCE);
             }
+        }
+        while (TOGGLE_SENSOR_GLASSES_MODE.consumeClick()) {
+            SensorGlassesOverlay.toggleAdvancedMode();
         }
     }
 

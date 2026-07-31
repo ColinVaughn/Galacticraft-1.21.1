@@ -27,7 +27,11 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import dev.galacticraft.mod.content.entity.vehicle.RocketEntity;
+import dev.galacticraft.mod.client.gui.overlay.SensorGlassesOverlay;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
@@ -38,10 +42,65 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LivingEntityRenderer.class)
 public abstract class LivingEntityRendererMixin {
+    @Unique
+    private boolean galacticraft$sensorPass;
+
+    @Inject(
+            method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/LivingEntityRenderer;scale(Lnet/minecraft/world/entity/LivingEntity;Lcom/mojang/blaze3d/vertex/PoseStack;F)V", shift = At.Shift.AFTER)
+    )
+    private void galacticraft$scaleSensorMob(LivingEntity entity, float yaw, float partialTick,
+                                              PoseStack pose, MultiBufferSource buffers, int packedLight,
+                                              CallbackInfo ci) {
+        if (this.galacticraft$sensorPass) {
+            // Legacy's spider renderer applied an additional -0.03 Y translation before the
+            // common +0.045 Sensor Glasses transform.
+            pose.translate(0.0F, entity.getType() == dev.galacticraft.mod.content.GCEntityTypes.EVOLVED_SPIDER
+                    ? 0.015F : 0.045F, 0.0F);
+            pose.scale(1.07F, 1.035F, 1.07F);
+        }
+    }
+
+    @ModifyVariable(
+            method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
+            at = @At("HEAD"), argsOnly = true, index = 6
+    )
+    private int galacticraft$fullBrightSensorMob(int packedLight, LivingEntity entity) {
+        return this.galacticraft$sensorPass ? LightTexture.FULL_BRIGHT : packedLight;
+    }
+
+    @Inject(method = "getRenderType", at = @At("HEAD"), cancellable = true)
+    private void galacticraft$sensorMobTexture(LivingEntity entity, boolean bodyVisible, boolean translucent,
+                                                boolean glowing, CallbackInfoReturnable<RenderType> cir) {
+        if (this.galacticraft$sensorPass) {
+            cir.setReturnValue(RenderType.entityTranslucentEmissive(SensorGlassesOverlay.MOB_TEXTURE));
+        }
+    }
+
+    /** Legacy rendered the normal mob first, then repeated the whole render with the sensor texture. */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    @Inject(
+            method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
+            at = @At("RETURN")
+    )
+    private void galacticraft$renderSensorMobPass(LivingEntity entity, float yaw, float partialTick,
+                                                   PoseStack pose, MultiBufferSource buffers, int packedLight,
+                                                   CallbackInfo ci) {
+        if (this.galacticraft$sensorPass || !SensorGlassesOverlay.shouldHighlight(entity)) return;
+        this.galacticraft$sensorPass = true;
+        try {
+            ((LivingEntityRenderer) (Object) this).render(entity, yaw, partialTick, pose, buffers, packedLight);
+        } finally {
+            this.galacticraft$sensorPass = false;
+        }
+    }
+
     @Unique
     private static float sleepDirectionToRotationCryo(Direction direction) {
         return switch (direction) {

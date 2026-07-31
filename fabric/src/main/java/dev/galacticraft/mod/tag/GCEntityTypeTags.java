@@ -34,6 +34,8 @@ public class GCEntityTypeTags {
     public static final TagKey<EntityType<?>> IMMUNE_TO_ACID = TagKey.create(Registries.ENTITY_TYPE, Constant.id("immune_to_acid"));
     public static final TagKey<EntityType<?>> SENSITIVE_TO_ACID = TagKey.create(Registries.ENTITY_TYPE, Constant.id("sensitive_to_acid"));
     public static final TagKey<EntityType<?>> CAN_REENTER_ATMOSPHERE = TagKey.create(Registries.ENTITY_TYPE, Constant.id("can_reenter_atmosphere"));
+    /** Legacy Galacticraft mobs rendered with the Sensor Glasses emissive texture. */
+    public static final TagKey<EntityType<?>> SENSOR_GLASSES_DETECTABLE = TagKey.create(Registries.ENTITY_TYPE, Constant.id("sensor_glasses_detectable"));
 
     public static void register() {
     }

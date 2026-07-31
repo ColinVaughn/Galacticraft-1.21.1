@@ -31,6 +31,7 @@ import dev.galacticraft.mod.content.block.special.CryogenicChamberPart;
 import dev.galacticraft.mod.content.entity.damage.GCDamageTypes;
 import dev.galacticraft.mod.content.entity.vehicle.LanderEntity;
 import dev.galacticraft.mod.content.item.GCItems;
+import dev.galacticraft.mod.tag.GCItemTags;
 import dev.architectury.networking.NetworkManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -118,7 +119,7 @@ public final class MercurySolarFlareManager {
         // A sealed, breathable space (base or sealer bubble) keeps the flare out entirely.
         if (level.isBreathable(eyePos)) return;
 
-        boolean glasses = player.getItemBySlot(EquipmentSlot.HEAD).is(GCItems.SENSOR_GLASSES);
+        boolean glasses = player.getItemBySlot(EquipmentSlot.HEAD).is(GCItemTags.SENSOR_GLASSES);
 
         // Blinding glare at higher intensities, unless the sensor glasses cut through it.
         if (intensity > 0.5f && !glasses) {

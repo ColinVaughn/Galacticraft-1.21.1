@@ -90,6 +90,8 @@ public class GCItemTagProvider extends FabricTagProvider.ItemTagProvider {
         this.tag(GCItemTags.CUTS_CHEESE)
                 .addTag(ItemTags.SWORDS)
                 .addOptionalTag(GCItemTags.KNIVES);
+        this.tag(GCItemTags.SENSOR_GLASSES)
+                .add(GCItems.SENSOR_GLASSES);
 
         this.tag(ItemTags.AXES)
                 .add(GCItems.HEAVY_DUTY_AXE)

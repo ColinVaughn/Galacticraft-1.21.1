@@ -40,6 +40,7 @@ public class GCParticleTypes {
     public static final SimpleParticleType FALLING_SULFURIC_ACID = PARTICLES.register(Particle.FALLING_SULFURIC_ACID, FabricParticleTypes.simple());
 
     public static final SimpleParticleType CRYOGENIC_PARTICLE = PARTICLES.register(Particle.CRYOGENIC_PARTICLE, FabricParticleTypes.simple());
+    public static final SimpleParticleType OXYGEN = PARTICLES.register(Particle.OXYGEN, FabricParticleTypes.simple());
     public static final SimpleParticleType LANDER_FLAME_PARTICLE = PARTICLES.register(Particle.LANDER_FLAME, FabricParticleTypes.simple());
     public static final SimpleParticleType SPARK_PARTICLE = PARTICLES.register(Particle.SPARK, FabricParticleTypes.simple());
     public static final SimpleParticleType SPLASH_VENUS = PARTICLES.register(Particle.SPLASH_VENUS, FabricParticleTypes.simple());

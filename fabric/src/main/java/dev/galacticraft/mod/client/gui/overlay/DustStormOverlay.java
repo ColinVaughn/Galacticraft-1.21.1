@@ -25,6 +25,7 @@ package dev.galacticraft.mod.client.gui.overlay;
 import dev.galacticraft.mod.client.render.dimension.duststorm.ClientDustStorms;
 import dev.galacticraft.mod.content.entity.vehicle.LanderEntity;
 import dev.galacticraft.mod.content.item.GCItems;
+import dev.galacticraft.mod.tag.GCItemTags;
 import dev.galacticraft.mod.util.Translations;
 import dev.galacticraft.mod.world.dimension.GCDimensions;
 import dev.galacticraft.mod.world.dimension.duststorm.DustStormPhase;
@@ -58,7 +59,7 @@ public class DustStormOverlay {
         boolean sheltered = mc.level.isBreathable(player.blockPosition().above())
                 || player.getVehicle() instanceof LanderEntity;
         if (intensity > 0.05F && !sheltered && !player.isSpectator()) {
-            boolean glasses = player.getItemBySlot(EquipmentSlot.HEAD).is(GCItems.SENSOR_GLASSES);
+            boolean glasses = player.getItemBySlot(EquipmentSlot.HEAD).is(GCItemTags.SENSOR_GLASSES);
             float alphaF = Math.min(0.38F, intensity * 0.42F);
             if (glasses) alphaF *= 0.45F;
             int topAlpha = (int) (alphaF * 255.0F);
@@ -92,7 +93,7 @@ public class DustStormOverlay {
      * glasses (a heads-up display) or the frequency module (a comms/telemetry link).
      */
     private static boolean hasDetectorGear(LocalPlayer player) {
-        if (player.getItemBySlot(EquipmentSlot.HEAD).is(GCItems.SENSOR_GLASSES)) return true;
+        if (player.getItemBySlot(EquipmentSlot.HEAD).is(GCItemTags.SENSOR_GLASSES)) return true;
         Container accessories = player.galacticraft$getAccessories();
         for (int i = 0; i < accessories.getContainerSize(); i++) {
             if (accessories.getItem(i).is(GCItems.FREQUENCY_MODULE)) return true;

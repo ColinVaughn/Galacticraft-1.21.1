@@ -26,11 +26,15 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import dev.galacticraft.mod.Constant;
+import dev.galacticraft.mod.client.gui.overlay.SensorGlassesOverlay;
 import dev.galacticraft.mod.misc.footprint.Footprint;
 import dev.galacticraft.mod.misc.footprint.FootprintManager;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
@@ -71,29 +75,19 @@ public class FootprintRenderer {
 
         RenderSystem.enableBlend();
         RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
-
-//        RenderSystem.alphaFunc(GL11.GL_GREATER, 0.1F); // This probably needs a custom shader?
-//        float lightMapSaveX = OpenGlHelper.lastBrightnessX;
-//        float lightMapSaveY = OpenGlHelper.lastBrightnessY;
-//        boolean sensorGlasses = OverlaySensorGlasses.overrideMobTexture();
-//        if (sensorGlasses) {
-//            OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240.0F, 240.0F);
-//        }
+        context.lightmapTextureManager().turnOnLightLayer();
+        boolean sensorGlasses = SensorGlassesOverlay.isWearing(Minecraft.getInstance().player);
 
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
         for (Footprint footprint : footprintsToDraw) {
             poseStack.pushPose();
 
-//            if (!sensorGlasses) {
-//                int j = footprint.lightmapVal % 65536;
-//                int k = footprint.lightmapVal / 65536;
-//                OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, (float) j, (float) k);
-//            }
-
             float ageScale = 1.0F - footprint.age / (float) Footprint.MAX_AGE;
-            RenderSystem.setShader(GameRenderer::getPositionTexShader);
-            RenderSystem.setShaderColor(ageScale, ageScale, ageScale, ageScale);
+            RenderSystem.setShader(GameRenderer::getParticleShader);
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+            int light = sensorGlasses ? LightTexture.FULL_BRIGHT : LevelRenderer.getLightColor(
+                    context.world(), BlockPos.containing(footprint.position.x, footprint.position.y + 0.1D, footprint.position.z));
 
             Vec3 cameraPos = context.camera().getPosition();
             poseStack.translate(
@@ -103,13 +97,15 @@ public class FootprintRenderer {
             );
 
             Matrix4f last = poseStack.last().pose();
-            BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+            BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE);
             float footprintScale = 0.5F;
             float rotation = 45.0F * Mth.DEG_TO_RAD - footprint.rotation;
             for (int i = 3; i >= 0; i--) {
                 buffer = (BufferBuilder) buffer
                         .addVertex(last, Mth.sin(rotation) * footprintScale, 0, Mth.cos(rotation) * footprintScale)
-                        .setUv(i / 2, (i == 0 || i == 3) ? 1 : 0);
+                        .setUv(i / 2, (i == 0 || i == 3) ? 1 : 0)
+                        .setColor(ageScale, ageScale, ageScale, ageScale)
+                        .setLight(light);
                 rotation += Mth.HALF_PI;
             }
 
@@ -117,11 +113,8 @@ public class FootprintRenderer {
             poseStack.popPose();
         }
 
-//        if (sensorGlasses) {
-//            OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, lightMapSaveX, lightMapSaveY);
-//        }
-
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        context.lightmapTextureManager().turnOffLightLayer();
         poseStack.popPose();
         context.profiler().pop();
     }

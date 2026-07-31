@@ -50,6 +50,7 @@ public class GCPackets {
             registerS2C(MeteorShowerSyncPayload.TYPE, MeteorShowerSyncPayload.STREAM_CODEC);
             registerS2C(ServerStatisticsPayload.TYPE, ServerStatisticsPayload.STREAM_CODEC);
             registerS2C(GlobalStatisticsPayload.TYPE, GlobalStatisticsPayload.STREAM_CODEC);
+            registerS2C(SensorGlassesLeakPayload.TYPE, SensorGlassesLeakPayload.STREAM_CODEC);
         }
 
         registerC2S(AirlockPlayerNamePayload.TYPE, AirlockPlayerNamePayload.STREAM_CODEC);

@@ -54,8 +54,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -292,19 +290,6 @@ public abstract class LivingEntityMixin extends Entity implements GearInventoryP
         this.galacticraft_lastThermalDamageTick = this.tickCount;
         float damage = (thermalArmor.getContainerSize() - protection) * 0.5f;
         entity.hurt(this.damageSources().source(cold ? COLD : HEAT), damage);
-    }
-
-    /** Keeps Sensor Glasses night vision refreshed without flicker. */
-    @Inject(method = "baseTick", at = @At("TAIL"))
-    private void galacticraft_sensorGlassesCheck(CallbackInfo ci) {
-        LivingEntity entity = (LivingEntity) (Object) this;
-        if (entity.level().isClientSide()) return;
-        if (entity.getItemBySlot(EquipmentSlot.HEAD).is(GCItems.SENSOR_GLASSES)) {
-            MobEffectInstance current = entity.getEffect(MobEffects.NIGHT_VISION);
-            if (current == null || current.endsWithin(200)) {
-                entity.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 300, 0, false, false, false));
-            }
-        }
     }
 
     @Override

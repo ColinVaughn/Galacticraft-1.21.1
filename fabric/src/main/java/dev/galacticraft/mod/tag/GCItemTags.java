@@ -44,6 +44,8 @@ public class GCItemTags {
     public static final TagKey<Item> PARACHUTES = galacticraftTag("parachutes");
     public static final TagKey<Item> FREQUENCY_MODULES = galacticraftTag("frequency_modules");
     public static final TagKey<Item> SHIELD_CONTROLLERS = galacticraftTag("shield_controllers");
+    /** Modern data-pack equivalent of Legacy's ISensorGlassesArmor compatibility API. */
+    public static final TagKey<Item> SENSOR_GLASSES = galacticraftTag("sensor_glasses");
 
     public static final TagKey<Item> ACID_RESISTANT = galacticraftTag("acid_resistant");
 

@@ -39,6 +39,7 @@ import dev.galacticraft.mod.content.item.GCItems;
 import dev.galacticraft.mod.recipe.CompressingRecipe;
 import dev.galacticraft.mod.recipe.EmergencyKitRecipe;
 import dev.galacticraft.mod.recipe.GCRecipes;
+import dev.galacticraft.mod.recipe.WorkbenchRecipe;
 import dev.galacticraft.mod.screen.CompressorMenu;
 import dev.galacticraft.mod.screen.FoodCannerMenu;
 import dev.galacticraft.mod.screen.GCMenuTypes;
@@ -181,7 +182,11 @@ public class GCJEIPlugin implements IModPlugin {
         registration.addRecipes(GCJEIRecipeTypes.ELECTRIC_COMPRESSING, compressingRecipes);
         registration.addRecipes(GCJEIRecipeTypes.ELECTRIC_SMELTING, manager.getAllRecipesFor(RecipeType.SMELTING).stream().map(RecipeHolder::value).toList());
         registration.addRecipes(GCJEIRecipeTypes.ELECTRIC_BLASTING, manager.getAllRecipesFor(RecipeType.BLASTING).stream().map(RecipeHolder::value).toList());
-        registration.addRecipes(GCJEIRecipeTypes.ROCKET, manager.getAllRecipesFor(GCRecipes.ROCKET_TYPE).stream().map(RecipeHolder::value).toList());
+        List<WorkbenchRecipe> workbenchRecipes = Stream.concat(
+                manager.getAllRecipesFor(GCRecipes.ROCKET_TYPE).stream().map(RecipeHolder::value),
+                manager.getAllRecipesFor(GCRecipes.SCHEMATIC_CRAFTING_TYPE).stream().map(RecipeHolder::value)
+        ).map(recipe -> (WorkbenchRecipe) recipe).toList();
+        registration.addRecipes(GCJEIRecipeTypes.ROCKET, workbenchRecipes);
 
         IJeiHelpers jeiHelpers = registration.getJeiHelpers();
         var craftingRecipes = manager.getAllRecipesFor(RecipeType.CRAFTING);

@@ -32,6 +32,7 @@ import dev.galacticraft.mod.client.gui.overlay.CountdownOverlay;
 import dev.galacticraft.mod.client.gui.overlay.LanderOverlay;
 import dev.galacticraft.mod.client.gui.overlay.OxygenOverlay;
 import dev.galacticraft.mod.client.gui.overlay.RocketOverlay;
+import dev.galacticraft.mod.client.gui.overlay.SensorGlassesOverlay;
 import dev.galacticraft.mod.client.render.MeteorSkyRenderer;
 import dev.galacticraft.mod.client.render.dimension.meteor.ClientMeteorShowers;
 import dev.galacticraft.mod.client.render.FootprintRenderer;
@@ -69,6 +70,7 @@ public class ClientEventHandler {
         HudRenderCallback.EVENT.register(OxygenOverlay::onHudRender);
         HudRenderCallback.EVENT.register(DustStormOverlay::onHudRender);
         HudRenderCallback.EVENT.register(SolarFlareOverlay::onHudRender);
+        HudRenderCallback.EVENT.register(SensorGlassesOverlay::onHudRender);
         HudRenderCallback.EVENT.register(RocketOverlay::onHudRender);
         HudRenderCallback.EVENT.register(LanderOverlay::onRenderHud);
         HudRenderCallback.EVENT.register(CountdownOverlay::renderCountdown);
@@ -100,6 +102,7 @@ public class ClientEventHandler {
         ClientDustStorms.clientTick();
         ClientSolarFlares.clientTick();
         ClientMeteorShowers.clientTick();
+        SensorGlassesOverlay.clientTick(client);
         GCKeyBinds.handleKeybinds(client);
     }
 

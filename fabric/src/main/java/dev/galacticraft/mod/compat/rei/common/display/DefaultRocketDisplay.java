@@ -23,7 +23,11 @@
 package dev.galacticraft.mod.compat.rei.common.display;
 
 import dev.galacticraft.mod.compat.rei.common.GalacticraftREIServerPlugin;
+import dev.galacticraft.mod.machine.workbench.WorkbenchLayout;
+import dev.galacticraft.mod.machine.workbench.WorkbenchSlot;
 import dev.galacticraft.mod.recipe.RocketRecipe;
+import dev.galacticraft.mod.recipe.SchematicCraftingRecipe;
+import dev.galacticraft.mod.recipe.WorkbenchRecipe;
 import me.shedaniel.rei.api.common.category.CategoryIdentifier;
 import me.shedaniel.rei.api.common.display.basic.BasicDisplay;
 import me.shedaniel.rei.api.common.entry.EntryIngredient;
@@ -40,31 +44,58 @@ import java.util.Optional;
 public class DefaultRocketDisplay extends BasicDisplay {
     public static final BasicDisplay.Serializer<DefaultRocketDisplay> SERIALIZER = BasicDisplay.Serializer.of(
             (inputs, outputs, id, tag) -> {
-                return new DefaultRocketDisplay(inputs, outputs, id, tag.getInt("BodyHeight"), tag.getBoolean("HasBoosters"));
+                return new DefaultRocketDisplay(
+                        inputs,
+                        outputs,
+                        id,
+                        tag.getInt("BodyHeight"),
+                        tag.getBoolean("HasBoosters"),
+                        findLayout(tag.getString("Layout"))
+                );
             },
             (display, tag) -> {
                 tag.putInt("BodyHeight", display.bodyHeight);
                 tag.putBoolean("HasBoosters", display.hasBoosters);
+                if (display.layout != null) {
+                    tag.putString("Layout", display.layout.getSerializedName());
+                }
             }
     );
 
     public final int bodyHeight;
     public final boolean hasBoosters;
+    private final @Nullable WorkbenchLayout layout;
 
-    protected DefaultRocketDisplay(List<EntryIngredient> inputs, List<EntryIngredient> outputs, Optional<ResourceLocation> location, int bodyHeight, boolean hasBoosters) {
+    protected DefaultRocketDisplay(List<EntryIngredient> inputs, List<EntryIngredient> outputs, Optional<ResourceLocation> location,
+                                   int bodyHeight, boolean hasBoosters, @Nullable WorkbenchLayout layout) {
         super(inputs, outputs, location);
         this.bodyHeight = bodyHeight;
         this.hasBoosters = hasBoosters;
+        this.layout = layout;
     }
 
-    public DefaultRocketDisplay(@Nullable RecipeHolder<RocketRecipe> recipe) {
-        super(getInputs(recipe), recipe == null ? Collections.emptyList() : Collections.singletonList(EntryIngredients.of(recipe.value().getResultItem(registryAccess()))));
-        if (recipe != null) {
-            this.bodyHeight = recipe.value().bodyHeight();
-            this.hasBoosters = !recipe.value().boosters().isEmpty();
-        } else {
+    public DefaultRocketDisplay(@Nullable RecipeHolder<? extends WorkbenchRecipe> recipe) {
+        super(
+                getInputs(recipe),
+                recipe == null
+                        ? Collections.emptyList()
+                        : Collections.singletonList(EntryIngredients.of(recipe.value().getResultItem(registryAccess()))),
+                recipe == null ? Optional.empty() : Optional.of(recipe.id())
+        );
+        if (recipe == null) {
             this.bodyHeight = 0;
             this.hasBoosters = false;
+            this.layout = null;
+        } else if (recipe.value() instanceof RocketRecipe rocketRecipe) {
+            this.bodyHeight = rocketRecipe.bodyHeight();
+            this.hasBoosters = !rocketRecipe.boosters().isEmpty();
+            this.layout = null;
+        } else if (recipe.value() instanceof SchematicCraftingRecipe schematicRecipe) {
+            this.bodyHeight = 0;
+            this.hasBoosters = false;
+            this.layout = schematicRecipe.layout();
+        } else {
+            throw new IllegalArgumentException("Unsupported workbench recipe " + recipe.value().getClass().getName());
         }
     }
 
@@ -73,24 +104,25 @@ public class DefaultRocketDisplay extends BasicDisplay {
         return GalacticraftREIServerPlugin.ROCKET;
     }
 
-    private static List<EntryIngredient> getInputs(@Nullable RecipeHolder<RocketRecipe> recipe) {
+    public @Nullable WorkbenchLayout layout() {
+        return this.layout;
+    }
+
+    private static List<EntryIngredient> getInputs(@Nullable RecipeHolder<? extends WorkbenchRecipe> recipe) {
         if (recipe == null) return Collections.emptyList();
-        RocketRecipe rocketRecipe = recipe.value();
         List<EntryIngredient> list = new ArrayList<>();
-        list.add(EntryIngredients.ofIngredient(rocketRecipe.cone()));
-        for (int i = 0; i < 2 * rocketRecipe.bodyHeight(); i++) {
-            list.add(EntryIngredients.ofIngredient(rocketRecipe.body()));
+        for (WorkbenchSlot slot : recipe.value().ingredientSlots()) {
+            list.add(EntryIngredients.ofIngredient(slot.ingredient()));
         }
-        if (!rocketRecipe.boosters().isEmpty()) {
-            for (int i = 0; i < 2; i++) {
-                list.add(EntryIngredients.ofIngredient(rocketRecipe.boosters()));
+        return list;
+    }
+
+    private static @Nullable WorkbenchLayout findLayout(String name) {
+        for (WorkbenchLayout layout : WorkbenchLayout.values()) {
+            if (layout.getSerializedName().equals(name)) {
+                return layout;
             }
         }
-        for (int i = 0; i < 4; i++) {
-            list.add(EntryIngredients.ofIngredient(rocketRecipe.fins()));
-        }
-        list.add(EntryIngredients.ofIngredient(rocketRecipe.engine()));
-        list.add(EntryIngredients.ofIngredient(rocketRecipe.storage()));
-        return list;
+        return null;
     }
 }

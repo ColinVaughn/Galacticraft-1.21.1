@@ -70,6 +70,15 @@ public class GCEntityTypeTagProvider extends FabricTagProvider.EntityTypeTagProv
         this.getOrCreateTagBuilder(GCEntityTypeTags.CAN_REENTER_ATMOSPHERE)
                 .add(EntityType.PLAYER);
 
+        this.getOrCreateTagBuilder(GCEntityTypeTags.SENSOR_GLASSES_DETECTABLE)
+                .add(GCEntityTypes.MOON_VILLAGER)
+                .add(GCEntityTypes.EVOLVED_ZOMBIE)
+                .add(GCEntityTypes.EVOLVED_CREEPER)
+                .add(GCEntityTypes.EVOLVED_SKELETON)
+                .add(GCEntityTypes.EVOLVED_SPIDER)
+                .add(GCEntityTypes.EVOLVED_ENDERMAN)
+                .add(GCEntityTypes.EVOLVED_WITCH);
+
         this.getOrCreateTagBuilder(EntityTypeTags.IMPACT_PROJECTILES)
                 .add(GCEntityTypes.THROWABLE_METEOR_CHUNK);
         this.getOrCreateTagBuilder(EntityTypeTags.FALL_DAMAGE_IMMUNE)

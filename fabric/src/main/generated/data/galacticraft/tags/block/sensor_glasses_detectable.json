@@ -1,0 +1,32 @@
+{
+  "values": [
+    "minecraft:coal_ore",
+    "minecraft:deepslate_coal_ore",
+    "minecraft:diamond_ore",
+    "minecraft:deepslate_diamond_ore",
+    "minecraft:gold_ore",
+    "minecraft:deepslate_gold_ore",
+    "minecraft:iron_ore",
+    "minecraft:deepslate_iron_ore",
+    "minecraft:lapis_ore",
+    "minecraft:deepslate_lapis_ore",
+    "minecraft:redstone_ore",
+    "minecraft:deepslate_redstone_ore",
+    "galacticraft:moon_copper_ore",
+    "galacticraft:lunaslate_copper_ore",
+    "galacticraft:mars_copper_ore",
+    "galacticraft:venus_copper_ore",
+    "galacticraft:mars_iron_ore",
+    "galacticraft:asteroid_iron_ore",
+    "#c:ores/silicon",
+    "#c:ores/tin",
+    "#c:ores/aluminum",
+    "#c:ores/cheese",
+    "#c:ores/lunar_sapphire",
+    "#c:ores/olivine",
+    "#c:ores/desh",
+    "#c:ores/titanium",
+    "#c:ores/lead",
+    "#c:ores/solar_dust"
+  ]
+}

@@ -202,7 +202,8 @@ public class GCItems {
     public static final Item TITANIUM_LEGGINGS = ITEMS.register(Constant.Item.TITANIUM_LEGGINGS, new ArmorItem(GCArmorMaterials.TITANIUM, ArmorItem.Type.LEGGINGS, new Item.Properties().stacksTo(1)));
     public static final Item TITANIUM_BOOTS = ITEMS.register(Constant.Item.TITANIUM_BOOTS, new ArmorItem(GCArmorMaterials.TITANIUM, ArmorItem.Type.BOOTS, new Item.Properties().stacksTo(1)));
 
-    public static final Item SENSOR_GLASSES = ITEMS.register(Constant.Item.SENSOR_GLASSES, new ArmorItem(GCArmorMaterials.SENSOR_GLASSES, ArmorItem.Type.HELMET, new Item.Properties().stacksTo(1)));
+    /** Legacy's armor-material durability multiplier was 200; helmet durability is 11 * 200. */
+    public static final Item SENSOR_GLASSES = ITEMS.register(Constant.Item.SENSOR_GLASSES, new SensorGlassesItem(GCArmorMaterials.SENSOR_GLASSES, new Item.Properties().durability(2200)));
 
     // THERMAL PADDING
     public static final Item THERMAL_PADDING_HELMET = ITEMS.register(Constant.Item.THERMAL_PADDING_HELMET, new AccessoryItem(new Item.Properties(), SoundEvents.ARMOR_EQUIP_LEATHER));

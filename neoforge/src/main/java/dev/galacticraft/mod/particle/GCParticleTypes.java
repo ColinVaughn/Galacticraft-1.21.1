@@ -45,6 +45,7 @@ public class GCParticleTypes {
     public static final SimpleParticleType DRIPPING_SULFURIC_ACID = simple(Particle.DRIPPING_SULFURIC_ACID);
     public static final SimpleParticleType FALLING_SULFURIC_ACID = simple(Particle.FALLING_SULFURIC_ACID);
     public static final SimpleParticleType CRYOGENIC_PARTICLE = simple(Particle.CRYOGENIC_PARTICLE);
+    public static final SimpleParticleType OXYGEN = simple(Particle.OXYGEN);
     public static final SimpleParticleType LANDER_FLAME_PARTICLE = simple(Particle.LANDER_FLAME);
     public static final SimpleParticleType SPARK_PARTICLE = simple(Particle.SPARK);
     public static final SimpleParticleType SPLASH_VENUS = simple(Particle.SPLASH_VENUS);

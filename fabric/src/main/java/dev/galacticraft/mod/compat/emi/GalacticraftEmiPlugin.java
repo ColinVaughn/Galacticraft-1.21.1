@@ -43,6 +43,7 @@ import dev.galacticraft.mod.content.item.ParachuteItem;
 import dev.galacticraft.mod.recipe.CompressingRecipe;
 import dev.galacticraft.mod.recipe.FabricationRecipe;
 import dev.galacticraft.mod.recipe.RocketRecipe;
+import dev.galacticraft.mod.recipe.SchematicCraftingRecipe;
 import dev.galacticraft.mod.recipe.GCRecipes;
 import dev.galacticraft.mod.screen.GCMenuTypes;
 import dev.galacticraft.mod.tag.GCItemTags;
@@ -203,6 +204,10 @@ public class GalacticraftEmiPlugin implements EmiPlugin {
 
         for (RecipeHolder<RocketRecipe> recipe : manager.getAllRecipesFor(GCRecipes.ROCKET_TYPE)) {
             registry.addRecipe(new RocketEmiRecipe(recipe));
+        }
+
+        for (RecipeHolder<SchematicCraftingRecipe> recipe : manager.getAllRecipesFor(GCRecipes.SCHEMATIC_CRAFTING_TYPE)) {
+            registry.addRecipe(new SchematicEmiRecipe(recipe));
         }
 
         for (ItemStack cannedFood : CannedFoodItem.getDefaultCannedFoods()) {

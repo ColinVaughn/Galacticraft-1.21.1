@@ -23,7 +23,7 @@
 package dev.galacticraft.mod.compat.jei.handlers;
 
 import dev.galacticraft.mod.compat.jei.GCJEIRecipeTypes;
-import dev.galacticraft.mod.recipe.RocketRecipe;
+import dev.galacticraft.mod.recipe.WorkbenchRecipe;
 import dev.galacticraft.mod.screen.GCMenuTypes;
 import dev.galacticraft.mod.screen.RocketWorkbenchMenu;
 import dev.galacticraft.mod.util.Translations;
@@ -40,7 +40,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
-public class RocketRecipeTransferHandler implements IRecipeTransferHandler<RocketWorkbenchMenu, RocketRecipe> {
+public class RocketRecipeTransferHandler implements IRecipeTransferHandler<RocketWorkbenchMenu, WorkbenchRecipe> {
     private final IRecipeTransferHandlerHelper handlerHelper;
 
     public RocketRecipeTransferHandler(IRecipeTransferHandlerHelper handlerHelper) {
@@ -58,18 +58,22 @@ public class RocketRecipeTransferHandler implements IRecipeTransferHandler<Rocke
     }
 
     @Override
-    public RecipeType<RocketRecipe> getRecipeType() {
+    public RecipeType<WorkbenchRecipe> getRecipeType() {
         return GCJEIRecipeTypes.ROCKET;
     }
 
     @Nullable
     @Override
-    public IRecipeTransferError transferRecipe(RocketWorkbenchMenu menu, RocketRecipe recipe, IRecipeSlotsView recipeSlotsView, Player player, boolean maxTransfer, boolean doTransfer) {
+    public IRecipeTransferError transferRecipe(RocketWorkbenchMenu menu, WorkbenchRecipe recipe, IRecipeSlotsView recipeSlotsView, Player player, boolean maxTransfer, boolean doTransfer) {
         if (!this.handlerHelper.recipeTransferHasServerSupport()) {
             return this.handlerHelper.createUserErrorWithTooltip(Component.translatable(Translations.Tooltip.JEI_NOT_INSTALLED_ON_SERVER));
         }
 
-        int ingredientsSize = recipe.getIngredients().size();
+        if (!menu.isCurrentRecipe(recipe)) {
+            return this.handlerHelper.createUserErrorWithTooltip(Component.translatable(Translations.Tooltip.INCORRECT_NUMBER_OF_SLOTS));
+        }
+
+        int ingredientsSize = recipe.ingredientSlots().size();
         int recipeSize = menu.getRecipeSize();
         // The open page has to be the one this recipe belongs to; a tier-2 recipe cannot be
         // transferred into the tier-1 page's wells.
@@ -78,14 +82,14 @@ public class RocketRecipeTransferHandler implements IRecipeTransferHandler<Rocke
         }
 
         // Only the ingredient wells; the upgrade wells beside them are a modifier, not ingredients.
-        IRecipeTransferInfo<RocketWorkbenchMenu, RocketRecipe> info = this.handlerHelper.createBasicRecipeTransferInfo(
+        IRecipeTransferInfo<RocketWorkbenchMenu, WorkbenchRecipe> info = this.handlerHelper.createBasicRecipeTransferInfo(
                 this.getContainerClass(),
                 this.getMenuType().orElse(null),
                 this.getRecipeType(),
                 0, recipeSize, // Ingredient wells
                 menu.firstPlayerSlot(), 36 // Player inventory + hotbar slots
         );
-        IRecipeTransferHandler<RocketWorkbenchMenu, RocketRecipe> handler = this.handlerHelper.createUnregisteredRecipeTransferHandler(info);
+        IRecipeTransferHandler<RocketWorkbenchMenu, WorkbenchRecipe> handler = this.handlerHelper.createUnregisteredRecipeTransferHandler(info);
         return handler.transferRecipe(menu, recipe, recipeSlotsView, player, maxTransfer, doTransfer);
     }
 }

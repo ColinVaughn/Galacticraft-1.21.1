@@ -43,6 +43,7 @@ public class GCClientPacketReceiver {
         register(MeteorShowerSyncPayload.TYPE, MeteorShowerSyncPayload.STREAM_CODEC);
         register(ServerStatisticsPayload.TYPE, ServerStatisticsPayload.STREAM_CODEC);
         register(GlobalStatisticsPayload.TYPE, GlobalStatisticsPayload.STREAM_CODEC);
+        register(SensorGlassesLeakPayload.TYPE, SensorGlassesLeakPayload.STREAM_CODEC);
     }
 
     public static <P extends S2CPayload> void register(CustomPacketPayload.Type<P> type,

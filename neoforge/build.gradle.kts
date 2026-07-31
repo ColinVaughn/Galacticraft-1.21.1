@@ -257,6 +257,7 @@ dependencies {
     modCompileOnly("me.shedaniel:RoughlyEnoughItems-api-neoforge:${rootProject.property("rei.version")}")
     modCompileOnly("me.shedaniel:RoughlyEnoughItems-default-plugin-neoforge:${rootProject.property("rei.version")}")
     modCompileOnly("mezz.jei:jei-${rootProject.property("minecraft.version")}-neoforge-api:${rootProject.property("jei.version")}")
+    modLocalRuntime("mezz.jei:jei-${rootProject.property("minecraft.version")}-neoforge:${rootProject.property("jei.version")}")
     modCompileOnly("dev.emi:emi-neoforge:${rootProject.property("emi.version")}:api")
 
     common(project(path = ":common", configuration = "namedElements")) { isTransitive = false }

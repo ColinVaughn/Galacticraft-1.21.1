@@ -25,11 +25,15 @@ package dev.galacticraft.mod.content.block.special;
 import com.mojang.serialization.MapCodec;
 import dev.galacticraft.mod.content.GCBlockEntityTypes;
 import dev.galacticraft.mod.content.block.entity.machine.AstroMinerBaseBlockEntity;
+import dev.galacticraft.mod.content.item.GCItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -83,6 +87,21 @@ public class AstroMinerBaseBlock extends BaseEntityBlock {
 
         BlockPos master = pos.offset(partToMasterPos(state.getValue(PART)));
         return level.getBlockEntity(master) instanceof AstroMinerBaseBlockEntity base ? base : null;
+    }
+
+    /**
+     * Legacy's {@code ItemAstroMiner#onItemUseFirst} ran before the base block's normal activation,
+     * allowing a miner to be deployed instead of opening the dock GUI. Modern interaction order is
+     * block-first, so explicitly skip the default block interaction for that item and let its
+     * {@code useOn} delegate the clicked part to the master.
+     */
+    @Override
+    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos,
+                                              Player player, InteractionHand hand, BlockHitResult hit) {
+        if (state.getValue(PART) != Part.NONE && stack.is(GCItems.ASTRO_MINER)) {
+            return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
+        }
+        return super.useItemOn(stack, state, level, pos, player, hand, hit);
     }
 
     private static Part partForOffset(int x, int y, int z) {
@@ -226,18 +245,15 @@ public class AstroMinerBaseBlock extends BaseEntityBlock {
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (state.getValue(PART) == Part.NONE) {
+        AstroMinerBaseBlockEntity base = getMasterBlockEntity(level, pos, state);
+        if (base == null) {
             return InteractionResult.PASS;
         }
-        if (!level.isClientSide()) {
-            BlockPos master = pos.offset(partToMasterPos(state.getValue(PART)));
-            if (level.getBlockEntity(master) instanceof AstroMinerBaseBlockEntity be) {
-                if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
-                    dev.architectury.registry.menu.MenuRegistry.openExtendedMenu(serverPlayer, be);
-                }
-            }
+        if (!level.isClientSide() && player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+            // Legacy TileEntityMinerBase.onActivated delegated every slave tile to the master tile.
+            dev.architectury.registry.menu.MenuRegistry.openExtendedMenu(serverPlayer, base);
         }
-        return InteractionResult.CONSUME;
+        return InteractionResult.sidedSuccess(level.isClientSide());
     }
 
     @Override

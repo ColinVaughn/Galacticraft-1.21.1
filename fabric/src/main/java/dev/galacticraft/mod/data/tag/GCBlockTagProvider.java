@@ -120,6 +120,29 @@ public class GCBlockTagProvider extends FabricTagProvider.BlockTagProvider {
         this.tag(GCBlockTags.FOOTPRINTS)
                 .add(GCBlocks.MOON_TURF);
 
+        this.tag(GCBlockTags.SENSOR_GLASSES_DETECTABLE)
+                // The six vanilla resources in Legacy's default detectable-block list.
+                .add(Blocks.COAL_ORE, Blocks.DEEPSLATE_COAL_ORE)
+                .add(Blocks.DIAMOND_ORE, Blocks.DEEPSLATE_DIAMOND_ORE)
+                .add(Blocks.GOLD_ORE, Blocks.DEEPSLATE_GOLD_ORE)
+                .add(Blocks.IRON_ORE, Blocks.DEEPSLATE_IRON_ORE)
+                .add(Blocks.LAPIS_ORE, Blocks.DEEPSLATE_LAPIS_ORE)
+                .add(Blocks.REDSTONE_ORE, Blocks.DEEPSLATE_REDSTONE_ORE)
+                // Modern equivalents of every GC block whose Legacy state was an IDetectableResource.
+                .add(GCBlocks.MOON_COPPER_ORE, GCBlocks.LUNASLATE_COPPER_ORE,
+                        GCBlocks.MARS_COPPER_ORE, GCBlocks.VENUS_COPPER_ORE,
+                        GCBlocks.MARS_IRON_ORE, GCBlocks.ASTEROID_IRON_ORE)
+                .addTag(GCBlockTags.SILICON_ORES)
+                .addTag(GCBlockTags.TIN_ORES)
+                .addTag(GCBlockTags.ALUMINUM_ORES)
+                .addTag(GCBlockTags.CHEESE_ORES)
+                .addTag(GCBlockTags.LUNAR_SAPPHIRE_ORES)
+                .addTag(GCBlockTags.OLIVINE_ORES)
+                .addTag(GCBlockTags.DESH_ORES)
+                .addTag(GCBlockTags.TITANIUM_ORES)
+                .addTag(GCBlockTags.LEAD_ORES)
+                .addTag(GCBlockTags.SOLAR_ORES);
+
         this.tag(GCBlockTags.INFINIBURN_MOON)
                 .add(GCBlocks.MOON_BASALT_BRICK);
         this.tag(GCBlockTags.INFINIBURN_MARS)

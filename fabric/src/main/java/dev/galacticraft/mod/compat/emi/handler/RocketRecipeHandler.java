@@ -59,6 +59,14 @@ public class RocketRecipeHandler implements StandardRecipeHandler<RocketWorkbenc
     }
 
     @Override
+    public List<Slot> getCraftingSlots(EmiRecipe recipe, RocketWorkbenchMenu handler) {
+        if (recipe.getId() == null || !recipe.getId().equals(handler.page().id())) {
+            return List.of();
+        }
+        return this.getCraftingSlots(handler);
+    }
+
+    @Override
     public Slot getOutputSlot(RocketWorkbenchMenu handler) {
         return handler.resultSlot();
     }

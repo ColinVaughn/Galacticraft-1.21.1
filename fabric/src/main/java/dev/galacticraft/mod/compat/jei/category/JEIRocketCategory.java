@@ -27,7 +27,10 @@ import dev.galacticraft.mod.client.util.LazyRocketEntity;
 import dev.galacticraft.mod.compat.jei.GCJEIRecipeTypes;
 import dev.galacticraft.mod.content.GCBlocks;
 import dev.galacticraft.mod.content.entity.vehicle.RocketEntity;
+import dev.galacticraft.mod.machine.workbench.WorkbenchPageDisplay;
+import dev.galacticraft.mod.machine.workbench.WorkbenchSlot;
 import dev.galacticraft.mod.recipe.RocketRecipe;
+import dev.galacticraft.mod.recipe.WorkbenchRecipe;
 import dev.galacticraft.mod.util.Translations;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
@@ -47,7 +50,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 
 import static dev.galacticraft.mod.Constant.RocketWorkbench.*;
 
-public class JEIRocketCategory implements IRecipeCategory<RocketRecipe> {
+public class JEIRocketCategory implements IRecipeCategory<WorkbenchRecipe> {
     private static final int CHEST_BORDER_X = CHEST_X - 2 - RECIPE_VIEWER_X;
     private static final int CHEST_BORDER_Y = CHEST_Y - 2 - RECIPE_VIEWER_Y;
     private static final int OUTPUT_BORDER_X = OUTPUT_X - OUTPUT_X_OFFSET - RECIPE_VIEWER_X;
@@ -67,7 +70,7 @@ public class JEIRocketCategory implements IRecipeCategory<RocketRecipe> {
     }
 
     @Override
-    public RecipeType<RocketRecipe> getRecipeType() {
+    public RecipeType<WorkbenchRecipe> getRecipeType() {
         return GCJEIRecipeTypes.ROCKET;
     }
 
@@ -78,7 +81,7 @@ public class JEIRocketCategory implements IRecipeCategory<RocketRecipe> {
 
     @Override
     public int getWidth() {
-        return RECIPE_VIEWER_WIDTH;
+        return SCHEMATIC_RECIPE_VIEWER_WIDTH;
     }
 
     @Override
@@ -92,7 +95,15 @@ public class JEIRocketCategory implements IRecipeCategory<RocketRecipe> {
     }
 
     @Override
-    public void setRecipe(IRecipeLayoutBuilder builder, RocketRecipe recipe, IFocusGroup focuses) {
+    public void setRecipe(IRecipeLayoutBuilder builder, WorkbenchRecipe recipe, IFocusGroup focuses) {
+        if (recipe instanceof RocketRecipe rocketRecipe) {
+            this.setRocketRecipe(builder, rocketRecipe);
+        } else {
+            this.setVehicleRecipe(builder, recipe);
+        }
+    }
+
+    private void setRocketRecipe(IRecipeLayoutBuilder builder, RocketRecipe recipe) {
         for (RocketRecipe.RocketSlotData data : RocketRecipe.slotData(recipe.bodyHeight(), !recipe.boosters().isEmpty())) {
             Ingredient ingredient = switch(data.partType()) {
                 case CONE -> recipe.cone();
@@ -127,8 +138,47 @@ public class JEIRocketCategory implements IRecipeCategory<RocketRecipe> {
                 .addItemStack(recipe.getResultItem(Minecraft.getInstance().level.registryAccess()));
     }
 
+    /**
+     * Legacy vehicle pages paint their slot frames directly into their page texture. JEI's slot
+     * widget starts one pixel outside the 16px item, so offset it by one and leave its standard
+     * background disabled to line the ingredients up with those painted wells.
+     */
+    private void setVehicleRecipe(IRecipeLayoutBuilder builder, WorkbenchRecipe recipe) {
+        for (WorkbenchSlot slot : recipe.ingredientSlots()) {
+            IRecipeSlotBuilder slotBuilder = builder
+                    .addInputSlot(slot.x() - SCHEMATIC_RECIPE_VIEWER_X - 1, slot.y() - 1)
+                    .addIngredients(slot.ingredient());
+            if (slot.mirrored()) {
+                slotBuilder.setCustomRenderer(VanillaTypes.ITEM_STACK, MirroredIngredientRenderer.INSTANCE);
+            }
+        }
+
+        WorkbenchPageDisplay display = recipe.display();
+        if (display.resultSlot() != null) {
+            builder.addOutputSlot(
+                            display.resultSlot().x() - SCHEMATIC_RECIPE_VIEWER_X - 1,
+                            display.resultSlot().y() - 1
+                    )
+                    .addItemStack(recipe.getResultItem(Minecraft.getInstance().level.registryAccess()));
+        }
+    }
+
     @Override
-    public void draw(RocketRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics graphics, double mouseX, double mouseY) {
+    public void draw(WorkbenchRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics graphics, double mouseX, double mouseY) {
+        if (!(recipe instanceof RocketRecipe)) {
+            WorkbenchPageDisplay display = recipe.display();
+            graphics.blit(
+                    display.texture(),
+                    0,
+                    0,
+                    SCHEMATIC_RECIPE_VIEWER_X,
+                    display.textureV(),
+                    SCHEMATIC_RECIPE_VIEWER_WIDTH,
+                    Math.min(RECIPE_VIEWER_HEIGHT, display.playerInventoryY())
+            );
+            return;
+        }
+
         graphics.blit(SCREEN_TEXTURE, CHEST_BORDER_X, CHEST_BORDER_Y, CHEST_U, CHEST_V, CHEST_WIDTH, CHEST_HEIGHT);
         graphics.blit(SCREEN_TEXTURE, OUTPUT_BORDER_X, OUTPUT_BORDER_Y, OUTPUT_U, OUTPUT_V, OUTPUT_WIDTH, OUTPUT_HEIGHT);
         graphics.blit(SCREEN_TEXTURE, PREVIEW_BACKGROUND_X, PREVIEW_BACKGROUND_Y, PREVIEW_U, PREVIEW_V, PREVIEW_WIDTH, PREVIEW_HEIGHT);

@@ -33,6 +33,8 @@ public class GCBlockTags {
     public static final TagKey<Block> UNSEALABLE = galacticraftTag("unsealable");
 
     public static final TagKey<Block> FOOTPRINTS = galacticraftTag("footprints");
+    /** Blocks revealed by Sensor Glasses. Datapacks may add non-ore detectable resources here. */
+    public static final TagKey<Block> SENSOR_GLASSES_DETECTABLE = galacticraftTag("sensor_glasses_detectable");
 
     public static final TagKey<Block> INFINIBURN_MOON = galacticraftTag("infiniburn_moon");
     public static final TagKey<Block> INFINIBURN_VENUS = galacticraftTag("infiniburn_venus");

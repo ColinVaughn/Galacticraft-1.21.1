@@ -26,6 +26,7 @@ import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.compat.rei.common.GalacticraftREIServerPlugin;
 import dev.galacticraft.mod.compat.rei.common.display.DefaultRocketDisplay;
 import dev.galacticraft.mod.client.util.LazyRocketEntity;
+import dev.galacticraft.mod.machine.workbench.WorkbenchLayout;
 import dev.galacticraft.mod.recipe.RocketRecipe;
 import dev.galacticraft.mod.util.Translations;
 import me.shedaniel.math.Point;
@@ -74,6 +75,10 @@ public class DefaultRocketCategory implements DisplayCategory<DefaultRocketDispl
     }
 
     public @NotNull List<Widget> setupDisplay(DefaultRocketDisplay recipeDisplay, Rectangle bounds) {
+        if (recipeDisplay.layout() != null) {
+            return this.setupSchematicDisplay(recipeDisplay, bounds, recipeDisplay.layout());
+        }
+
         final Point startPoint = new Point(bounds.x - RECIPE_VIEWER_X + 5, bounds.y - RECIPE_VIEWER_Y + 5);
         List<Widget> widgets = new ArrayList<>();
         widgets.add(Widgets.createRecipeBase(bounds));
@@ -116,9 +121,49 @@ public class DefaultRocketCategory implements DisplayCategory<DefaultRocketDispl
         return widgets;
     }
 
+    private @NotNull List<Widget> setupSchematicDisplay(DefaultRocketDisplay recipeDisplay, Rectangle bounds, WorkbenchLayout layout) {
+        final int textureX = bounds.x + 5;
+        final int textureY = bounds.y + 5;
+        final Point pageOrigin = new Point(textureX - SCHEMATIC_RECIPE_VIEWER_X, textureY);
+        List<Widget> widgets = new ArrayList<>();
+        widgets.add(Widgets.createRecipeBase(bounds));
+        widgets.add(Widgets.createTexturedWidget(
+                layout.texture(),
+                textureX,
+                textureY,
+                SCHEMATIC_RECIPE_VIEWER_X,
+                layout.textureV(),
+                SCHEMATIC_RECIPE_VIEWER_WIDTH,
+                Math.min(RECIPE_VIEWER_HEIGHT, layout.playerInventoryY())
+        ));
+
+        List<EntryIngredient> inputs = recipeDisplay.getInputEntries();
+        List<WorkbenchLayout.Position> positions = layout.ingredientSlots();
+        for (int i = 0; i < positions.size() && i < inputs.size(); i++) {
+            WorkbenchLayout.Position position = positions.get(i);
+            widgets.add(Widgets.createSlot(new Point(
+                            pageOrigin.x + position.x() - 1,
+                            pageOrigin.y + position.y() - 1
+                    ))
+                    .disableBackground()
+                    .markInput()
+                    .entries(inputs.get(i)));
+        }
+
+        WorkbenchLayout.Position result = layout.resultSlot();
+        widgets.add(Widgets.createSlot(new Point(
+                        pageOrigin.x + result.x() - 1,
+                        pageOrigin.y + result.y() - 1
+                ))
+                .disableBackground()
+                .markOutput()
+                .entries(recipeDisplay.getOutputEntries().getFirst()));
+        return widgets;
+    }
+
     @Override
     public int getDisplayWidth(DefaultRocketDisplay display) {
-        return RECIPE_VIEWER_WIDTH + 10;
+        return (display.layout() == null ? RECIPE_VIEWER_WIDTH : SCHEMATIC_RECIPE_VIEWER_WIDTH) + 10;
     }
 
     @Override

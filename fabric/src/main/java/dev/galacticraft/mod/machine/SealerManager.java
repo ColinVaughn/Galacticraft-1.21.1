@@ -22,11 +22,17 @@
 
 package dev.galacticraft.mod.machine;
 
+import dev.architectury.networking.NetworkManager;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.content.block.entity.machine.OxygenSealerBlockEntity;
+import dev.galacticraft.mod.network.s2c.SensorGlassesLeakPayload;
 import dev.galacticraft.mod.tag.GCBlockTags;
+import dev.galacticraft.mod.tag.GCItemTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -41,6 +47,8 @@ public class SealerManager {
         private final List<OxygenSealerBlockEntity> sealers = new ArrayList<>();
         private final Set<BlockPos> blocksToSeal = new HashSet<>();
         private final Deque<BlockPos> floodFillQueue = new ArrayDeque<>();
+        private final Map<BlockPos, BlockPos> routeParents = new HashMap<>();
+        private BlockPos leakEnd;
         /**
          * Whether the flood fill found a boundary in every direction within the sealers' volume budget.
          * An empty queue is not a substitute for this: a fill that stops early because it has joined a
@@ -51,11 +59,25 @@ public class SealerManager {
 
         public SpaceToSeal(OxygenSealerBlockEntity sealer) {
             sealers.add(sealer);
-            floodFillQueue.add(sealer.getBlockPos().offset(0, 1, 0));
+            BlockPos start = sealer.getBlockPos().offset(0, 1, 0);
+            floodFillQueue.add(start);
+            routeParents.put(start, null);
         }
 
         public boolean willSealSucceed() {
             return enclosed;
+        }
+
+        public List<BlockPos> leakTrace() {
+            if (this.leakEnd == null) return List.of();
+            LinkedList<BlockPos> trace = new LinkedList<>();
+            BlockPos cursor = this.leakEnd;
+            while (cursor != null) {
+                trace.addFirst(cursor);
+                cursor = this.routeParents.get(cursor);
+            }
+            // Legacy only followed 90 parent links. Keep the packet and particle count bounded the same way.
+            return trace.size() > 91 ? List.copyOf(trace.subList(0, 91)) : List.copyOf(trace);
         }
 
     }
@@ -133,7 +155,10 @@ public class SealerManager {
                     nextObservedBlocks.add(adjacent);
                     BlockState adjacentState = this.level.getBlockState(adjacent);
                     if (!this.isSealedBetween(pos, blockState, adjacent, adjacentState, direction)) {
-                        spaceToSeal.floodFillQueue.add(adjacent);
+                        if (!spaceToSeal.routeParents.containsKey(adjacent)) {
+                            spaceToSeal.routeParents.put(adjacent, pos);
+                            spaceToSeal.floodFillQueue.add(adjacent);
+                        }
                     }
                 }
 
@@ -147,6 +172,11 @@ public class SealerManager {
                     spaceToSeal.sealers.addAll(otherSpace.sealers);
                     spaceToSeal.blocksToSeal.addAll(otherSpace.blocksToSeal);
                     spaceToSeal.floodFillQueue.addAll(otherSpace.floodFillQueue);
+                    otherSpace.routeParents.forEach((routePos, parent) -> {
+                        if (!spaceToSeal.routeParents.containsKey(routePos)) {
+                            spaceToSeal.routeParents.put(routePos, parent);
+                        }
+                    });
                     willAlreadySeal = otherSpace.willSealSucceed();
                     iterator.remove();
                     break;
@@ -158,6 +188,7 @@ public class SealerManager {
                 // If the space has become too large to fill, stop performing flood fill
                 if (spaceToSeal.blocksToSeal.size() > spaceToSeal.sealers.size() * MAX_SEALER_VOLUME) {
                     withinBudget = false;
+                    spaceToSeal.leakEnd = pos;
                     break;
                 }
             }
@@ -193,6 +224,31 @@ public class SealerManager {
         this.observedBlocks.clear();
         this.observedBlocks.addAll(nextObservedBlocks);
         this.hasUnsealedActiveSealers = sealedSealers.size() < activeSealers.size();
+        this.syncLeakTraces(spacesToSeal);
+    }
+
+    private void syncLeakTraces(Set<SpaceToSeal> spaces) {
+        if (!(this.level instanceof ServerLevel serverLevel)) return;
+        List<SpaceToSeal> failedSpaces = spaces.stream().filter(space -> !space.willSealSucceed()).toList();
+        for (ServerPlayer player : serverLevel.players()) {
+            if (!player.getItemBySlot(EquipmentSlot.HEAD).is(GCItemTags.SENSOR_GLASSES)) continue;
+            SpaceToSeal nearest = null;
+            double nearestDistance = Double.MAX_VALUE;
+            for (SpaceToSeal space : failedSpaces) {
+                for (OxygenSealerBlockEntity sealer : space.sealers) {
+                    double distance = player.distanceToSqr(
+                            sealer.getBlockPos().getX() + 0.5D,
+                            sealer.getBlockPos().getY() + 0.5D,
+                            sealer.getBlockPos().getZ() + 0.5D);
+                    if (distance < nearestDistance) {
+                        nearestDistance = distance;
+                        nearest = space;
+                    }
+                }
+            }
+            NetworkManager.sendToPlayer(player, new SensorGlassesLeakPayload(
+                    nearest == null ? List.of() : nearest.leakTrace()));
+        }
     }
 
     public void onBlockChanged(BlockPos pos, BlockState oldState, BlockState newState) {

@@ -24,6 +24,7 @@ package dev.galacticraft.mod.client;
 
 import dev.architectury.networking.NetworkManager;
 import dev.galacticraft.mod.client.gui.screen.ingame.CelestialSelectionScreen;
+import dev.galacticraft.mod.client.gui.overlay.SensorGlassesOverlay;
 import dev.galacticraft.mod.content.entity.vehicle.Buggy;
 import dev.galacticraft.mod.content.entity.vehicle.RocketEntity;
 import dev.galacticraft.mod.network.c2s.OpenRocketPayload;
@@ -37,10 +38,12 @@ import org.lwjgl.glfw.GLFW;
 public class GCKeyBinds {
     public static final KeyMapping OPEN_CELESTIAL_SCREEN = new KeyMapping(Translations.Keybindings.OPEN_CELESTIAL_SCREEN, GLFW.GLFW_KEY_M, KeyMapping.CATEGORY_MISC);
     public static final KeyMapping OPEN_ROCKET_INVENTORY = new KeyMapping(Translations.Keybindings.ROCKET_INVENTORY, GLFW.GLFW_KEY_F, KeyMapping.CATEGORY_INVENTORY);
+    public static final KeyMapping TOGGLE_SENSOR_GLASSES_MODE = new KeyMapping(Translations.Keybindings.SENSOR_GLASSES_MODE, GLFW.GLFW_KEY_K, KeyMapping.CATEGORY_MISC);
 
     public static void register() {
         KeyBindingHelper.registerKeyBinding(OPEN_CELESTIAL_SCREEN);
         KeyBindingHelper.registerKeyBinding(OPEN_ROCKET_INVENTORY);
+        KeyBindingHelper.registerKeyBinding(TOGGLE_SENSOR_GLASSES_MODE);
     }
 
     public static void handleKeybinds(Minecraft client) {
@@ -56,6 +59,10 @@ public class GCKeyBinds {
                     if (vehicle instanceof RocketEntity || vehicle instanceof Buggy) {
                         NetworkManager.sendToServer(OpenRocketPayload.INSTANCE);
                     }
+                }
+
+                while (TOGGLE_SENSOR_GLASSES_MODE.consumeClick()) {
+                    SensorGlassesOverlay.toggleAdvancedMode();
                 }
             }
         }

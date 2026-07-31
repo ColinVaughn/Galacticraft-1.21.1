@@ -26,6 +26,7 @@ import dev.galacticraft.mod.Galacticraft;
 import dev.galacticraft.mod.content.GCBlocks;
 import dev.galacticraft.mod.content.GCEntityTypes;
 import dev.galacticraft.mod.content.block.entity.machine.AstroMinerBaseBlockEntity;
+import dev.galacticraft.mod.content.block.special.AstroMinerBaseBlock;
 import dev.galacticraft.mod.content.entity.vehicle.AstroMinerEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -38,7 +39,8 @@ import net.minecraft.world.level.Level;
 
 /**
  * Deploys an autonomous {@link AstroMinerEntity} onto an Astro Miner Base (legacy
- * ItemAstroMiner). Right-clicking the base's master block links a new miner to it.
+ * ItemAstroMiner). As in legacy, right-clicking any assembled part resolves the base's
+ * master block and links a new miner to it.
  */
 public class AstroMinerItem extends Item {
     public AstroMinerItem(Properties properties) {
@@ -51,18 +53,16 @@ public class AstroMinerItem extends Item {
         BlockPos pos = context.getClickedPos();
         Player player = context.getPlayer();
 
-        if (!level.getBlockState(pos).is(GCBlocks.ASTRO_MINER_BASE)) {
+        var state = level.getBlockState(pos);
+        if (!state.is(GCBlocks.ASTRO_MINER_BASE)) {
+            return InteractionResult.PASS;
+        }
+        AstroMinerBaseBlockEntity base = AstroMinerBaseBlock.getMasterBlockEntity(level, pos, state);
+        if (base == null) {
             return InteractionResult.PASS;
         }
         if (level.isClientSide) {
             return InteractionResult.SUCCESS;
-        }
-        // The block entity lives only on the base's master block.
-        if (!(level.getBlockEntity(pos) instanceof AstroMinerBaseBlockEntity base)) {
-            if (player != null) {
-                player.displayClientMessage(Component.literal("Use the Astro Miner Base's main block to deploy a miner."), true);
-            }
-            return InteractionResult.CONSUME;
         }
         if (base.hasLinkedMiner()) {
             if (player != null) {

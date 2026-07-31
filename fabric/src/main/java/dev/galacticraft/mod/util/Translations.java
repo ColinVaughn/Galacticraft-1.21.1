@@ -275,6 +275,7 @@ public interface Translations {
     interface Keybindings {
         String ROCKET_INVENTORY = "key.galacticraft.rocket.inventory";
         String OPEN_CELESTIAL_SCREEN = "key.galacticraft.open_celestial_screen";
+        String SENSOR_GLASSES_MODE = "key.galacticraft.sensor_glasses_mode";
     }
 
     interface Items {
@@ -480,6 +481,9 @@ public interface Translations {
     }
 
     interface Ui {
+        String SENSOR_ADVANCED = "ui.galacticraft.sensor.advanced";
+        String SENSOR_ADVANCED_ON = "ui.galacticraft.sensor.advanced_on";
+        String SENSOR_ADVANCED_OFF = "ui.galacticraft.sensor.advanced_off";
         String CONE = "ui.galacticraft.cone";
         String BODY = "ui.galacticraft.body";
         String FINS = "ui.galacticraft.fins";

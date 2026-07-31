@@ -38,6 +38,7 @@ import dev.galacticraft.mod.compat.rei.client.category.ElectricCompressingCatego
 import dev.galacticraft.mod.compat.rei.client.category.ElectricFurnaceCategory;
 import dev.galacticraft.mod.compat.rei.client.display.CompressingDisplayVisibilityPredicate;
 import dev.galacticraft.mod.compat.rei.client.filler.EmergencyKitRecipeFiller;
+import dev.galacticraft.mod.compat.rei.client.handler.WorkbenchRecipeTransferHandler;
 import dev.galacticraft.mod.compat.rei.common.GalacticraftREIServerPlugin;
 import dev.galacticraft.mod.compat.rei.common.display.*;
 import dev.galacticraft.mod.content.GCBlocks;
@@ -48,8 +49,8 @@ import dev.galacticraft.mod.recipe.GCRecipes;
 import dev.galacticraft.mod.recipe.ShapedCompressingRecipe;
 import dev.galacticraft.mod.recipe.ShapelessCompressingRecipe;
 import dev.galacticraft.mod.recipe.RocketRecipe;
+import dev.galacticraft.mod.recipe.SchematicCraftingRecipe;
 import dev.galacticraft.mod.screen.FoodCannerMenu;
-import dev.galacticraft.mod.screen.RocketWorkbenchMenu;
 import me.shedaniel.math.Rectangle;
 import me.shedaniel.rei.api.client.plugins.REIClientPlugin;
 import me.shedaniel.rei.api.client.registry.category.CategoryRegistry;
@@ -114,6 +115,7 @@ public class GalacticraftREIClientPlugin implements REIClientPlugin {
         registry.registerRecipeFiller(SmeltingRecipe.class, RecipeType.SMELTING, ElectricFurnaceDisplay::new);
         registry.registerRecipeFiller(BlastingRecipe.class, RecipeType.BLASTING, ElectricArcFurnaceDisplay::new);
         registry.registerRecipeFiller(RocketRecipe.class, GCRecipes.ROCKET_TYPE, DefaultRocketDisplay::new);
+        registry.registerRecipeFiller(SchematicCraftingRecipe.class, GCRecipes.SCHEMATIC_CRAFTING_TYPE, DefaultRocketDisplay::new);
 
         registry.registerDisplayGenerator(GalacticraftREIServerPlugin.CANNING, new CanningDisplayGenerator());
         registry.registerDisplayGenerator(BuiltinPlugin.CRAFTING, new FlagDisplayGenerator());
@@ -222,8 +224,6 @@ public class GalacticraftREIClientPlugin implements REIClientPlugin {
                         FoodCannerBlockEntity.INPUT_SLOT + FoodCannerBlockEntity.INPUT_LENGTH
                 )
         ));
-        registry.register(SimpleTransferHandler.create(RocketWorkbenchMenu.class, GalacticraftREIServerPlugin.ROCKET,
-                new SimpleTransferHandler.IntRange(0, 15)
-        ));
+        registry.register(new WorkbenchRecipeTransferHandler());
     }
 }
