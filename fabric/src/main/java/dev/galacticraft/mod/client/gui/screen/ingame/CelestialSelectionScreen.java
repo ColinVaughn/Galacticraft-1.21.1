@@ -344,95 +344,99 @@ public class CelestialSelectionScreen extends CelestialScreen {
         }
 
         if (this.isSatellite(this.selectedBody)) {
-            if (this.renamingSpaceStation) {
-                if (x >= width / 2f - 90 && x <= width / 2f + 90 && y >= this.height / 2f - 38 && y <= this.height / 2f + 38) {
-                    // Apply
-                    if (x >= width / 2f - 90 + 17 && x <= width / 2f - 90 + 17 + 72 && y >= this.height / 2f - 38 + 59 && y <= this.height / 2f - 38 + 59 + 12) {
-                        assert this.minecraft != null;
-                        assert this.minecraft.player != null;
-                        String strName = this.minecraft.player.getName().getString();
-                        CelestialBody<SatelliteConfig, SatelliteType> selectedSatellite = (CelestialBody<SatelliteConfig, SatelliteType>) this.selectedBody;
-                        selectedSatellite.type().setCustomName(this.renamingString, selectedSatellite.config());
-                        NetworkManager.sendToServer(new SatelliteUpdatePayload(selectedSatellite.config()));
-                        this.renamingSpaceStation = false;
-                    }
-                    // Cancel
-                    if (x >= width / 2f && x <= width / 2f + 72 && y >= this.height / 2f - 38 + 59 && y <= this.height / 2f - 38 + 59 + 12) {
-                        this.renamingSpaceStation = false;
-                    }
-                    clickHandled = true;
-                }
-            } else {
-                if (x >= width / 2f - 47 && x <= width / 2f - 47 + 94 && y >= LHS && y <= LHS + 11) {
-                    if (!this.selectedStationOwner.isEmpty()) {
-                        assert this.minecraft != null;
-                        if (this.selectedStationOwner.equalsIgnoreCase(this.minecraft.player.getName().getString())) {
-                            this.renamingSpaceStation = true;
-                            this.renamingString = null;
-                            clickHandled = true;
-                        }
-                    }
-                }
-
-                CelestialBody<SatelliteConfig, SatelliteType> selectedSatellite = (CelestialBody<SatelliteConfig, SatelliteType>) this.selectedBody;
-                List<CelestialBody<SatelliteConfig, SatelliteType>> visibleSatellites = this.getVisibleSatellitesForCelestialBody(selectedSatellite.parentValue(this.celestialBodies));
-                int stationListSize = visibleSatellites.size();
-                int max = Math.min((this.height / 2) / 14, stationListSize);
-
-                int xPos;
-                int yPos;
-
-                // Up button
-                xPos = RHS - 85;
-                yPos = LHS + 45;
-
-                if (x >= xPos && x <= xPos + 61 && y >= yPos && y <= yPos + 4) {
-                    if (this.spaceStationListOffset > 0) {
-                        this.spaceStationListOffset--;
-                    }
-                    clickHandled = true;
-                }
-
-                // Down button
-                xPos = RHS - 85;
-                yPos = LHS + 49 + max * 14;
-
-                if (x >= xPos && x <= xPos + 61 && y >= yPos && y <= yPos + 4) {
-                    if (max + this.spaceStationListOffset < stationListSize) {
-                        this.spaceStationListOffset++;
-                    }
-                    clickHandled = true;
-                }
-
-                int i = 0;
-                int j = 0;
-                for (CelestialBody<SatelliteConfig, SatelliteType> satellite : visibleSatellites) {
-                    if (i >= max) break;
-
-                    if (j >= this.spaceStationListOffset) {
-                        int xOffset = 0;
-
-                        if (satellite.type().ownershipData(satellite.config()).username().equalsIgnoreCase(this.selectedStationOwner)) {
-                            xOffset -= 5;
-                        }
-
-                        xPos = RHS - 95 + xOffset;
-                        yPos = LHS + 50 + i * 14;
-
-                        if (x >= xPos && x <= xPos + 93 && y >= yPos && y <= yPos + 12) {
-                            this.selectedStationOwner = satellite.type().ownershipData(satellite.config()).username();
-                            clickHandled = true;
-                        }
-                        i++;
-                    }
-                    j++;
-                }
-            }
+            clickHandled |= this.handleSatelliteClick(x, y);
         }
 
+        clickHandled = this.handleCelestialListClick(x, y, clickHandled);
+
+        if (clickHandled) {
+            this.updateSelectedParent();
+            return true;
+        }
+        return super.mouseClicked(x, y, button);
+    }
+
+    private boolean handleSatelliteClick(double x, double y) {
+        boolean clickHandled = false;
+        if (this.renamingSpaceStation) {
+            if (x >= width / 2f - 90 && x <= width / 2f + 90 && y >= this.height / 2f - 38 && y <= this.height / 2f + 38) {
+                // Apply
+                if (x >= width / 2f - 90 + 17 && x <= width / 2f - 90 + 17 + 72 && y >= this.height / 2f - 38 + 59 && y <= this.height / 2f - 38 + 59 + 12) {
+                    assert this.minecraft != null;
+                    assert this.minecraft.player != null;
+                    CelestialBody<SatelliteConfig, SatelliteType> selectedSatellite = (CelestialBody<SatelliteConfig, SatelliteType>) this.selectedBody;
+                    selectedSatellite.type().setCustomName(this.renamingString, selectedSatellite.config());
+                    NetworkManager.sendToServer(new SatelliteUpdatePayload(selectedSatellite.config()));
+                    this.renamingSpaceStation = false;
+                }
+                // Cancel
+                if (x >= width / 2f && x <= width / 2f + 72 && y >= this.height / 2f - 38 + 59 && y <= this.height / 2f - 38 + 59 + 12) {
+                    this.renamingSpaceStation = false;
+                }
+                clickHandled = true;
+            }
+        } else {
+            if (x >= width / 2f - 47 && x <= width / 2f - 47 + 94 && y >= LHS && y <= LHS + 11) {
+                if (!this.selectedStationOwner.isEmpty()) {
+                    assert this.minecraft != null;
+                    if (this.selectedStationOwner.equalsIgnoreCase(this.minecraft.player.getName().getString())) {
+                        this.renamingSpaceStation = true;
+                        this.renamingString = null;
+                        clickHandled = true;
+                    }
+                }
+            }
+
+            CelestialBody<SatelliteConfig, SatelliteType> selectedSatellite = (CelestialBody<SatelliteConfig, SatelliteType>) this.selectedBody;
+            List<CelestialBody<SatelliteConfig, SatelliteType>> visibleSatellites = this.getVisibleSatellitesForCelestialBody(selectedSatellite.parentValue(this.celestialBodies));
+            int stationListSize = visibleSatellites.size();
+            int max = Math.min((this.height / 2) / 14, stationListSize);
+
+            int xPos = RHS - 85;
+            int yPos = LHS + 45;
+
+            // Up button
+            if (x >= xPos && x <= xPos + 61 && y >= yPos && y <= yPos + 4) {
+                if (this.spaceStationListOffset > 0) {
+                    this.spaceStationListOffset--;
+                }
+                clickHandled = true;
+            }
+
+            // Down button
+            yPos = LHS + 49 + max * 14;
+            if (x >= xPos && x <= xPos + 61 && y >= yPos && y <= yPos + 4) {
+                if (max + this.spaceStationListOffset < stationListSize) {
+                    this.spaceStationListOffset++;
+                }
+                clickHandled = true;
+            }
+
+            int i = 0;
+            int j = 0;
+            for (CelestialBody<SatelliteConfig, SatelliteType> satellite : visibleSatellites) {
+                if (i >= max) break;
+
+                if (j >= this.spaceStationListOffset) {
+                    int xOffset = satellite.type().ownershipData(satellite.config()).username().equalsIgnoreCase(this.selectedStationOwner) ? -5 : 0;
+                    xPos = RHS - 95 + xOffset;
+                    yPos = LHS + 50 + i * 14;
+
+                    if (x >= xPos && x <= xPos + 93 && y >= yPos && y <= yPos + 12) {
+                        this.selectedStationOwner = satellite.type().ownershipData(satellite.config()).username();
+                        clickHandled = true;
+                    }
+                    i++;
+                }
+                j++;
+            }
+        }
+        return clickHandled;
+    }
+
+    private boolean handleCelestialListClick(double x, double y, boolean clickHandled) {
         int xPos = LHS + 2;
         int yPos = LHS + 10;
-
         boolean planetZoomedMoon = this.isZoomed() && this.isPlanet(this.selectedParent);
 
         // Top yellow button e.g. Sol
@@ -443,11 +447,9 @@ public class CelestialSelectionScreen extends CelestialScreen {
             }
 
             EnumSelection selectionCountOld = this.selectionState;
-
             if (this.isSelected()) {
                 this.unselectCelestialBody();
             }
-
             if (selectionCountOld == EnumSelection.ZOOMED) {
                 this.selectionState = EnumSelection.SELECTED;
             }
@@ -516,12 +518,7 @@ public class CelestialSelectionScreen extends CelestialScreen {
                 }
             }
         }
-
-        if (clickHandled) {
-            this.updateSelectedParent();
-            return true;
-        }
-        return super.mouseClicked(x, y, button);
+        return clickHandled;
     }
 
     protected boolean testClicked(CelestialBody<?, ?> body, int xOffset, int yPos, double x, double y, boolean grandchild) {

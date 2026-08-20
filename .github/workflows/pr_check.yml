@@ -39,6 +39,17 @@ jobs:
       - name: Spotless check
         run: ./gradlew spotlessCheck
 
+      - name: Complexity check
+        id: complexity
+        run: ./gradlew pmdMain
+
+      - name: Capture complexity report
+        if: ${{ steps.complexity.outcome == 'failure' && !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: complexity-report
+          path: '**/build/reports/pmd/'
+
       - name: Build
         id: build
         if: ${{ !cancelled() }}

@@ -63,6 +63,30 @@ allprojects {
 subprojects {
     apply(plugin = "maven-publish")
     apply(plugin = "com.diffplug.spotless")
+    apply(plugin = "pmd")
+
+    extensions.configure<org.gradle.api.plugins.quality.PmdExtension> {
+        toolVersion = "7.26.0"
+        ruleSets = emptyList()
+        ruleSetFiles = rootProject.files("config/pmd/complexity.xml")
+        isConsoleOutput = true
+    }
+
+    tasks.withType<org.gradle.api.plugins.quality.Pmd>().configureEach {
+        reports {
+            xml.required.set(true)
+            html.required.set(true)
+        }
+    }
+
+    afterEvaluate {
+        tasks.named<org.gradle.api.plugins.quality.Pmd>("pmdMain") {
+            setSource(project.fileTree("src/main/java"))
+        }
+        tasks.named<org.gradle.api.plugins.quality.Pmd>("pmdTest") {
+            enabled = false
+        }
+    }
 
     extensions.configure<com.diffplug.gradle.spotless.SpotlessExtension> {
         lineEndings = com.diffplug.spotless.LineEnding.UNIX

@@ -227,129 +227,44 @@ public class AirlockControllerBlockEntity extends BlockEntity implements MenuPro
             return;
         }
 
-        int x = this.lastProtocol.minX + (this.lastProtocol.maxX - this.lastProtocol.minX) / 2;
-        int y = this.lastProtocol.minY + (this.lastProtocol.maxY - this.lastProtocol.minY) / 2;
-        int z = this.lastProtocol.minZ + (this.lastProtocol.maxZ - this.lastProtocol.minZ) / 2;
+        AirLockProtocol protocol = this.lastProtocol;
+        int x = protocol.minX + (protocol.maxX - protocol.minX) / 2;
+        int y = protocol.minY + (protocol.maxY - protocol.minY) / 2;
+        int z = protocol.minZ + (protocol.maxZ - protocol.minZ) / 2;
 
         BlockPos pos = new BlockPos(x, y, z);
         if (this.level.getBlockState(pos).is(GCBlocks.AIR_LOCK_SEAL)) {
             this.level.playSound(null, pos, GCSounds.AIRLOCK_OPEN, SoundSource.BLOCKS, 1.0F, 1.0F);
         }
 
-        boolean sealedSide = false;
-        boolean breathable;
         if (this.lastHorizontalModeEnabled) {
-            if (this.protocol.minY == this.protocol.maxY && this.protocol.minX != this.protocol.maxX && this.protocol.minZ != this.protocol.maxZ) {
-                // First test if there is sealed air to either side
-                for (x = this.protocol.minX + 1; x <= this.protocol.maxX - 1; x++) {
-                    for (z = this.protocol.minZ + 1; z <= this.protocol.maxZ - 1; z++) {
-                        pos = new BlockPos(x, y, z);
-                        breathable = this.level.isBreathable(pos.above());
-                        if (breathable) {
-                            if (this.level.getBlockState(pos).getBlock() == GCBlocks.AIR_LOCK_SEAL) {
-                                sealedSide = true;
-                                break;
-                            }
-                            continue;
-                        }
-                        breathable = this.level.isBreathable(pos.below());
-                        if (breathable) {
-                            if (this.level.getBlockState(pos).getBlock() == GCBlocks.AIR_LOCK_SEAL) {
-                                sealedSide = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (sealedSide)
-                        break;
-                }
-                // Now replace the airlock blocks with either air, or sealed air
-                for (x = this.protocol.minX + 1; x <= this.protocol.maxX - 1; x++) {
-                    for (z = this.protocol.minZ + 1; z <= this.protocol.maxZ - 1; z++) {
-                        pos = new BlockPos(x, y, z);
-                        if (this.level.getBlockState(pos).getBlock() == GCBlocks.AIR_LOCK_SEAL) {
-                            if (sealedSide)
-                                this.level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
-                            else
-                                this.level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
-                        }
-                    }
+            protocol = this.protocol;
+        }
+
+        if (this.lastHorizontalModeEnabled && protocol.minY == protocol.maxY && protocol.minX != protocol.maxX && protocol.minZ != protocol.maxZ) {
+            for (x = protocol.minX + 1; x < protocol.maxX; x++) {
+                for (z = protocol.minZ + 1; z < protocol.maxZ; z++) {
+                    this.removeSeal(new BlockPos(x, y, z));
                 }
             }
-        } else {
-            if (this.lastProtocol.minX != this.lastProtocol.maxX) {
-                // First test if there is sealed air to either side
-                for (x = this.lastProtocol.minX + 1; x <= this.lastProtocol.maxX - 1; x++) {
-                    for (y = this.lastProtocol.minY + 1; y <= this.lastProtocol.maxY - 1; y++) {
-                        pos = new BlockPos(x, y, z);
-                        breathable = this.level.isBreathable(pos.north());
-                        if (breathable) {
-                            if (this.level.getBlockState(pos).is(GCBlocks.AIR_LOCK_SEAL)) {
-                                sealedSide = true;
-                                break;
-                            }
-                            continue;
-                        }
-                        breathable = this.level.isBreathable(pos.south());
-                        if (breathable) {
-                            if (this.level.getBlockState(pos).is(GCBlocks.AIR_LOCK_SEAL)) {
-                                sealedSide = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (sealedSide)
-                        break;
-                }
-                // Now replace the airlock blocks with either air, or sealed air
-                for (x = this.lastProtocol.minX + 1; x <= this.lastProtocol.maxX - 1; x++) {
-                    for (y = this.lastProtocol.minY + 1; y <= this.lastProtocol.maxY - 1; y++) {
-                        pos = new BlockPos(x, y, z);
-                        if (this.level.getBlockState(pos).is(GCBlocks.AIR_LOCK_SEAL)) {
-                            if (sealedSide)
-                                this.level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
-                            else
-                                this.level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
-                        }
-                    }
-                }
-            } else if (this.lastProtocol.minZ != this.lastProtocol.maxZ) {
-                // First test if there is sealed air to either side
-                for (z = this.lastProtocol.minZ + 1; z <= this.lastProtocol.maxZ - 1; z++) {
-                    for (y = this.lastProtocol.minY + 1; y <= this.lastProtocol.maxY - 1; y++) {
-                        pos = new BlockPos(x, y, z);
-                        breathable = this.level.isBreathable(pos.west());
-                        if (breathable) {
-                            if (this.level.getBlockState(pos).is(GCBlocks.AIR_LOCK_SEAL)) {
-                                sealedSide = true;
-                                break;
-                            }
-                            continue;
-                        }
-                        breathable = this.level.isBreathable(pos.east());
-                        if (breathable) {
-                            if (this.level.getBlockState(pos).is(GCBlocks.AIR_LOCK_SEAL)) {
-                                sealedSide = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (sealedSide)
-                        break;
-                }
-                // Now replace the airlock blocks with either air, or sealed air
-                for (z = this.lastProtocol.minZ + 1; z <= this.lastProtocol.maxZ - 1; z++) {
-                    for (y = this.lastProtocol.minY + 1; y <= this.lastProtocol.maxY - 1; y++) {
-                        pos = new BlockPos(x, y, z);
-                        if (this.level.getBlockState(pos).is(GCBlocks.AIR_LOCK_SEAL)) {
-                            if (sealedSide)
-                                this.level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
-                            else
-                                this.level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
-                        }
-                    }
+        } else if (!this.lastHorizontalModeEnabled && protocol.minX != protocol.maxX) {
+            for (x = protocol.minX + 1; x < protocol.maxX; x++) {
+                for (y = protocol.minY + 1; y < protocol.maxY; y++) {
+                    this.removeSeal(new BlockPos(x, y, z));
                 }
             }
+        } else if (!this.lastHorizontalModeEnabled && protocol.minZ != protocol.maxZ) {
+            for (z = protocol.minZ + 1; z < protocol.maxZ; z++) {
+                for (y = protocol.minY + 1; y < protocol.maxY; y++) {
+                    this.removeSeal(new BlockPos(x, y, z));
+                }
+            }
+        }
+    }
+
+    private void removeSeal(BlockPos pos) {
+        if (this.level.getBlockState(pos).is(GCBlocks.AIR_LOCK_SEAL)) {
+            this.level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
         }
     }
 

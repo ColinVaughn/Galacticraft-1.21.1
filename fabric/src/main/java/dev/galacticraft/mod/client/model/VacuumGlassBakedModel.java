@@ -385,6 +385,8 @@ public class VacuumGlassBakedModel implements BakedModel, FabricBakedModel {
                 .emit();
     }
 
+    // Coordinate mirroring uses many ternaries, but the method has only two render branches.
+    @SuppressWarnings({"PMD.CognitiveComplexity", "PMD.CyclomaticComplexity"})
     private static void emitCornerBasePlate(QuadEmitter emitter, boolean east, boolean north, boolean down, boolean up) {
         if (!up) {
             // OUTER FRAME
