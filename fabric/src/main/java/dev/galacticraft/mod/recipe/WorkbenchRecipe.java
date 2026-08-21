@@ -35,7 +35,7 @@ import java.util.Optional;
 /**
  * A recipe that occupies one page of the rocket workbench flip-book.
  *
- * <p>Legacy Galacticraft expressed this as {@code ISchematicPage}, pairing a schematic item with the
+ * Legacy Galacticraft expressed this as {@code ISchematicPage}, pairing a schematic item with the
  * GUI and container it unlocked. Here the recipe carries that pairing, so a datapack can add a page
  * without any code.
  */

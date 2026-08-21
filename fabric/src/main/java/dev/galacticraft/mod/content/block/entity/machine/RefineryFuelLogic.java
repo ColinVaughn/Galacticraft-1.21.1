@@ -30,7 +30,7 @@ import dev.galacticraft.machinelib.api.transfer.FluidConstants;
  * ratio can be checked in a plain unit test. {@code RefineryBlockEntity} itself cannot be loaded
  * without a bootstrapped registry, because its storage spec reaches for fluids and block states.
  *
- * <p>All quantities are in droplets.
+ * All quantities are in droplets.
  */
 public final class RefineryFuelLogic {
     /** Buckets of fuel yielded per bucket of crude oil, before the config is consulted. */
@@ -47,7 +47,7 @@ public final class RefineryFuelLogic {
      * tank. At the default 1:1 ratio this is simply {@code fuelSpace}, reproducing the behaviour
      * the refinery had before the ratio was configurable.
      *
-     * <p>A non-positive ratio means oil cannot become fuel at all, so nothing is drawn.
+     * A non-positive ratio means oil cannot become fuel at all, so nothing is drawn.
      */
     public static long oilDrawFor(long fuelSpace, double oilToFuelRatio) {
         if (fuelSpace <= 0L || oilToFuelRatio <= 0.0) return 0L;

@@ -39,7 +39,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
  * An oxygen storage module exists to hand its oxygen back out. If nothing can extract from any of
  * its sides, it is a black hole: it fills up and never feeds anything.
  *
- * <p>The module has no energy storage at all, which is what made this specific machine fail while
+ * The module has no energy storage at all, which is what made this specific machine fail while
  * others limped along - the default face configuration was derived purely from a machine's energy
  * rates, so a machine with no energy got no configuration and every side stayed blank.
  */

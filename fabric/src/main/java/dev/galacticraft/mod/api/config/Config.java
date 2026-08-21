@@ -123,8 +123,8 @@ public interface Config {
     /**
      * Dimension IDs (as strings, e.g. {@code "minecraft:overworld"}) that do the opposite of
      * {@link #meteorImpactBlockDamage()}. Lets a pack leave craters on for the planets while
-     * sparing the Overworld, or the reverse. Impacts in a spared dimension still flash, hurt and
-     * leave their meteorite; only the terrain is protected.
+     * sparing the Overworld, or the reverse. Impacts in a spared dimension still flash and leave
+     * their meteorite, but do not hurt entities or terrain.
      */
     List<String> meteorImpactBlockDamageExceptions();
 

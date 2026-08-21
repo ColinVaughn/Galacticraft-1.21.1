@@ -36,7 +36,7 @@ import java.util.List;
 /**
  * The fixed slot geometry of a non-rocket workbench page.
  *
- * <p>Every position is transcribed from the matching legacy Galacticraft container (with legacy's
+ * Every position is transcribed from the matching legacy Galacticraft container (with legacy's
  * {@code change} offset folded in) and is relative to the top-left of the page background, so the
  * legacy GUI textures line up without further fudging. Rocket pages are not listed here: their slots
  * are generated from the recipe's body height by {@link dev.galacticraft.mod.recipe.RocketRecipe}.

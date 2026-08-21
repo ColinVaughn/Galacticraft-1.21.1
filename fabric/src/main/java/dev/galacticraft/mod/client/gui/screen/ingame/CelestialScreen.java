@@ -643,7 +643,7 @@ public class CelestialScreen extends Screen implements ClientSatelliteAccessor.S
 
     /**
      * Returns the transparency of the selected body.
-     * <p>
+     *
      * Hidden bodies will return 0.0, opaque bodies will return 1.0, and ones fading in/out will pass between those two values
      */
     public float getAlpha(CelestialBody<?, ?> body) {

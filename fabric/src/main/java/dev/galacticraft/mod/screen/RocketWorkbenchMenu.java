@@ -91,7 +91,7 @@ import static dev.galacticraft.mod.Constant.RocketWorkbench.*;
  * The rocket workbench, which is a flip-book of schematic pages as legacy Galacticraft's NASA
  * workbench was.
  *
- * <p>Each page is one recipe and lays out its own slots, so the menu is rebuilt - by reopening -
+ * Each page is one recipe and lays out its own slots, so the menu is rebuilt - by reopening -
  * whenever the player turns a page. The last page is always the unlock page, where a schematic is
  * consumed to reveal the page it belongs to.
  */
@@ -162,7 +162,7 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
      * The player's pages, plus {@code pageId} itself if it names a real recipe the player is not
      * shown yet.
      *
-     * <p>The server picks the page and both sides lay their slots out from it. A client whose
+     * The server picks the page and both sides lay their slots out from it. A client whose
      * research has not caught up would otherwise build a different page from the server, and its
      * slot indices would no longer line up - items would appear in the wrong wells. Trusting the
      * requested page keeps the two in step; the server is still the one that decides what opens.

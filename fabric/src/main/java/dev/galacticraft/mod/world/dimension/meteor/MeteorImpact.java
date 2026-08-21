@@ -34,7 +34,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -49,7 +48,7 @@ import java.util.List;
  * What happens when a meteoroid survives the sky and reaches the ground: a crater sized from the
  * body's actual kinetic energy, and the remains of the body left in the floor.
  *
- * <p>Crater size uses the standard {@code D proportional to E^(1/3.4)} scaling anchored on a real
+ * Crater size uses the standard {@code D proportional to E^(1/3.4)} scaling anchored on a real
  * impact (see {@link MeteorPhysics#craterDiameter}), then is clamped by config so a freak strike
  * cannot swallow a base. Excavation writes blocks without neighbour updates, which keeps even a
  * large crater to a single cheap tick.
@@ -89,11 +88,12 @@ public final class MeteorImpact {
 
         BlockPos impact = BlockPos.containing(location);
         RandomSource random = RandomSource.create(seed * 31L + impact.asLong());
+        boolean damageEnabled = MeteorImpactRules.blockDamageEnabled(level);
 
         announce(level, location, radius);
-        damageEntities(level, location, radius, energy);
+        if (damageEnabled) damageEntities(level, location, radius, energy);
 
-        if (MeteorImpactRules.blockDamageEnabled(level)) {
+        if (damageEnabled) {
             List<BlockPos> floor = excavate(level, impact, radius, seed);
             deposit(level, floor, type, random, survivingVoxels, totalVoxels);
         } else {
@@ -103,7 +103,6 @@ public final class MeteorImpact {
 
     /** The flash, shockwave and noise of the strike. No block damage: the crater is dug by hand. */
     private static void announce(ServerLevel level, Vec3 location, int radius) {
-        level.explode(null, location.x, location.y, location.z, radius * 0.5f, false, Level.ExplosionInteraction.NONE);
         level.sendParticles(ParticleTypes.EXPLOSION_EMITTER, location.x, location.y, location.z,
                 Math.max(1, radius / 3), radius * 0.4, 1.0, radius * 0.4, 0.0);
         level.sendParticles(ParticleTypes.LARGE_SMOKE, location.x, location.y, location.z,
@@ -133,7 +132,7 @@ public final class MeteorImpact {
     /**
      * Carves the bowl and returns the floor positions, where the remains will settle.
      *
-     * <p>The profile is a parabola so the crater is wide and shallow like a real simple crater, and
+     * The profile is a parabola so the crater is wide and shallow like a real simple crater, and
      * per-column jitter keeps the rim from looking stamped out.
      */
     private static List<BlockPos> excavate(ServerLevel level, BlockPos impact, int radius, int seed) {
@@ -176,7 +175,7 @@ public final class MeteorImpact {
      * How much of the body is left as recoverable blocks: what survived the fall, capped by what
      * the body was made of and by the space there is to put it.
      *
-     * <p>Shared by the crater and the strewn field so a dimension that forbids block damage pays
+     * Shared by the crater and the strewn field so a dimension that forbids block damage pays
      * out exactly what a cratering one would.
      */
     public static int depositCount(int survivingVoxels, int totalVoxels, int availableSlots) {
@@ -206,8 +205,8 @@ public final class MeteorImpact {
      * The no-block-damage path: lay the meteorite out as a strewn field on top of the ground
      * instead of digging it in.
      *
-     * <p>Blocks only ever go where the surface is already replaceable — air, grass, snow, a
-     * flower — so a strike over someone's base leaves the base alone. The count matches what the
+     * Blocks only ever go where the surface is already replaceable - air, grass, snow, a
+     * flower - so a strike over someone's base leaves the base alone. The count matches what the
      * crater would have deposited, which is the point: the dimension gives up its terrain damage
      * without giving up its loot.
      */

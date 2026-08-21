@@ -38,9 +38,9 @@ public final class SatelliteWorldMigration {
     /**
      * Rebinds a station generator's legacy inline biome to the server biome registry.
      *
-     * <p>Old satellite data was encoded without registry-aware ops, so its space biome
+     * Old satellite data was encoded without registry-aware ops, so its space biome
      * decodes as a direct holder. Chunks generated from that holder cannot serialize to
-     * disk or the network because it has no registry ID.</p>
+     * disk or the network because it has no registry ID.
      *
      * @return the original level stem when no repair was needed, otherwise a repaired copy
      */
@@ -56,8 +56,8 @@ public final class SatelliteWorldMigration {
     /**
      * Replaces the zero-gravity value written by older Galacticraft versions.
      *
-     * <p>New stations have Earth-relative gravity, but the old value remains in
-     * {@code satellites.dat} until it is explicitly migrated.</p>
+     * New stations have Earth-relative gravity, but the old value remains in
+     * {@code satellites.dat} until it is explicitly migrated.
      *
      * @return the gravity value that should be used for the loaded satellite
      */

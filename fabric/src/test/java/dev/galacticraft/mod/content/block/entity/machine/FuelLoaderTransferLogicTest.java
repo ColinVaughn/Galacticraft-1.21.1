@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Covers how much fuel a fuel loader may move in one tick.
  *
- * <p>The loader used to commit an insert into the rocket during its spin-up phase and return before
+ * The loader used to commit an insert into the rocket during its spin-up phase and return before
  * deducting that fuel from its own tank, so every load duplicated up to a full transfer rate per
  * tick for the whole spin-up. The rule that prevents it: while spinning up nothing may move at all,
  * and once running the amount is bounded by both sides, so the caller can extract exactly what it

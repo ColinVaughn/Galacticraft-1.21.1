@@ -37,8 +37,8 @@ import net.minecraft.world.level.Level;
  * advances its counters locally between syncs, and exposes a smoothed intensity plus the shower's
  * radiant for {@link MeteorSkyStreaks}.
  *
- * <p>Also decides whether meteors are visible in this sky at all. On an airless body there is
- * nothing to make a meteoroid glow, so no streaks are drawn there however busy the shower is — the
+ * Also decides whether meteors are visible in this sky at all. On an airless body there is
+ * nothing to make a meteoroid glow, so no streaks are drawn there however busy the shower is - the
  * only thing you see on the Moon is the impact.
  */
 public final class ClientMeteorShowers {

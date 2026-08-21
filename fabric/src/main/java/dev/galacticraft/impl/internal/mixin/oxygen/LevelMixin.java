@@ -72,7 +72,7 @@ public abstract class LevelMixin implements LevelOxygenAccessor, InternalLevelOx
 
     /**
      * The stored value is captured at construction from the level's celestial body. A virtual level
-     * inherits the dimension key — and so the atmosphere — of the level it wraps, which should not
+     * inherits the dimension key - and so the atmosphere - of the level it wraps, which should not
      * apply to it; report breathable air there instead. Ordered so that the check costs nothing on
      * levels that already have air.
      */

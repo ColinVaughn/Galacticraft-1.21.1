@@ -24,7 +24,6 @@ package dev.galacticraft.mod.content.block.entity.machine;
 
 import com.mojang.datafixers.util.Pair;
 import dev.galacticraft.api.gas.Gases;
-import dev.galacticraft.api.universe.celestialbody.CelestialBody;
 import dev.galacticraft.machinelib.api.block.entity.MachineBlockEntity;
 import dev.galacticraft.machinelib.api.filter.ResourceFilters;
 import dev.galacticraft.machinelib.api.machine.MachineStatus;
@@ -46,23 +45,17 @@ import dev.galacticraft.mod.machine.GCMachineStatuses;
 import dev.galacticraft.mod.screen.OxygenCollectorMenu;
 import dev.galacticraft.mod.util.FluidUtil;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Fluid;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class OxygenCollectorBlockEntity extends MachineBlockEntity {
     private static final int COLLECTION_SCAN_INTERVAL = 20;
-    private static final ResourceKey<Fluid> OXYGEN_KEY = ResourceKey.create(Registries.FLUID, Gases.OXYGEN_ID);
-
     public static final int CHARGE_SLOT = 0;
     public static final int OXYGEN_TANK = 0;
 
@@ -98,9 +91,7 @@ public class OxygenCollectorBlockEntity extends MachineBlockEntity {
     }
 
     int collectOxygen(@NotNull ServerLevel level, @NotNull BlockPos pos) {
-        Holder<CelestialBody<?, ?>> body = level.galacticraft$getCelestialBody();
-        boolean atmosphericOxygen = body == null || body.value().atmosphere().composition().getDouble(OXYGEN_KEY) > 0;
-        return this.collectOxygen(level, pos, atmosphericOxygen);
+        return this.collectOxygen(level, pos, level.getDefaultBreathable());
     }
 
     int collectOxygen(@NotNull ServerLevel level, @NotNull BlockPos pos, boolean atmosphericOxygen) {

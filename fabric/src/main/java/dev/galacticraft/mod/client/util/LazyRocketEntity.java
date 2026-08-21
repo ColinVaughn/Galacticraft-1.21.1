@@ -31,7 +31,7 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * Holds a rocket that exists only to be rendered: item models, recipe previews and the like.
- * <p>
+ *
  * Such a rocket must never be built with a {@code null} level. Vanilla tolerates it, but
  * {@link net.minecraft.world.entity.Entity}'s constructor is a popular mixin target and mods that inject
  * there dereference the level (Data Anchor calls {@code level.isClientSide()}), which crashes the game.

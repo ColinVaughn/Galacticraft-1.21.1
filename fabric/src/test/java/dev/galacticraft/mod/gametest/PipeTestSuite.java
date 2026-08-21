@@ -22,6 +22,7 @@
 
 package dev.galacticraft.mod.gametest;
 
+import dev.galacticraft.api.gas.Gases;
 import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
 import dev.galacticraft.machinelib.api.transfer.ResourceType;
 import dev.galacticraft.machinelib.api.util.BlockFace;
@@ -29,14 +30,58 @@ import dev.galacticraft.mod.api.pipe.FluidPipe;
 import dev.galacticraft.mod.api.pipe.impl.PipeNetworkImpl;
 import dev.galacticraft.mod.content.GCBlocks;
 import dev.galacticraft.mod.content.block.entity.machine.FluidTankBlockEntity;
+import dev.galacticraft.mod.content.block.entity.machine.OxygenCompressorBlockEntity;
+import dev.galacticraft.mod.content.block.entity.machine.OxygenStorageModuleBlockEntity;
 import dev.galacticraft.mod.content.block.entity.networked.GlassFluidPipeBlockEntity;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.level.material.Fluids;
 
 public class PipeTestSuite implements GalacticraftGameTest {
+    @GameTest(template = EMPTY_STRUCTURE)
+    public void oxygenConsumersFillBeforeStorage(GameTestHelper context) {
+        BlockPos storagePos = new BlockPos(1, 3, 1);
+        BlockPos pipePos = new BlockPos(1, 2, 1);
+        BlockPos consumerPos = new BlockPos(1, 1, 1);
+
+        context.setBlock(storagePos, GCBlocks.OXYGEN_STORAGE_MODULE);
+        context.setBlock(consumerPos, GCBlocks.OXYGEN_COMPRESSOR);
+        OxygenStorageModuleBlockEntity storage = context.getBlockEntity(storagePos);
+        OxygenCompressorBlockEntity consumer = context.getBlockEntity(consumerPos);
+        for (BlockFace face : BlockFace.values()) {
+            storage.getIOConfig().get(face).setOption(ResourceType.FLUID, ResourceFlow.BOTH);
+            consumer.getIOConfig().get(face).setOption(ResourceType.FLUID, ResourceFlow.INPUT);
+        }
+        context.setBlock(pipePos, GCBlocks.GLASS_FLUID_PIPE);
+        GlassFluidPipeBlockEntity pipe = context.getBlockEntity(pipePos);
+
+        runFinalTaskAt(context, 2, () -> {
+            long offered = FluidConstants.BUCKET / 50;
+            long consumerStart = OxygenCompressorBlockEntity.MAX_OXYGEN - offered / 2;
+            consumer.fluidStorage().slot(OxygenCompressorBlockEntity.OXYGEN_TANK).set(Gases.OXYGEN, consumerStart);
+            long accepted;
+            try (Transaction transaction = Transaction.openOuter()) {
+                accepted = pipe.insert(FluidVariant.of(Gases.OXYGEN), offered, transaction);
+                transaction.commit();
+            }
+
+            long consumerAmount = consumer.fluidStorage().slot(OxygenCompressorBlockEntity.OXYGEN_TANK).getAmount();
+            long storageAmount = storage.fluidStorage().slot(OxygenStorageModuleBlockEntity.OXYGEN_TANK).getAmount();
+            long expectedOverflow = offered / 2;
+            if (accepted != offered) {
+                context.fail("Expected the pipe to accept " + offered + " oxygen, accepted " + accepted, pipePos);
+            } else if (consumerAmount != OxygenCompressorBlockEntity.MAX_OXYGEN) {
+                context.fail("Expected the oxygen consumer to fill before storage", consumerPos);
+            } else if (storageAmount != expectedOverflow) {
+                context.fail("Expected storage to receive " + expectedOverflow + " overflow, received " + storageAmount, storagePos);
+            }
+        });
+    }
+
     @GameTest(template = EMPTY_STRUCTURE)
     public void fluidTankTransfersThroughPipes(GameTestHelper context) {
         BlockPos sourcePos = new BlockPos(1, 4, 1);

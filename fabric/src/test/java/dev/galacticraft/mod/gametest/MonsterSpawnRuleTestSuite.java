@@ -42,7 +42,7 @@ import java.util.function.BooleanSupplier;
 /**
  * Galacticraft's evolved mobs have to obey the light, like the vanilla mobs they are dressed-up copies of.
  *
- * <p>A mob type vanilla has never been told about is not merely spawned loosely, it is spawned with no
+ * A mob type vanilla has never been told about is not merely spawned loosely, it is spawned with no
  * checks at all - {@link SpawnPlacements#checkSpawnRules} returns true for an unknown type - so leaving
  * the table empty put evolved mobs inside lit, sealed rooms.
  *

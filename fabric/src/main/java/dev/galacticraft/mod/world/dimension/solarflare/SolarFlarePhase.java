@@ -25,7 +25,7 @@ package dev.galacticraft.mod.world.dimension.solarflare;
 /**
  * The phases a Mercury solar flare cycles through.
  *
- * <p>The lifecycle is {@code DORMANT -> INCOMING -> BUILDING -> PEAK -> DYING -> DORMANT}.
+ * The lifecycle is {@code DORMANT -> INCOMING -> BUILDING -> PEAK -> DYING -> DORMANT}.
  * {@link #INCOMING} is the fairness/forecast window: no radiation is on the surface yet, but
  * ambient cues warn the player a flare is imminent.
  */

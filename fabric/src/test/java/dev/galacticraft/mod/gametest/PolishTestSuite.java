@@ -26,6 +26,11 @@ import dev.galacticraft.mod.content.GCBlocks;
 import dev.galacticraft.mod.content.entity.ThrowableMeteorChunkEntity;
 import dev.galacticraft.mod.content.item.CannedFoodItem;
 import dev.galacticraft.mod.tag.GCBlockTags;
+import dev.galacticraft.mod.world.dimension.meteor.MeteorImpact;
+import dev.galacticraft.mod.world.dimension.meteor.MeteorImpactRules;
+import dev.galacticraft.mod.world.dimension.meteor.MeteorShowerState;
+import dev.galacticraft.mod.world.dimension.meteor.MeteoroidClass;
+import dev.galacticraft.mod.world.dimension.meteor.MeteoroidState;
 import dev.galacticraft.mod.world.gen.carver.CraterCarver;
 import dev.galacticraft.mod.world.gen.carver.config.CraterCarverConfig;
 import net.minecraft.core.BlockPos;
@@ -89,6 +94,28 @@ public final class PolishTestSuite implements GalacticraftGameTest {
             context.fail("Meteor thrower was not retained as the causing entity");
         } else if (target.getKillCredit() != thrower) {
             context.fail("Meteor kill was not credited to its thrower");
+        } else {
+            context.succeed();
+        }
+    }
+
+    @GameTest(template = EMPTY_STRUCTURE)
+    public void disabledMeteorDamageDoesNotHurtMobs(GameTestHelper context) {
+        Pig pig = context.spawnWithNoFreeWill(EntityType.PIG, 1, 1, 1);
+        float health = pig.getHealth();
+        MeteorShowerState state = MeteorShowerState.get(context.getLevel());
+        MeteorImpactRules.Override previous = state.blockDamageOverride();
+        state.setBlockDamageOverride(MeteorImpactRules.Override.NEVER);
+        try {
+            MeteorImpact.strike(context.getLevel(), pig.position(),
+                    new MeteoroidState(1000.0, 0.0, -100.0, 0.0, 0.0),
+                    MeteoroidClass.STONY, 1, 1, 1);
+        } finally {
+            state.setBlockDamageOverride(previous);
+        }
+
+        if (pig.getHealth() != health) {
+            context.fail("A protected meteor impact hurt a mob");
         } else {
             context.succeed();
         }

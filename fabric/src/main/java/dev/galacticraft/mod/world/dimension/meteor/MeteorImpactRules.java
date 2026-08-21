@@ -31,18 +31,14 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Decides whether a meteor strike is allowed to rearrange the terrain in a given dimension.
+ * Decides whether a meteor strike is allowed to damage terrain or entities in a given dimension.
  *
- * <p>Three layers can have an opinion, in descending priority:
- * <ol>
- *     <li>an op's per-dimension {@link Override}, set with {@code /meteorshower blockdamage} and
- *         stored in that dimension's {@link MeteorShowerState};</li>
- *     <li>the config's exception list, which flips the default for the dimensions it names;</li>
- *     <li>the global {@code meteorImpactBlockDamage} config flag.</li>
- * </ol>
+ * Priority goes to an op's per-dimension {@link Override}, then the config's exception list, then
+ * the global {@code meteorImpactBlockDamage} flag. The override is set with
+ * {@code /meteorshower blockdamage} and stored in the dimension's {@link MeteorShowerState}.
  *
- * <p>Only terrain is in question. A strike in a protected dimension still flashes, roars and hurts
- * whatever is standing near it, and still leaves its meteorite behind — see {@link MeteorImpact}.
+ * A strike in a protected dimension still flashes, roars and leaves its meteorite behind, but
+ * cannot hurt entities or rearrange terrain - see {@link MeteorImpact}.
  */
 public final class MeteorImpactRules {
     private MeteorImpactRules() {
@@ -73,7 +69,7 @@ public final class MeteorImpactRules {
         }
     }
 
-    /** Whether a strike landing in this dimension right now may rearrange its terrain. */
+    /** Whether a strike landing in this dimension right now may damage terrain and entities. */
     public static boolean blockDamageEnabled(ServerLevel level) {
         return resolve(Galacticraft.CONFIG.meteorImpactBlockDamage(),
                 Galacticraft.CONFIG.meteorImpactBlockDamageExceptions(),

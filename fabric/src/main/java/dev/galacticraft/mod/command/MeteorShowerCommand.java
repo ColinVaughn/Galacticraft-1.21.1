@@ -48,12 +48,12 @@ import net.minecraft.world.phys.Vec3;
  * {@code /meteorshower <start|stop|forecast|status|intensity <0..1>|drop <class> <size>|atmosphere|
  * blockdamage [on|off|default]>}.
  *
- * <p>{@code drop} puts a single body of a chosen class and size directly overhead, which is the
+ * {@code drop} puts a single body of a chosen class and size directly overhead, which is the
  * quickest way to watch one class burn where another survives. {@code atmosphere} prints the
  * derived physics for the current dimension, so a wrong-looking outcome can be traced straight
  * back to the celestial body data behind it. {@code blockdamage} sets whether strikes in this
- * dimension may dig craters, overriding the config for this world only; with no argument it
- * reports the current answer and which layer decided it.
+ * dimension may damage terrain and entities, overriding the config for this world only; with no
+ * argument it reports the current answer and which layer decided it.
  */
 public final class MeteorShowerCommand {
     private MeteorShowerCommand() {
@@ -126,7 +126,7 @@ public final class MeteorShowerCommand {
         return 1;
     }
 
-    /** Reports whether strikes here break blocks, and which layer decided that. */
+    /** Reports whether strikes here cause damage, and which layer decided that. */
     private static int reportBlockDamage(CommandContext<CommandSourceStack> ctx) {
         ServerLevel level = requireCelestialBody(ctx);
         if (level == null) return 0;
@@ -134,7 +134,7 @@ public final class MeteorShowerCommand {
         boolean enabled = MeteorImpactRules.blockDamageEnabled(level);
         String source = describeSource(level);
         ctx.getSource().sendSuccess(() -> Component.literal(String.format(
-                "Meteor impacts %s break blocks in %s (%s).",
+                "Meteor impacts %s damage blocks or entities in %s (%s).",
                 enabled ? "do" : "do not", level.dimension().location(), source)), false);
         return 1;
     }
@@ -146,10 +146,10 @@ public final class MeteorShowerCommand {
         MeteorShowerState.get(level).setBlockDamageOverride(override);
         boolean enabled = MeteorImpactRules.blockDamageEnabled(level);
         String tail = override == MeteorImpactRules.Override.DEFAULT
-                ? String.format("now follow the config and %s break blocks", enabled ? "do" : "do not")
-                : String.format("%s break blocks", enabled ? "now" : "no longer");
+                ? String.format("now follow the config and %s cause damage", enabled ? "do" : "do not")
+                : String.format("%s cause damage", enabled ? "now" : "no longer");
         ctx.getSource().sendSuccess(() -> Component.literal(String.format(
-                "Meteor impacts in %s %s. Strikes still flash and hurt either way.",
+                "Meteor impacts in %s %s. Strikes still flash and leave meteorites either way.",
                 level.dimension().location(), tail)), true);
         return 1;
     }
@@ -161,7 +161,7 @@ public final class MeteorShowerCommand {
         }
         return MeteorImpactRules.configDefaultFor(level) == Galacticraft.CONFIG.meteorImpactBlockDamage()
                 ? "config default"
-                : "listed in the config's block damage exceptions";
+                : "listed in the config's impact damage exceptions";
     }
 
     private static int forecast(CommandContext<CommandSourceStack> ctx) {

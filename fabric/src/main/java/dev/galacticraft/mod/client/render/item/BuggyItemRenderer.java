@@ -41,7 +41,7 @@ import net.minecraft.world.item.ItemStack;
  * rocket items already do. The item model json ({@code models/item/buggy.json}) delegates here through
  * {@code minecraft:builtin/entity}.
  *
- * <p>The buggy's OBJ is not one piece: the wheels and the radar dish are each modelled about the origin
+ * The buggy's OBJ is not one piece: the wheels and the radar dish are each modelled about the origin
  * and moved into place by {@link BuggyRenderer} as it animates them. Drawing the model whole would pile
  * all four wheels up inside the chassis, so this repeats that renderer's layout with the animation held
  * still.

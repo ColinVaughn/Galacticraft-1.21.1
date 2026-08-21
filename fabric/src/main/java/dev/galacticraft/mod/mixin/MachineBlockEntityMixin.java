@@ -39,7 +39,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 /**
  * Gives every machine a face configuration that carries power out of the box.
  *
- * <p>Applied on the machine's first tick rather than when it is built or loaded: changing a face tells
+ * Applied on the machine's first tick rather than when it is built or loaded: changing a face tells
  * the neighbouring blocks about it, and at both of those earlier points the block entity has no level to
  * tell them through. By the first tick the configuration has been read back from the save, so a machine
  * somebody has already set up is left exactly as they set it.

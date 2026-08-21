@@ -32,7 +32,7 @@ public interface InternalLevelBodyAccessor {
     /**
      * {@return the celestial body matching this level's dimension key, ignoring whether the level
      * is a virtual copy of another one}
-     * <p>
+     *
      * Only for code that runs during {@code Level.<init>}: a level is not registered with the
      * server or client until after it is constructed, so the virtual level check cannot tell a real
      * level apart from a wrapper yet and would report {@code null} for a genuine dimension being

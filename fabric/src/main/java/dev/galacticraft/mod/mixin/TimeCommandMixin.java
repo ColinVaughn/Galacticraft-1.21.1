@@ -36,7 +36,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 /**
  * Makes {@code /time} speak each dimension's own day.
  *
- * <p>The presets are named for where they put the sun - {@code day}, {@code noon}, {@code midnight} -
+ * The presets are named for where they put the sun - {@code day}, {@code noon}, {@code midnight} -
  * but they are plain tick counts out of 24000. On a body that takes eight vanilla days to turn, every
  * one of them lands within the first hour after its sunrise, so none of them can bring the sun up:
  * lunar noon is 48000, not 6000. Treating the argument as a point in the day rather than as a raw tick

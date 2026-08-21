@@ -63,7 +63,7 @@ public abstract class LevelCelestialBodyMixin implements LevelBodyAccessor, Inte
     /**
      * Read directly instead of calling {@link Level#registryAccess()}. This mixin runs inside
      * {@code Level.<init>}, where a virtual call still dispatches to subclass overrides whose own
-     * fields are not assigned until after {@code super()} returns — Create/Ponder's
+     * fields are not assigned until after {@code super()} returns - Create/Ponder's
      * {@code WrappedLevel} overrides it as {@code return level.registryAccess()} and assigns
      * {@code level} after the super call, so the override throws while we are constructing.
      * The field is assigned by {@code Level.<init>} before any of our injections run.
@@ -96,7 +96,7 @@ public abstract class LevelCelestialBodyMixin implements LevelBodyAccessor, Inte
         if (this.galacticraft$canonicalLevel) return false;
         Level self = (Level) (Object) this;
         Level canonical = VirtualLevels.canonical(self);
-        if (canonical == null) return false; // no answer yet — assume real, so nothing regresses
+        if (canonical == null) return false; // no answer yet - assume real, so nothing regresses
         if (canonical == self) {
             // A level that is installed stays installed; caching this keeps the common case a
             // single field read rather than a registry lookup.

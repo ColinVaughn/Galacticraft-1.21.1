@@ -32,7 +32,7 @@ import net.minecraft.world.level.saveddata.SavedData;
 /**
  * Server-authoritative, persistent state of the Mars dust-storm cycle for one dimension.
  *
- * <p>Advanced once per Mars world tick by {@code MarsDustStormManager}. Holds the current
+ * Advanced once per Mars world tick by {@code MarsDustStormManager}. Holds the current
  * {@link DustStormPhase}, how far into that phase we are, the target peak intensity, and the
  * pre-rolled BUILDING/PEAK/DYING lengths of the active storm. All fields are plain primitives so
  * the NBT round-trip does not need the registry lookup.

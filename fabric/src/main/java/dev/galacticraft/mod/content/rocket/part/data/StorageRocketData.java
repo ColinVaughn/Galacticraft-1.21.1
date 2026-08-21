@@ -30,9 +30,9 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 /**
  * How many chests were installed in the rocket workbench when this rocket was built.
  *
- * <p>The registered storage upgrade only carries the <em>maximum</em> chest count, so the
+ * The registered storage upgrade only carries the maximum chest count, so the
  * per-rocket count has to travel with the rocket itself; without it every rocket built with
- * the storage upgrade would end up the same size.</p>
+ * the storage upgrade would end up the same size.
  */
 public record StorageRocketData(
         int chests

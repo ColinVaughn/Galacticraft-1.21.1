@@ -34,12 +34,12 @@ import java.util.List;
  * the server independently produce byte-identical results from the same {@code (seed, size)} pair.
  * That is what lets the entity sync a seed instead of a voxel list.
  *
- * <p>Shapes are a union of overlapping lobes inside an anisotropic envelope, so bodies come out
+ * Shapes are a union of overlapping lobes inside an anisotropic envelope, so bodies come out
  * lumpy and elongated rather than as tidy spheres. Voxels are returned sorted from the centre
  * outwards, which makes ablation trivial for both sides: keep the first
  * {@code ceil(count * massFraction)} entries and the body visibly erodes from the outside in.
  *
- * <p>Free of world state so it can be unit tested directly.
+ * Free of world state so it can be unit tested directly.
  */
 public final class MeteoroidShape {
     public static final int MIN_SIZE = 1;
@@ -157,7 +157,7 @@ public final class MeteoroidShape {
 
     /**
      * Position-keyed hash, so a voxel's material depends only on where it sits in the body and not
-     * on iteration order — the client and server agree without exchanging anything.
+     * on iteration order - the client and server agree without exchanging anything.
      */
     private static int materialHash(int seed, int x, int y, int z) {
         int hash = seed * 0x27D4EB2D;

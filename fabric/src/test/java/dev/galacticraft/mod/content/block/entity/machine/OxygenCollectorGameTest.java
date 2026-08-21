@@ -35,13 +35,15 @@ public final class OxygenCollectorGameTest implements GalacticraftGameTest {
     @GameTest(template = EMPTY_STRUCTURE)
     public void nearbyLeavesControlCollectionRate(GameTestHelper context) {
         BlockPos collectorPos = new BlockPos(6, 3, 3);
+        boolean breathable = context.getLevel().getDefaultBreathable();
 
         try {
             context.setBlock(collectorPos, GCBlocks.OXYGEN_COLLECTOR);
             OxygenCollectorBlockEntity collector = context.getBlockEntity(collectorPos);
             BlockPos absoluteCollectorPos = context.absolutePos(collectorPos);
 
-            context.assertValueEqual(collector.collectOxygen(context.getLevel(), absoluteCollectorPos, false), 0, "airless collection rate without leaves");
+            context.getLevel().setDefaultBreathable(false);
+            context.assertValueEqual(collector.collectOxygen(context.getLevel(), absoluteCollectorPos), 0, "airless collection rate without leaves");
 
             BlockState playerPlacedLeaves = Blocks.OAK_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT, true);
             for (int index = 0; index < 28; index++) {
@@ -51,14 +53,16 @@ public final class OxygenCollectorGameTest implements GalacticraftGameTest {
                 context.setBlock(new BlockPos(x, y, z), playerPlacedLeaves);
 
                 if (index == 13) {
-                    context.assertValueEqual(collector.collectOxygen(context.getLevel(), absoluteCollectorPos, false), 20, "airless collection rate with 14 leaves");
+                    context.assertValueEqual(collector.collectOxygen(context.getLevel(), absoluteCollectorPos), 20, "airless collection rate with 14 leaves");
                 }
             }
 
-            context.assertValueEqual(collector.collectOxygen(context.getLevel(), absoluteCollectorPos, false), 42, "airless collection rate with 28 leaves");
-            context.assertValueEqual(collector.collectOxygen(context.getLevel(), absoluteCollectorPos, true), 186, "atmospheric collection rate");
+            context.assertValueEqual(collector.collectOxygen(context.getLevel(), absoluteCollectorPos), 42, "airless collection rate with 28 leaves");
+            context.getLevel().setDefaultBreathable(true);
+            context.assertValueEqual(collector.collectOxygen(context.getLevel(), absoluteCollectorPos), 186, "atmospheric collection rate");
             context.succeed();
         } finally {
+            context.getLevel().setDefaultBreathable(breathable);
             context.setBlock(collectorPos, Blocks.AIR);
         }
     }

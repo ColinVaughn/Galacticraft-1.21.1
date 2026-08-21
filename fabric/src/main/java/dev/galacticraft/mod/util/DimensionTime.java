@@ -32,7 +32,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Day lengths for dimensions whose day is not 24000 ticks long.
  *
- * <p>A celestial body spins at its own rate - the Moon takes eight vanilla days to turn once - and the
+ * A celestial body spins at its own rate - the Moon takes eight vanilla days to turn once - and the
  * sky is drawn from that rate rather than from the vanilla one. Anything that wants to name a point in
  * the day ("morning", "noon") has to be expressed against the same rate, or it lands somewhere else in
  * the sky than its name says.
@@ -48,7 +48,7 @@ public final class DimensionTime {
     /**
      * {@return how many ticks {@code level} takes to turn once}
      *
-     * <p>The gate matches the one the sky renderer uses, so a "morning" derived from this length is the
+     * The gate matches the one the sky renderer uses, so a "morning" derived from this length is the
      * moment the sun actually comes up in that dimension.
      */
     public static long dayLength(@Nullable Level level) {
@@ -64,7 +64,7 @@ public final class DimensionTime {
     /**
      * {@return the first day time after {@code dayTime} at which a {@code dayLength}-tick day begins}
      *
-     * <p>This is Galacticraft Legacy's {@code WorldUtil.setNextMorning}: sleeping runs the clock on to
+     * This is Galacticraft Legacy's {@code WorldUtil.setNextMorning}: sleeping runs the clock on to
      * the start of the dimension's next day, however many vanilla days that spans.
      */
     public static long nextMorning(long dayTime, long dayLength) {
@@ -76,7 +76,7 @@ public final class DimensionTime {
      * {@return the point of a {@code dayLength}-tick day that sits where {@code vanillaDayTime} sits in a
      * vanilla one}
      *
-     * <p>Both days are drawn with the same curve, so scaling by the ratio of their lengths puts the sun
+     * Both days are drawn with the same curve, so scaling by the ratio of their lengths puts the sun
      * at the same height: on the Moon, noon is 48000 rather than 6000.
      */
     public static long sameTimeOfDay(long vanillaDayTime, long dayLength) {
@@ -88,7 +88,7 @@ public final class DimensionTime {
      * {@return where {@code dayTime} sits in a {@code dayLength}-tick day, counted in the ticks of a
      * vanilla one}
      *
-     * <p>The inverse of {@link #sameTimeOfDay}, within a single day: lunar noon reads back as 6000.
+     * The inverse of {@link #sameTimeOfDay}, within a single day: lunar noon reads back as 6000.
      */
     public static long vanillaTimeOfDay(long dayTime, long dayLength) {
         if (dayLength <= 0L) return dayTime;

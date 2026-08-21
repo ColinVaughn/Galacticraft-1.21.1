@@ -45,9 +45,9 @@ import java.util.function.Function;
 /**
  * Carves drained lunar lava tubes rather than terrestrial solution caves.
  *
- * <p>Lunar tubes are modelled as long, gently graded conduits in mare basalt. Their flat floors,
+ * Lunar tubes are modelled as long, gently graded conduits in mare basalt. Their flat floors,
  * occasional distributary branches, widened flow chambers, and rare collapsed skylights are all
- * features seen in terrestrial basalt tubes or inferred from lunar pits and sinuous rilles.</p>
+ * features seen in terrestrial basalt tubes or inferred from lunar pits and sinuous rilles.
  */
 public class LunarLavaTubeCarver extends WorldCarver<CaveCarverConfiguration> {
     private static final int RANGE = 8;

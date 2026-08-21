@@ -58,12 +58,12 @@ import java.util.UUID;
  * The Astro Miner: an autonomous mining robot deployed from and serviced by an
  * {@link AstroMinerBaseBlockEntity}. Ported 1:1 from legacy Galacticraft's
  * {@code EntityAstroMiner}. Once deployed it travels along its facing, carves a
- * 4-wide x 3-tall tunnel <em>forward</em> (not just down), hollows a mining room,
+ * 4-wide x 3-tall tunnel forward (not just down), hollows a mining room,
  * then retraces its own tunnels back to the base to unload and recharge.
  *
- * <p>Movement and mining are server-authoritative; vanilla entity tracking syncs the
+ * Movement and mining are server-authoritative; vanilla entity tracking syncs the
  * position/rotation to clients, and {@link #DATA_AI_STATE}/{@link #DATA_ENERGY} are
- * synced for rendering (mining lasers) and status.</p>
+ * synced for rendering (mining lasers) and status.
  */
 public class AstroMinerEntity extends GCVehicle {
     public static final int INVENTORY_SIZE = 227;

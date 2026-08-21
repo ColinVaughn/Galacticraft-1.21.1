@@ -119,8 +119,8 @@ public final class RocketLaunchPadPersistenceTestSuite implements GalacticraftGa
 
     /**
      * The rocket resolves its pad by reading the block entity at the saved position while it is
-     * being deserialized. When the entity comes back before that block entity is reachable — which
-     * is what a chunk still being loaded looks like — the link is simply not made, and the pad is
+     * being deserialized. When the entity comes back before that block entity is reachable - which
+     * is what a chunk still being loaded looks like - the link is simply not made, and the pad is
      * the only thing left that can repair it. It holds the rocket's UUID for exactly that purpose.
      */
     @GameTest(template = EMPTY_STRUCTURE)
@@ -271,7 +271,7 @@ public final class RocketLaunchPadPersistenceTestSuite implements GalacticraftGa
 
     /**
      * The cargo hold is sized from the storage upgrade on every access. If that upgrade ever fails
-     * to resolve for a single call — data not synced yet, registry not reachable yet — the hold must
+     * to resolve for a single call - data not synced yet, registry not reachable yet - the hold must
      * not be destroyed, because nothing puts it back once the upgrade resolves again.
      */
     @GameTest(template = EMPTY_STRUCTURE)

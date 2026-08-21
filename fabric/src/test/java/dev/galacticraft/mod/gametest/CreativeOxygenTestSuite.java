@@ -40,9 +40,9 @@ import net.minecraft.world.level.GameType;
  * takes no suffocation damage in vacuum, so spending their tank buys them nothing. The tank is an
  * item they keep, so draining it is a real loss.
  *
- * <p>These drive {@code galacticraft$tryUseOxygen} directly. It is the one place a player's tank is
- * ever extracted from, so guarding it covers every route into it — including the shoulder-parrot
- * check and anything added later — and the tests do not depend on which mixin happens to call it.
+ * These drive {@code galacticraft$tryUseOxygen} directly. It is the one place a player's tank is
+ * ever extracted from, so guarding it covers every route into it - including the shoulder-parrot
+ * check and anything added later - and the tests do not depend on which mixin happens to call it.
  */
 public final class CreativeOxygenTestSuite implements GalacticraftGameTest {
     @GameTest(template = EMPTY_STRUCTURE)

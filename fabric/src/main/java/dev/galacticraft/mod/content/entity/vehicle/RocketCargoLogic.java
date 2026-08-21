@@ -31,9 +31,9 @@ import net.minecraft.world.item.ItemStack;
  * Layout and transfer maths for the crewed rocket's cargo hold, kept free of entity and rendering
  * state so the menu, the screen and the tests all agree on the same numbers.
  *
- * <p>The geometry reproduces Galacticraft Legacy's {@code ContainerRocketInventory}: cargo rows start
+ * The geometry reproduces Galacticraft Legacy's {@code ContainerRocketInventory}: cargo rows start
  * below the fuel gauge and the player inventory is pinned to the bottom of a background whose height
- * grows with the cargo.</p>
+ * grows with the cargo.
  */
 public final class RocketCargoLogic {
     /** Cargo slots per row, as drawn on the background textures. */
@@ -93,9 +93,9 @@ public final class RocketCargoLogic {
     /**
      * Copies the rocket's hold into the list carried across the dimension change.
      *
-     * <p>The list is always {@code returnSlotCount} long even if the hold is a different size, because
+     * The list is always {@code returnSlotCount} long even if the hold is a different size, because
      * the two trailing slots are where the rocket item and launch pad are written before the player
-     * lands. Copies are taken so the hold can be cleared afterwards without emptying the result.</p>
+     * lands. Copies are taken so the hold can be cleared afterwards without emptying the result.
      */
     public static NonNullList<ItemStack> collectForTransfer(Container inventory, int returnSlotCount) {
         NonNullList<ItemStack> stacks = NonNullList.withSize(returnSlotCount, ItemStack.EMPTY);

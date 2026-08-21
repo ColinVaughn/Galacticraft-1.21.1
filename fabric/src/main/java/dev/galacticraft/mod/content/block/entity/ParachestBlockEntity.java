@@ -73,7 +73,7 @@ public class ParachestBlockEntity extends RandomizableContainerBlockEntity imple
     protected void loadAdditional(CompoundTag nbt, HolderLookup.Provider registryLookup) {
         super.loadAdditional(nbt, registryLookup);
         // A parachest is however large the cargo it was dropped with, so the size has to be restored
-        // before the items are read into it — sizing off getContainerSize() here would only ever
+        // before the items are read into it - sizing off getContainerSize() here would only ever
         // report the empty default this field starts at.
         this.inventory = NonNullList.withSize(readSize(nbt), ItemStack.EMPTY);
         ContainerHelper.loadAllItems(nbt, this.inventory, registryLookup);

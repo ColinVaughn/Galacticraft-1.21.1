@@ -30,21 +30,14 @@ import net.minecraft.util.RandomSource;
  * behaves on the way down. Nothing here scripts an outcome: iron survives re-entry because it is
  * dense, strong and slow to ablate, and stone airbursts because it is none of those things.
  *
- * <p>Spawn weights follow observed fall statistics, so the overwhelming majority of what you see
+ * Spawn weights follow observed fall statistics, so the overwhelming majority of what you see
  * is ordinary chondrite and a pallasite is a genuine event.
  *
- * <p>Deliberately free of Minecraft types so the physics can be unit tested without a running
+ * Deliberately free of Minecraft types so the physics can be unit tested without a running
  * game; block palettes live in {@link MeteoroidPalette}.
  *
- * <p>Each class carries these material constants:
- * <ul>
- *   <li><b>bulk density</b> - density of the solid body, kg/m^3</li>
- *   <li><b>ablation coefficient</b> - sigma in the classic ablation equation, s^2/m^2: the single
- *       number that separates a stone that burns from an iron that does not</li>
- *   <li><b>strength</b> - dynamic pressure the body tolerates before breaking up, Pa</li>
- *   <li><b>drag coefficient</b> - dimensionless drag coefficient</li>
- *   <li><b>spawn weight</b> - relative frequency, following observed fall statistics</li>
- * </ul>
+ * Each class carries bulk density in kg/m^3, an ablation coefficient in s^2/m^2, breakup strength
+ * in Pa, a dimensionless drag coefficient and a relative spawn weight.
  */
 public enum MeteoroidClass {
     /** Ordinary chondrite: fragile, light, ablates fast. Around 94% of observed falls. */

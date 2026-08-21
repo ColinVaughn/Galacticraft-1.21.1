@@ -29,10 +29,10 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * Maps a meteoroid class and a voxel's material roll onto real block states — the flight body on
+ * Maps a meteoroid class and a voxel's material roll onto real block states - the flight body on
  * the way down, and the recoverable remains left in the crater.
  *
- * <p>Kept apart from {@link MeteoroidClass} and {@link MeteoroidShape} so those stay free of
+ * Kept apart from {@link MeteoroidClass} and {@link MeteoroidShape} so those stay free of
  * Minecraft registries and can be unit tested without bootstrapping the game.
  */
 public final class MeteoroidPalette {
@@ -63,8 +63,8 @@ public final class MeteoroidPalette {
     }
 
     /**
-     * A block to leave in the crater floor. Every class can drop a still-glowing fallen meteor —
-     * the classic prize — with the rest of the deposit reflecting what the body was made of.
+     * A block to leave in the crater floor. Every class can drop a still-glowing fallen meteor -
+     * the classic prize - with the rest of the deposit reflecting what the body was made of.
      */
     public static BlockState depositState(MeteoroidClass type, RandomSource random) {
         int roll = random.nextInt(100);

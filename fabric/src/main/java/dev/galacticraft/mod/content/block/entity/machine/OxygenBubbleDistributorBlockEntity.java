@@ -221,7 +221,7 @@ public class OxygenBubbleDistributorBlockEntity extends MachineBlockEntity {
         if (bubbleRadiusSquared == this.appliedBubbleRadiusSquared) return;
 
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-        BlockPos origin = this.getBlockPos();
+        BlockPos origin = this.getBlockPos().above();
         SphericalVolumeDiff.forEach(this.appliedBubbleRadiusSquared, bubbleRadiusSquared, (x, y, z, added) ->
                 this.level.setBreathable(pos.setWithOffset(origin, x, y, z), added ? oxygenated : this.oxygenWorld));
         this.appliedBubbleRadiusSquared = bubbleRadiusSquared;

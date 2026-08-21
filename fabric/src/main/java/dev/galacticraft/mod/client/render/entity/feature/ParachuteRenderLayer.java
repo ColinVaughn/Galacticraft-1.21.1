@@ -42,7 +42,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Draws the open canopy of a deployed parachute, strung up above its wearer.
  *
- * <p>Reuses the parachest's canopy mesh, which is already sized for a person: the harness sits at the
+ * Reuses the parachest's canopy mesh, which is already sized for a person: the harness sits at the
  * shoulders and the panels ride a little over two blocks higher.
  */
 public class ParachuteRenderLayer<T extends LivingEntity, M extends EntityModel<T>> extends RenderLayer<T, M> {

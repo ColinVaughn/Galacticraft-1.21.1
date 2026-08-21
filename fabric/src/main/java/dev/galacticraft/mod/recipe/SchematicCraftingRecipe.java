@@ -55,7 +55,7 @@ import java.util.Optional;
  * A positional workbench recipe for a vehicle that is not a rocket - the moon buggy, cargo rocket
  * and astro miner.
  *
- * <p>Like legacy Galacticraft's {@code NasaWorkbenchRecipe}, the ingredients are indexed by well
+ * Like legacy Galacticraft's {@code NasaWorkbenchRecipe}, the ingredients are indexed by well
  * rather than shapeless, so parts have to go where the page draws them. The wells themselves come
  * from a {@link WorkbenchLayout}, since their positions are fixed art rather than data.
  */

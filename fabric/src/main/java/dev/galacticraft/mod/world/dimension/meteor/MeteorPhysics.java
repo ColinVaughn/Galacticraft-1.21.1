@@ -27,19 +27,18 @@ package dev.galacticraft.mod.world.dimension.meteor;
  * The single-body meteor entry model: drag, ablation and breakup, integrated one game tick at a
  * time. Pure and free of Minecraft types so it can be unit tested directly.
  *
- * <p>Per substep, with air density {@code rho} from {@link AtmosphereProfile}:
- * <pre>
+ * Per substep, with air density {@code rho} from {@link AtmosphereProfile}:
+ *
  *   A       = SHAPE_FACTOR * (m / rho_body)^(2/3)     cross-section of a lumpy solid
  *   dv/dt   = -(Cd * A * rho * v^2) / (2m) - g        drag plus gravity
  *   dm/dt   = -(sigma * A * rho * v^3) / 2            ablation
  *   breakup  when rho * v^2 exceeds material strength
- * </pre>
  *
- * <p>Every planetary difference falls out of these four lines and the body's own atmosphere: Venus
+ * Every planetary difference falls out of these four lines and the body's own atmosphere: Venus
  * destroys everything, Earth lets little but iron through, Mars passes fragments, and airless
  * bodies take the hit at full energy.
  *
- * <h2>Units</h2>
+ * Units:
  * Everything here is SI. Callers convert with {@link AtmosphereProfile#ALTITUDE_COMPRESSION}:
  * altitudes and velocities are compressed uniformly on the way into block space (so entry angles
  * are preserved), while the meteoroid body itself and the crater it digs stay at one block per
@@ -72,7 +71,7 @@ public final class MeteorPhysics {
      * @param state           the state after the tick
      * @param burnedOut       the body ablated away to nothing and should vanish in a flash
      * @param breakup         peak dynamic pressure exceeded the body's strength this tick
-     * @param ablatedMass     mass lost this tick, kg — drives glow and trail intensity
+     * @param ablatedMass     mass lost this tick, kg - drives glow and trail intensity
      * @param dynamicPressure peak dynamic pressure seen this tick, Pa
      */
     public record Step(MeteoroidState state, boolean burnedOut, boolean breakup, double ablatedMass,
@@ -141,7 +140,7 @@ public final class MeteorPhysics {
     /**
      * Crater diameter in metres (and so in blocks) for an impact of the given kinetic energy.
      *
-     * <p>Anchored on Meteor Crater in Arizona — a 2.5e16 J impact that left a 1200 m bowl — and
+     * Anchored on Meteor Crater in Arizona - a 2.5e16 J impact that left a 1200 m bowl - and
      * scaled by the standard {@code D proportional to E^(1/3.4)} law, so a small strike leaves a
      * pockmark and a large one leaves something you can see from orbit.
      */

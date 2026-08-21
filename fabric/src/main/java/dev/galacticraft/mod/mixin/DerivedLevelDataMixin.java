@@ -35,12 +35,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 /**
  * Lets a dimension keep its own day time.
  *
- * <p>The server builds one of these per dimension other than the Overworld and hands it to the level
+ * The server builds one of these per dimension other than the Overworld and hands it to the level
  * as its level data. Vanilla reads the Overworld's clock through it and drops writes on the floor,
  * which is exactly why sleeping and {@code /time set} do nothing outside the Overworld, and why a
  * clock jump in the Overworld drags every other dimension along with it.
  *
- * <p>A dimension that starts a clock here keeps its own instead, ticked by {@code ServerLevelMixin}
+ * A dimension that starts a clock here keeps its own instead, ticked by {@code ServerLevelMixin}
  * and saved by {@code DimensionDayTimeState}. Dimensions that never start one - the Nether, the End,
  * anything another mod adds - behave exactly as they did.
  */

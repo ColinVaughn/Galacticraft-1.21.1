@@ -40,7 +40,7 @@ import java.util.Optional;
 /**
  * Fires when a schematic is consumed in the rocket workbench's unlock slot.
  *
- * <p>Merely picking a schematic up used to be enough to unlock its rocket parts. Gating the reward
+ * Merely picking a schematic up used to be enough to unlock its rocket parts. Gating the reward
  * on this trigger instead restores legacy Galacticraft's rule that the schematic has to be taken to
  * the workbench and spent.
  */

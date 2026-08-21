@@ -42,14 +42,14 @@ public interface Dockable extends Fuelable {
 
     /**
      * Called when the launch pad linked to this entity is destroyed.
-     * <p>
+     *
      * When the fuel dock is destroyed. Most likely kills the entity and drops
      * it's containing items.
      */
     void onPadDestroyed();
 
     /**
-     * Whether or not the fuel dock this entity is on is valid. <p> Returning
+     * Whether or not the fuel dock this entity is on is valid. Returning
      * false will not let setPad be called.
      */
     boolean isDockValid(FuelDock dock);

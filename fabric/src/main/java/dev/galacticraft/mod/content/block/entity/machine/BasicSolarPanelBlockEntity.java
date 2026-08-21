@@ -74,7 +74,7 @@ public class BasicSolarPanelBlockEntity extends AbstractSolarPanelBlockEntity {
     }
 
     @Override
-    protected long calculateEnergyProduction(long time, double multiplier) {
+    protected long calculateEnergyProduction(double multiplier) {
         double cos = Math.cos(this.level.getSunAngle(1.0f));
         if (cos <= 0) return 0;
         return (long) (Galacticraft.CONFIG.solarPanelEnergyProductionRate() * cos * multiplier);

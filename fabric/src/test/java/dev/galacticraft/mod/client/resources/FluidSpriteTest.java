@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  * Guards the fluid sprite ids handed to the block atlas against the texture files that actually
  * ship.
  *
- * <p>Nothing fails loudly when these drift apart: the atlas silently substitutes the missing
+ * Nothing fails loudly when these drift apart: the atlas silently substitutes the missing
  * texture, so a bad id only shows up as a magenta tank in-game. Liquid oxygen shipped that way,
  * because the sprite was requested as {@code block/fluid/liquid_oxygen} -- the fluid's registry
  * name -- while the file on disk has only ever been {@code oxygen.png}.

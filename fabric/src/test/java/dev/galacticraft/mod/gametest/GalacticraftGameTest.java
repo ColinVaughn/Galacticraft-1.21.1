@@ -44,7 +44,7 @@ public interface GalacticraftGameTest extends FabricGameTest {
     /**
      * A mock server player that is genuinely in survival mode.
      *
-     * <p>{@link GameTestHelper#makeMockServerPlayerInLevel()} returns a player whose
+     * {@link GameTestHelper#makeMockServerPlayerInLevel()} returns a player whose
      * {@code isCreative()} is hard-coded to {@code true}, and {@code setGameMode} cannot override
      * it. Anything gated on creative mode - research and schematic unlocks among them - is therefore
      * untestable with that player, because it silently passes for everyone. This builds the same

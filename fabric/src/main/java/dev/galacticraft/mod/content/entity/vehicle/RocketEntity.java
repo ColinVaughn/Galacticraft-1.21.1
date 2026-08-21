@@ -132,8 +132,8 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
     private FuelDock linkedPad = null;
     /**
      * Where the pad was when the rocket was last saved. Kept separately because the dock itself
-     * cannot always be resolved at load time — an entity is deserialized while its chunk is still
-     * coming up, so the block entity lookup can come back empty — and without this the position
+     * cannot always be resolved at load time - an entity is deserialized while its chunk is still
+     * coming up, so the block entity lookup can come back empty - and without this the position
      * would be dropped from the next save and the rocket would be orphaned for good.
      */
     private @Nullable BlockPos linkedPadPos = null;
@@ -428,8 +428,8 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
         SimpleContainer previous = this.inventory;
 
         // Never shrink past cargo that is actually there. The size is derived from the storage
-        // upgrade, and anything that stops that upgrade resolving for even one call — data not
-        // synced yet, a registry not reachable yet — would otherwise silently destroy the hold, with
+        // upgrade, and anything that stops that upgrade resolving for even one call - data not
+        // synced yet, a registry not reachable yet - would otherwise silently destroy the hold, with
         // no way to get it back once the upgrade resolves again.
         int occupied = 0;
         for (int slot = 0; slot < previous.getContainerSize(); ++slot) {
@@ -978,7 +978,7 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
         // Registry-aware ops are required, not optional: the part codecs are RegistryFileCodecs, and
         // without a registry they cannot turn a saved id such as "galacticraft:tier_1" back into a
         // holder. That failure sinks the whole record, and the fallback below would quietly hand
-        // back a bare tier 1 rocket — stripping the storage upgrade and every part with it.
+        // back a bare tier 1 rocket - stripping the storage upgrade and every part with it.
         RegistryOps<Tag> ops = RegistryOps.create(NbtOps.INSTANCE, this.registryAccess());
         this.setData(RocketData.CODEC.decode(ops, tag.getCompound("data")).mapOrElse(Pair::getFirst, error -> {
             Constant.LOGGER.error("Failed to load rocket data for {}, falling back to a tier 1 rocket: {}",

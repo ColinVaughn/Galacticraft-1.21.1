@@ -1190,9 +1190,9 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(Config.METEOR_SPAWN_MULTIPLIER, "Meteor Spawn Multiplier");
         this.add(Config.METEORS_ENABLED, "Meteors And Meteor Showers");
         this.add(Config.METEORS_ENABLED_DESC, "Whether Meteoroids Fall At All, On Any Celestial Body");
-        this.add(Config.METEOR_IMPACT_BLOCK_DAMAGE, "Meteor Impacts Break Blocks");
-        this.add(Config.METEOR_IMPACT_BLOCK_DAMAGE_DESC, "When Off, Impacts Still Hurt And Leave Meteorites But Never Dig Craters");
-        this.add(Config.METEOR_IMPACT_BLOCK_DAMAGE_EXCEPTIONS, "Block Damage Exceptions");
+        this.add(Config.METEOR_IMPACT_BLOCK_DAMAGE, "Meteor Impact Damage");
+        this.add(Config.METEOR_IMPACT_BLOCK_DAMAGE_DESC, "When Off, Impacts Cannot Hurt Entities Or Dig Craters But Still Leave Meteorites");
+        this.add(Config.METEOR_IMPACT_BLOCK_DAMAGE_EXCEPTIONS, "Impact Damage Exceptions");
         this.add(Config.METEOR_IMPACT_BLOCK_DAMAGE_EXCEPTIONS_DESC, "Dimension IDs That Do The Opposite Of The Setting Above, Such As minecraft:overworld");
         this.add(Config.METEOR_MAX_CRATER_RADIUS, "Maximum Crater Radius");
         this.add(Config.METEOR_MAX_CRATER_RADIUS_DESC, "Upper Limit In Blocks On A Crater, However Energetic The Impact");
@@ -1392,12 +1392,12 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(Ui.OXYGEN_TANK_2_LEVEL, "Oxygen Tank 2: %s");
         this.add(Ui.OXYGEN_WARNING, "WARNING");
         this.add(Ui.OXYGEN_SETUP_INVALID, "Oxygen Setup is Invalid!");
-        this.add(Ui.DUST_STORM_INCOMING, "Dust Storm Incoming — %ss");
-        this.add(Ui.DUST_STORM_CLEARING, "Dust Storm Clearing — %ss");
+        this.add(Ui.DUST_STORM_INCOMING, "Dust Storm Incoming - %ss");
+        this.add(Ui.DUST_STORM_CLEARING, "Dust Storm Clearing - %ss");
         this.add(Ui.METEOR_SHOWER_INCOMING, "Meteor shower incoming");
         this.add(Ui.METEOR_SHOWER_BEGAN, "The meteor shower has begun");
         this.add(Ui.METEOR_SHOWER_ENDED, "The meteor shower has passed");
-        this.add(Ui.METEOR_IMPACTOR_WARNING, "Large impactor inbound — take cover!");
+        this.add(Ui.METEOR_IMPACTOR_WARNING, "Large impactor inbound - take cover!");
         this.add("subtitles.galacticraft.ambient.dust_storm", "Wind howls");
         this.add(Ui.ROCKET_FUEL, "Fuel:");
         this.add(Ui.ROCKET_FULL, "% full");

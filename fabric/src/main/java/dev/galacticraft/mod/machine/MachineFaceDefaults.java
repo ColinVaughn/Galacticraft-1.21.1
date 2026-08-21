@@ -38,13 +38,13 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Gives a machine a face configuration that works before anyone has configured it.
  *
- * <p>A machine's faces all start blank, and a blank face carries nothing: the energy lookup returns
+ * A machine's faces all start blank, and a blank face carries nothing: the energy lookup returns
  * nothing for it, so a wire will not connect to the machine, a neighbouring machine cannot push power
  * into it, and it cannot push power out. Left that way, a freshly placed machine is inert until every
  * face it needs has been set by hand in the configuration tab - which is easy to miss, and the machine
  * gives no sign that it is what is wrong.
  *
- * <p>Galacticraft Legacy had no configuration tab at all; each machine simply had fixed sides for power
+ * Galacticraft Legacy had no configuration tab at all; each machine simply had fixed sides for power
  * in and out. Rather than picking one face per machine, the default here follows what the machine's own
  * energy storage says it can do: something that can only be filled takes power on every side, something
  * that can only be drained gives it on every side, and a battery does both. That is derived from the
@@ -70,7 +70,7 @@ public final class MachineFaceDefaults {
      * {@return the flow a machine's tanks should offer on its faces, or null if none of them
      * exchanges fluid with the world}
      *
-     * <p>Derived from the tanks themselves, the same way the energy flow is derived from the energy
+     * Derived from the tanks themselves, the same way the energy flow is derived from the energy
      * storage's transfer rates. A machine whose only tank is a hidden internal buffer offers
      * nothing; one holding a stock for others to draw on offers it on every side.
      */
@@ -119,7 +119,7 @@ public final class MachineFaceDefaults {
     /**
      * Applies the closest MachineLib representation of the fixed ports from Galacticraft Legacy.
      *
-     * <p>The front and back remain unconfigured so the two authored terraformer panel textures are
+     * The front and back remain unconfigured so the two authored terraformer panel textures are
      * not replaced by generic I/O textures. The right is the fixed electrical input. The remaining
      * utility faces accept fluid and inventory automation; BOTH is safe here because the individual
      * storage slots still decide whether a resource may actually enter or leave.
@@ -137,7 +137,7 @@ public final class MachineFaceDefaults {
     /**
      * Applies the default face configuration to {@code machine}, unless it already has one.
      *
-     * <p>A machine whose every face is blank is treated as never configured, including one loaded from a
+     * A machine whose every face is blank is treated as never configured, including one loaded from a
      * save written before this existed - that is what lets machines already placed in a world start
      * working. The cost is that blanking every face by hand is not a way to isolate a machine, since it
      * reads as unconfigured; redstone control is.

@@ -441,7 +441,7 @@ public interface Constant {
         String SULFURIC_ACID_STILL = "sulfuric_acid_still";
         String OXYGEN_STILL = "oxygen";
         /**
-         * Registry name of the liquid oxygen fluid. This is <em>not</em> a texture name -- the
+         * Registry name of the liquid oxygen fluid. This is not a texture name -- the
          * oxygen sprite is {@link #OXYGEN_STILL}, and there is no {@code liquid_oxygen.png}.
          */
         String LIQUID_OXYGEN = "liquid_oxygen";

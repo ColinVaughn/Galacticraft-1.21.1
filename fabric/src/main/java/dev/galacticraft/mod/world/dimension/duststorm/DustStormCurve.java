@@ -25,7 +25,7 @@ package dev.galacticraft.mod.world.dimension.duststorm;
 /**
  * Pure math mapping a storm phase and progress to a {@code [0, peak]} intensity.
  *
- * <p>Deterministic and side-effect free so the server and client compute identical
+ * Deterministic and side-effect free so the server and client compute identical
  * intensities from the same synced {@code (phase, ticksIntoPhase, phaseDuration, peak)}
  * tuple, and so it can be unit tested without a running game.
  */

@@ -34,7 +34,7 @@ import net.minecraft.world.item.Items;
 /**
  * Eating a can has to actually feed the player.
  *
- * <p>A can carries no nutrition of its own: the item is registered with a zero-nutrition
+ * A can carries no nutrition of its own: the item is registered with a zero-nutrition
  * placeholder and the real value is derived from its contents. That derivation lived only in a
  * client-side mixin, so the numbers on the tooltip were right while the server, which is what
  * actually feeds the player, saw zero. The can emptied, the eating animation played, and hunger

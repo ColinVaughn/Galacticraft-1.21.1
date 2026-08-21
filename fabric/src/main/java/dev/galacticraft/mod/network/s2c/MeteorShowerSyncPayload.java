@@ -38,7 +38,7 @@ import org.jetbrains.annotations.NotNull;
  * dimension whenever the phase changes (and periodically as a keep-alive). The client feeds it into
  * {@link ClientMeteorShowers}, which drives the sky-streak layer.
  *
- * <p>The radiant travels with the snapshot so the cosmetic streaks stream from the same point in
+ * The radiant travels with the snapshot so the cosmetic streaks stream from the same point in
  * the sky as the real meteoroids the server is spawning.
  */
 public record MeteorShowerSyncPayload(byte phase, float peakIntensity, int ticksIntoPhase, int phaseDuration,

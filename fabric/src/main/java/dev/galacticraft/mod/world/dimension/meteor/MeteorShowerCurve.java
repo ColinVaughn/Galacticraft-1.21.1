@@ -26,7 +26,7 @@ package dev.galacticraft.mod.world.dimension.meteor;
 /**
  * Pure math mapping a shower phase and progress to a {@code [0, peak]} intensity.
  *
- * <p>Deterministic and side-effect free, so the server and the client derive identical intensities
+ * Deterministic and side-effect free, so the server and the client derive identical intensities
  * from the same synced {@code (phase, ticksIntoPhase, phaseDuration, peak)} tuple, and so it can be
  * unit tested without a running game.
  */

@@ -38,6 +38,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -46,9 +47,9 @@ import net.minecraft.world.phys.Vec3;
  * to clients for the sky-streak layer, and spawns the handful of real meteoroids that actually
  * fall near players.
  *
- * <p>Two rates are in play, as in a real sky. A low sporadic rate runs constantly, and an active
+ * Two rates are in play, as in a real sky. A low sporadic rate runs constantly, and an active
  * shower multiplies it up to {@link Config#meteorShowerPeakMultiplier()} times. Everything else a
- * meteor does — whether it burns out, breaks up or lands — is left to the physics.
+ * meteor does - whether it burns out, breaks up or lands - is left to the physics.
  */
 public final class MeteorShowerManager {
     /** Client sync cadence (ticks) while nothing changes, so late joiners and drift are covered. */
@@ -65,6 +66,8 @@ public final class MeteorShowerManager {
     private static final int WARNING_SIZE = 6;
     /** Bias toward small bodies; higher means large meteoroids are rarer. */
     private static final double SIZE_BIAS = 2.4;
+    /** Earth's atmosphere sees far fewer gameplay meteors than exposed moons and planets. */
+    private static final double OVERWORLD_SPAWN_INTERVAL_MULTIPLIER = 4.0;
 
     private MeteorShowerManager() {
     }
@@ -139,7 +142,9 @@ public final class MeteorShowerManager {
         float intensity = state.currentIntensity();
         double multiplier = 1.0 + intensity * (config.meteorShowerPeakMultiplier() - 1.0);
         double spawnRate = Math.max(0.0001f, config.meteorSpawnMultiplier()) * multiplier;
-        int interval = Math.max(1, (int) (config.meteorSporadicInterval() / spawnRate));
+        double worldInterval = config.meteorSporadicInterval()
+                * (level.dimension().equals(Level.OVERWORLD) ? OVERWORLD_SPAWN_INTERVAL_MULTIPLIER : 1.0);
+        int interval = Math.max(1, (int) (worldInterval / spawnRate));
 
         for (ServerPlayer player : level.players()) {
             if (level.random.nextInt(interval) != 0) continue;

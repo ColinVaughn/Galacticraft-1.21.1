@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * Covers what a machine's looping sound should do when its status changes.
  *
- * <p>Many machine statuses share one sound event, so a machine flipping between two of them used to
+ * Many machine statuses share one sound event, so a machine flipping between two of them used to
  * start a fresh looping instance every time while only ever winding down the first one it found.
  * The instances accumulated until the sound engine ran out of channels and the whole game went
  * silent until relog. The rule that prevents it: a status change that does not change the sound

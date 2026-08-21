@@ -45,12 +45,12 @@ import java.util.List;
 /**
  * The cosmetic half of a meteor shower: distant streaks burning out overhead.
  *
- * <p>These are not entities and never touch the world. They exist purely so a shower looks like a
- * shower — dozens of trails an hour at the sporadic background, hundreds at peak — while the server
+ * These are not entities and never touch the world. They exist purely so a shower looks like a
+ * shower - dozens of trails an hour at the sporadic background, hundreds at peak - while the server
  * only ever simulates the handful of real meteoroids that fall near a player. Streaks stream away
  * from the shower's synced radiant, exactly as the real bodies do.
  *
- * <p>They are drawn at a fixed distance in front of the camera with depth testing on, so terrain
+ * They are drawn at a fixed distance in front of the camera with depth testing on, so terrain
  * occludes them properly, and only appear in a sky dark enough and thick enough to show them.
  */
 public final class MeteorSkyStreaks {
@@ -67,7 +67,7 @@ public final class MeteorSkyStreaks {
      * nearby terrain.
      */
     private static final double MIN_ELEVATION = Math.sin(Math.toRadians(15.0));
-    /** Streaks per tick with no shower running — roughly one every fifteen seconds. */
+    /** Streaks per tick with no shower running - roughly one every fifteen seconds. */
     private static final float SPORADIC_RATE = 0.0035f;
     /** Additional streaks per tick at a full-intensity shower peak. */
     private static final float PEAK_RATE = 0.65f;
@@ -180,7 +180,7 @@ public final class MeteorSkyStreaks {
     /**
      * Draws every live streak as an additive, tapered quad on a sphere around the camera.
      *
-     * <p>Takes the camera rotation matrix and builds its own pose from it, exactly as the sky
+     * Takes the camera rotation matrix and builds its own pose from it, exactly as the sky
      * renderers in this package do. The streaks are positioned by world-space direction, so they
      * must be transformed by the camera's orientation or the whole field ends up pinned to the
      * screen and follows you around when you look down.

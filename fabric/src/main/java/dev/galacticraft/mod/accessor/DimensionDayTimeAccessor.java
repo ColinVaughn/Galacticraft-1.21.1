@@ -26,7 +26,7 @@ package dev.galacticraft.mod.accessor;
 /**
  * A clock of its own for a dimension that would otherwise be told the time by the Overworld.
  *
- * <p>Only the Overworld's level data actually stores a day time; every other dimension is handed a
+ * Only the Overworld's level data actually stores a day time; every other dimension is handed a
  * {@code DerivedLevelData}, which reads the Overworld's clock and throws away writes to its own. That
  * is why sleeping or {@code /time set} in another dimension does nothing there, and why a body with a
  * day of its own cannot keep one. Implemented by the {@code DerivedLevelData} mixin, so every reader
@@ -42,7 +42,7 @@ public interface DimensionDayTimeAccessor {
     /**
      * Takes over this dimension's clock, starting at {@code dayTime}.
      *
-     * <p>Until this is called the dimension reads and ignores writes exactly as vanilla does, so a
+     * Until this is called the dimension reads and ignores writes exactly as vanilla does, so a
      * dimension that never starts a clock is left entirely alone.
      */
     default void galacticraft$startOwnDayTime(long dayTime) {

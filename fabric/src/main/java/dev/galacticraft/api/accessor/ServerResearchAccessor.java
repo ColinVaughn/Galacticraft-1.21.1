@@ -56,7 +56,7 @@ public interface ServerResearchAccessor extends ResearchAccessor {
 
     /**
      * Grants the rocket-part research of every advancement the player has already completed.
-     * <p>
+     *
      * Advancement rewards only fire at the moment an advancement is completed, so a player who
      * earned an advancement before its {@code rocket_parts} reward existed would never receive
      * that research and could never craft the rocket it was supposed to unlock. Unlocking is

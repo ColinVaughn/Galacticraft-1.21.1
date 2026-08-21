@@ -26,7 +26,7 @@ package dev.galacticraft.mod.world.dimension.meteor;
 /**
  * The phases of a meteor shower.
  *
- * <p>The cycle is {@code DORMANT -> INCOMING -> WAXING -> PEAK -> WANING -> DORMANT}. The sky is
+ * The cycle is {@code DORMANT -> INCOMING -> WAXING -> PEAK -> WANING -> DORMANT}. The sky is
  * never truly empty: a low sporadic rate runs in every phase, exactly as it does in reality, and a
  * shower simply multiplies it. {@link #INCOMING} is the forecast window, where the rate has not
  * risen yet but players have been told what is coming.

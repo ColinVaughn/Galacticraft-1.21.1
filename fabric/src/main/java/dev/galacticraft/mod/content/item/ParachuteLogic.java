@@ -27,7 +27,7 @@ package dev.galacticraft.mod.content.item;
  * Descent rules for an equipped {@link ParachuteItem}, kept free of entity state so both sides of the
  * connection can reach the same answer from data they each already have.
  *
- * <p>As in Galacticraft Legacy, a parachute in an accessory slot opens by itself once a fall gets going
+ * As in Galacticraft Legacy, a parachute in an accessory slot opens by itself once a fall gets going
  * and stays open until the wearer is back on solid ground.
  */
 public final class ParachuteLogic {
@@ -43,13 +43,13 @@ public final class ParachuteLogic {
     /**
      * Decides whether the canopy is open this tick.
      *
-     * <p>The canopy opens once the fall has gone further than the wearer could land from unhurt, so it
+     * The canopy opens once the fall has gone further than the wearer could land from unhurt, so it
      * stays out of the way of jumping and hopping down ledges and is out by the time a fall could do harm.
      * Reading that limit off the wearer rather than fixing it here keeps the trigger honest wherever they
      * are: Galacticraft stretches the safe fall distance in low gravity, which is also where the same jump
      * carries far enough to have tripped a fixed trigger.
      *
-     * <p>Once open it latches, because an open canopy clears the wearer's fall distance every tick and
+     * Once open it latches, because an open canopy clears the wearer's fall distance every tick and
      * the trigger condition would otherwise stop holding immediately.
      *
      * @param open              whether the canopy was open last tick

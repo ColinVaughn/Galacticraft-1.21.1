@@ -29,7 +29,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * What to do with a machine's looping sound when its status changes.
  *
- * <p>Kept apart from {@link GCSoundManager} so the decision can be checked without a running
+ * Kept apart from {@link GCSoundManager} so the decision can be checked without a running
  * client. The rule that matters: most machine statuses map to the same sound event, so a machine
  * flipping between two of them must keep the one loop it already has rather than starting another.
  */

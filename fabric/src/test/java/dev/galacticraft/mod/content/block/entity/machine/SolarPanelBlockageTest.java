@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.function.IntPredicate;
 
 import static dev.galacticraft.mod.content.block.entity.machine.AbstractSolarPanelBlockEntity.NO_SKYLIGHT_SCAN_HEIGHT;
+import static dev.galacticraft.mod.content.block.entity.machine.AbstractSolarPanelBlockEntity.hasSunlight;
 import static dev.galacticraft.mod.content.block.entity.machine.AbstractSolarPanelBlockEntity.isColumnShaded;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -46,6 +47,12 @@ class SolarPanelBlockageTest {
         Set<Integer> blocked = new HashSet<>();
         for (int height : heights) blocked.add(height);
         return blocked::contains;
+    }
+
+    @Test
+    void dayNightFollowsTheRenderedSun() {
+        assertTrue(hasSunlight(AbstractSolarPanelBlockEntity.NOON));
+        assertFalse(hasSunlight(AbstractSolarPanelBlockEntity.MIDNIGHT));
     }
 
     @Test

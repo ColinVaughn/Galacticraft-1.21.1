@@ -284,10 +284,10 @@ public final class OxygenSealerTestSuite implements GalacticraftGameTest {
     /**
      * Waits for {@code ready} to hold, looking once a tick, then runs {@code then}.
      *
-     * <p>Sealing settles over several ticks, and laying any block anywhere in the level drops every seal
+     * Sealing settles over several ticks, and laying any block anywhere in the level drops every seal
      * in it for a tick before they are recomputed - so while the other tests in a batch are still
      * building their rooms, sampling at a fixed tick is a race. Only ever wait for a condition the test
-     * needs to be <em>true</em>: waiting for one to be false would be satisfied by exactly that flicker.
+     * needs to be true: waiting for one to be false would be satisfied by exactly that flicker.
      */
     private void await(GameTestHelper context, BooleanSupplier ready, String timedOut, Runnable then) {
         await(context, DEADLINE_TICKS, ready, timedOut, then);

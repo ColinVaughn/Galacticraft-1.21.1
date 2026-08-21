@@ -28,7 +28,7 @@ package dev.galacticraft.mod.content.block.entity.machine;
  * checked in a plain unit test. {@code FuelLoaderBlockEntity} itself cannot be loaded without a
  * bootstrapped registry, because its storage spec reaches for fluids and block states.
  *
- * <p>All quantities are in droplets.
+ * All quantities are in droplets.
  */
 public final class FuelLoaderTransferLogic {
     /** Droplets the loader moves into a docked vehicle per tick, once it is up to speed. */
@@ -43,7 +43,7 @@ public final class FuelLoaderTransferLogic {
     /**
      * Droplets that may move this tick.
      *
-     * <p>Zero while the loader is still spinning up: the caller must not commit a transfer it is
+     * Zero while the loader is still spinning up: the caller must not commit a transfer it is
      * not going to account for on both sides. Otherwise the amount is bounded by the rate, by what
      * the loader holds, and by the room left in the vehicle, so the caller can safely extract
      * exactly what its insert reported.

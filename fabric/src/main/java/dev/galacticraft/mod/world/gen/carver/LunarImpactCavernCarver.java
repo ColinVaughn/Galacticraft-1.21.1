@@ -47,10 +47,10 @@ import java.util.function.Function;
 /**
  * Makes bounded collapse caverns linked by impact fractures in the Moon's ancient crust.
  *
- * <p>This is the lunar counterpart to the Overworld's large noise caves: it supplies memorable
+ * This is the lunar counterpart to the Overworld's large noise caves: it supplies memorable
  * rooms and junctions without creating terrestrial, water-eroded cave networks. Retained bedrock
  * columns, angular cracks, roof-fall debris, buried impactors, volatile cold traps, and uncommon
- * olivine exposures make each chamber useful for both navigation and exploration.</p>
+ * olivine exposures make each chamber useful for both navigation and exploration.
  */
 public class LunarImpactCavernCarver extends WorldCarver<CaveCarverConfiguration> {
     private static final int RANGE = 6;

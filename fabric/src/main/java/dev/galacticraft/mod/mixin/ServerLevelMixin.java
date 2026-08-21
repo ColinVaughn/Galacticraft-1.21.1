@@ -91,13 +91,13 @@ public abstract class ServerLevelMixin extends Level implements GCLevelAccessor 
     /**
      * Runs a celestial body's own clock, so its day does not belong to the Overworld.
      *
-     * <p>Every dimension other than the Overworld is handed a {@code DerivedLevelData} that reads the
+     * Every dimension other than the Overworld is handed a {@code DerivedLevelData} that reads the
      * Overworld's day time and discards writes to its own, which is why sleeping and {@code /time set}
      * do nothing out here and why an Overworld clock jump drags every other sky with it. Galacticraft
      * Legacy solved this with a per-dimension time offset; this is the same idea, kept as an absolute
      * clock rather than an offset so nothing has to detect and undo the Overworld's jumps.
      *
-     * <p>Started at whatever the shared clock read the first time the dimension ticks, so an existing
+     * Started at whatever the shared clock read the first time the dimension ticks, so an existing
      * save carries on from where it was.
      */
     @Inject(method = "tick", at = @At("HEAD"))
@@ -124,7 +124,7 @@ public abstract class ServerLevelMixin extends Level implements GCLevelAccessor 
     /**
      * Wakes players at their own dimension's sunrise.
      *
-     * <p>Vanilla rounds the clock up to the next multiple of 24000, which is a sunrise in the Overworld
+     * Vanilla rounds the clock up to the next multiple of 24000, which is a sunrise in the Overworld
      * but an arbitrary moment on a body that takes eight vanilla days to turn - from the middle of the
      * lunar night it only ever wakes you into more of the same night. The target comes from that body's
      * own day instead, as Galacticraft Legacy's {@code WorldUtil.setNextMorning} did.

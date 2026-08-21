@@ -26,6 +26,8 @@ import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.api.block.FluidPipeBlock;
 import dev.galacticraft.mod.api.pipe.FluidPipe;
 import dev.galacticraft.mod.api.pipe.PipeNetwork;
+import dev.galacticraft.machinelib.api.block.entity.MachineBlockEntity;
+import dev.galacticraft.machinelib.api.storage.slot.FluidResourceSlot;
 import dev.galacticraft.machinelib.api.transfer.MLFluidStack;
 import dev.galacticraft.mod.content.block.special.fluidpipe.PipeBlockEntity;
 import net.minecraft.core.BlockPos;
@@ -125,28 +127,32 @@ public final class PipeNetworkImpl implements PipeNetwork {
 
         activeTransaction = true;
         try {
-            Map<IFluidHandler, Integer> requests = new LinkedHashMap<>();
-            for (IFluidHandler[] handlers : pipes.values()) {
+            Map<IFluidHandler, Integer> consumerRequests = new LinkedHashMap<>();
+            Map<IFluidHandler, Integer> bufferRequests = new LinkedHashMap<>();
+            for (Map.Entry<BlockPos, IFluidHandler[]> pipe : pipes.entrySet()) {
+                IFluidHandler[] handlers = pipe.getValue();
                 if (handlers == null) continue;
-                for (IFluidHandler handler : handlers) {
+                for (int side = 0; side < handlers.length; side++) {
+                    IFluidHandler handler = handlers[side];
                     if (handler == null) continue;
                     int accepted = handler.fill(resource.copyWithAmount(available), IFluidHandler.FluidAction.SIMULATE);
                     if (accepted > 0) {
+                        BlockEntity target = level.getBlockEntity(
+                                pipe.getKey().relative(Direction.from3DDataValue(side)));
+                        Map<IFluidHandler, Integer> requests = isFluidConsumer(target, resource)
+                                ? consumerRequests : bufferRequests;
                         requests.merge(handler, accepted, Math::max);
                     }
                 }
             }
-            int totalRequested = requests.values().stream().mapToInt(Integer::intValue).sum();
-            if (totalRequested == 0) return 0;
-            if (action.simulate()) return Math.min(available, totalRequested);
+            int consumerRequested = consumerRequests.values().stream().mapToInt(Integer::intValue).sum();
+            int bufferRequested = bufferRequests.values().stream().mapToInt(Integer::intValue).sum();
+            if (consumerRequested + bufferRequested == 0) return 0;
+            if (action.simulate()) return Math.min(available, consumerRequested + bufferRequested);
 
-            int inserted = 0;
-            for (Map.Entry<IFluidHandler, Integer> entry : requests.entrySet()) {
-                int share = Math.max(1, (int) ((long) entry.getValue() * available / totalRequested));
-                share = Math.min(share, available - inserted);
-                if (share <= 0) break;
-                inserted += entry.getKey().fill(resource.copyWithAmount(share), IFluidHandler.FluidAction.EXECUTE);
-            }
+            int consumerBudget = Math.min(available, consumerRequested);
+            int inserted = distribute(consumerRequests, consumerRequested, consumerBudget, resource);
+            inserted += distribute(bufferRequests, bufferRequested, available - consumerBudget, resource);
             if (inserted > 0) {
                 currentFluid = resource.copyWithAmount(1);
                 transferred += inserted;
@@ -156,6 +162,28 @@ public final class PipeNetworkImpl implements PipeNetwork {
         } finally {
             activeTransaction = false;
         }
+    }
+
+    private static boolean isFluidConsumer(@Nullable BlockEntity target, FluidStack resource) {
+        if (!(target instanceof MachineBlockEntity machine)) return false;
+        for (FluidResourceSlot slot : machine.fluidStorage()) {
+            if (slot.transferMode().externalInsertion() && !slot.transferMode().externalExtraction()
+                    && slot.getFilter().test(resource.getFluid(), resource.getComponentsPatch())) return true;
+        }
+        return false;
+    }
+
+    private static int distribute(Map<IFluidHandler, Integer> requests, int totalRequested, int amount,
+                                  FluidStack resource) {
+        if (amount <= 0 || totalRequested <= 0) return 0;
+        int inserted = 0;
+        for (Map.Entry<IFluidHandler, Integer> request : requests.entrySet()) {
+            int share = Math.max(1, (int) ((long) request.getValue() * amount / totalRequested));
+            share = Math.min(share, amount - inserted);
+            if (share <= 0) break;
+            inserted += request.getKey().fill(resource.copyWithAmount(share), IFluidHandler.FluidAction.EXECUTE);
+        }
+        return inserted;
     }
 
     private void updateDisplayedFluid(MLFluidStack fluid) {

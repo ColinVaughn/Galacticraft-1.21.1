@@ -27,6 +27,7 @@ import dev.galacticraft.mod.Galacticraft;
 import dev.galacticraft.mod.content.GCEntityTypes;
 import dev.galacticraft.mod.world.dimension.meteor.AtmosphereProfile;
 import dev.galacticraft.mod.world.dimension.meteor.MeteorImpact;
+import dev.galacticraft.mod.world.dimension.meteor.MeteorImpactRules;
 import dev.galacticraft.mod.world.dimension.meteor.MeteorPhysics;
 import dev.galacticraft.mod.world.dimension.meteor.MeteoroidClass;
 import dev.galacticraft.mod.world.dimension.meteor.MeteoroidShape;
@@ -61,9 +62,9 @@ import static dev.galacticraft.mod.content.entity.damage.GCDamageTypes.METEOR_ST
  * the drag/ablation model in {@link MeteorPhysics}, which either burns away in the sky, breaks up
  * into fragments, or reaches the ground and digs a crater.
  *
- * <p>The block body is never sent over the wire. The seed, size class, material class and current
+ * The block body is never sent over the wire. The seed, size class, material class and current
  * mass fraction ride on synched entity data, and both sides rebuild the identical voxel list from
- * {@link MeteoroidShape} — so ablation is visible as the body eroding from the outside in for
+ * {@link MeteoroidShape} - so ablation is visible as the body eroding from the outside in for
  * about eleven bytes of traffic.
  */
 public class FallingMeteorEntity extends Entity {
@@ -193,7 +194,7 @@ public class FallingMeteorEntity extends Entity {
     /**
      * Advances the body along its velocity without vanilla collision resolution. The server has
      * already swept the path with {@code clip} and handled any hit, and a meteoroid should never
-     * slide along or step up a surface — it either misses or it lands.
+     * slide along or step up a surface - it either misses or it lands.
      */
     private void advance() {
         Vec3 movement = this.getDeltaMovement();
@@ -209,7 +210,7 @@ public class FallingMeteorEntity extends Entity {
         this.physics = step.state();
 
         // A body too small (or too fragmented) to break into pieces flattens and sheds mass
-        // instead — real pancaking, and it keeps a breakup from cascading into an entity storm.
+        // instead - real pancaking, and it keeps a breakup from cascading into an entity storm.
         if (step.breakup() && !canFragment()) {
             this.physics = this.physics.withMass(this.physics.mass() * (1.0 - PANCAKE_MASS_LOSS));
         }
@@ -298,6 +299,7 @@ public class FallingMeteorEntity extends Entity {
 
     /** Anything caught in the swept path takes a direct hit. */
     private void hurtEntitiesAlong(ServerLevel level, Vec3 from, Vec3 to) {
+        if (!MeteorImpactRules.blockDamageEnabled(level)) return;
         double radius = MeteoroidShape.radiusFor(getSize());
         AABB sweep = new AABB(from, to).inflate(radius);
         List<Entity> hit = level.getEntities(this, sweep, EntitySelector.NO_SPECTATORS.and(Entity::isAlive));

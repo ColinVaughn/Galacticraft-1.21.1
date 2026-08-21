@@ -65,7 +65,7 @@ public final class SealablePipeTestSuite implements GalacticraftGameTest {
     /**
      * The block of the room's shell replaced by the pipe under test - in the ceiling, deliberately.
      *
-     * <p>A gametest plot is not open on every side: the framework walls it in with {@code minecraft:barrier},
+     * A gametest plot is not open on every side: the framework walls it in with {@code minecraft:barrier},
      * and it stands on solid ground. Both of those are sturdy, so a gap in a side wall or in the floor
      * opens onto something the sealer reads as another wall, and the room stays sealed whatever is in the
      * gap - the test would pass for a bare pipe too. Only upwards is genuinely open, which is also why a

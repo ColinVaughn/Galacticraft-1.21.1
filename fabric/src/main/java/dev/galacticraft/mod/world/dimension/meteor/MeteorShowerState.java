@@ -33,12 +33,12 @@ import net.minecraft.world.level.saveddata.SavedData;
 /**
  * Server-authoritative, persistent state of one dimension's meteor shower cycle.
  *
- * <p>Advanced once per world tick by {@link MeteorShowerManager}. Holds the current
+ * Advanced once per world tick by {@link MeteorShowerManager}. Holds the current
  * {@link MeteorShowerPhase}, progress through it, the target peak intensity, the pre-rolled
- * phase lengths, and the shower's radiant — the direction in the sky its meteors appear to stream
+ * phase lengths, and the shower's radiant - the direction in the sky its meteors appear to stream
  * from, which both the spawner and the sky-streak renderer read so they agree.
  *
- * <p>All fields are plain primitives so the NBT round-trip needs no registry lookup.
+ * All fields are plain primitives so the NBT round-trip needs no registry lookup.
  */
 public class MeteorShowerState extends SavedData {
     public static final String ID = "galacticraft_meteor_shower";
@@ -58,7 +58,7 @@ public class MeteorShowerState extends SavedData {
     private float radiantYaw = 0.0f;
     /** Elevation of the radiant above the horizon, in degrees. */
     private float radiantPitch = 45.0f;
-    /** An op's answer for this dimension on whether strikes may break blocks. */
+    /** An op's answer for this dimension on whether strikes may damage terrain or entities. */
     private MeteorImpactRules.Override blockDamageOverride = MeteorImpactRules.Override.DEFAULT;
 
     public MeteorShowerState() {

@@ -25,7 +25,7 @@ package dev.galacticraft.mod.world.dimension.duststorm;
 /**
  * The phases a Mars dust storm cycles through.
  *
- * <p>The lifecycle is {@code CLEAR -> INCOMING -> BUILDING -> PEAK -> DYING -> CLEAR}.
+ * The lifecycle is {@code CLEAR -> INCOMING -> BUILDING -> PEAK -> DYING -> CLEAR}.
  * {@link #INCOMING} is the fairness/forecast window: no dust is in the air yet, but
  * ambient cues and the gear-based forecast HUD warn the player a storm is imminent.
  */

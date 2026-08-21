@@ -223,14 +223,14 @@ public final class GalacticraftNeoForge {
     /**
      * Snuffs out fire sources placed by hand where there is no oxygen.
      *
-     * <p>Galacticraft normally does this by wrapping the {@code BlockState.onPlace} call inside
-     * {@code LevelChunk.setBlockState}. NeoForge suppresses that call for entity-placed blocks — it
+     * Galacticraft normally does this by wrapping the {@code BlockState.onPlace} call inside
+     * {@code LevelChunk.setBlockState}. NeoForge suppresses that call for entity-placed blocks - it
      * raises {@code Level.captureBlockSnapshots} for the duration of the item use so placement can be
      * cancelled, and only replays {@code onPlace} itself after this event has fired. The wrapped call
      * site therefore never runs on this loader, which let hand-placed torches burn in a vacuum.
      *
-     * <p>Only the single-block event is handled; multi-block placements (beds, doors) contain no fire
-     * sources.</p>
+     * Only the single-block event is handled; multi-block placements (beds, doors) contain no fire
+     * sources.
      */
     private void extinguishPlacedBlock(BlockEvent.EntityPlaceEvent event) {
         if (event.isCanceled()) return;

@@ -38,7 +38,7 @@ import net.minecraft.world.phys.Vec3;
  * The scenario from the bug report: someone coming down from orbit with a parachute equipped used to hit
  * the ground at terminal velocity and die, because nothing ever slowed the descent.
  *
- * <p>These tests fall a wolf rather than a player. Not by preference - the game test harness builds mock
+ * These tests fall a wolf rather than a player. Not by preference - the game test harness builds mock
  * players on a connection the server never ticks, so a mock player does not fall at all (it holds its
  * height with a fall distance of zero however long you wait) and cannot exercise fall code. A wolf is
  * ticked normally and runs the identical parachute path in {@code LivingEntityMixin}, so it is the only

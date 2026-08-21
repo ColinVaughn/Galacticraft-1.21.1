@@ -39,12 +39,12 @@ import org.jetbrains.annotations.Nullable;
  * the air out - the fluid counterpart of the sealable aluminum wire, and of Galacticraft Legacy's
  * Enclosed Oxygen Pipe.
  *
- * <p>The whole trick is the radius: an ordinary pipe is a thin tube, and the oxygen sealer treats any
+ * The whole trick is the radius: an ordinary pipe is a thin tube, and the oxygen sealer treats any
  * block whose faces are not solid as a hole to escape through. Filling the block makes every face sturdy,
  * which is the same thing that makes the sealable wire work - neither block is in the {@code sealable}
  * tag, and neither needs to be.
  *
- * <p>Carries fluid exactly as the pipe it encloses does, colour included, so a coloured line keeps its
+ * Carries fluid exactly as the pipe it encloses does, colour included, so a coloured line keeps its
  * identity through a wall instead of being bridged into every other line by a colourless section.
  */
 public class SealableGlassFluidPipeBlock extends FluidPipeBlock {

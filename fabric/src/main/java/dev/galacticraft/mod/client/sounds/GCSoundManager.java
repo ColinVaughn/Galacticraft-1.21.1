@@ -41,7 +41,7 @@ public class GCSoundManager implements SoundCallback {
     /**
      * The one live looping sound per machine, keyed by position.
      *
-     * <p>At most one entry per machine is the whole point. This was a list searched by sound event,
+     * At most one entry per machine is the whole point. This was a list searched by sound event,
      * which returned the first match; because most statuses share {@code MACHINE_BUZZ}, a machine
      * flipping between two of them kept re-ending the instance that was already fading and left the
      * live one running, stacking a new loop on every flip until the sound engine ran out of

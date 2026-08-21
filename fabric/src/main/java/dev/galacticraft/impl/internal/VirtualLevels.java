@@ -30,14 +30,14 @@ import java.util.function.Supplier;
 
 /**
  * Finds the {@link Level} the game is actually running for a given dimension key.
- * <p>
- * Several mods build throwaway {@code Level} instances that wrap a real one — Create's Ponder
+ *
+ * Several mods build throwaway {@code Level} instances that wrap a real one - Create's Ponder
  * scenes and schematic previews go through {@code net.createmod.catnip.levelWrappers.WrappedLevel},
  * which hands the real level's dimension key, dimension type and level data straight to
  * {@code Level}'s constructor. Such a level is indistinguishable from the level it wraps by its own
  * state alone, so a Ponder scene opened on the Moon would otherwise be treated as the Moon:
  * low gravity, no atmosphere, space sky.
- * <p>
+ *
  * Object identity against the level the game has actually installed for that key is the one
  * reliable signal, so that is what this class exposes.
  */
@@ -57,7 +57,7 @@ public final class VirtualLevels {
 
     /**
      * @return the level the game is running for {@code level}'s dimension, or {@code null} when
-     *         that cannot be determined — a level still under construction is not installed yet,
+     *         that cannot be determined - a level still under construction is not installed yet,
      *         and a dedicated server never has a client level. Callers must treat {@code null} as
      *         "no answer" rather than "virtual", otherwise a real level would be misjudged during
      *         the window between its construction and its registration.

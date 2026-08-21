@@ -26,6 +26,8 @@ import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.api.block.FluidPipeBlock;
 import dev.galacticraft.mod.api.pipe.FluidPipe;
 import dev.galacticraft.mod.api.pipe.PipeNetwork;
+import dev.galacticraft.machinelib.api.block.entity.MachineBlockEntity;
+import dev.galacticraft.machinelib.api.storage.slot.FluidResourceSlot;
 import dev.galacticraft.machinelib.api.transfer.MLFluidStack;
 import dev.galacticraft.mod.content.block.special.fluidpipe.PipeBlockEntity;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
@@ -200,18 +202,29 @@ public class PipeNetworkImpl extends SnapshotParticipant<PipeNetworkImpl.PipeSna
             return 0;
         }
 
-        long totalRequested = 0;
-        Object2LongMap<Storage<FluidVariant>> requests = new Object2LongOpenHashMap<>();
+        long consumerRequested = 0;
+        long bufferRequested = 0;
+        Object2LongMap<Storage<FluidVariant>> consumerRequests = new Object2LongOpenHashMap<>();
+        Object2LongMap<Storage<FluidVariant>> bufferRequests = new Object2LongOpenHashMap<>();
 
-        for (Storage<FluidVariant>[] storages : this.pipes.values()) {
+        for (var pipe : this.pipes.object2ObjectEntrySet()) {
+            Storage<FluidVariant>[] storages = pipe.getValue();
             if (storages != null) {
-                for (Storage<FluidVariant> storage : storages) {
+                for (int side = 0; side < storages.length; side++) {
+                    Storage<FluidVariant> storage = storages[side];
                     if (storage != null) {
                         try (Transaction simulation = Transaction.openNested(transaction)) {
                             long inserted = storage.insert(resource, amount, simulation);
                             if (inserted > 0) {
-                                totalRequested += inserted;
-                                requests.put(storage, inserted);
+                                BlockEntity target = this.level.getBlockEntity(
+                                        pipe.getKey().relative(Direction.from3DDataValue(side)));
+                                if (isFluidConsumer(target, resource)) {
+                                    consumerRequested += inserted;
+                                    consumerRequests.put(storage, inserted);
+                                } else {
+                                    bufferRequested += inserted;
+                                    bufferRequests.put(storage, inserted);
+                                }
                             }
                             simulation.abort();
                         }
@@ -220,24 +233,19 @@ public class PipeNetworkImpl extends SnapshotParticipant<PipeNetworkImpl.PipeSna
             }
         }
 
-        if (totalRequested == 0) {
+        if (consumerRequested + bufferRequested == 0) {
             this.activeTransaction = false;
             return 0;
         }
 
-        double ratio = Math.min(1.0, (double) amount / (double) totalRequested);
         final long baseTransferred = this.transferred;
 
         this.updateSnapshots(transaction);
 
         this.currentVariant = resource;
-        requests.forEach((storage, requested) -> {
-            long insert = (long) (requested * ratio);
-            if (insert > 0) {
-                insert = storage.insert(resource, insert, transaction);
-                this.transferred += insert;
-            }
-        });
+        long consumerBudget = Math.min(amount, consumerRequested);
+        this.transferred += distribute(consumerRequests, consumerRequested, consumerBudget, resource, transaction);
+        this.transferred += distribute(bufferRequests, bufferRequested, amount - consumerBudget, resource, transaction);
 
         if (this.transferred > baseTransferred) {
             long committedTransferred = this.transferred;
@@ -250,6 +258,27 @@ public class PipeNetworkImpl extends SnapshotParticipant<PipeNetworkImpl.PipeSna
 
         this.activeTransaction = false;
         return this.transferred - baseTransferred;
+    }
+
+    private static boolean isFluidConsumer(@Nullable BlockEntity target, FluidVariant resource) {
+        if (!(target instanceof MachineBlockEntity machine)) return false;
+        for (FluidResourceSlot slot : machine.fluidStorage()) {
+            if (slot.transferMode().externalInsertion() && !slot.transferMode().externalExtraction()
+                    && slot.getFilter().test(resource.getFluid(), resource.getComponents())) return true;
+        }
+        return false;
+    }
+
+    private static long distribute(Object2LongMap<Storage<FluidVariant>> requests, long totalRequested, long amount,
+                                   FluidVariant resource, TransactionContext transaction) {
+        if (amount <= 0 || totalRequested <= 0) return 0;
+        double ratio = Math.min(1.0, (double) amount / (double) totalRequested);
+        long inserted = 0;
+        for (Object2LongMap.Entry<Storage<FluidVariant>> request : requests.object2LongEntrySet()) {
+            long share = Math.min((long) (request.getLongValue() * ratio), amount - inserted);
+            if (share > 0) inserted += request.getKey().insert(resource, share, transaction);
+        }
+        return inserted;
     }
 
     private void updateDisplayedFluid(@NotNull MLFluidStack fluid) {

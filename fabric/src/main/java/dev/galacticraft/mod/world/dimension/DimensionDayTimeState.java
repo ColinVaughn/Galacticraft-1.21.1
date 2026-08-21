@@ -32,7 +32,7 @@ import net.minecraft.world.level.saveddata.SavedData;
 /**
  * A dimension's own day time, across a restart.
  *
- * <p>Only the Overworld's clock is part of the save's level data; every other dimension reads that one
+ * Only the Overworld's clock is part of the save's level data; every other dimension reads that one
  * and has nowhere of its own to write. A body that keeps its own time therefore has to store it here,
  * in that dimension's own data folder.
  *

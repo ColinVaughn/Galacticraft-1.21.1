@@ -10,7 +10,7 @@
 
 > **A fork by [Boobcat](https://github.com/ColinVaughn), based on [Team Galacticraft's](https://github.com/TeamGalacticraft/Galacticraft) 1.21.1 branch.**
 >
-> This fork layers extra content and tweaks on top of upstream Galacticraft for Minecraft 1.21.1 — including a landable Mercury dimension, a multi-biome Moon overhaul, Mars dust storms, distinct tier-2/tier-3 rockets, and the autonomous astro miner / cargo rocket.
+> This fork layers extra content and tweaks on top of upstream Galacticraft for Minecraft 1.21.1 - including a landable Mercury dimension, a multi-biome Moon overhaul, Mars dust storms, distinct tier-2/tier-3 rockets, and the autonomous astro miner / cargo rocket.
 >
 > All credit for Galacticraft itself belongs to Team Galacticraft. This fork is unofficial and is not affiliated with or endorsed by them. Fork source: <https://github.com/ColinVaughn/Galacticraft-1.21.1>.
 

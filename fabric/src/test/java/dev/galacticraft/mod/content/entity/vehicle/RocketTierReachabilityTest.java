@@ -44,7 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Checks the shipped datagen output, so a rocket assembled from tier N parts reaches exactly the
  * celestial bodies whose access weight is at most N.
  *
- * <p>Reads the generated JSON rather than the bootstrap code because the JSON is what the game
+ * Reads the generated JSON rather than the bootstrap code because the JSON is what the game
  * actually loads.
  */
 class RocketTierReachabilityTest {

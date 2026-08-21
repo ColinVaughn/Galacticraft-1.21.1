@@ -119,7 +119,7 @@ public class LaunchPadBlockEntity extends BlockEntity implements FuelDock, Exten
 
         // Only the UUID is restored. Resolving the entity here would leave `docked` populated
         // without ever linking the entity back to this pad, and getDockedEntity() skips its repair
-        // step whenever `docked` is already set — so the rocket would stay orphaned. Let the lazy
+        // step whenever `docked` is already set - so the rocket would stay orphaned. Let the lazy
         // path in getDockedEntity() do both halves of the job.
         if (nbt.hasUUID(Constant.Nbt.DOCKED_UUID)) {
             this.entityUUID = nbt.getUUID(Constant.Nbt.DOCKED_UUID);

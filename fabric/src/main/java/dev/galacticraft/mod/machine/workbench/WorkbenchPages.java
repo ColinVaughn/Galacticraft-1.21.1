@@ -44,7 +44,7 @@ import java.util.function.Predicate;
 /**
  * Assembles the ordered list of workbench pages a player can flip through.
  *
- * <p>Legacy Galacticraft kept this list in {@code GCPlayerStats.unlockedSchematics}; here it is
+ * Legacy Galacticraft kept this list in {@code GCPlayerStats.unlockedSchematics}; here it is
  * derived on demand from the loaded recipes and the player's unlocks, so both sides can work it out
  * without a dedicated sync packet.
  */
@@ -63,7 +63,7 @@ public final class WorkbenchPages {
     /**
      * The research id recording that a player has unlocked {@code schematicItem}.
      *
-     * <p>This is persisted in player NBT, so the shape is a compatibility promise. The item's own
+     * This is persisted in player NBT, so the shape is a compatibility promise. The item's own
      * namespace is kept so that two addons shipping a {@code rocket_schematic} do not collide.
      */
     public static ResourceLocation unlockId(ResourceLocation schematicItem) {

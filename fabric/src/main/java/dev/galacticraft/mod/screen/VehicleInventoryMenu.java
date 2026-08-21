@@ -39,9 +39,9 @@ import net.minecraft.world.level.Level;
  * size, laying the vehicle slots out in rows of nine above the player inventory
  * and drawing on the vanilla {@code generic_54} chest texture.
  *
- * <p>The opening data is simply the vehicle entity's id; both sides resolve the
+ * The opening data is simply the vehicle entity's id; both sides resolve the
  * backing {@link Container} from the entity, so the client sees a display of the
- * correct size while the server drives the authoritative container.</p>
+ * correct size while the server drives the authoritative container.
  */
 public class VehicleInventoryMenu extends AbstractContainerMenu {
     private final Container container;

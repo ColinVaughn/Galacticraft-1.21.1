@@ -36,14 +36,14 @@ import java.util.List;
 /**
  * Where and when Galacticraft's own mobs are allowed to spawn.
  *
- * <p>A mob with no entry here is not held to looser rules, it is held to <em>no</em> rules:
+ * A mob with no entry here is not held to looser rules, it is held to no rules:
  * {@link SpawnPlacements#checkSpawnRules} answers yes for any type it has never been told about, and
  * {@link SpawnPlacements#getPlacementType} falls back to
  * {@link SpawnPlacementTypes#NO_RESTRICTIONS}. An unregistered monster therefore ignores the light
  * level entirely and does not need ground to stand on - which is how the evolved mobs came to spawn
  * inside lit, sealed bases.
  *
- * <p>The table lives here, in code both loaders compile, because each loader has to install it a
+ * The table lives here, in code both loaders compile, because each loader has to install it a
  * different way: Fabric calls {@code SpawnPlacements.register} directly (widened for access) while
  * NeoForge has to go through {@code RegisterSpawnPlacementsEvent}. Keeping the entries in one place
  * is what stops the two lists from drifting apart, which is what happened before - NeoForge had them

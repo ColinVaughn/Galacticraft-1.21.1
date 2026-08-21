@@ -28,7 +28,7 @@ public interface ParachuteAccessor {
     /**
      * Whether this entity's equipped parachute is currently holding it up.
      *
-     * <p>Both sides work this out for themselves each tick, so this is the answer the physics and the
+     * Both sides work this out for themselves each tick, so this is the answer the physics and the
      * fall damage check use locally. Use {@link #galacticraft$isParachuteVisible()} for rendering, since
      * a client does not simulate the fall of anyone but its own player.
      */

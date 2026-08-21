@@ -45,9 +45,9 @@ import java.util.stream.Stream;
  * Automatically updates the data format for Galacticraft structures.
  * Also does some string transformations.
  *
- * <code>galacticraft-rewoven</code> -> <code>galacticraft</code>
- * <code>moon_pillager_base</code> -> <code>moon_pillager_outpost</code>
- * <code>:moon_village</code> -> <code>:village/moon/highlands</code>
+ * galacticraft-rewoven -> galacticraft
+ * moon_pillager_base -> moon_pillager_outpost
+ * :moon_village -> :village/moon/highlands
  */
 public class StructureUpdater {
     public static void run() {

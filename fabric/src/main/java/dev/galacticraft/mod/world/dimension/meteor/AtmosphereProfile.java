@@ -38,24 +38,24 @@ import net.minecraft.world.level.material.Fluid;
  * The atmospheric physics of one celestial body, derived from the body's own
  * {@link GasComposition} instead of being hand-tuned per planet.
  *
- * <p>Surface density comes straight from the ideal gas law, {@code rho = P*M/(R*T)}, using the
+ * Surface density comes straight from the ideal gas law, {@code rho = P*M/(R*T)}, using the
  * body's stored pressure and temperature and a mean molar mass computed from its actual gas
  * mixture. Scale height follows from {@code H = R*T/(M*g)}. Nothing here is a magic number per
  * planet: Earth falls out at ~1.22 kg/m^3, Mars at ~0.015, a corrected Venus at ~66, and the
  * airless bodies at effectively zero.
  *
- * <p>All fields are in SI units (kilograms, metres, seconds). The one concession to Minecraft is
+ * All fields are in SI units (kilograms, metres, seconds). The one concession to Minecraft is
  * {@link #ALTITUDE_COMPRESSION}, which maps block-space to real altitude.
  */
 public record AtmosphereProfile(double surfaceDensity, double scaleHeight, double gravity, int seaLevel) {
     /**
      * Metres of real altitude represented by one block of Minecraft height.
      *
-     * <p>This is the single deliberate fudge in the model. Earth's true 8.4 km scale height would
+     * This is the single deliberate fudge in the model. Earth's true 8.4 km scale height would
      * be perfectly flat across a 384-block world, so meteors would either burn instantly or not at
      * all. Compressing altitude by this factor puts Earth's scale height at roughly 60 blocks, so
      * density climbs meaningfully as a meteor crosses the visible sky, and a body spawned above the
-     * build limit starts near 60 km — the altitude band where real ablation actually peaks.
+     * build limit starts near 60 km - the altitude band where real ablation actually peaks.
      */
     public static final double ALTITUDE_COMPRESSION = 140.0;
 
@@ -74,7 +74,7 @@ public record AtmosphereProfile(double surfaceDensity, double scaleHeight, doubl
     /**
      * Molar masses in kg/mol for every gas Galacticraft can put in an atmosphere.
      *
-     * <p>Held in a lazy holder rather than a static block on purpose: the keys are
+     * Held in a lazy holder rather than a static block on purpose: the keys are
      * {@link ResourceLocation}s, so touching this table needs the game bootstrapped. Deferring it
      * keeps {@link AtmosphereProfile} itself constructible from plain numbers, which is what lets
      * the physics be unit tested without a running Minecraft.

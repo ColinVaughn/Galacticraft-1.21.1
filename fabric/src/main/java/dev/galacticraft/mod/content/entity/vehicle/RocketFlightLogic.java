@@ -27,7 +27,7 @@ package dev.galacticraft.mod.content.entity.vehicle;
  * Fuel budget and ascent maths for {@link RocketEntity}, kept free of Minecraft types so the
  * launch can be simulated in a plain unit test.
  *
- * <p>A rocket's tank is measured here in "burn ticks" -- the number of ticks a tank holds rather
+ * A rocket's tank is measured here in "burn ticks" -- the number of ticks a tank holds rather
  * than a volume -- so the numbers stay exact and independent of the droplets-per-bucket constant.
  */
 public final class RocketFlightLogic {

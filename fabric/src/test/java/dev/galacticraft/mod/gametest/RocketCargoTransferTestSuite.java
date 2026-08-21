@@ -39,7 +39,7 @@ import net.minecraft.world.item.Items;
 
 /**
  * A rocket's storage upgrade grants up to three chests of cargo, and all of it has to survive the
- * trip down — through the lander on a landable body, or through the parachest on one that is not.
+ * trip down - through the lander on a landable body, or through the parachest on one that is not.
  */
 public final class RocketCargoTransferTestSuite implements GalacticraftGameTest {
     /** Cargo for the largest rocket, plus the two slots holding the rocket and its launch pad. */
@@ -49,7 +49,7 @@ public final class RocketCargoTransferTestSuite implements GalacticraftGameTest 
     private static final BlockPos CHEST_POS = new BlockPos(1, 1, 1);
 
     /**
-     * The falling parachest is only a courier — what matters is that the chest it leaves behind is
+     * The falling parachest is only a courier - what matters is that the chest it leaves behind is
      * big enough for everything it was carrying.
      */
     @GameTest(template = EMPTY_STRUCTURE)
@@ -89,7 +89,7 @@ public final class RocketCargoTransferTestSuite implements GalacticraftGameTest 
         } else if (!chest.getItem(THREE_CHEST_CARGO - 1).is(Items.EMERALD)) {
             context.fail("the last cargo slot was wiped on reload", CHEST_POS);
         } else if (!chest.getItem(size - ParachestBlockEntity.NON_CARGO_SLOTS).is(GCBlocks.ROCKET_LAUNCH_PAD.asItem())) {
-            // ParachestMenu draws the last three slots as launch pad, rocket, fuel — so the pad the
+            // ParachestMenu draws the last three slots as launch pad, rocket, fuel - so the pad the
             // rocket sent down has to be the first of them.
             context.fail("the launch pad slot was wiped on reload", CHEST_POS);
         } else {

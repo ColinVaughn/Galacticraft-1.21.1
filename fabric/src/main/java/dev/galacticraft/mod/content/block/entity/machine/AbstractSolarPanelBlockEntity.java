@@ -23,7 +23,6 @@
 
 package dev.galacticraft.mod.content.block.entity.machine;
 
-import dev.galacticraft.api.universe.celestialbody.CelestialBody;
 import dev.galacticraft.machinelib.api.block.entity.MachineBlockEntity;
 import dev.galacticraft.machinelib.api.machine.MachineStatus;
 import dev.galacticraft.machinelib.api.machine.MachineStatuses;
@@ -35,13 +34,11 @@ import dev.galacticraft.mod.api.block.entity.SolarPanel;
 import dev.galacticraft.mod.machine.GCMachineStatuses;
 import dev.galacticraft.mod.world.dimension.duststorm.MarsDustStormManager;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
@@ -69,22 +66,12 @@ public abstract class AbstractSolarPanelBlockEntity extends MachineBlockEntity i
     private boolean blockageScanInitialized;
     private final EnergySource energySource = new EnergySource(this);
     public long currentEnergyGeneration = 0;
-    private long dayLength = 24000;
     private float tilt = NOON;
     // Martian dust that settles on the panel during storms and lingers, cutting output until it weathers off.
     private float dustLevel = 0.0f;
 
     public AbstractSolarPanelBlockEntity(BlockEntityType<? extends AbstractSolarPanelBlockEntity> type, BlockPos pos, BlockState state, StorageSpec spec) {
         super(type, pos, state, spec);
-    }
-
-    @Override
-    public void setLevel(Level level) {
-        super.setLevel(level);
-        Holder<CelestialBody<?, ?>> holder = level.galacticraft$getCelestialBody();
-        if (holder != null) {
-            this.dayLength = holder.value().dayLength();
-        }
     }
 
     @Override
@@ -187,19 +174,22 @@ public abstract class AbstractSolarPanelBlockEntity extends MachineBlockEntity i
             if (status == null) status = GCMachineStatuses.PARTIALLY_GENERATING;
             multiplier *= (1.0 - this.dustLevel * 0.8);
         }
-        long time = level.getDayTime() % this.dayLength;
-        // Don't use this.isDay() because it returns false when it is thundering
-        if (time > this.dayLength / 2) status = GCMachineStatuses.NOT_GENERATING;
-        if (time > this.dayLength / 4) time = this.dayLength / 2 - time;
+        // Use the same dimension-aware sun angle as generation and rendering. isDay() also treats
+        // thunderstorms as night, which is not what a solar panel needs here.
+        if (!hasSunlight(level.getSunAngle(1.0F))) status = GCMachineStatuses.NOT_GENERATING;
 
         profiler.push("transaction");
-        this.currentEnergyGeneration = this.calculateEnergyProduction(time, multiplier);
+        this.currentEnergyGeneration = this.calculateEnergyProduction(multiplier);
         this.energyStorage().insert(this.currentEnergyGeneration);
         profiler.pop();
         return status == null ? GCMachineStatuses.GENERATING : status;
     }
 
-    protected abstract long calculateEnergyProduction(long time, double multiplier);
+    protected abstract long calculateEnergyProduction(double multiplier);
+
+    static boolean hasSunlight(float sunAngle) {
+        return Math.cos(sunAngle) > 0;
+    }
 
     @Override
     public float getTilt(float tickDelta) {
@@ -243,8 +233,7 @@ public abstract class AbstractSolarPanelBlockEntity extends MachineBlockEntity i
     @Override
     public SolarPanelSource getSource() {
         if (this.level.dimensionType().hasCeiling()) return SolarPanelSource.NO_LIGHT_SOURCE;
-        // Don't use this.isDay() because it returns false when it is thundering
-        if ((this.level.getDayTime() % this.dayLength) > this.dayLength / 2) return SolarPanelSource.NIGHT;
+        if (!hasSunlight(this.level.getSunAngle(1.0F))) return SolarPanelSource.NIGHT;
         if (this.level.isThundering()) return SolarPanelSource.STORMY;
         if (this.level.isRaining()) return SolarPanelSource.OVERCAST;
         return SolarPanelSource.DAY;

@@ -48,12 +48,12 @@ import java.util.List;
 /**
  * Draws a meteoroid as the block body it actually is.
  *
- * <p>The voxel list is rebuilt from the entity's synced seed, and only the first
+ * The voxel list is rebuilt from the entity's synced seed, and only the first
  * {@code survivingVoxelCount()} entries are drawn. Because {@link MeteoroidShape} orders voxels
  * from the centre outwards, ablation reads as the body eroding from the outside in without a
  * single block ever crossing the network.
  *
- * <p>An additive bloom scaled by the entity's ablation rate rides on top, so a body glows in
+ * An additive bloom scaled by the entity's ablation rate rides on top, so a body glows in
  * proportion to how hard the atmosphere is actually working on it: fiercely over Venus, briefly
  * over Earth, and not at all over an airless body.
  */
@@ -110,7 +110,7 @@ public class FallingMeteorRenderer extends EntityRenderer<FallingMeteorEntity> {
     /**
      * Stacks a few additive quads facing the camera. Overlapping them fakes a radial falloff far
      * more cheaply than a textured billboard, and they are skipped entirely when the body is not
-     * ablating — which is exactly what happens in a vacuum.
+     * ablating - which is exactly what happens in a vacuum.
      */
     private void renderGlow(FallingMeteorEntity entity, PoseStack matrices, MultiBufferSource vertexConsumers) {
         float glow = entity.getGlow();
