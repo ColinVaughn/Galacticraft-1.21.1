@@ -64,6 +64,36 @@ class MachineFaceDefaultsTest {
     }
 
     @Test
+    void defaultsUseRightForInputAndLeftForOutput() {
+        IOConfig config = new IOConfig();
+
+        MachineFaceDefaults.applyDefaultFaces(config, ResourceFlow.BOTH, null);
+
+        assertEquals(ResourceType.ENERGY, config.get(BlockFace.RIGHT).getType());
+        assertEquals(ResourceFlow.INPUT, config.get(BlockFace.RIGHT).getFlow());
+        assertEquals(ResourceType.ENERGY, config.get(BlockFace.LEFT).getType());
+        assertEquals(ResourceFlow.OUTPUT, config.get(BlockFace.LEFT).getFlow());
+        for (BlockFace face : new BlockFace[]{BlockFace.FRONT, BlockFace.BACK, BlockFace.TOP, BlockFace.BOTTOM}) {
+            assertEquals(ResourceType.NONE, config.get(face).getType());
+        }
+    }
+
+    @Test
+    void oldEverySideDefaultsAreMigrated() {
+        IOConfig config = new IOConfig();
+        for (BlockFace face : BlockFace.values()) {
+            config.get(face).setOption(ResourceType.ENERGY, ResourceFlow.INPUT);
+        }
+
+        MachineFaceDefaults.applyDefaultFaces(config, ResourceFlow.INPUT, null);
+
+        assertEquals(ResourceType.ENERGY, config.get(BlockFace.RIGHT).getType());
+        for (BlockFace face : new BlockFace[]{BlockFace.FRONT, BlockFace.BACK, BlockFace.LEFT, BlockFace.TOP, BlockFace.BOTTOM}) {
+            assertEquals(ResourceType.NONE, config.get(face).getType());
+        }
+    }
+
+    @Test
     void terraformerKeepsItsAuthoredFrontAndBackTextures() {
         IOConfig config = new IOConfig();
 
@@ -83,7 +113,7 @@ class MachineFaceDefaultsTest {
     void oldUniformTerraformerFacesAreRecognizedForMigration() {
         IOConfig config = new IOConfig();
         for (BlockFace face : BlockFace.values()) {
-            config.get(face).setOption(ResourceType.ANY, ResourceFlow.INPUT);
+            config.get(face).setOption(ResourceType.ENERGY, ResourceFlow.INPUT);
         }
 
         assertTrue(MachineFaceDefaults.isOldTerraformerDefault(config));

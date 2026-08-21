@@ -44,11 +44,9 @@ import org.jetbrains.annotations.Nullable;
  * face it needs has been set by hand in the configuration tab - which is easy to miss, and the machine
  * gives no sign that it is what is wrong.
  *
- * Galacticraft Legacy had no configuration tab at all; each machine simply had fixed sides for power
- * in and out. Rather than picking one face per machine, the default here follows what the machine's own
- * energy storage says it can do: something that can only be filled takes power on every side, something
- * that can only be drained gives it on every side, and a battery does both. That is derived from the
- * storage spec, so a machine added later is covered without a table to update.
+ * Galacticraft Legacy used fixed ports: inputs on the right and outputs on the left. The default here
+ * follows that layout while deriving the resource types from each machine's storage spec, so a machine
+ * added later is covered without a table to update.
  *
  * @see dev.galacticraft.mod.mixin.MachineBlockEntityMixin where this is applied
  */
@@ -71,8 +69,7 @@ public final class MachineFaceDefaults {
      * exchanges fluid with the world}
      *
      * Derived from the tanks themselves, the same way the energy flow is derived from the energy
-     * storage's transfer rates. A machine whose only tank is a hidden internal buffer offers
-     * nothing; one holding a stock for others to draw on offers it on every side.
+     * storage's transfer rates. A machine whose only tank is a hidden internal buffer offers nothing.
      */
     public static @Nullable ResourceFlow defaultFluidFlow(MachineFluidStorage storage) {
         boolean insert = false;
@@ -89,11 +86,6 @@ public final class MachineFaceDefaults {
         return null;
     }
 
-    /** {@return a flow that permits everything both of these do} */
-    private static ResourceFlow combine(ResourceFlow a, ResourceFlow b) {
-        return a == b ? a : ResourceFlow.BOTH;
-    }
-
     /** {@return whether every face is still blank, meaning nobody has configured this machine} */
     public static boolean isUnconfigured(IOConfig config) {
         for (BlockFace face : BlockFace.values()) {
@@ -107,8 +99,11 @@ public final class MachineFaceDefaults {
      * terraformer}
      */
     static boolean isOldTerraformerDefault(IOConfig config) {
+        ResourceType type = config.get(BlockFace.FRONT).getType();
+        if (type != ResourceType.ENERGY && type != ResourceType.ANY) return false;
+
         for (BlockFace face : BlockFace.values()) {
-            if (config.get(face).getType() != ResourceType.ANY
+            if (config.get(face).getType() != type
                     || config.get(face).getFlow() != ResourceFlow.INPUT) {
                 return false;
             }
@@ -134,6 +129,43 @@ public final class MachineFaceDefaults {
         config.get(BlockFace.BOTTOM).setOption(ResourceType.ANY, ResourceFlow.BOTH);
     }
 
+    /** {@return whether this is the every-side profile assigned by versions 5.4.10 through 5.4.13} */
+    static boolean isOldDefault(IOConfig config, @Nullable ResourceFlow energyFlow, @Nullable ResourceFlow fluidFlow) {
+        if (energyFlow == null && fluidFlow == null) return false;
+
+        ResourceType type = energyFlow != null && fluidFlow != null
+                ? ResourceType.ANY
+                : energyFlow != null ? ResourceType.ENERGY : ResourceType.FLUID;
+        ResourceFlow flow = energyFlow != null && fluidFlow != null && energyFlow != fluidFlow
+                ? ResourceFlow.BOTH
+                : energyFlow != null ? energyFlow : fluidFlow;
+
+        for (BlockFace face : BlockFace.values()) {
+            if (config.get(face).getType() != type || config.get(face).getFlow() != flow) return false;
+        }
+        return true;
+    }
+
+    private static void applyFace(IOConfig config, BlockFace face, ResourceFlow flow,
+                                  @Nullable ResourceFlow energyFlow, @Nullable ResourceFlow fluidFlow) {
+        boolean energy = energyFlow == flow || energyFlow == ResourceFlow.BOTH;
+        boolean fluid = fluidFlow == flow || fluidFlow == ResourceFlow.BOTH;
+        if (!energy && !fluid) return;
+
+        config.get(face).setOption(energy && fluid ? ResourceType.ANY
+                : energy ? ResourceType.ENERGY : ResourceType.FLUID, flow);
+    }
+
+    static void applyDefaultFaces(IOConfig config, @Nullable ResourceFlow energyFlow, @Nullable ResourceFlow fluidFlow) {
+        if (!isUnconfigured(config) && !isOldDefault(config, energyFlow, fluidFlow)) return;
+
+        for (BlockFace face : BlockFace.values()) {
+            config.get(face).setOption(ResourceType.NONE, ResourceFlow.BOTH);
+        }
+        applyFace(config, BlockFace.RIGHT, ResourceFlow.INPUT, energyFlow, fluidFlow);
+        applyFace(config, BlockFace.LEFT, ResourceFlow.OUTPUT, energyFlow, fluidFlow);
+    }
+
     /**
      * Applies the default face configuration to {@code machine}, unless it already has one.
      *
@@ -152,35 +184,9 @@ public final class MachineFaceDefaults {
             return;
         }
 
-        if (!isUnconfigured(config)) return;
-
         MachineEnergyStorage energy = machine.energyStorage();
         ResourceFlow energyFlow = defaultEnergyFlow(energy.externalInsertionRate(), energy.externalExtractionRate());
         ResourceFlow fluidFlow = defaultFluidFlow(machine.fluidStorage());
-
-        ResourceType type;
-        ResourceFlow flow;
-        if (energyFlow != null && fluidFlow != null) {
-            // A face carries one resource type, and there is no energy-and-fluid pairing, so a
-            // machine that does both has to use ANY. Nothing is loosened by that: what may actually
-            // cross a face is still decided by each storage's own transfer rates and slot types.
-            type = ResourceType.ANY;
-            flow = combine(energyFlow, fluidFlow);
-        } else if (energyFlow != null) {
-            type = ResourceType.ENERGY;
-            flow = energyFlow;
-        } else if (fluidFlow != null) {
-            // Machines with no energy at all - the oxygen storage module, the fluid tank - used to
-            // fall out here with every face left blank, which made them airtight in both
-            // directions: a blank face exposes no tank, so nothing could fill or drain them.
-            type = ResourceType.FLUID;
-            flow = fluidFlow;
-        } else {
-            return;
-        }
-
-        for (BlockFace face : BlockFace.values()) {
-            config.get(face).setOption(type, flow);
-        }
+        applyDefaultFaces(config, energyFlow, fluidFlow);
     }
 }

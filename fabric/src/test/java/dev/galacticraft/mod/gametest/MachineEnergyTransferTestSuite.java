@@ -27,16 +27,17 @@ import dev.galacticraft.mod.content.GCBlocks;
 import dev.galacticraft.mod.content.block.entity.machine.CoalGeneratorBlockEntity;
 import dev.galacticraft.mod.content.block.entity.machine.EnergyStorageClusterBlockEntity;
 import dev.galacticraft.mod.content.block.entity.machine.OxygenSealerBlockEntity;
+import dev.galacticraft.machinelib.api.util.BlockFace;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import team.reborn.energy.api.EnergyStorage;
 
 /**
- * A machine is only reachable through the faces its configuration exposes, and every face starts blank.
- * Left that way nothing carries power to or from a machine anybody has just placed - no wire will even
- * connect to it - so these pin the defaults that make a freshly placed machine work.
+ * A machine is only reachable through the faces its configuration exposes. These pin the right-side
+ * input and left-side output defaults that make a freshly placed machine work.
  *
  * @see dev.galacticraft.mod.machine.MachineFaceDefaults
  */
@@ -49,18 +50,19 @@ public final class MachineEnergyTransferTestSuite implements GalacticraftGameTes
 
     /** The lookup a wire uses to decide what it can connect to and feed. */
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 200)
-    public void aFreshlyPlacedMachineIsReachable(GameTestHelper context) {
+    public void aFreshlyPlacedMachineHasOnePowerInput(GameTestHelper context) {
         context.setBlock(SOURCE, GCBlocks.OXYGEN_SEALER);
 
         runAt(context, SETTLE_TICKS, () -> {
+            Direction input = BlockFace.RIGHT.toDirection(context.getBlockState(SOURCE).getValue(BlockStateProperties.HORIZONTAL_FACING));
             for (Direction direction : Direction.values()) {
                 EnergyStorage exposed = EnergyStorage.SIDED.find(context.getLevel(), context.absolutePos(SOURCE), direction);
-                if (exposed == null) {
-                    context.fail("nothing can reach the sealer's " + direction + " face, so no wire will feed it");
+                if (direction != input && exposed != null) {
+                    context.fail("the sealer unexpectedly exposes power on its " + direction + " face");
                     return;
                 }
-                if (!exposed.supportsInsertion()) {
-                    context.fail("the sealer's " + direction + " face will not take power");
+                if (direction == input && (exposed == null || !exposed.supportsInsertion())) {
+                    context.fail("the sealer's right face will not take power");
                     return;
                 }
             }
@@ -74,7 +76,8 @@ public final class MachineEnergyTransferTestSuite implements GalacticraftGameTes
         context.setBlock(SOURCE, GCBlocks.COAL_GENERATOR);
 
         runAt(context, SETTLE_TICKS, () -> {
-            EnergyStorage exposed = EnergyStorage.SIDED.find(context.getLevel(), context.absolutePos(SOURCE), Direction.NORTH);
+            Direction output = BlockFace.LEFT.toDirection(context.getBlockState(SOURCE).getValue(BlockStateProperties.HORIZONTAL_FACING));
+            EnergyStorage exposed = EnergyStorage.SIDED.find(context.getLevel(), context.absolutePos(SOURCE), output);
             if (exposed == null) {
                 context.fail("nothing can reach the coal generator");
             } else if (!exposed.supportsExtraction()) {
@@ -93,8 +96,8 @@ public final class MachineEnergyTransferTestSuite implements GalacticraftGameTes
      */
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 200)
     public void aStorageClusterPassesPowerOnToTheMachineBesideIt(GameTestHelper context) {
-        context.setBlock(MIDDLE, GCBlocks.ENERGY_STORAGE_CLUSTER);
-        context.setBlock(SINK, GCBlocks.OXYGEN_SEALER);
+        context.setBlock(MIDDLE, GCBlocks.ENERGY_STORAGE_CLUSTER.defaultBlockState().setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.SOUTH));
+        context.setBlock(SINK, GCBlocks.OXYGEN_SEALER.defaultBlockState().setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.SOUTH));
         EnergyStorageClusterBlockEntity cluster = context.getBlockEntity(MIDDLE);
         OxygenSealerBlockEntity sealer = context.getBlockEntity(SINK);
         cluster.energyStorage().setEnergy(cluster.energyStorage().getCapacity());
@@ -111,9 +114,9 @@ public final class MachineEnergyTransferTestSuite implements GalacticraftGameTes
     /** And the whole chain: generator into the cluster, cluster into the machine. */
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 200)
     public void powerFlowsAlongAChainOfMachines(GameTestHelper context) {
-        context.setBlock(SOURCE, GCBlocks.COAL_GENERATOR);
-        context.setBlock(MIDDLE, GCBlocks.ENERGY_STORAGE_CLUSTER);
-        context.setBlock(SINK, GCBlocks.OXYGEN_SEALER);
+        context.setBlock(SOURCE, GCBlocks.COAL_GENERATOR.defaultBlockState().setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.SOUTH));
+        context.setBlock(MIDDLE, GCBlocks.ENERGY_STORAGE_CLUSTER.defaultBlockState().setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.SOUTH));
+        context.setBlock(SINK, GCBlocks.OXYGEN_SEALER.defaultBlockState().setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.SOUTH));
         CoalGeneratorBlockEntity generator = context.getBlockEntity(SOURCE);
         EnergyStorageClusterBlockEntity cluster = context.getBlockEntity(MIDDLE);
         OxygenSealerBlockEntity sealer = context.getBlockEntity(SINK);
@@ -133,9 +136,9 @@ public final class MachineEnergyTransferTestSuite implements GalacticraftGameTes
     /** The arrangement the report says does work, kept as a control on the ones above. */
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 200)
     public void powerFlowsAlongAWire(GameTestHelper context) {
-        context.setBlock(SOURCE, GCBlocks.COAL_GENERATOR);
+        context.setBlock(SOURCE, GCBlocks.COAL_GENERATOR.defaultBlockState().setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.SOUTH));
         context.setBlock(MIDDLE, GCBlocks.ALUMINUM_WIRE);
-        context.setBlock(SINK, GCBlocks.OXYGEN_SEALER);
+        context.setBlock(SINK, GCBlocks.OXYGEN_SEALER.defaultBlockState().setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.SOUTH));
         CoalGeneratorBlockEntity generator = context.getBlockEntity(SOURCE);
         OxygenSealerBlockEntity sealer = context.getBlockEntity(SINK);
         generator.energyStorage().setEnergy(generator.energyStorage().getCapacity());

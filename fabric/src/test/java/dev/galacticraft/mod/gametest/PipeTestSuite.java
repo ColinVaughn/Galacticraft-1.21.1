@@ -52,10 +52,8 @@ public class PipeTestSuite implements GalacticraftGameTest {
         context.setBlock(consumerPos, GCBlocks.OXYGEN_COMPRESSOR);
         OxygenStorageModuleBlockEntity storage = context.getBlockEntity(storagePos);
         OxygenCompressorBlockEntity consumer = context.getBlockEntity(consumerPos);
-        for (BlockFace face : BlockFace.values()) {
-            storage.getIOConfig().get(face).setOption(ResourceType.FLUID, ResourceFlow.BOTH);
-            consumer.getIOConfig().get(face).setOption(ResourceType.FLUID, ResourceFlow.INPUT);
-        }
+        storage.getIOConfig().get(BlockFace.BOTTOM).setOption(ResourceType.FLUID, ResourceFlow.BOTH);
+        consumer.getIOConfig().get(BlockFace.TOP).setOption(ResourceType.FLUID, ResourceFlow.INPUT);
         context.setBlock(pipePos, GCBlocks.GLASS_FLUID_PIPE);
         GlassFluidPipeBlockEntity pipe = context.getBlockEntity(pipePos);
 
