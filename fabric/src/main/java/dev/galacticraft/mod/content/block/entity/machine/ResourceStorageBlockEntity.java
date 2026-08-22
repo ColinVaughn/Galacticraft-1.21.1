@@ -38,8 +38,10 @@ public abstract class ResourceStorageBlockEntity extends MachineBlockEntity {
         super(type, pos, state, spec);
     }
 
-    @Range(from = 0, to = 8)
+    @Range(from = 0, to = 12)
     protected abstract int calculateAmount();
+
+    public abstract int getColor();
 
     @Override
     public void setChanged() {

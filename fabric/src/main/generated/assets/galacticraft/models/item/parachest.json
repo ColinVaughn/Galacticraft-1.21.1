@@ -1,1 +1,3 @@
-{"parent":"minecraft:builtin/entity"}
+{
+  "parent": "galacticraft:block/parachest"
+}

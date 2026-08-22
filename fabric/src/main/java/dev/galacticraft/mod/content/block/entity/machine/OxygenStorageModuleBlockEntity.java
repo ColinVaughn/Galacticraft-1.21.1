@@ -48,6 +48,7 @@ import org.jetbrains.annotations.Nullable;
 public class OxygenStorageModuleBlockEntity extends ResourceStorageBlockEntity {
     public static final int OXYGEN_TANK = 0;
     public static final long MAX_OXYGEN = FluidUtil.bucketsToDroplets(100);
+    private static final int COLOR = 0x09d1ef;
 
     public static final StorageSpec SPEC = StorageSpec.of(
             MachineFluidStorage.spec(
@@ -81,7 +82,12 @@ public class OxygenStorageModuleBlockEntity extends ResourceStorageBlockEntity {
     }
 
     @Override
+    public int getColor(){
+        return COLOR;
+    }
+
+    @Override
     protected int calculateAmount() {
-        return (int) (this.fluidStorage().slot(0).getAmount() * 8 / MAX_OXYGEN);
+        return (int) (this.fluidStorage().slot(0).getAmount() * 12 / MAX_OXYGEN);
     }
 }

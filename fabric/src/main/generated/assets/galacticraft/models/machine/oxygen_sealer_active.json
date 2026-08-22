@@ -1,10 +1,9 @@
 {
   "data": {
     "back": "galacticraft:block/machine_side",
-    "front": "galacticraft:block/machine_side",
+    "front": "galacticraft:block/oxygen_sealer_active",
     "left": "galacticraft:block/machine_side",
-    "right": "galacticraft:block/machine_side",
-    "top": "galacticraft:block/oxygen_sealer_top_active"
+    "right": "galacticraft:block/machine_side"
   },
   "loader": "machinelib:machine",
   "machinelib:type": "machine"
