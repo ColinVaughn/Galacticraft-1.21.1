@@ -1,6 +1,3 @@
 {
-  "parent": "block/cube_all",
-  "textures": {
-    "all": "galacticraft:block/vacuum_glass_clear_inventory"
-  }
+  "parent": "galacticraft:block/vacuum_glass_clear"
 }

@@ -51,6 +51,7 @@ import org.jetbrains.annotations.Nullable;
 public class EnergyStorageModuleBlockEntity extends ResourceStorageBlockEntity {
     public static final int CHARGE_SELF_SLOT = 0;
     public static final int CHARGE_ITEM_SLOT = 1;
+    public static final int COLOR = 0xa17f03;
 
     public static final StorageSpec SPEC = StorageSpec.of(
             MachineItemStorage.spec(
@@ -102,7 +103,12 @@ public class EnergyStorageModuleBlockEntity extends ResourceStorageBlockEntity {
     }
 
     @Override
+    public int getColor(){
+        return COLOR;
+    }
+
+    @Override
     protected int calculateAmount() {
-        return (int) (this.energyStorage().getAmount() * 8 / this.energyStorage().getCapacity());
+        return (int) (this.energyStorage().getAmount() * 12 / this.energyStorage().getCapacity());
     }
 }
