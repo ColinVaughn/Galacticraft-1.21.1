@@ -39,59 +39,49 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import org.joml.Matrix4f;
 
 public class ResourceStorageBlockRenderer implements BlockEntityRenderer<ResourceStorageBlockEntity> {
-    public static final ResourceLocation WHITE = Constant.id("textures/obj/white.png");
+    private static final ResourceLocation WHITE = Constant.id("textures/obj/white.png");
+    private static final float SIZE = 0.0625f;
 
     public ResourceStorageBlockRenderer(BlockEntityRendererProvider.Context context){
     }
 
     @Override
-    public void render(ResourceStorageBlockEntity machine, float tickDelta, PoseStack matrices, MultiBufferSource vertexConsumers, int light, int overlay){
-        int AMOUNT = machine.getBlockState().getValue(ResourceStorageBlock.AMOUNT);
-        if(AMOUNT==0)
+    public void render(ResourceStorageBlockEntity machine, float tickDelta, PoseStack matrices, MultiBufferSource vertexConsumers, int light, int overlay) {
+        final int amount = machine.getBlockState().getValue(ResourceStorageBlock.AMOUNT);
+        if (amount == 0)
             return;
 
-        int color = machine.getColor();
-        int[] rgb = {(color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF};
+        final int color = machine.getColor();
+        final int[] rgb = {(color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF};
 
-        Direction direction = machine.getBlockState().getValue(BlockStateProperties.HORIZONTAL_FACING);
+        final Direction direction = machine.getBlockState().getValue(BlockStateProperties.HORIZONTAL_FACING);
         light = LevelRenderer.getLightColor(machine.getLevel(), machine.getBlockPos().relative(direction));
-        light = LightTexture.pack(Math.max(10, LightTexture.block(light)), Math.min(10, LightTexture.sky(light)));
+        light = LightTexture.pack(Math.max(10, LightTexture.block(light)), Math.max(10, LightTexture.sky(light)));
 
         matrices.pushPose();
         matrices.translate(0.5, 0.5, 0.5);
         matrices.mulPose(direction.getRotation());
         matrices.translate(-0.5, -0.5, -0.5);
         matrices.translate(0.125, 1.001, 0.0625);
-        Matrix4f matrix = matrices.last().pose();
-        VertexConsumer consumer = vertexConsumers.getBuffer(RenderType.entityTranslucent(WHITE));
+        final Matrix4f matrix = matrices.last().pose();
+        final VertexConsumer consumer = vertexConsumers.getBuffer(RenderType.entityTranslucent(WHITE));
 
-        consumer.addVertex(matrix, 0, 0, 0)
-                .setColor(rgb[0], rgb[1], rgb[2], 255)
-                .setLight(light)
-                .setOverlay(overlay)
-                .setUv(0.5f, 0.5f)
-                .setNormal(0.0f, 1.0f, 0.0f);
+        final float[][] vertices = {
+                {0, 0, 0},
+                {SIZE * amount, 0, 0},
+                {SIZE * amount, 0, SIZE},
+                {0, 0, SIZE}
+        };
 
-        consumer.addVertex(matrix, 0.0625f*AMOUNT, 0, 0)
-                .setColor(rgb[0], rgb[1], rgb[2], 255)
-                .setLight(light)
-                .setOverlay(overlay)
-                .setUv(0.5f, 0.5f)
-                .setNormal(0.0f, 1.0f, 0.0f);
+        for (float[] e : vertices) {
+            consumer.addVertex(matrix, e[0], e[1], e[2])
+                    .setColor(rgb[0], rgb[1], rgb[2], 255)
+                    .setLight(light)
+                    .setOverlay(overlay)
+                    .setUv(0.5f, 0.5f)
+                    .setNormal(0.0f, 1.0f, 0.0f);
 
-        consumer.addVertex(matrix, 0.0625f*AMOUNT, 0, 0.0625f)
-                .setColor(rgb[0], rgb[1], rgb[2], 255)
-                .setLight(light)
-                .setOverlay(overlay)
-                .setUv(0.5f, 0.5f)
-                .setNormal(0.0f, 1.0f, 0.0f);
-
-        consumer.addVertex(matrix, 0, 0, 0.0625f)
-                .setColor(rgb[0], rgb[1], rgb[2], 255)
-                .setLight(light)
-                .setOverlay(overlay)
-                .setUv(0.5f, 0.5f)
-                .setNormal(0.0f, 1.0f, 0.0f);
+        }
 
         matrices.popPose();
     }
