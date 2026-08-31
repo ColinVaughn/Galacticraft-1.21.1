@@ -96,6 +96,7 @@ import dev.architectury.networking.NetworkManager;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShaderInstance;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.util.FastColor;
 import net.minecraft.world.level.block.Block;
@@ -410,6 +411,9 @@ public final class GCNeoForgeClient {
         event.registerBlockEntityRenderer(GCBlockEntityTypes.ADVANCED_SOLAR_PANEL, SolarPanelBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(GCBlockEntityTypes.GLASS_FLUID_PIPE, FluidPipeBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(GCBlockEntityTypes.OXYGEN_BUBBLE_DISTRIBUTOR, GCNeoBubbleDistributorRenderer::new);
+        BlockEntityRenderers.register(GCBlockEntityTypes.ENERGY_STORAGE_MODULE, ResourceStorageBlockRenderer::new);
+        BlockEntityRenderers.register(GCBlockEntityTypes.OXYGEN_STORAGE_MODULE, ResourceStorageBlockRenderer::new);
+        BlockEntityRenderers.register(GCBlockEntityTypes.ENERGY_STORAGE_CLUSTER, ResourceStorageBlockRenderer::new);
         event.registerBlockEntityRenderer(GCBlockEntityTypes.TERRAFORMER, GCNeoTerraformerRenderer::new);
         event.registerBlockEntityRenderer(GCBlockEntityTypes.ROCKET_WORKBENCH, RocketWorkbenchBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(GCBlockEntityTypes.ASTRO_MINER_BASE, AstroMinerBaseBlockEntityRenderer::new);

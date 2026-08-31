@@ -62,6 +62,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
 import java.util.List;
@@ -88,16 +89,16 @@ public class GCModelProvider extends FabricModelProvider {
         Set<Block> detailedWalls = new HashSet<>();
 
         decorations.forEach(decorationSet -> {
-                generator.texturedModels.put(decorationSet.detailedBlock(), DETAILED_DECORATION.get(decorationSet.detailedBlock()));
-                detailedWalls.add(decorationSet.detailedWall());
+            generator.texturedModels.put(decorationSet.detailedBlock(), DETAILED_DECORATION.get(decorationSet.detailedBlock()));
+            detailedWalls.add(decorationSet.detailedWall());
         });
 
         GCBlockFamilies.getAllFamilies()
                 .filter(BlockFamily::shouldGenerateModel)
                 .forEach(blockFamily -> {
-                        var provider = generator.family(blockFamily.getBaseBlock());
-                        provider.skipGeneratingModelsFor.addAll(detailedWalls);
-                        provider.generateFor(blockFamily);
+                    var provider = generator.family(blockFamily.getBaseBlock());
+                    provider.skipGeneratingModelsFor.addAll(detailedWalls);
+                    provider.generateFor(blockFamily);
                 });
 
         // DETAILED WALL - Special case!
@@ -306,14 +307,40 @@ public class GCModelProvider extends FabricModelProvider {
         // Cryogenic chamber blockstates/models are hand-authored multi-block resources.
         generator.createNonTemplateModelBlock(GCBlocks.PLAYER_TRANSPORT_TUBE);
 
+        //MACHINES
         MachineModelGenerator.setupMachineBaseTextures(generator, Constant.MOD_ID, MachineTextureBase.prefixed(Constant.MOD_ID, "block/machine"));
 
-        createTrivialFrontFaceMachine(generator, GCBlocks.ELECTRIC_ARC_FURNACE);
-        createTrivialFrontFaceMachine(generator, GCBlocks.ELECTRIC_FURNACE);
+        //Front deduced automatically
+        createTrivialFrontFaceMachine(generator, GCBlocks.CARGO_LOADER, Constant.MOD_ID);
+        createTrivialFrontFaceMachine(generator, GCBlocks.CARGO_UNLOADER, Constant.MOD_ID);
+        createTrivialFrontFaceMachine(generator, GCBlocks.PAINTER, Constant.MOD_ID);
+        createTrivialFrontFaceMachine(generator, GCBlocks.ENERGY_STORAGE_MODULE, Constant.MOD_ID);
+        createTrivialFrontFaceMachine(generator, GCBlocks.ENERGY_STORAGE_CLUSTER, Constant.MOD_ID);
+        createTrivialFrontFaceMachine(generator, GCBlocks.ELECTRIC_ARC_FURNACE, Constant.MOD_ID);
+        createTrivialFrontFaceMachine(generator, GCBlocks.ELECTRIC_FURNACE, Constant.MOD_ID);
 
-        createSolarPanel(generator, GCBlocks.BASIC_SOLAR_PANEL);
-        createSolarPanel(generator, GCBlocks.ADVANCED_SOLAR_PANEL);
+        //Custom front
+        createTrivialFrontFaceMachine(generator, GCBlocks.DECONSTRUCTOR, Constant.MOD_ID, "block/machine_side");
+        createTrivialFrontFaceMachine(generator, GCBlocks.FLUID_TANK, Constant.MOD_ID, "block/machine_side");
 
+        //Multivariant block, custom fronts
+        createOxygenStorage(generator, GCBlocks.OXYGEN_STORAGE_MODULE, new String[]{
+                "_1", "_2", "_3", "_4"
+        });
+
+        createCoalGenerator(generator, GCBlocks.COAL_GENERATOR, new String[]{
+                "_warming", "_cooling", "_active"
+        });
+
+        createFoodCanner(generator, GCBlocks.FOOD_CANNER, new String[]{
+                "_empty", "_active"
+        });
+
+        createCompressor(generator, GCBlocks.COMPRESSOR, new String[]{
+                "_lit", "_active"
+        });
+
+        //Manual build
         MachineModelGenerator.createTrivialMachine(generator, GCBlocks.REFINERY, TextureProvider.builder(Constant.MOD_ID)
                 .sides("block/machine_side")
                 .front("block/refinery_front")
@@ -321,183 +348,125 @@ public class GCModelProvider extends FabricModelProvider {
                 .build()
         );
 
-        createFuelLoader(generator, GCBlocks.FUEL_LOADER);
-
-        MachineModelGenerator.createTrivialMachine(generator, GCBlocks.CARGO_LOADER, TextureProvider.builder(Constant.MOD_ID)
-                .sides("block/machine_side")
-                .front("block/machine_cargoloader")
-                .build()
-        );
-        MachineModelGenerator.createTrivialMachine(generator, GCBlocks.CARGO_UNLOADER, TextureProvider.builder(Constant.MOD_ID)
-                .sides("block/machine_side")
-                .front("block/machine_cargounloader")
-                .build()
-        );
-        MachineModelGenerator.createTrivialMachine(generator, GCBlocks.FLUID_TANK, TextureProvider.builder(Constant.MOD_ID)
-                .sides("block/machine_side")
-                .front("block/machine_side")
-                .build()
-        );
-        MachineModelGenerator.createTrivialMachine(generator, GCBlocks.PAINTER, TextureProvider.builder(Constant.MOD_ID)
-                .sides("block/machine_side")
-                .front("block/machine_painter")
-                .build()
-        );
-        MachineModelGenerator.createTrivialMachine(generator, GCBlocks.DECONSTRUCTOR, TextureProvider.builder(Constant.MOD_ID)
-                .sides("block/machine_side")
-                .front("block/machine_side")
-                .build()
-        );
-
-        createOxygenCompressor(generator, GCBlocks.OXYGEN_COMPRESSOR);
-        createOxygenCompressor(generator, GCBlocks.OXYGEN_DECOMPRESSOR);
-
-        createResourceStorageBlock(generator, GCBlocks.OXYGEN_STORAGE_MODULE);
-        createResourceStorageBlock(generator, GCBlocks.ENERGY_STORAGE_MODULE);
-        createResourceStorageBlock(generator, GCBlocks.ENERGY_STORAGE_CLUSTER);
-
-        generator.createTrivialCube(GCBlocks.OXYGEN_DETECTOR);
-
-        createActiveMachine(generator, GCBlocks.CIRCUIT_FABRICATOR,
-                TextureProvider.builder(Constant.MOD_ID)
-                        .sides("block/machine_side")
-                        .front("block/circuit_fabricator_active")
-                        .build(),
-                TextureProvider.builder(Constant.MOD_ID)
-                        .sides("block/machine_side")
-                        .front("block/circuit_fabricator")
-                        .build()
-        );
-
-        createFoodCanner(generator, GCBlocks.FOOD_CANNER,
-                TextureProvider.builder(Constant.MOD_ID)
-                        .sides("block/machine_side")
-                        .front("block/food_canner_active")
-                        .build(),
-                TextureProvider.builder(Constant.MOD_ID)
-                        .sides("block/machine_side")
-                        .front("block/food_canner")
-                        .build(),
-                TextureProvider.builder(Constant.MOD_ID)
-                        .sides("block/machine_side")
-                        .front("block/food_canner_empty")
-                        .build()
-        );
-
-        createCoalGenerator(generator, GCBlocks.COAL_GENERATOR,
-                TextureProvider.builder(Constant.MOD_ID)
-                        .sides("block/machine_side")
-                        .front("block/coal_generator_active")
-                        .build(),
-                TextureProvider.builder(Constant.MOD_ID)
-                        .sides("block/machine_side")
-                        .front("block/coal_generator")
-                        .build(),
-                TextureProvider.builder(Constant.MOD_ID)
-                        .sides("block/machine_side")
-                        .front("block/coal_generator_cooling")
-                        .build(),
-                TextureProvider.builder(Constant.MOD_ID)
-                        .sides("block/machine_side")
-                        .front("block/coal_generator_warming")
-                        .build()
-        );
-
-        createCompressor(generator, GCBlocks.COMPRESSOR,
-                TextureProvider.builder(Constant.MOD_ID)
-                        .sides("block/machine_side")
-                        .front("block/compressor_active")
-                        .build(),
-                TextureProvider.builder(Constant.MOD_ID)
-                        .sides("block/machine_side")
-                        .front("block/compressor")
-                        .build(),
-                TextureProvider.builder(Constant.MOD_ID)
-                        .sides("block/machine_side")
-                        .front("block/compressor_lit")
-                        .build()
-        );
-
-        createActiveMachine(generator, GCBlocks.ELECTRIC_COMPRESSOR,
-                TextureProvider.builder(Constant.MOD_ID)
-                        .sides("block/machine_side")
-                        .front("block/electric_compressor_active")
-                        .build(),
-                TextureProvider.builder(Constant.MOD_ID)
-                        .sides("block/machine_side")
-                        .front("block/electric_compressor")
-                        .build()
-        );
-
-        createActiveMachine(generator, GCBlocks.OXYGEN_SEALER,
-                TextureProvider.builder(Constant.MOD_ID)
-                        .sides("block/machine_side")
-                        .top("block/oxygen_sealer_top_active")
-                        .build(),
-                TextureProvider.builder(Constant.MOD_ID)
-                        .sides("block/machine_side")
-                        .top("block/oxygen_sealer_top")
-                        .build()
-        );
-
-        createFullCubeActiveMachine(generator, GCBlocks.OXYGEN_COLLECTOR);
-        createFullCubeActiveMachine(generator, GCBlocks.OXYGEN_BUBBLE_DISTRIBUTOR);
         MachineModelGenerator.createTrivialMachine(generator, GCBlocks.TERRAFORMER,
                 TextureProvider.builder(Constant.MOD_ID)
+                        .all("block/terraformer_machine")
                         .front("block/terraformer_0")
                         .back("block/terraformer_0")
-                        .left("block/terraformer_machine")
                         .right("block/terraformer_machine_input")
-                        .top("block/terraformer_machine")
-                        .bottom("block/terraformer_machine")
                         .particle("block/terraformer_machine")
                         .build()
         );
 
+        //Active blocks
+        createFullCubeActiveMachine(generator, GCBlocks.OXYGEN_COLLECTOR);
+        createFullCubeActiveMachine(generator, GCBlocks.OXYGEN_BUBBLE_DISTRIBUTOR);
+        createActiveMachine(generator, GCBlocks.CIRCUIT_FABRICATOR);
+        createActiveMachine(generator, GCBlocks.ELECTRIC_COMPRESSOR);
+        createActiveMachine(generator, GCBlocks.OXYGEN_SEALER);
+
+        //Dedicated generations methods
+        createOxygenCompressor(generator, GCBlocks.OXYGEN_COMPRESSOR);
+        createOxygenCompressor(generator, GCBlocks.OXYGEN_DECOMPRESSOR);
+        createSolarPanel(generator, GCBlocks.BASIC_SOLAR_PANEL);
+        createSolarPanel(generator, GCBlocks.ADVANCED_SOLAR_PANEL);
+        createFuelLoader(generator, GCBlocks.FUEL_LOADER);
+
+        generator.createTrivialCube(GCBlocks.OXYGEN_DETECTOR);
         generator.createNonTemplateModelBlock(GCBlocks.CRUDE_OIL);
         generator.createNonTemplateModelBlock(GCBlocks.FUEL);
         generator.createNonTemplateModelBlock(GCBlocks.SULFURIC_ACID);
-
         generator.createTrivialCube(GCBlocks.AIR_LOCK_FRAME);
         this.createAirLockController(generator);
-
         this.createParachests(generator);
     }
 
-    private static void createFullCubeActiveMachine(BlockModelGenerators generator, Block block) {
-        createActiveMachine(generator, block,
-                TextureProvider.all(TextureMapping.getBlockTexture(block, "_active")),
-                TextureProvider.all(TextureMapping.getBlockTexture(block))
+    //MODEL 0 IS USED TO GENERATE ITEM MODEL
+    public static ResourceLocation[] generateMultiMachineModel(BlockModelGenerators gen, String MOD_ID, Block block, String[] state)
+    {
+        ResourceLocation[] model_location = new ResourceLocation[state.length + 1];
+
+        //Generate model 0, use it to create item model, save to resource location
+        TextureProvider model = TextureProvider.builder(MOD_ID).sides("block/machine_side").front(TextureMapping.getBlockTexture(block).getPath()).build();
+        MachineModelGenerator.generateMachineItemModel(gen, block, model);
+        model_location[0] = MachineModelGenerator.generateMachineModel(gen, MachineModelGenerator.getMachineModelLocation(block), model);
+
+        //Generate rest of models, save to resource location
+        for(int i = 1; i < state.length + 1; i++) {
+            model = TextureProvider.builder(MOD_ID).sides("block/machine_side").front(TextureMapping.getBlockTexture(block).getPath() + state[i - 1]).build();
+            model_location[i] = MachineModelGenerator.generateMachineModel(gen, MachineModelGenerator.getMachineModelLocation(block, state[i - 1]), model);
+        }
+
+        return model_location;
+    }
+
+    public static void createTrivialFrontFaceMachine(BlockModelGenerators generator, Block block, String MOD_ID, @Nullable String front) {
+        MachineModelGenerator.createTrivialMachine(generator, block, TextureProvider.builder(MOD_ID)
+                .sides("block/machine_side")
+                .front(front == null ? TextureMapping.getBlockTexture(block).getPath() : front)
+                .build()
         );
     }
 
-    private static void createCoalGenerator(BlockModelGenerators generator, Block block, TextureProvider activeTex, TextureProvider inactiveTex, TextureProvider coolingTex, TextureProvider warmingTex) {
-        ResourceLocation inactive = MachineModelGenerator.generateMachineModel(generator, MachineModelGenerator.getMachineModelLocation(block), inactiveTex);
-        ResourceLocation active = MachineModelGenerator.generateMachineModel(generator, MachineModelGenerator.getMachineModelLocation(block, "_active"), activeTex);
-        ResourceLocation cooling = MachineModelGenerator.generateMachineModel(generator, MachineModelGenerator.getMachineModelLocation(block, "_cooling"), coolingTex);
-        ResourceLocation warming = MachineModelGenerator.generateMachineModel(generator, MachineModelGenerator.getMachineModelLocation(block, "_warming"), warmingTex);
-
-        generator.blockStateOutput.accept(MultiVariantGenerator.multiVariant(block).with(PropertyDispatch.properties(CoalGeneratorBlock.LIT, CoalGeneratorBlock.HOT)
-                .select(false, false, Variant.variant().with(VariantProperties.MODEL, inactive))
-                .select(true, false, Variant.variant().with(VariantProperties.MODEL, warming))
-                .select(false, true, Variant.variant().with(VariantProperties.MODEL, cooling))
-                .select(true, true, Variant.variant().with(VariantProperties.MODEL, active))
-        ));
-        MachineModelGenerator.generateMachineItemModel(generator, block, inactiveTex);
+    public static void createTrivialFrontFaceMachine(BlockModelGenerators generator, Block block, String MOD_ID) {
+        createTrivialFrontFaceMachine(generator, block, MOD_ID, null);
     }
 
-    private static void createCompressor(BlockModelGenerators generator, Block block, TextureProvider activeTex, TextureProvider inactiveTex, TextureProvider litTex) {
-        ResourceLocation inactive = MachineModelGenerator.generateMachineModel(generator, MachineModelGenerator.getMachineModelLocation(block), inactiveTex);
-        ResourceLocation active = MachineModelGenerator.generateMachineModel(generator, MachineModelGenerator.getMachineModelLocation(block, "_active"), activeTex);
-        ResourceLocation lit = MachineModelGenerator.generateMachineModel(generator, MachineModelGenerator.getMachineModelLocation(block, "_lit"), litTex);
+    private static void createActiveMachine(BlockModelGenerators generator, Block block) {
+        ResourceLocation[] model_location = generateMultiMachineModel(generator, Constant.MOD_ID, block, new String[]{"_active"});
+
+        generator.blockStateOutput.accept(MultiVariantGenerator.multiVariant(block).with(PropertyDispatch.property(MachineBlock.ACTIVE)
+                .generate(i -> Variant.variant().with(VariantProperties.MODEL, i ? model_location[1] : model_location[0])
+                )));
+    }
+
+    private static void createFullCubeActiveMachine(BlockModelGenerators generator, Block block) {
+
+        TextureProvider inactive = TextureProvider.all(TextureMapping.getBlockTexture(block));
+        TextureProvider active = TextureProvider.all(TextureMapping.getBlockTexture(block, "_active"));
+        MachineModelGenerator.generateMachineItemModel(generator, block, inactive);
+
+        ResourceLocation[] model_location = new ResourceLocation[] {
+                MachineModelGenerator.generateMachineModel(generator, MachineModelGenerator.getMachineModelLocation(block), inactive),
+                MachineModelGenerator.generateMachineModel(generator, MachineModelGenerator.getMachineModelLocation(block, "_active"), active)
+        };
+
+        generator.blockStateOutput.accept(MultiVariantGenerator.multiVariant(block).with(PropertyDispatch.property(MachineBlock.ACTIVE)
+                .generate(i -> Variant.variant().with(VariantProperties.MODEL, i ? model_location[1] : model_location[0])
+                )));
+    }
+
+    private static void createCoalGenerator(BlockModelGenerators generator, Block block, String[] state) {
+        ResourceLocation[] model_location = generateMultiMachineModel(generator, Constant.MOD_ID, block, state);
+
+        generator.blockStateOutput.accept(MultiVariantGenerator.multiVariant(block).with(PropertyDispatch.properties(CoalGeneratorBlock.LIT, CoalGeneratorBlock.HOT)
+                .select(false, false, Variant.variant().with(VariantProperties.MODEL, model_location[0]))
+                .select(true, false, Variant.variant().with(VariantProperties.MODEL, model_location[1]))
+                .select(false, true, Variant.variant().with(VariantProperties.MODEL, model_location[2]))
+                .select(true, true, Variant.variant().with(VariantProperties.MODEL, model_location[3]))
+        ));
+    }
+
+    private static void createCompressor(BlockModelGenerators generator, Block block, String[] state) {
+        ResourceLocation[] model_location = generateMultiMachineModel(generator, Constant.MOD_ID, block, state);
 
         generator.blockStateOutput.accept(MultiVariantGenerator.multiVariant(block).with(PropertyDispatch.properties(MachineBlock.ACTIVE, CoalGeneratorBlock.LIT)
-                .select(false, false, Variant.variant().with(VariantProperties.MODEL, inactive))
-                .select(true, false, Variant.variant().with(VariantProperties.MODEL, inactive))
-                .select(false, true, Variant.variant().with(VariantProperties.MODEL, lit))
-                .select(true, true, Variant.variant().with(VariantProperties.MODEL, active))
+                .select(false, false, Variant.variant().with(VariantProperties.MODEL, model_location[0]))
+                .select(true, false, Variant.variant().with(VariantProperties.MODEL, model_location[0]))
+                .select(false, true, Variant.variant().with(VariantProperties.MODEL, model_location[1]))
+                .select(true, true, Variant.variant().with(VariantProperties.MODEL, model_location[2]))
         ));
-        MachineModelGenerator.generateMachineItemModel(generator, block, inactiveTex);
+    }
+
+    private static void createFoodCanner(BlockModelGenerators generator, Block block, String[] state) {
+        ResourceLocation[] model_location = generateMultiMachineModel(generator, Constant.MOD_ID, block, state);
+
+        generator.blockStateOutput.accept(MultiVariantGenerator.multiVariant(block).with(PropertyDispatch.properties(MachineBlock.ACTIVE, FoodCannerBlock.CAN)
+                .select(false, false, Variant.variant().with(VariantProperties.MODEL, model_location[1]))
+                .select(true, false, Variant.variant().with(VariantProperties.MODEL, model_location[1]))
+                .select(false, true, Variant.variant().with(VariantProperties.MODEL, model_location[0]))
+                .select(true, true, Variant.variant().with(VariantProperties.MODEL, model_location[2]))
+        ));
     }
 
     private static void createFuelLoader(BlockModelGenerators generator, Block block) {
@@ -515,43 +484,30 @@ public class GCModelProvider extends FabricModelProvider {
                 )));
     }
 
-    private static void createFoodCanner(BlockModelGenerators generator, Block block, TextureProvider activeTex, TextureProvider canTex, TextureProvider emptyTex) {
-        ResourceLocation can = MachineModelGenerator.generateMachineModel(generator, MachineModelGenerator.getMachineModelLocation(block), canTex);
-        ResourceLocation active = MachineModelGenerator.generateMachineModel(generator, MachineModelGenerator.getMachineModelLocation(block, "_active"), activeTex);
-        ResourceLocation empty = MachineModelGenerator.generateMachineModel(generator, MachineModelGenerator.getMachineModelLocation(block, "_empty"), emptyTex);
+    private static void createOxygenStorage(BlockModelGenerators generator, Block block, String[] state) {
+        ResourceLocation[] model_location = generateMultiMachineModel(generator, Constant.MOD_ID, block, state);
 
-        generator.blockStateOutput.accept(MultiVariantGenerator.multiVariant(block).with(PropertyDispatch.properties(MachineBlock.ACTIVE, FoodCannerBlock.CAN)
-                .select(false, false, Variant.variant().with(VariantProperties.MODEL, empty))
-                .select(true, false, Variant.variant().with(VariantProperties.MODEL, empty))
-                .select(false, true, Variant.variant().with(VariantProperties.MODEL, can))
-                .select(true, true, Variant.variant().with(VariantProperties.MODEL, active))
-        ));
-        MachineModelGenerator.generateMachineItemModel(generator, block, canTex);
-    }
-
-    private static void createResourceStorageBlock(BlockModelGenerators generator, Block block) {
-        ResourceLocation[] ids = new ResourceLocation[9];
-        for (int i = 0; i < 9; i++) {
-            TextureProvider textures = TextureProvider.builder(Constant.MOD_ID)
-                    .front(TextureMapping.getBlockTexture(block, "_" + i))
-                    .back(TextureMapping.getBlockTexture(block, "_" + i))
-                    .build();
-            ids[i] = MachineModelGenerator.generateMachineModel(generator, MachineModelGenerator.getMachineModelLocation(block, i == 8 ? "" : "_" + i), textures);
-            if (i == 8) MachineModelGenerator.generateMachineItemModel(generator, block, textures);
-        }
         generator.blockStateOutput.accept(MultiVariantGenerator.multiVariant(block).with(PropertyDispatch.property(ResourceStorageBlock.AMOUNT)
-                .generate(i -> Variant.variant().with(VariantProperties.MODEL, ids[i])
+                .generate(i -> Variant.variant().with(VariantProperties.MODEL, model_location[i/3])
                 )));
     }
 
-    private static void createActiveMachine(BlockModelGenerators generator, Block block, TextureProvider activeTex, TextureProvider inactiveTex) {
-        ResourceLocation inactive = MachineModelGenerator.generateMachineModel(generator, MachineModelGenerator.getMachineModelLocation(block), inactiveTex);
-        ResourceLocation active = MachineModelGenerator.generateMachineModel(generator, MachineModelGenerator.getMachineModelLocation(block, "_active"), activeTex);
+    private static void createOxygenCompressor(BlockModelGenerators generator, Block compressor) {
+        MachineModelGenerator.createTrivialMachine(generator, compressor, TextureProvider.builder(Constant.MOD_ID)
+                .sides("block/machine_side")
+                .front(TextureMapping.getBlockTexture(compressor))
+                .back("block/oxygen_compressor_back")
+                .build()
+        );
+    }
 
-        generator.blockStateOutput.accept(MultiVariantGenerator.multiVariant(block).with(PropertyDispatch.property(MachineBlock.ACTIVE)
-                .generate(i -> Variant.variant().with(VariantProperties.MODEL, i ? active : inactive)
-                )));
-        MachineModelGenerator.generateMachineItemModel(generator, block, inactiveTex);
+    private static void createSolarPanel(BlockModelGenerators generator, Block block) {
+        MachineModelGenerator.createTrivialMachine(generator, block, TextureProvider.builder(Constant.MOD_ID)
+                .sides("block/machine_side")
+                .topOverride("block/solar_panel")
+                .front(TextureMapping.getBlockTexture(block))
+                .build()
+        );
     }
 
     private static void createWalkway(BlockModelGenerators generator, Block walkway, ResourceLocation pipeModel, ResourceLocation centerModel) {
@@ -569,32 +525,6 @@ public class GCModelProvider extends FabricModelProvider {
                 .with(Condition.condition().term(BlockStateProperties.FACING, Direction.EAST), Variant.variant().with(VariantProperties.MODEL, walkwayPlatform).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R90).with(VariantProperties.X_ROT, VariantProperties.Rotation.R90))
                 .with(Condition.condition().term(BlockStateProperties.FACING, Direction.WEST), Variant.variant().with(VariantProperties.MODEL, walkwayPlatform).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R90).with(VariantProperties.X_ROT, VariantProperties.Rotation.R270));
         generator.blockStateOutput.accept(blockState);
-    }
-
-    private static void createOxygenCompressor(BlockModelGenerators generator, Block compressor) {
-        MachineModelGenerator.createTrivialMachine(generator, compressor, TextureProvider.builder(Constant.MOD_ID)
-                .sides("block/machine_side")
-                .front(TextureMapping.getBlockTexture(compressor))
-                .back("block/oxygen_compressor_back")
-                .build()
-        );
-    }
-
-    private static void createTrivialFrontFaceMachine(BlockModelGenerators generator, Block block) {
-        MachineModelGenerator.createTrivialMachine(generator, block, TextureProvider.builder(Constant.MOD_ID)
-                .sides("block/machine_side")
-                .front(TextureMapping.getBlockTexture(block))
-                .build()
-        );
-    }
-
-    private static void createSolarPanel(BlockModelGenerators generator, Block block) {
-        MachineModelGenerator.createTrivialMachine(generator, block, TextureProvider.builder(Constant.MOD_ID)
-                .sides("block/machine_side")
-                .topOverride("block/solar_panel")
-                .front(TextureMapping.getBlockTexture(block))
-                .build()
-        );
     }
 
     public static VariantProperties.Rotation getRotationFromDirection(Direction direction) {
@@ -690,13 +620,8 @@ public class GCModelProvider extends FabricModelProvider {
         generator.blockStateOutput.accept(BlockModelGenerators.createRotatedVariant(block, ModelLocationUtils.getModelLocation(block)));
     }
 
-    public static ResourceLocation getMachineModelLocation(Block block) {
-        ResourceLocation resourceLocation = BuiltInRegistries.BLOCK.getKey(block);
-        return resourceLocation.withPrefix("machine/");
-    }
-
     private static void createMachineDelegate(BlockModelGenerators generator, Block block) {
-        generator.blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(block, getMachineModelLocation(block)));
+        generator.blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(block, MachineModelGenerator.getMachineModelLocation(block)));
     }
 
     @Override

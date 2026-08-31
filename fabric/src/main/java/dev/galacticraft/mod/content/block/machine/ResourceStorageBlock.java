@@ -35,7 +35,7 @@ import net.minecraft.world.level.block.state.properties.Property;
 import org.jetbrains.annotations.NotNull;
 
 public class ResourceStorageBlock extends SimpleMachineBlock {
-    public static final Property<Integer> AMOUNT = IntegerProperty.create("amount", 0, 8);
+    public static final Property<Integer> AMOUNT = IntegerProperty.create("amount", 0, 12);
 
     public ResourceStorageBlock(Properties settings, ResourceLocation id) {
         super(settings, id);

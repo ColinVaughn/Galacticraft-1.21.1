@@ -1,7 +1,7 @@
 {
   "data": {
     "back": "galacticraft:block/machine_side",
-    "front": "galacticraft:block/machine_cargounloader",
+    "front": "galacticraft:block/cargo_unloader",
     "left": "galacticraft:block/machine_side",
     "right": "galacticraft:block/machine_side"
   },
