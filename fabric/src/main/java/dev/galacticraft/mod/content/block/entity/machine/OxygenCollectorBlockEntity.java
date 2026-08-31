@@ -145,7 +145,8 @@ public class OxygenCollectorBlockEntity extends MachineBlockEntity {
                 profiler.pop();
                 if (this.collectionAmount > 0) {
                     this.energyStorage().extract(Galacticraft.CONFIG.oxygenCollectorEnergyConsumptionRate());
-                    this.fluidStorage().slot(OXYGEN_TANK).insert(Gases.OXYGEN, FluidUtil.bucketsToDroplets(this.collectionAmount) / 20L);
+                    this.fluidStorage().slot(OXYGEN_TANK).insert(Gases.OXYGEN,
+                            OxygenCollectorLogic.collectionDropletsPerTick(this.collectionAmount));
                     return GCMachineStatuses.COLLECTING;
                 } else {
                     return GCMachineStatuses.NOT_ENOUGH_OXYGEN;

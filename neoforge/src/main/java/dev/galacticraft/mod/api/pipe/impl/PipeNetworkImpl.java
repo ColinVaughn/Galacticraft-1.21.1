@@ -42,7 +42,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/** Native NeoForge pipe graph with the same per-tick, single-fluid throughput rules as Fabric. */
+/** Native NeoForge pipe graph with the same per-insertion, single-fluid throughput rules as Fabric. */
 public final class PipeNetworkImpl implements PipeNetwork {
     private final ServerLevel level;
     private final Map<BlockPos, IFluidHandler @Nullable []> pipes = new LinkedHashMap<>();
@@ -122,7 +122,7 @@ public final class PipeNetworkImpl implements PipeNetwork {
             currentFluid = FluidStack.EMPTY;
         }
         if (!currentFluid.isEmpty() && !FluidStack.isSameFluidSameComponents(currentFluid, resource)) return 0;
-        int available = Math.min(resource.getAmount(), maxTransferRate - transferred);
+        int available = Math.min(resource.getAmount(), maxTransferRate);
         if (available <= 0) return 0;
 
         activeTransaction = true;

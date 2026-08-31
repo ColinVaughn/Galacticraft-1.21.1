@@ -61,7 +61,7 @@ public class PipeNetworkImpl extends SnapshotParticipant<PipeNetworkImpl.PipeSna
     private boolean markedForRemoval = false;
     private int tickId;
     private long transferred = 0;
-    private @Nullable FluidVariant currentVariant = null; //can transfer <maxTransferRate> amount of fluid of 1 type per tick
+    private @Nullable FluidVariant currentVariant = null; // can transfer one fluid type per tick
 
     public PipeNetworkImpl(@NotNull ServerLevel level, long maxTransferRate, @NotNull BlockPos pos) {
         this.level = level;
@@ -196,7 +196,7 @@ public class PipeNetworkImpl extends SnapshotParticipant<PipeNetworkImpl.PipeSna
             this.currentVariant = null;
         }
 
-        amount = Math.min(amount, this.maxTransferRate - this.transferred);
+        amount = Math.min(amount, this.maxTransferRate);
         if (amount == 0 || (this.currentVariant != null && !this.currentVariant.equals(resource))) {
             this.activeTransaction = false;
             return 0;

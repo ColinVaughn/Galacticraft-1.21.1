@@ -22,8 +22,11 @@
 
 package dev.galacticraft.mod.content.block.entity.machine;
 
+import dev.galacticraft.mod.util.FluidUtil;
+
 final class OxygenCollectorLogic {
     private static final float LEGACY_ATMOSPHERIC_OXYGEN = 93.0F;
+    private static final int LEGACY_OXYGEN_UNITS_PER_BUCKET = 100;
 
     private OxygenCollectorLogic() {
     }
@@ -32,5 +35,9 @@ final class OxygenCollectorLogic {
         if (atmosphericOxygen) return Math.round(LEGACY_ATMOSPHERIC_OXYGEN / 10.0F * 20.0F);
         if (!Float.isFinite(nearbyOxygen) || nearbyOxygen <= 0) return 0;
         return Math.round((float) Math.floor(nearbyOxygen) / 10.0F * 20.0F);
+    }
+
+    static long collectionDropletsPerTick(int oxygenPerSecond) {
+        return FluidUtil.bucketsToDroplets(oxygenPerSecond) / (LEGACY_OXYGEN_UNITS_PER_BUCKET * 20L);
     }
 }

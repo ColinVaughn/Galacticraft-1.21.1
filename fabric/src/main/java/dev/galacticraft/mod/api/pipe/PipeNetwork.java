@@ -49,9 +49,9 @@ public interface PipeNetwork {
     long insert(@NotNull FluidVariant resource, long amount, @NotNull TransactionContext transaction);
 
     /**
-     * Returns the maximum amount of fluid allowed to pass through this network per tick
+     * Returns the maximum amount of fluid accepted per insertion
      *
-     * @return the maximum amount of fluid allowed to pass through this network per tick
+     * @return the maximum amount of fluid accepted per insertion
      */
     long getMaxTransferRate();
 

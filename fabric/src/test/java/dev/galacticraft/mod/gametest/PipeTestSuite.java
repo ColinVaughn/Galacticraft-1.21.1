@@ -43,6 +43,35 @@ import net.minecraft.world.level.material.Fluids;
 
 public class PipeTestSuite implements GalacticraftGameTest {
     @GameTest(template = EMPTY_STRUCTURE)
+    public void multipleSourcesSumWithinOneTick(GameTestHelper context) {
+        BlockPos pipePos = new BlockPos(1, 2, 1);
+        BlockPos targetPos = new BlockPos(1, 1, 1);
+
+        context.setBlock(targetPos, GCBlocks.FLUID_TANK);
+        FluidTankBlockEntity target = context.getBlockEntity(targetPos);
+        target.getIOConfig().get(BlockFace.TOP).setOption(ResourceType.FLUID, ResourceFlow.INPUT);
+        context.setBlock(pipePos, GCBlocks.GLASS_FLUID_PIPE);
+        GlassFluidPipeBlockEntity pipe = context.getBlockEntity(pipePos);
+
+        runFinalTaskAt(context, 2, () -> {
+            long offered = FluidConstants.BUCKET / 50;
+            long accepted = 0;
+            for (int remainingSources = 2; remainingSources > 0; remainingSources--) {
+                try (Transaction transaction = Transaction.openOuter()) {
+                    accepted += pipe.insert(FluidVariant.of(Fluids.WATER), offered, transaction);
+                    transaction.commit();
+                }
+            }
+
+            if (accepted != offered * 2) {
+                context.fail("Expected both sources to transfer " + offered + ", accepted " + accepted, pipePos);
+            } else if (target.fluidStorage().slot(FluidTankBlockEntity.FLUID_TANK).getAmount() != offered * 2) {
+                context.fail("Expected the target to receive fluid from both sources", targetPos);
+            }
+        });
+    }
+
+    @GameTest(template = EMPTY_STRUCTURE)
     public void oxygenConsumersFillBeforeStorage(GameTestHelper context) {
         BlockPos storagePos = new BlockPos(1, 3, 1);
         BlockPos pipePos = new BlockPos(1, 2, 1);

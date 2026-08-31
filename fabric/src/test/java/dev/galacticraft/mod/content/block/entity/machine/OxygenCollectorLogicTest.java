@@ -22,6 +22,7 @@
 
 package dev.galacticraft.mod.content.block.entity.machine;
 
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -42,6 +43,12 @@ class OxygenCollectorLogicTest {
     void usesLegacyAtmosphericRateRegardlessOfVegetation() {
         assertEquals(186, OxygenCollectorLogic.collectionPerSecond(true, 0));
         assertEquals(186, OxygenCollectorLogic.collectionPerSecond(true, 100));
+    }
+
+    @Test
+    void convertsLegacyOxygenUnitsToFluidVolume() {
+        assertEquals(FluidConstants.BUCKET / 20, OxygenCollectorLogic.collectionDropletsPerTick(100));
+        assertEquals(7_533, OxygenCollectorLogic.collectionDropletsPerTick(186));
     }
 
     @Test
