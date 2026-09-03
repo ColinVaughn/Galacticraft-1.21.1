@@ -5,7 +5,7 @@
 *.properties    text
 
 # Java
-*.java          text diff=java
+*.java          text eol=lf diff=java
 *.gradle        text diff=java
 *.gradle.kts    text diff=kotlin
 
