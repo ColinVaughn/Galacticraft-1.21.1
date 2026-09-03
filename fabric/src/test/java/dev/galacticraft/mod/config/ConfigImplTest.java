@@ -150,6 +150,7 @@ class ConfigImplTest {
         Path file = this.tempDir.resolve("galacticraft.json");
         Files.writeString(file, """
                 {
+                  "meteor_sporadic_interval": 9000,
                   "meteor_shower_mean_interval": 72000,
                   "meteor_shower_peak_multiplier": 60.0
                 }
@@ -157,6 +158,7 @@ class ConfigImplTest {
 
         ConfigImpl config = new ConfigImpl(file.toFile());
 
+        assertEquals(1200, config.meteorSporadicInterval());
         assertEquals(144000, config.meteorShowerMeanInterval());
         assertEquals(12.0f, config.meteorShowerPeakMultiplier());
     }
@@ -166,6 +168,7 @@ class ConfigImplTest {
         Path file = this.tempDir.resolve("galacticraft.json");
         Files.writeString(file, """
                 {
+                  "meteor_sporadic_interval": 5000,
                   "meteor_shower_mean_interval": 90000,
                   "meteor_shower_peak_multiplier": 20.0
                 }
@@ -173,6 +176,7 @@ class ConfigImplTest {
 
         ConfigImpl config = new ConfigImpl(file.toFile());
 
+        assertEquals(5000, config.meteorSporadicInterval());
         assertEquals(90000, config.meteorShowerMeanInterval());
         assertEquals(20.0f, config.meteorShowerPeakMultiplier());
     }

@@ -138,6 +138,33 @@ public class GCMachineRecipes extends FabricRecipeProvider {
                 .emiDefaultRecipe(true)
                 .save(output);
 
+        GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.RADAR)
+                .define('P', GCItems.STEEL_POLE)
+                .define('F', GCItems.FREQUENCY_MODULE)
+                .define('S', GCItems.COMPRESSED_STEEL)
+                .define('A', GCItems.ADVANCED_WAFER)
+                .define('C', GCItems.COMPRESSED_ALUMINUM)
+                .define('W', Items.COMPARATOR)
+                .pattern("PFP")
+                .pattern("SAS")
+                .pattern("CWC")
+                .unlockedBy(getHasName(GCItems.FREQUENCY_MODULE), has(GCItems.FREQUENCY_MODULE))
+                .emiDefaultRecipe(true)
+                .save(output);
+
+        GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.CANNON)
+                .define('P', GCItems.STEEL_POLE)
+                .define('M', GCItems.COMPRESSED_METEORIC_IRON)
+                .define('D', Items.DISPENSER)
+                .define('H', GCItems.TIER_1_HEAVY_DUTY_PLATE)
+                .define('A', GCItems.ADVANCED_WAFER)
+                .pattern("PPP")
+                .pattern("MDM")
+                .pattern("HAH")
+                .unlockedBy(getHasName(GCItems.COMPRESSED_METEORIC_IRON), has(GCItems.COMPRESSED_METEORIC_IRON))
+                .emiDefaultRecipe(true)
+                .save(output);
+
         GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.ELECTRIC_COMPRESSOR)
                 .define('S', GCItems.COMPRESSED_STEEL)
                 .define('A', Items.ANVIL)

@@ -39,6 +39,8 @@ public final class GCEntityModelLayer {
     public static final ModelLayerLocation FLAG = layer("flag");
     public static final ModelLayerLocation SOLAR_PANEL = layer("solar_panel");
     public static final ModelLayerLocation ROCKET_WORKBENCH = layer("rocket_workbench");
+    public static final ModelLayerLocation RADAR = layer("radar");
+    public static final ModelLayerLocation CANNON = layer("cannon");
 
     private static ModelLayerLocation layer(String id) {
         return new ModelLayerLocation(Constant.id(id), "main");

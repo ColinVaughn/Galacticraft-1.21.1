@@ -16,6 +16,8 @@
     "galacticraft:cargo_loader",
     "galacticraft:cargo_unloader",
     "galacticraft:astro_miner_base",
+    "galacticraft:radar",
+    "galacticraft:cannon",
     "galacticraft:oxygen_collector",
     "galacticraft:oxygen_sealer",
     "galacticraft:oxygen_bubble_distributor",

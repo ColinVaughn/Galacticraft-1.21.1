@@ -1071,6 +1071,7 @@ public class GCTranslationProvider extends TranslationProvider {
         // Block Descriptions
         this.blockDesc(GCBlocks.ADVANCED_SOLAR_PANEL, "A more efficient solar panel that rotates to face the sun.");
         this.blockDesc(GCBlocks.BASIC_SOLAR_PANEL, "Converts energy from the sun into electricity. Most effective at noon.");
+        this.blockDesc(GCBlocks.CANNON, "Uses tracking data from radars within 64 blocks to automatically intercept meteors within 256 blocks.");
         this.blockDesc(GCBlocks.CIRCUIT_FABRICATOR, "Fabricates the silicon wafers needed for more advanced machines.");
         this.blockDesc(GCBlocks.COAL_GENERATOR, "Burns coal and charcoal to generate electricity.");
         this.blockDesc(GCBlocks.COMPRESSOR, "Compresses ingots to create stronger materials. Requires furnace fuel to run.");
@@ -1098,6 +1099,7 @@ public class GCTranslationProvider extends TranslationProvider {
         this.blockDesc(GCBlocks.OXYGEN_SEALER, "Fills an airtight room with oxygen to make it breathable.");
         this.blockDesc(GCBlocks.OXYGEN_STORAGE_MODULE, "Stores a large amount of oxygen.");
         this.blockDesc(GCBlocks.PARACHEST, "Falls from the sky when you travel to certain planets, carrying your rocket, fuel, and cargo.");
+        this.blockDesc(GCBlocks.RADAR, "Detects inbound meteors up to 1,024 blocks away. Nearby radars improve tracking accuracy and share targets with cannons.");
         this.blockDesc(GCBlocks.REFINERY, "Refines crude oil into fuel used by rockets and vehicles.");
 
         this.add(Tooltip.CREATIVE_ONLY, "Creative Only");
@@ -1388,6 +1390,40 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(Ui.MILLIBUCKETS, "mB");
         this.add(Ui.MAX_OXYGEN, "Maximum Oxygen: %s");
         this.add(Ui.MACHINE_STATUS, "Status: %s");
+        this.add(Ui.MACHINE_ONLINE, "ONLINE");
+        this.add(Ui.MACHINE_OFFLINE, "OFFLINE");
+        this.add(Ui.MACHINE_NO_POWER, "NO POWER");
+        this.add(Ui.MACHINE_POWER, "POWER %s%%");
+        this.add(Ui.RADAR_ARRAY, "ARRAY %s   RANGE %sm");
+        this.add(Ui.RADAR_TRACK_COUNT, "TRACK %s");
+        this.add(Ui.RADAR_NORTH, "N");
+        this.add(Ui.RADAR_RANGE, "%sm");
+        this.add(Ui.RADAR_SCAN_STATUS, "SCAN STATUS");
+        this.add(Ui.RADAR_CONNECT_ENERGY, "CONNECT ENERGY");
+        this.add(Ui.RADAR_SWEEP_STOPPED, "SWEEP STOPPED");
+        this.add(Ui.RADAR_ALL_CLEAR, "ALL CLEAR");
+        this.add(Ui.RADAR_NO_INBOUND_TRACKS, "NO INBOUND TRACKS");
+        this.add(Ui.RADAR_SWEEP_ACTIVE, "SWEEP ACTIVE");
+        this.add(Ui.RADAR_CONTACT, "%s  %s");
+        this.add(Ui.RADAR_ETA, "%ss");
+        this.add(Ui.RADAR_FIRE_CONTROL, "FIRE CONTROL  %s");
+        this.add(Ui.RADAR_CLASS_STONY, "STO");
+        this.add(Ui.RADAR_CLASS_IRON, "IRO");
+        this.add(Ui.RADAR_CLASS_PALLASITE, "PAL");
+        this.add(Ui.CANNON_HEADER, "FIRE CONTROL   RANGE %sm");
+        this.add(Ui.CANNON_TARGETING, "TARGETING");
+        this.add(Ui.CANNON_LOCK, "LOCK");
+        this.add(Ui.CANNON_SCAN, "SCAN");
+        this.add(Ui.CANNON_WEAPON_STATUS, "WEAPON STATUS");
+        this.add(Ui.CANNON_TRACKING, "TRACKING");
+        this.add(Ui.CANNON_STANDBY, "STANDBY");
+        this.add(Ui.CANNON_TARGET, "TARGET");
+        this.add(Ui.CANNON_CONTACT_LOCK, "CONTACT LOCK");
+        this.add(Ui.CANNON_NO_CONTACT, "NO CONTACT");
+        this.add(Ui.CANNON_CAPACITOR, "CAPACITOR");
+        this.add(Ui.CANNON_READY, "READY");
+        this.add(Ui.CANNON_CHARGING, "CHARGING");
+        this.add(Ui.CANNON_AUTO_DEFENSE, "AUTO DEFENSE");
         this.add(Ui.OXYGEN_TANK_1_LEVEL, "Oxygen Tank 1: %s");
         this.add(Ui.OXYGEN_TANK_2_LEVEL, "Oxygen Tank 2: %s");
         this.add(Ui.OXYGEN_WARNING, "WARNING");

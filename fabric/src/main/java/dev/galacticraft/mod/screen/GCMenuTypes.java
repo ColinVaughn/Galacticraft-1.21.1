@@ -84,6 +84,8 @@ public class GCMenuTypes {
     public static final MenuType<ParachestMenu> PARACHEST = MenuRegistry.ofExtended((id, inventory, buf) -> new ParachestMenu(id, inventory, ParachestMenu.OpeningData.STREAM_CODEC.decode(buf)));
     public static final MenuType<VehicleInventoryMenu> VEHICLE_INVENTORY = MenuRegistry.ofExtended((id, inventory, buf) -> new VehicleInventoryMenu(id, inventory, ByteBufCodecs.VAR_INT.decode(buf)));
     public static final MenuType<AstroMinerBaseMenu> ASTRO_MINER_BASE = MenuRegistry.ofExtended((id, inventory, buf) -> new AstroMinerBaseMenu(id, inventory, BlockPos.STREAM_CODEC.decode(buf)));
+    public static final MenuType<RadarMenu> RADAR = SynchronizedMenuType.create((type, id, inventory, pos) -> new RadarMenu(id, inventory, pos));
+    public static final MenuType<PowerPortMenu<CannonBlockEntity>> CANNON = SynchronizedMenuType.create(PowerPortMenu::new);
 
     public static void register() {
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.PLAYER_INVENTORY_MENU), PLAYER_INV_GC);
@@ -128,5 +130,7 @@ public class GCMenuTypes {
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.PARACHEST), PARACHEST);
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.VEHICLE_INVENTORY), VEHICLE_INVENTORY);
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.ASTRO_MINER_BASE_MENU), ASTRO_MINER_BASE);
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.RADAR_MENU), RADAR);
+        Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.CANNON_MENU), CANNON);
     }
 }

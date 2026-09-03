@@ -67,7 +67,7 @@ public final class MeteorShowerManager {
     /** Bias toward small bodies; higher means large meteoroids are rarer. */
     private static final double SIZE_BIAS = 2.4;
     /** Earth's atmosphere sees far fewer gameplay meteors than exposed moons and planets. */
-    private static final double OVERWORLD_SPAWN_INTERVAL_MULTIPLIER = 4.0;
+    private static final double OVERWORLD_SPAWN_INTERVAL_MULTIPLIER = 2.0;
 
     private MeteorShowerManager() {
     }

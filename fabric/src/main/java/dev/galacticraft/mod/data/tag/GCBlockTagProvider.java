@@ -480,6 +480,8 @@ public class GCBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                 GCBlocks.CARGO_LOADER,
                 GCBlocks.CARGO_UNLOADER,
                 GCBlocks.ASTRO_MINER_BASE,
+                GCBlocks.RADAR,
+                GCBlocks.CANNON,
                 GCBlocks.OXYGEN_COLLECTOR,
                 GCBlocks.OXYGEN_SEALER,
                 GCBlocks.OXYGEN_BUBBLE_DISTRIBUTOR,

@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "galacticraft:advanced_wafer"
+    },
+    "D": {
+      "item": "minecraft:dispenser"
+    },
+    "H": {
+      "item": "galacticraft:heavy_plating"
+    },
+    "M": {
+      "item": "galacticraft:compressed_meteoric_iron"
+    },
+    "P": {
+      "item": "galacticraft:steel_pole"
+    }
+  },
+  "pattern": [
+    "PPP",
+    "MDM",
+    "HAH"
+  ],
+  "result": {
+    "count": 1,
+    "id": "galacticraft:cannon"
+  }
+}

@@ -396,6 +396,8 @@ public interface Constant {
         String CRYOGENIC_CHAMBER = "cryogenic_chamber";
         String CRYOGENIC_CHAMBER_PART = "cryogenic_chamber_part";
         String ASTRO_MINER_BASE = "astro_miner_base";
+        String RADAR = "radar";
+        String CANNON = "cannon";
         String SHORT_RANGE_TELEPAD = "short_range_telepad";
         String PLAYER_TRANSPORT_TUBE = "player_transport_tube";
         String HYPERLOOP = "hyperloop";
@@ -1305,6 +1307,8 @@ public interface Constant {
         String TIER_1_ROCKET = "tier_1_rocket";
         String VEHICLE_INVENTORY = "vehicle_inventory";
         String ASTRO_MINER_BASE_MENU = "astro_miner_base_menu";
+        String RADAR_MENU = "radar_menu";
+        String CANNON_MENU = "cannon_menu";
     }
 
     interface LootTable {

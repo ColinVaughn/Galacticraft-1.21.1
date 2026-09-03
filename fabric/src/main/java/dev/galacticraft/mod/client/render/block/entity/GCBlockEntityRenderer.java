@@ -37,6 +37,8 @@ public class GCBlockEntityRenderer {
         BlockEntityRenderers.register(GCBlockEntityTypes.TERRAFORMER, TerraformerRenderer::new);
         BlockEntityRenderers.register(GCBlockEntityTypes.ROCKET_WORKBENCH, RocketWorkbenchBlockEntityRenderer::new);
         BlockEntityRenderers.register(GCBlockEntityTypes.ASTRO_MINER_BASE, AstroMinerBaseBlockEntityRenderer::new);
+        BlockEntityRenderers.register(GCBlockEntityTypes.RADAR, RadarBlockEntityRenderer::new);
+        BlockEntityRenderers.register(GCBlockEntityTypes.CANNON, CannonBlockEntityRenderer::new);
         BlockEntityRenderers.register(GCBlockEntityTypes.FLAG, FlagBlockEntityRenderer::new);
         BlockEntityRenderers.register(GCBlockEntityTypes.TREASURE_CHEST, TreasureChestBlockEntityRenderer::new);
         //BlockEntityRenderers.register(GCBlockEntityTypes.CANNED_FOOD, CannedFoodBlockEntityRenderer::new);

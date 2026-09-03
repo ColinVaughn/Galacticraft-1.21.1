@@ -377,6 +377,10 @@ public class GCModelProvider extends FabricModelProvider {
         generator.createNonTemplateModelBlock(GCBlocks.FUEL);
         generator.createNonTemplateModelBlock(GCBlocks.SULFURIC_ACID);
         generator.createTrivialCube(GCBlocks.AIR_LOCK_FRAME);
+        MachineModelGenerator.createTrivialMachine(generator, GCBlocks.RADAR,
+                TextureProvider.builder(Constant.MOD_ID).all("block/machine_side").build());
+        MachineModelGenerator.createTrivialMachine(generator, GCBlocks.CANNON,
+                TextureProvider.builder(Constant.MOD_ID).all("block/machine_side").build());
         this.createAirLockController(generator);
         this.createParachests(generator);
     }

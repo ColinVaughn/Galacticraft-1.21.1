@@ -360,6 +360,8 @@ public class GCBlockLootTableProvider extends FabricBlockLootTableProvider {
         this.dropSelf(GCBlocks.CARGO_LOADER);
         this.dropSelf(GCBlocks.CARGO_UNLOADER);
         this.dropSelf(GCBlocks.ASTRO_MINER_BASE);
+        this.dropSelf(GCBlocks.RADAR);
+        this.dropSelf(GCBlocks.CANNON);
         this.dropSelf(GCBlocks.FOOD_CANNER);
         this.dropSelf(GCBlocks.FLUID_TANK);
         this.dropSelf(GCBlocks.PAINTER);

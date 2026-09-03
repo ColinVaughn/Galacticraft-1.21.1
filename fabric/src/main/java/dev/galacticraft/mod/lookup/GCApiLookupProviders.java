@@ -57,6 +57,8 @@ public final class GCApiLookupProviders {
                 GCBlockEntityTypes.ENERGY_STORAGE_CLUSTER,
                 GCBlockEntityTypes.FOOD_CANNER,
                 GCBlockEntityTypes.OXYGEN_STORAGE_MODULE,
+                GCBlockEntityTypes.RADAR,
+                GCBlockEntityTypes.CANNON,
                 GCBlockEntityTypes.FLUID_TANK,
                 GCBlockEntityTypes.PAINTER,
                 GCBlockEntityTypes.DECONSTRUCTOR

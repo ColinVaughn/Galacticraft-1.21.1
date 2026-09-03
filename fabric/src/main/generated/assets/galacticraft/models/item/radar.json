@@ -1,0 +1,13 @@
+{
+  "data": {
+    "back": "galacticraft:block/machine_side",
+    "bottom": "galacticraft:block/machine_side",
+    "front": "galacticraft:block/machine_side",
+    "left": "galacticraft:block/machine_side",
+    "particle": "galacticraft:block/machine_side",
+    "right": "galacticraft:block/machine_side",
+    "top": "galacticraft:block/machine_side"
+  },
+  "loader": "machinelib:machine",
+  "machinelib:type": "machine"
+}

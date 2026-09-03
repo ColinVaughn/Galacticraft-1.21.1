@@ -77,6 +77,8 @@ public class GCBlockEntityTypes {
     public static final BlockEntityType<CargoLoaderBlockEntity> CARGO_LOADER = register(Constant.Block.CARGO_LOADER, CargoLoaderBlockEntity::new, GCBlocks.CARGO_LOADER);
     public static final BlockEntityType<CargoUnloaderBlockEntity> CARGO_UNLOADER = register(Constant.Block.CARGO_UNLOADER, CargoUnloaderBlockEntity::new, GCBlocks.CARGO_UNLOADER);
     public static final BlockEntityType<AstroMinerBaseBlockEntity> ASTRO_MINER_BASE = register(Constant.Block.ASTRO_MINER_BASE, AstroMinerBaseBlockEntity::new, GCBlocks.ASTRO_MINER_BASE);
+    public static final BlockEntityType<RadarBlockEntity> RADAR = register(Constant.Block.RADAR, RadarBlockEntity::new, GCBlocks.RADAR);
+    public static final BlockEntityType<CannonBlockEntity> CANNON = register(Constant.Block.CANNON, CannonBlockEntity::new, GCBlocks.CANNON);
     public static final BlockEntityType<FluidTankBlockEntity> FLUID_TANK = register(Constant.Block.FLUID_TANK, FluidTankBlockEntity::new, GCBlocks.FLUID_TANK);
     public static final BlockEntityType<PainterBlockEntity> PAINTER = register(Constant.Block.PAINTER, PainterBlockEntity::new, GCBlocks.PAINTER);
     public static final BlockEntityType<DeconstructorBlockEntity> DECONSTRUCTOR = register(Constant.Block.DECONSTRUCTOR, DeconstructorBlockEntity::new, GCBlocks.DECONSTRUCTOR);

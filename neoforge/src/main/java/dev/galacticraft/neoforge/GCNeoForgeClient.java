@@ -376,6 +376,8 @@ public final class GCNeoForgeClient {
         event.register(GCMenuTypes.PARACHEST, ParachestScreen::new);
         event.register(GCMenuTypes.VEHICLE_INVENTORY, VehicleInventoryScreen::new);
         event.register(GCMenuTypes.ASTRO_MINER_BASE, AstroMinerBaseScreen::new);
+        event.register(GCMenuTypes.RADAR, RadarScreen::new);
+        event.register(GCMenuTypes.CANNON, CannonScreen::new);
     }
 
     private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
@@ -417,6 +419,8 @@ public final class GCNeoForgeClient {
         event.registerBlockEntityRenderer(GCBlockEntityTypes.TERRAFORMER, GCNeoTerraformerRenderer::new);
         event.registerBlockEntityRenderer(GCBlockEntityTypes.ROCKET_WORKBENCH, RocketWorkbenchBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(GCBlockEntityTypes.ASTRO_MINER_BASE, AstroMinerBaseBlockEntityRenderer::new);
+        event.registerBlockEntityRenderer(GCBlockEntityTypes.RADAR, RadarBlockEntityRenderer::new);
+        event.registerBlockEntityRenderer(GCBlockEntityTypes.CANNON, CannonBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(GCBlockEntityTypes.FLAG, FlagBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(GCBlockEntityTypes.TREASURE_CHEST, TreasureChestBlockEntityRenderer::new);
     }
@@ -435,6 +439,8 @@ public final class GCNeoForgeClient {
         event.registerLayerDefinition(GCEntityModelLayer.FLAG, FlagBlockEntityRenderer::createBodyLayer);
         event.registerLayerDefinition(GCEntityModelLayer.SOLAR_PANEL, SolarPanelBlockEntityRenderer::getTexturedModelData);
         event.registerLayerDefinition(GCEntityModelLayer.ROCKET_WORKBENCH, RocketWorkbenchBlockEntityRenderer::getTexturedModelData);
+        event.registerLayerDefinition(GCEntityModelLayer.RADAR, RadarBlockEntityRenderer::createBodyLayer);
+        event.registerLayerDefinition(GCEntityModelLayer.CANNON, CannonBlockEntityRenderer::createBodyLayer);
     }
 
     private static void registerParticles(RegisterParticleProvidersEvent event) {

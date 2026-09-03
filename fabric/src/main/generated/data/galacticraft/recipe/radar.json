@@ -1,0 +1,33 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "galacticraft:advanced_wafer"
+    },
+    "C": {
+      "item": "galacticraft:compressed_aluminum"
+    },
+    "F": {
+      "item": "galacticraft:frequency_module"
+    },
+    "P": {
+      "item": "galacticraft:steel_pole"
+    },
+    "S": {
+      "item": "galacticraft:compressed_steel"
+    },
+    "W": {
+      "item": "minecraft:comparator"
+    }
+  },
+  "pattern": [
+    "PFP",
+    "SAS",
+    "CWC"
+  ],
+  "result": {
+    "count": 1,
+    "id": "galacticraft:radar"
+  }
+}

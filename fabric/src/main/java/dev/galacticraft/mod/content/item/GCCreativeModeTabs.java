@@ -309,6 +309,8 @@ public class GCCreativeModeTabs {
                 output.accept(CARGO_LOADER);
                 output.accept(CARGO_UNLOADER);
                 output.accept(ASTRO_MINER_BASE);
+                output.accept(RADAR);
+                output.accept(CANNON);
                 output.accept(OXYGEN_COLLECTOR);
                 output.accept(OXYGEN_SEALER);
                 output.accept(OXYGEN_BUBBLE_DISTRIBUTOR);

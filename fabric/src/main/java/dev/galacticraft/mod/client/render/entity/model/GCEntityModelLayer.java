@@ -24,9 +24,11 @@ package dev.galacticraft.mod.client.render.entity.model;
 
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.client.model.entity.*;
+import dev.galacticraft.mod.client.render.block.entity.CannonBlockEntityRenderer;
 import dev.galacticraft.mod.client.render.block.entity.FlagBlockEntityRenderer;
-import dev.galacticraft.mod.client.render.block.entity.SolarPanelBlockEntityRenderer;
+import dev.galacticraft.mod.client.render.block.entity.RadarBlockEntityRenderer;
 import dev.galacticraft.mod.client.render.block.entity.RocketWorkbenchBlockEntityRenderer;
+import dev.galacticraft.mod.client.render.block.entity.SolarPanelBlockEntityRenderer;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 
@@ -50,6 +52,8 @@ public class GCEntityModelLayer {
     public static final ModelLayerLocation FLAG = registerModelLayer("flag");
     public static final ModelLayerLocation SOLAR_PANEL = registerModelLayer("solar_panel");
     public static final ModelLayerLocation ROCKET_WORKBENCH = registerModelLayer("rocket_workbench");
+    public static final ModelLayerLocation RADAR = registerModelLayer("radar");
+    public static final ModelLayerLocation CANNON = registerModelLayer("cannon");
 
     private static ModelLayerLocation registerModelLayer(String id) {
         return new ModelLayerLocation(Constant.id(id), DEFAULT_LAYER);
@@ -71,5 +75,7 @@ public class GCEntityModelLayer {
         EntityModelLayerRegistry.registerModelLayer(FLAG, FlagBlockEntityRenderer::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(SOLAR_PANEL, SolarPanelBlockEntityRenderer::getTexturedModelData);
         EntityModelLayerRegistry.registerModelLayer(ROCKET_WORKBENCH, RocketWorkbenchBlockEntityRenderer::getTexturedModelData);
+        EntityModelLayerRegistry.registerModelLayer(RADAR, RadarBlockEntityRenderer::createBodyLayer);
+        EntityModelLayerRegistry.registerModelLayer(CANNON, CannonBlockEntityRenderer::createBodyLayer);
     }
 }

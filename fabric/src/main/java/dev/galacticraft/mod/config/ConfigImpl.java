@@ -58,9 +58,11 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class ConfigImpl implements Config {
-    private static final int CURRENT_CONFIG_VERSION = 1;
+    private static final int CURRENT_CONFIG_VERSION = 2;
+    private static final int LEGACY_METEOR_SPORADIC_INTERVAL = 9000;
     private static final int LEGACY_METEOR_SHOWER_MEAN_INTERVAL = 72000;
     private static final float LEGACY_METEOR_SHOWER_PEAK_MULTIPLIER = 60.0f;
+    private static final int DEFAULT_METEOR_SPORADIC_INTERVAL = 1200;
     private static final int DEFAULT_METEOR_SHOWER_MEAN_INTERVAL = 144000;
     private static final float DEFAULT_METEOR_SHOWER_PEAK_MULTIPLIER = 12.0f;
 
@@ -103,7 +105,7 @@ public class ConfigImpl implements Config {
     private boolean cannotEatWithMask = true;
     private float meteorSpawnMultiplier = 1.0f;
     private boolean meteorsEnabled = true;
-    private int meteorSporadicInterval = 9000;
+    private int meteorSporadicInterval = DEFAULT_METEOR_SPORADIC_INTERVAL;
     private int meteorShowerMeanInterval = DEFAULT_METEOR_SHOWER_MEAN_INTERVAL;
     private int meteorShowerMinDuration = 3600;
     private int meteorShowerMaxDuration = 9600;
@@ -824,6 +826,9 @@ public class ConfigImpl implements Config {
     private void migrateConfig() {
         if (this.configVersion >= CURRENT_CONFIG_VERSION) return;
 
+        if (this.meteorSporadicInterval == LEGACY_METEOR_SPORADIC_INTERVAL) {
+            this.meteorSporadicInterval = DEFAULT_METEOR_SPORADIC_INTERVAL;
+        }
         if (this.meteorShowerMeanInterval == LEGACY_METEOR_SHOWER_MEAN_INTERVAL) {
             this.meteorShowerMeanInterval = DEFAULT_METEOR_SHOWER_MEAN_INTERVAL;
         }

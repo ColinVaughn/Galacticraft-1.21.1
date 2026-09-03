@@ -163,6 +163,8 @@ public class GalacticraftClient implements ClientModInitializer {
         MenuRegistry.registerScreenFactory(GCMenuTypes.PARACHEST, ParachestScreen::new);
         MenuRegistry.registerScreenFactory(GCMenuTypes.VEHICLE_INVENTORY, VehicleInventoryScreen::new);
         MenuRegistry.registerScreenFactory(GCMenuTypes.ASTRO_MINER_BASE, AstroMinerBaseScreen::new);
+        MenuRegistry.registerScreenFactory(GCMenuTypes.RADAR, RadarScreen::new);
+        MenuRegistry.registerScreenFactory(GCMenuTypes.CANNON, CannonScreen::new);
 
         EntityRendererRegistry.register(GCEntityTypes.MOON_VILLAGER, MoonVillagerRenderer::new);
         EntityRendererRegistry.register(GCEntityTypes.EVOLVED_ZOMBIE, EvolvedZombieEntityRenderer::new);
