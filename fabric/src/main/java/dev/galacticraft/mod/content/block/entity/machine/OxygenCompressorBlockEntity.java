@@ -36,56 +36,86 @@ import dev.galacticraft.machinelib.api.storage.StorageSpec;
 import dev.galacticraft.machinelib.api.storage.slot.FluidResourceSlot;
 import dev.galacticraft.machinelib.api.storage.slot.ItemResourceSlot;
 import dev.galacticraft.machinelib.api.transfer.TransferType;
+import dev.galacticraft.machinelib.api.util.FluidSource;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.Galacticraft;
+import dev.galacticraft.mod.api.oxygencompressor.OxygenTankInside;
 import dev.galacticraft.mod.content.GCBlockEntityTypes;
+import dev.galacticraft.mod.content.GCSounds;
+import dev.galacticraft.mod.content.block.machine.OxygenCompressorBlock;
+import dev.galacticraft.mod.content.item.GCItems;
 import dev.galacticraft.mod.machine.GCMachineStatuses;
-import dev.galacticraft.mod.screen.GCMenuTypes;
+import dev.galacticraft.mod.screen.OxygenCompressorMenu;
 import dev.galacticraft.mod.util.FluidUtil;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class OxygenCompressorBlockEntity extends MachineBlockEntity {
     public static final int CHARGE_SLOT = 0;
-    public static final int OXYGEN_OUTPUT_SLOT = 1;
+    public static final int OXYGEN_SLOT = 1;
     public static final int OXYGEN_TANK = 0;
     public static final long MAX_OXYGEN = FluidUtil.bucketsToDroplets(50);
+    private static final int TRANSFER_RATE = 800;
 
-    private static final StorageSpec SPEC = StorageSpec.of(
-            MachineItemStorage.spec(
-                    ItemResourceSlot.builder(TransferType.TRANSFER)
-                            .pos(8, 62)
-                            .capacity(1)
-                            .filter(ResourceFilters.CAN_EXTRACT_ENERGY)
-                            .icon(Pair.of(InventoryMenu.BLOCK_ATLAS, Constant.SlotSprite.ENERGY)),
-                    ItemResourceSlot.builder(TransferType.PROCESSING)
-                            .pos(80, 27)
-                            .capacity(1)
-                            .filter(ResourceFilters.canInsertFluid(Gases.OXYGEN))
-                            .icon(Pair.of(InventoryMenu.BLOCK_ATLAS, Constant.SlotSprite.OXYGEN_TANK))
-            ),
-            MachineEnergyStorage.spec(
-                    Galacticraft.CONFIG.machineEnergyStorageSize(),
-                    Galacticraft.CONFIG.oxygenCompressorEnergyConsumptionRate() * 2,
-                    0
-            ),
-            MachineFluidStorage.spec(
-                    FluidResourceSlot.builder(TransferType.STRICT_INPUT)
-                            .pos(31, 8)
-                            .capacity(OxygenCompressorBlockEntity.MAX_OXYGEN)
-                            .filter(ResourceFilters.ofResource(Gases.OXYGEN))
-            )
-    );
+    private final FluidSource fluidSource = new FluidSource(this);
+    private final CompressionMode compressionMode;
+    private boolean didGasTransfer = false;
+
+
+    private static class CompressionMode {
+        private boolean mode = true;
+    }
 
     public OxygenCompressorBlockEntity(BlockPos pos, BlockState state) {
-        super(GCBlockEntityTypes.OXYGEN_COMPRESSOR, pos, state, SPEC);
+        this(pos, state, new CompressionMode());
+    }
+
+    private OxygenCompressorBlockEntity(BlockPos pos, BlockState state, CompressionMode compressionMode)
+    {
+        super(GCBlockEntityTypes.OXYGEN_COMPRESSOR, pos, state, StorageSpec.of(
+                MachineItemStorage.spec(
+                        ItemResourceSlot.builder(TransferType.TRANSFER)
+                                .pos(8, 62)
+                                .capacity(1)
+                                .filter(ResourceFilters.CAN_EXTRACT_ENERGY)
+                                .icon(Pair.of(InventoryMenu.BLOCK_ATLAS, Constant.SlotSprite.ENERGY)),
+                        ItemResourceSlot.builder(TransferType.PROCESSING)
+                                .pos(80, 27)
+                                .capacity(1)
+                                .filter((item, components) ->
+                                        (compressionMode.mode ? ResourceFilters.canInsertFluid(Gases.OXYGEN) : ResourceFilters.canExtractFluid(Gases.OXYGEN))
+                                                .test(item, components))
+                                .icon(Pair.of(InventoryMenu.BLOCK_ATLAS, Constant.SlotSprite.OXYGEN_TANK))
+                ),
+                MachineEnergyStorage.spec(
+                        Galacticraft.CONFIG.machineEnergyStorageSize(),
+                        Galacticraft.CONFIG.oxygenCompressorEnergyConsumptionRate() * 2,
+                        0
+                ),
+                MachineFluidStorage.spec(
+                        FluidResourceSlot.builder(TransferType.STRICT_INPUT)
+                                .pos(31, 8)
+                                .capacity(OxygenCompressorBlockEntity.MAX_OXYGEN)
+                                .filter(ResourceFilters.ofResource(Gases.OXYGEN))
+                )
+        ));
+
+        this.compressionMode = compressionMode;
     }
 
     @Override
@@ -95,30 +125,85 @@ public class OxygenCompressorBlockEntity extends MachineBlockEntity {
     }
 
     @Override
-    protected @NotNull MachineStatus tick(@NotNull ServerLevel level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull ProfilerFiller profiler) {
+    protected @NotNull MachineStatus tick(@NotNull ServerLevel level, @NotNull BlockPos pos, @NotNull BlockState blockstate, @NotNull ProfilerFiller profiler) {
         FluidResourceSlot oxygenStorage = this.fluidStorage().slot(OXYGEN_TANK);
-        if (oxygenStorage.isEmpty()) return GCMachineStatuses.NOT_ENOUGH_OXYGEN;
-        if (this.itemStorage().slot(OXYGEN_OUTPUT_SLOT).isEmpty()) return GCMachineStatuses.MISSING_OXYGEN_TANK;
-        if (!this.energyStorage().canExtract(Galacticraft.CONFIG.oxygenCompressorEnergyConsumptionRate())) {
+        ItemResourceSlot itemStorage = this.itemStorage().slot(OXYGEN_SLOT);
+
+        checkOxygenTankChange(level, pos, blockstate, itemStorage);
+        if (itemStorage.isEmpty()) {
+            if (didGasTransfer)
+                triggerGasLeak(level, pos, blockstate);
+            return GCMachineStatuses.MISSING_OXYGEN_TANK;
+        }
+        if (!this.energyStorage().canExtract(Galacticraft.CONFIG.oxygenCompressorEnergyConsumptionRate()))
             return MachineStatuses.NOT_ENOUGH_ENERGY;
+
+        //COMPRESSING MODE
+        if(compressionMode.mode) {
+            if (oxygenStorage.isEmpty()) return GCMachineStatuses.NOT_ENOUGH_OXYGEN;
+
+            long previousAmount = oxygenStorage.getAmount();
+            this.drainFluidToSlot(OXYGEN_SLOT, OXYGEN_TANK, TRANSFER_RATE);
+            if (oxygenStorage.getAmount() == previousAmount) return GCMachineStatuses.OXYGEN_TANK_FULL;
+
+            this.energyStorage().extract(Galacticraft.CONFIG.oxygenCompressorEnergyConsumptionRate());
+            didGasTransfer = true;
+            return GCMachineStatuses.COMPRESSING_OXYGEN;
         }
 
+        //DECOMPRESSING MODE
+        this.fluidSource.trySpreadFluids(level, pos, blockstate);
+        if (oxygenStorage.isFull()) return GCMachineStatuses.OXYGEN_TANK_FULL;
+
         long previousAmount = oxygenStorage.getAmount();
-        this.drainFluidToSlot(OXYGEN_OUTPUT_SLOT, OXYGEN_TANK);
-        if (oxygenStorage.getAmount() == previousAmount) return GCMachineStatuses.OXYGEN_TANK_FULL;
+        this.takeFluidFromSlot(OXYGEN_SLOT, OXYGEN_TANK, Gases.OXYGEN, TRANSFER_RATE);
+        if (oxygenStorage.getAmount() == previousAmount) return GCMachineStatuses.EMPTY_OXYGEN_TANK;
 
         this.energyStorage().extract(Galacticraft.CONFIG.oxygenCompressorEnergyConsumptionRate());
-        return GCMachineStatuses.COMPRESSING_OXYGEN;
+        didGasTransfer = true;
+        return GCMachineStatuses.DECOMPRESSING;
     }
+
+    private void triggerGasLeak(ServerLevel level, BlockPos pos, BlockState blockstate) {
+        didGasTransfer = false;
+        Vec3 particle_pos = Vec3.atCenterOf(pos).relative(blockstate.getValue(BlockStateProperties.HORIZONTAL_FACING), 0.3);
+        level.sendParticles(ParticleTypes.WHITE_SMOKE, particle_pos.x, particle_pos.y, particle_pos.z, 80, 0.1, 0.1, 0.1, 0.04);
+        level.playSound(null, pos, GCSounds.GAS_RELEASE, SoundSource.BLOCKS, 0.7f, 1.0f);
+    }
+
+    private void checkOxygenTankChange(ServerLevel level, BlockPos pos, BlockState blockState, ItemResourceSlot itemStorage) {
+        OxygenTankInside currentTankType = itemToEnumOxygenTank(itemStorage.getResource());
+
+        if(currentTankType != blockState.getValue(OxygenCompressorBlock.OXYGEN_TANK_INSIDE))
+            level.setBlock(pos, blockState.setValue(OxygenCompressorBlock.OXYGEN_TANK_INSIDE, currentTankType), Block.UPDATE_CLIENTS);
+    }
+
+    private static OxygenTankInside itemToEnumOxygenTank(@Nullable Item item) {
+        return item == GCItems.SMALL_OXYGEN_TANK ? OxygenTankInside.SMALL :
+        item == GCItems.MEDIUM_OXYGEN_TANK ? OxygenTankInside.MEDIUM :
+        item == GCItems.LARGE_OXYGEN_TANK ? OxygenTankInside.LARGE :
+        OxygenTankInside.NONE;
+    }
+
+    @Override
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider lookup) {
+        super.saveAdditional(tag, lookup);
+        tag.putBoolean(Constant.Nbt.COMPRESSION_MODE, this.compressionMode.mode);
+    }
+
+    @Override
+    public void loadAdditional(CompoundTag tag, HolderLookup.Provider lookup) {
+        super.loadAdditional(tag, lookup);
+        this.compressionMode.mode = tag.getBoolean(Constant.Nbt.COMPRESSION_MODE);
+    }
+
+    public boolean getCompressionMode() { return this.compressionMode.mode; }
+
+    public void changeCompressionMode() { compressionMode.mode = !compressionMode.mode; this.setChanged(); }
 
     @Nullable
     @Override
     public MachineMenu<? extends MachineBlockEntity> createMenu(int syncId, Inventory inv, Player player) {
-        return new MachineMenu<>(
-                GCMenuTypes.OXYGEN_COMPRESSOR,
-                syncId,
-                player,
-                this
-        );
+        return new OxygenCompressorMenu(syncId, player, this);
     }
 }

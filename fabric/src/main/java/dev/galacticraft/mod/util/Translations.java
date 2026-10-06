@@ -225,7 +225,6 @@ public interface Translations {
         String ELECTRIC_ARC_FURNACE_BONUS_CHANCE = "config.galacticraft.energy.machines.electric_arc_furnace_bonus_chance";
         String OXYGEN_COLLECTOR_ENERGY_CONSUMPTION_RATE = "config.galacticraft.energy.machines.oxygen_collector_energy_consumption_rate";
         String OXYGEN_COMPRESSOR_ENERGY_CONSUMPTION_RATE = "config.galacticraft.energy.machines.oxygen_compressor_energy_consumption_rate";
-        String OXYGEN_DECOMPRESSOR_ENERGY_CONSUMPTION_RATE = "config.galacticraft.energy.machines.oxygen_decompressor_energy_consumption_rate";
         String OXYGEN_SEALER_ENERGY_CONSUMPTION_RATE = "config.galacticraft.energy.machines.oxygen_sealer_energy_consumption_rate";
         String OXYGEN_SEALER_OXYGEN_CONSUMPTION_RATE = "config.galacticraft.energy.machines.oxygen_sealer_oxygen_consumption_rate";
         String OXYGEN_SEALER_UNSEALED_OXYGEN_CONSUMPTION_RATE = "config.galacticraft.energy.machines.oxygen_sealer_unsealed_oxygen_consumption_rate";
@@ -525,6 +524,7 @@ public interface Translations {
         String ALPHA_WARNING_3 = "ui.galacticraft.alpha_warning.content3";
         String ALPHA_WARNING_HEADER = "ui.galacticraft.alpha_warning.header";
 
+        String OXYGEN_COMPRESSOR_DECOMPRESSOR_TITLE = "ui.galacticraft.oxygen_compressor.decompressor_mode";
         String BUBBLE_CURRENT_SIZE = "ui.galacticraft.bubble_distributor.current_size";
         String BUBBLE_NOT_VISIBLE = "ui.galacticraft.bubble_distributor.not_visible";
         String BUBBLE_TARGET_SIZE = "ui.galacticraft.bubble_distributor.size";

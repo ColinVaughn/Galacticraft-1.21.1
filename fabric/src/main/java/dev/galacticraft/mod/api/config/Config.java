@@ -58,8 +58,6 @@ public interface Config {
 
     long oxygenCompressorEnergyConsumptionRate();
 
-    long oxygenDecompressorEnergyConsumptionRate();
-
     long oxygenSealerEnergyConsumptionRate();
 
     long oxygenSealerOxygenConsumptionRate();

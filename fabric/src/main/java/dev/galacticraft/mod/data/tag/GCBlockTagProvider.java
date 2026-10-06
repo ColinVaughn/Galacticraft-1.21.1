@@ -486,7 +486,6 @@ public class GCBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                 GCBlocks.OXYGEN_SEALER,
                 GCBlocks.OXYGEN_BUBBLE_DISTRIBUTOR,
                 GCBlocks.TERRAFORMER,
-                GCBlocks.OXYGEN_DECOMPRESSOR,
                 GCBlocks.OXYGEN_COMPRESSOR,
                 GCBlocks.OXYGEN_STORAGE_MODULE,
                 GCBlocks.FOOD_CANNER,

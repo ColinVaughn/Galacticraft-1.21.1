@@ -402,7 +402,6 @@ public class GCTranslationProvider extends TranslationProvider {
         this.block(GCBlocks.OXYGEN_SEALER, "Oxygen Sealer");
         this.block(GCBlocks.OXYGEN_BUBBLE_DISTRIBUTOR, "Bubble Distributor");
         this.block(GCBlocks.TERRAFORMER, "Terraformer");
-        this.block(GCBlocks.OXYGEN_DECOMPRESSOR, "Oxygen Decompressor");
         this.block(GCBlocks.OXYGEN_COMPRESSOR, "Oxygen Compressor");
         this.block(GCBlocks.OXYGEN_STORAGE_MODULE, "Oxygen Storage Module");
         this.block(GCBlocks.FUEL_LOADER, "Fuel Loader");
@@ -1093,9 +1092,8 @@ public class GCTranslationProvider extends TranslationProvider {
         this.blockDesc(GCBlocks.MOON_CHEESE_WHEEL, "Can be placed and eaten like a cake. Made with all-natural Moon cheese.");
         this.blockDesc(GCBlocks.OXYGEN_BUBBLE_DISTRIBUTOR, "Creates a breathable bubble of oxygen in a small area.");
         this.blockDesc(GCBlocks.TERRAFORMER, "Used to add greenery to distant planets, adding grass, trees, and water when supplied with the correct materials.");
-        this.blockDesc(GCBlocks.OXYGEN_DECOMPRESSOR, "Empties oxygen tanks.");
         this.blockDesc(GCBlocks.OXYGEN_COLLECTOR, "Collects oxygen from nearby crops and trees.");
-        this.blockDesc(GCBlocks.OXYGEN_COMPRESSOR, "Fills oxygen tanks.");
+        this.blockDesc(GCBlocks.OXYGEN_COMPRESSOR, "Fills or drains oxygen tanks by switching between compressor and decompressor modes.");
         this.blockDesc(GCBlocks.OXYGEN_SEALER, "Fills an airtight room with oxygen to make it breathable.");
         this.blockDesc(GCBlocks.OXYGEN_STORAGE_MODULE, "Stores a large amount of oxygen.");
         this.blockDesc(GCBlocks.PARACHEST, "Falls from the sky when you travel to certain planets, carrying your rocket, fuel, and cargo.");
@@ -1160,7 +1158,6 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(Config.ELECTRIC_ARC_FURNACE_BONUS_CHANCE, "Electric Arc Furnace Bonus Chance");
         this.add(Config.OXYGEN_COLLECTOR_ENERGY_CONSUMPTION_RATE, "Oxygen Collector Energy Consumption Rate/t");
         this.add(Config.OXYGEN_COMPRESSOR_ENERGY_CONSUMPTION_RATE, "Oxygen Compressor Energy Consumption Rate/t");
-        this.add(Config.OXYGEN_DECOMPRESSOR_ENERGY_CONSUMPTION_RATE, "Oxygen Decompressor Energy Consumption Rate/t");
         this.add(Config.OXYGEN_SEALER_ENERGY_CONSUMPTION_RATE, "Oxygen Sealer Energy Consumption Rate/t");
         this.add(Config.OXYGEN_SEALER_OXYGEN_CONSUMPTION_RATE, "Oxygen Sealer Oxygen Consumption Rate/t");
         this.add(Config.OXYGEN_SEALER_UNSEALED_OXYGEN_CONSUMPTION_RATE, "Oxygen Sealer Unsealed Oxygen Consumption Rate/t");
@@ -1374,6 +1371,7 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(Ui.ALPHA_WARNING_2, "Please report all issues you find.");
         this.add(Ui.ALPHA_WARNING_3, "Press [ESC] or click to continue.");
         this.add(Ui.ALPHA_WARNING_HEADER, "WARNING");
+        this.add(Ui.OXYGEN_COMPRESSOR_DECOMPRESSOR_TITLE, "Oxygen Decompressor");
         this.add(Ui.BUBBLE_CURRENT_SIZE, "Current Size: %s");
         this.add(Ui.BUBBLE_NOT_VISIBLE, "Bubble Not Visible");
         this.add(Ui.BUBBLE_TARGET_SIZE, "Target Size: ");

@@ -321,7 +321,6 @@ public interface Constant {
         String OXYGEN_COLLECTOR = "oxygen_collector";
         String OXYGEN_COMPRESSOR = "oxygen_compressor";
         String FOOD_CANNER = "food_canner";
-        String OXYGEN_DECOMPRESSOR = "oxygen_decompressor";
         String OXYGEN_DETECTOR = "oxygen_detector";
         String OXYGEN_SEALER = "oxygen_sealer";
         String FLUID_PIPE = "fluid_pipe";
@@ -677,8 +676,6 @@ public interface Constant {
         ResourceLocation ROCKET_INVENTORY_36 = id("textures/gui/rocket_36.png");
         ResourceLocation ROCKET_INVENTORY_54 = id("textures/gui/rocket_54.png");
         ResourceLocation WARNING_SIGN = id("textures/gui/warning.png");
-
-        ResourceLocation OXYGEN_COMPRESSOR_SCREEN = id("textures/gui/oxygen_compressor_screen.png");
         ResourceLocation OXYGEN_STORAGE_MODULE_SCREEN = id("textures/gui/oxygen_storage_module_screen.png");
         ResourceLocation OXYGEN_SEALER_SCREEN = id("textures/gui/oxygen_sealer_screen.png");
         ResourceLocation FUEL_LOADER_SCREEN = id("textures/gui/fuel_loader_screen.png");
@@ -963,6 +960,28 @@ public interface Constant {
         /** Legacy schematic pages extend farther left than the rocket layout. */
         int SCHEMATIC_RECIPE_VIEWER_X = 7;
         int SCHEMATIC_RECIPE_VIEWER_WIDTH = PAGE_WIDTH - SCHEMATIC_RECIPE_VIEWER_X;
+    }
+
+    interface OxygenCompressor {
+        ResourceLocation SCREEN_TEXTURE = id("textures/gui/oxygen_compressor_screen.png");
+
+        int TEXT_X = 106;
+        int TEXT_Y = 29;
+
+        int BUTTON_X = 129;
+        int BUTTON_Y = 55;
+        int BUTTON_WIDTH = 13;
+        int BUTTON_HEIGHT = 13;
+
+        int BUTTON_RED_U = 177;
+        int BUTTON_RED_V = 19;
+        int BUTTON_RED_HOVER_U = 190;
+        int BUTTON_RED_HOVER_V = 19;
+
+        int BUTTON_GREEN_U = 177;
+        int BUTTON_GREEN_V = 32;
+        int BUTTON_GREEN_HOVER_U = 190;
+        int BUTTON_GREEN_HOVER_V = 32;
     }
 
     interface BubbleDistributor {
@@ -1288,7 +1307,6 @@ public interface Constant {
         String TERRAFORMER_MENU = "terraformer_menu";
         String OXYGEN_COMPRESSOR_MENU = "oxygen_compressor_menu";
         String FOOD_CANNER_MENU = "food_canner_menu";
-        String OXYGEN_DECOMPRESSOR_MENU = "oxygen_decompressor_menu";
         String OXYGEN_STORAGE_MODULE_MENU = "oxygen_storage_module_menu";
         String OXYGEN_SEALER_MENU = "oxygen_sealer_menu";
         String FUEL_LOADER_MENU = "fuel_loader_menu";
@@ -1357,6 +1375,7 @@ public interface Constant {
         String GC_API = "GCApi";
         String CHANGE_COUNT = "Modified";
         String OXYGEN = "Inversion";
+        String COMPRESSION_MODE = "CompressionMode";
         String GEAR_INV = "GearInv";
         String HAS_MASK = "HasMask";
         String HAS_GEAR = "HasGear";

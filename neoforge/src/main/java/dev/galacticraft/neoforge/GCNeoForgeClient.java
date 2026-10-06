@@ -355,7 +355,6 @@ public final class GCNeoForgeClient {
         event.register(GCMenuTypes.OXYGEN_COLLECTOR, OxygenCollectorScreen::new);
         event.register(GCMenuTypes.OXYGEN_COMPRESSOR, OxygenCompressorScreen::new);
         event.register(GCMenuTypes.FOOD_CANNER, FoodCannerScreen::new);
-        event.register(GCMenuTypes.OXYGEN_DECOMPRESSOR, OxygenDecompressorScreen::new);
         event.register(GCMenuTypes.PLAYER_INV_GC, GCPlayerInventoryScreen::new);
         event.register(GCMenuTypes.PET_INV_GC, GCPetInventoryScreen::new);
         event.register(GCMenuTypes.OXYGEN_BUBBLE_DISTRIBUTOR, OxygenBubbleDistributorScreen::new);

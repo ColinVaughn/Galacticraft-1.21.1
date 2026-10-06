@@ -49,7 +49,6 @@ public final class GCApiLookupProviders {
                 GCBlockEntityTypes.CARGO_UNLOADER,
                 GCBlockEntityTypes.OXYGEN_COLLECTOR,
                 GCBlockEntityTypes.OXYGEN_COMPRESSOR,
-                GCBlockEntityTypes.OXYGEN_DECOMPRESSOR,
                 GCBlockEntityTypes.OXYGEN_SEALER,
                 GCBlockEntityTypes.OXYGEN_BUBBLE_DISTRIBUTOR,
                 GCBlockEntityTypes.TERRAFORMER,

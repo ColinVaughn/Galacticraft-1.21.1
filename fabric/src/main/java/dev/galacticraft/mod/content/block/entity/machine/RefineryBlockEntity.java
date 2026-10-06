@@ -51,8 +51,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.item.Item;
-import net.minecraft.core.component.DataComponentPatch;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
@@ -113,23 +111,7 @@ public class RefineryBlockEntity extends MachineBlockEntity {
         super.tickConstant(world, pos, state, profiler);
         this.chargeFromSlot(CHARGE_SLOT);
 
-        ItemResourceSlot oilInput = this.itemStorage().slot(OIL_INPUT_SLOT);
-        Item previousItem = oilInput.getResource();
-        DataComponentPatch previousComponents = oilInput.getComponents();
-        long previousAmount = oilInput.getAmount();
-        long previousModifications = oilInput.getModifications();
-
         this.takeFluidFromSlot(OIL_INPUT_SLOT, OIL_TANK, GCFluids.CRUDE_OIL);
-
-        // NeoForge fluid handlers mutate a copied ItemStack and then replace the slot contents.
-        // Ensure MachineLib's menu cache notices that replacement; otherwise a click/swap can
-        // restore its cached full bucket after the oil was already inserted into the tank.
-        if (oilInput.getModifications() == previousModifications
-                && (oilInput.getResource() != previousItem
-                || oilInput.getAmount() != previousAmount
-                || !oilInput.getComponents().equals(previousComponents))) {
-            oilInput.markModified();
-        }
         this.drainFluidToSlot(FUEL_OUTPUT_SLOT, FUEL_TANK);
     }
 

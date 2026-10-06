@@ -30,6 +30,7 @@ import dev.galacticraft.machinelib.api.data.model.MachineModelGenerator;
 import dev.galacticraft.machinelib.client.api.model.MachineTextureBase;
 import dev.galacticraft.machinelib.client.api.model.TextureProvider;
 import dev.galacticraft.mod.Constant;
+import dev.galacticraft.mod.api.oxygencompressor.OxygenTankInside;
 import dev.galacticraft.mod.content.GCBlockRegistry;
 import dev.galacticraft.mod.content.GCBlocks;
 import dev.galacticraft.mod.content.block.decoration.FlagBlock;
@@ -40,6 +41,7 @@ import dev.galacticraft.mod.content.block.machine.CoalGeneratorBlock;
 import dev.galacticraft.mod.content.block.machine.FoodCannerBlock;
 import dev.galacticraft.mod.content.block.machine.FuelLoaderBlock;
 import dev.galacticraft.mod.content.block.machine.ResourceStorageBlock;
+import dev.galacticraft.mod.content.block.machine.OxygenCompressorBlock;
 import dev.galacticraft.mod.content.block.special.ParachestBlock;
 import dev.galacticraft.mod.content.block.special.RocketWorkbench;
 import dev.galacticraft.mod.content.block.special.launchpad.AbstractLaunchPad;
@@ -311,21 +313,25 @@ public class GCModelProvider extends FabricModelProvider {
         MachineModelGenerator.setupMachineBaseTextures(generator, Constant.MOD_ID, MachineTextureBase.prefixed(Constant.MOD_ID, "block/machine"));
 
         //Front deduced automatically
-        createTrivialFrontFaceMachine(generator, GCBlocks.CARGO_LOADER, Constant.MOD_ID);
-        createTrivialFrontFaceMachine(generator, GCBlocks.CARGO_UNLOADER, Constant.MOD_ID);
-        createTrivialFrontFaceMachine(generator, GCBlocks.PAINTER, Constant.MOD_ID);
-        createTrivialFrontFaceMachine(generator, GCBlocks.ENERGY_STORAGE_MODULE, Constant.MOD_ID);
-        createTrivialFrontFaceMachine(generator, GCBlocks.ENERGY_STORAGE_CLUSTER, Constant.MOD_ID);
-        createTrivialFrontFaceMachine(generator, GCBlocks.ELECTRIC_ARC_FURNACE, Constant.MOD_ID);
-        createTrivialFrontFaceMachine(generator, GCBlocks.ELECTRIC_FURNACE, Constant.MOD_ID);
+        createTrivialFrontFaceMachine(generator, GCBlocks.CARGO_LOADER);
+        createTrivialFrontFaceMachine(generator, GCBlocks.CARGO_UNLOADER);
+        createTrivialFrontFaceMachine(generator, GCBlocks.PAINTER);
+        createTrivialFrontFaceMachine(generator, GCBlocks.ENERGY_STORAGE_MODULE);
+        createTrivialFrontFaceMachine(generator, GCBlocks.ENERGY_STORAGE_CLUSTER);
+        createTrivialFrontFaceMachine(generator, GCBlocks.ELECTRIC_ARC_FURNACE);
+        createTrivialFrontFaceMachine(generator, GCBlocks.ELECTRIC_FURNACE);
 
         //Custom front
-        createTrivialFrontFaceMachine(generator, GCBlocks.DECONSTRUCTOR, Constant.MOD_ID, "block/machine_side");
-        createTrivialFrontFaceMachine(generator, GCBlocks.FLUID_TANK, Constant.MOD_ID, "block/machine_side");
+        createTrivialFrontFaceMachine(generator, GCBlocks.DECONSTRUCTOR, "block/machine_side");
+        createTrivialFrontFaceMachine(generator, GCBlocks.FLUID_TANK, "block/machine_side");
 
         //Multivariant block, custom fronts
         createOxygenStorage(generator, GCBlocks.OXYGEN_STORAGE_MODULE, new String[]{
                 "_1", "_2", "_3", "_4"
+        });
+
+        createOxygenCompressor(generator, GCBlocks.OXYGEN_COMPRESSOR, new String[]{
+                "_small", "_medium", "_large"
         });
 
         createCoalGenerator(generator, GCBlocks.COAL_GENERATOR, new String[]{
@@ -358,6 +364,14 @@ public class GCModelProvider extends FabricModelProvider {
                         .build()
         );
 
+        MachineModelGenerator.createTrivialMachine(generator, GCBlocks.RADAR,
+                TextureProvider.builder(Constant.MOD_ID).all("block/machine_side").build()
+        );
+
+        MachineModelGenerator.createTrivialMachine(generator, GCBlocks.CANNON,
+                TextureProvider.builder(Constant.MOD_ID).all("block/machine_side").build()
+        );
+
         //Active blocks
         createFullCubeActiveMachine(generator, GCBlocks.OXYGEN_COLLECTOR);
         createFullCubeActiveMachine(generator, GCBlocks.OXYGEN_BUBBLE_DISTRIBUTOR);
@@ -366,8 +380,6 @@ public class GCModelProvider extends FabricModelProvider {
         createActiveMachine(generator, GCBlocks.OXYGEN_SEALER);
 
         //Dedicated generations methods
-        createOxygenCompressor(generator, GCBlocks.OXYGEN_COMPRESSOR);
-        createOxygenCompressor(generator, GCBlocks.OXYGEN_DECOMPRESSOR);
         createSolarPanel(generator, GCBlocks.BASIC_SOLAR_PANEL);
         createSolarPanel(generator, GCBlocks.ADVANCED_SOLAR_PANEL);
         createFuelLoader(generator, GCBlocks.FUEL_LOADER);
@@ -377,10 +389,6 @@ public class GCModelProvider extends FabricModelProvider {
         generator.createNonTemplateModelBlock(GCBlocks.FUEL);
         generator.createNonTemplateModelBlock(GCBlocks.SULFURIC_ACID);
         generator.createTrivialCube(GCBlocks.AIR_LOCK_FRAME);
-        MachineModelGenerator.createTrivialMachine(generator, GCBlocks.RADAR,
-                TextureProvider.builder(Constant.MOD_ID).all("block/machine_side").build());
-        MachineModelGenerator.createTrivialMachine(generator, GCBlocks.CANNON,
-                TextureProvider.builder(Constant.MOD_ID).all("block/machine_side").build());
         this.createAirLockController(generator);
         this.createParachests(generator);
     }
@@ -404,16 +412,16 @@ public class GCModelProvider extends FabricModelProvider {
         return model_location;
     }
 
-    public static void createTrivialFrontFaceMachine(BlockModelGenerators generator, Block block, String MOD_ID, @Nullable String front) {
-        MachineModelGenerator.createTrivialMachine(generator, block, TextureProvider.builder(MOD_ID)
+    public static void createTrivialFrontFaceMachine(BlockModelGenerators generator, Block block, @Nullable String front) {
+        MachineModelGenerator.createTrivialMachine(generator, block, TextureProvider.builder(Constant.MOD_ID)
                 .sides("block/machine_side")
                 .front(front == null ? TextureMapping.getBlockTexture(block).getPath() : front)
                 .build()
         );
     }
 
-    public static void createTrivialFrontFaceMachine(BlockModelGenerators generator, Block block, String MOD_ID) {
-        createTrivialFrontFaceMachine(generator, block, MOD_ID, null);
+    public static void createTrivialFrontFaceMachine(BlockModelGenerators generator, Block block) {
+        createTrivialFrontFaceMachine(generator, block, null);
     }
 
     private static void createActiveMachine(BlockModelGenerators generator, Block block) {
@@ -496,13 +504,15 @@ public class GCModelProvider extends FabricModelProvider {
                 )));
     }
 
-    private static void createOxygenCompressor(BlockModelGenerators generator, Block compressor) {
-        MachineModelGenerator.createTrivialMachine(generator, compressor, TextureProvider.builder(Constant.MOD_ID)
-                .sides("block/machine_side")
-                .front(TextureMapping.getBlockTexture(compressor))
-                .back("block/oxygen_compressor_back")
-                .build()
-        );
+    private static void createOxygenCompressor(BlockModelGenerators generator, Block block, String[] state) {
+        ResourceLocation[] model_location = generateMultiMachineModel(generator, Constant.MOD_ID, block, state);
+
+        generator.blockStateOutput.accept(MultiVariantGenerator.multiVariant(block).with(PropertyDispatch.property(OxygenCompressorBlock.OXYGEN_TANK_INSIDE)
+                .select(OxygenTankInside.NONE, Variant.variant().with(VariantProperties.MODEL, model_location[0]))
+                .select(OxygenTankInside.SMALL, Variant.variant().with(VariantProperties.MODEL, model_location[1]))
+                .select(OxygenTankInside.MEDIUM, Variant.variant().with(VariantProperties.MODEL, model_location[2]))
+                .select(OxygenTankInside.LARGE, Variant.variant().with(VariantProperties.MODEL, model_location[3]))
+        ));
     }
 
     private static void createSolarPanel(BlockModelGenerators generator, Block block) {
