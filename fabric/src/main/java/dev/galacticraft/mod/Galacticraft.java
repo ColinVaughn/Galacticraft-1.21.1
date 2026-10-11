@@ -81,6 +81,7 @@ public class Galacticraft {
         GCCreativeModeTabs.register();
         GCApiLookupProviders.register();
         GCRecipes.register();
+        GCLootTables.register();
         GCEntityDataSerializers.register();
         GCEntityTypes.register();
         GCAttachments.init();

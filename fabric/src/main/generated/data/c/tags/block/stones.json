@@ -1,5 +1,14 @@
 {
   "values": [
+    "galacticraft:mercury_plains_rock",
+    "galacticraft:mercury_impact_breccia",
+    "galacticraft:moon_anorthosite",
+    "galacticraft:moon_impact_breccia",
+    "galacticraft:mars_weathered_basalt",
+    "galacticraft:mars_sedimentary_rock",
+    "galacticraft:venus_plains_basalt",
+    "galacticraft:venus_tessera_rock",
+    "galacticraft:venus_flow_basalt",
     "galacticraft:moon_surface_rock",
     "galacticraft:moon_rock",
     "galacticraft:lunaslate",

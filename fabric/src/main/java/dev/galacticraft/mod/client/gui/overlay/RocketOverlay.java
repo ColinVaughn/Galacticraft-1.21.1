@@ -27,6 +27,10 @@ import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Axis;
 import dev.galacticraft.api.universe.celestialbody.CelestialBody;
 import dev.galacticraft.mod.Constant;
+import dev.galacticraft.api.rocket.LaunchStage;
+import dev.galacticraft.mod.client.GCKeyBinds;
+import dev.galacticraft.mod.util.Translations;
+import net.minecraft.network.chat.Component;
 import dev.galacticraft.mod.content.entity.vehicle.RocketEntity;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -69,7 +73,21 @@ public class RocketOverlay {
 
     public static void onHudRender(GuiGraphics graphics, DeltaTracker delta) {
         Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null) return;
         if (mc.player.getVehicle() instanceof RocketEntity rocketEntity) {
+            if (!mc.options.hideGui && rocketEntity.getLaunchStage() == LaunchStage.LAUNCHED) {
+                Component hint = rocketEntity.isLanding()
+                        ? Component.translatable(Translations.Ui.ROCKET_LANDING, GCKeyBinds.TOGGLE_ROCKET_LANDING.getTranslatedKeyMessage())
+                        : Component.translatable(Translations.Ui.ROCKET_LANDING_HINT, GCKeyBinds.TOGGLE_ROCKET_LANDING.getTranslatedKeyMessage());
+                graphics.drawCenteredString(mc.font, hint, graphics.guiWidth() / 2, graphics.guiHeight() - 64,
+                        rocketEntity.isLanding() ? 0x7AE7D9 : 0xFFFFFF);
+                if (rocketEntity.isLanding()) {
+                    Component thrustHint = Component.translatable(Translations.Ui.ROCKET_LANDING_THRUST,
+                            mc.options.keyJump.getTranslatedKeyMessage(), mc.options.keyShift.getTranslatedKeyMessage(),
+                            Math.round(rocketEntity.getThrust() * 100));
+                    graphics.drawCenteredString(mc.font, thrustHint, graphics.guiWidth() / 2, graphics.guiHeight() - 53, 0x7AE7D9);
+                }
+            }
             if (playerSkin == null) {
                 playerSkin = mc.getSkinManager().getOrLoad(mc.player.getGameProfile());
             }

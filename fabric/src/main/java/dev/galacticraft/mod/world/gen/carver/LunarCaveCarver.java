@@ -24,6 +24,7 @@ package dev.galacticraft.mod.world.gen.carver;
 
 import com.mojang.serialization.Codec;
 import dev.galacticraft.mod.content.GCBlocks;
+import dev.galacticraft.mod.tag.GCBlockTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -69,7 +70,7 @@ public class LunarCaveCarver extends CaveWorldCarver {
     @Override
     protected boolean carveBlock(CarvingContext context, CaveCarverConfiguration config, @NotNull ChunkAccess chunk, Function<BlockPos, Holder<Biome>> posToBiome, CarvingMask carvingMask, BlockPos.MutableBlockPos mutable, BlockPos.MutableBlockPos mutable2, Aquifer aquiferSampler, MutableBoolean mutableBoolean) {
         BlockState blockState = chunk.getBlockState(mutable);
-        if (blockState.is(GCBlocks.MOON_TURF) || blockState.is(Blocks.MYCELIUM)) {
+        if (blockState.is(GCBlockTags.FOOTPRINTS) || blockState.is(Blocks.MYCELIUM)) {
             mutableBoolean.setTrue();
         }
 

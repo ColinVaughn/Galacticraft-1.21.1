@@ -1,0 +1,713 @@
+{
+  "credit": "Made with Blockbench",
+  "textures": {
+    "0": "galacticraft:block/vesicular_lunar_basalt",
+    "1": "galacticraft:block/helion_core",
+    "particle": "galacticraft:block/vesicular_lunar_basalt"
+  },
+  "elements": [
+    {
+      "name": "large_base",
+      "from": [
+        2,
+        0,
+        2
+      ],
+      "to": [
+        7,
+        1,
+        8
+      ],
+      "rotation": {
+        "angle": 22.5,
+        "axis": "y",
+        "origin": [
+          5,
+          0,
+          5.5
+        ]
+      },
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            5,
+            1
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            6,
+            1
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            5,
+            1
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            6,
+            1
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            5,
+            6
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            5,
+            6
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "large_core",
+      "from": [
+        3,
+        1,
+        3
+      ],
+      "to": [
+        7,
+        4,
+        8
+      ],
+      "rotation": {
+        "angle": 22.5,
+        "axis": "y",
+        "origin": [
+          5,
+          0,
+          5.5
+        ]
+      },
+      "faces": {
+        "north": {
+          "uv": [
+            3,
+            2,
+            7,
+            5
+          ],
+          "texture": "#1"
+        },
+        "east": {
+          "uv": [
+            3,
+            2,
+            8,
+            5
+          ],
+          "texture": "#1"
+        },
+        "south": {
+          "uv": [
+            3,
+            2,
+            7,
+            5
+          ],
+          "texture": "#1"
+        },
+        "west": {
+          "uv": [
+            3,
+            2,
+            8,
+            5
+          ],
+          "texture": "#1"
+        },
+        "up": {
+          "uv": [
+            3,
+            2,
+            7,
+            7
+          ],
+          "texture": "#1"
+        },
+        "down": {
+          "uv": [
+            3,
+            2,
+            7,
+            7
+          ],
+          "texture": "#1"
+        }
+      }
+    },
+    {
+      "name": "large_shell_cap",
+      "from": [
+        3,
+        4,
+        3
+      ],
+      "to": [
+        6,
+        6,
+        8
+      ],
+      "rotation": {
+        "angle": 22.5,
+        "axis": "y",
+        "origin": [
+          5,
+          0,
+          5.5
+        ]
+      },
+      "faces": {
+        "north": {
+          "uv": [
+            6,
+            4,
+            9,
+            6
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            6,
+            4,
+            11,
+            6
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            6,
+            4,
+            9,
+            6
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            6,
+            4,
+            11,
+            6
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            6,
+            4,
+            9,
+            9
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            6,
+            4,
+            9,
+            9
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "east_base",
+      "from": [
+        9,
+        0,
+        3
+      ],
+      "to": [
+        15,
+        1,
+        9
+      ],
+      "rotation": {
+        "angle": -22.5,
+        "axis": "y",
+        "origin": [
+          12,
+          0,
+          6
+        ]
+      },
+      "faces": {
+        "north": {
+          "uv": [
+            9,
+            6,
+            15,
+            7
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            9,
+            6,
+            15,
+            7
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            9,
+            6,
+            15,
+            7
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            9,
+            6,
+            15,
+            7
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            9,
+            6,
+            15,
+            12
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            9,
+            6,
+            15,
+            12
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "east_core",
+      "from": [
+        10,
+        1,
+        4
+      ],
+      "to": [
+        14,
+        3,
+        8
+      ],
+      "rotation": {
+        "angle": -22.5,
+        "axis": "y",
+        "origin": [
+          12,
+          0,
+          6
+        ]
+      },
+      "faces": {
+        "north": {
+          "uv": [
+            12,
+            8,
+            16,
+            10
+          ],
+          "texture": "#1"
+        },
+        "east": {
+          "uv": [
+            12,
+            8,
+            16,
+            10
+          ],
+          "texture": "#1"
+        },
+        "south": {
+          "uv": [
+            12,
+            8,
+            16,
+            10
+          ],
+          "texture": "#1"
+        },
+        "west": {
+          "uv": [
+            12,
+            8,
+            16,
+            10
+          ],
+          "texture": "#1"
+        },
+        "up": {
+          "uv": [
+            12,
+            8,
+            16,
+            12
+          ],
+          "texture": "#1"
+        },
+        "down": {
+          "uv": [
+            12,
+            8,
+            16,
+            12
+          ],
+          "texture": "#1"
+        }
+      }
+    },
+    {
+      "name": "east_shell_cap",
+      "from": [
+        11,
+        3,
+        5
+      ],
+      "to": [
+        14,
+        5,
+        8
+      ],
+      "rotation": {
+        "angle": -22.5,
+        "axis": "y",
+        "origin": [
+          12,
+          0,
+          6
+        ]
+      },
+      "faces": {
+        "north": {
+          "uv": [
+            1,
+            10,
+            4,
+            12
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            1,
+            10,
+            4,
+            12
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            1,
+            10,
+            4,
+            12
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            1,
+            10,
+            4,
+            12
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            1,
+            10,
+            4,
+            13
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            1,
+            10,
+            4,
+            13
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "rear_base",
+      "from": [
+        4,
+        0,
+        10
+      ],
+      "to": [
+        10,
+        1,
+        15
+      ],
+      "rotation": {
+        "angle": 22.5,
+        "axis": "y",
+        "origin": [
+          7,
+          0,
+          12.5
+        ]
+      },
+      "faces": {
+        "north": {
+          "uv": [
+            7,
+            12,
+            13,
+            13
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            6,
+            12,
+            11,
+            13
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            7,
+            12,
+            13,
+            13
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            6,
+            12,
+            11,
+            13
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            7,
+            0,
+            13,
+            5
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            7,
+            0,
+            13,
+            5
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "rear_core",
+      "from": [
+        5,
+        1,
+        11
+      ],
+      "to": [
+        9,
+        3,
+        14
+      ],
+      "rotation": {
+        "angle": 22.5,
+        "axis": "y",
+        "origin": [
+          7,
+          0,
+          12.5
+        ]
+      },
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            14,
+            12,
+            16
+          ],
+          "texture": "#1"
+        },
+        "east": {
+          "uv": [
+            7,
+            14,
+            10,
+            16
+          ],
+          "texture": "#1"
+        },
+        "south": {
+          "uv": [
+            8,
+            14,
+            12,
+            16
+          ],
+          "texture": "#1"
+        },
+        "west": {
+          "uv": [
+            7,
+            14,
+            10,
+            16
+          ],
+          "texture": "#1"
+        },
+        "up": {
+          "uv": [
+            8,
+            0,
+            12,
+            3
+          ],
+          "texture": "#1"
+        },
+        "down": {
+          "uv": [
+            8,
+            0,
+            12,
+            3
+          ],
+          "texture": "#1"
+        }
+      }
+    },
+    {
+      "name": "rear_shell_cap",
+      "from": [
+        5,
+        3,
+        11
+      ],
+      "to": [
+        8,
+        4,
+        14
+      ],
+      "rotation": {
+        "angle": 22.5,
+        "axis": "y",
+        "origin": [
+          7,
+          0,
+          12.5
+        ]
+      },
+      "faces": {
+        "north": {
+          "uv": [
+            10,
+            0,
+            13,
+            1
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            10,
+            0,
+            13,
+            1
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            10,
+            0,
+            13,
+            1
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            10,
+            0,
+            13,
+            1
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            10,
+            2,
+            13,
+            5
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            10,
+            2,
+            13,
+            5
+          ],
+          "texture": "#0"
+        }
+      }
+    }
+  ],
+  "parent": "minecraft:block/block"
+}

@@ -486,7 +486,13 @@ public class GCItemTagProvider extends FabricTagProvider.ItemTagProvider {
         this.tag(ItemTags.SLABS).addTag(GCItemTags.SLABS);
         this.tag(ItemTags.WALLS).addTag(GCItemTags.WALLS);
 
+        this.tag(ItemTags.SAND).add(GCBlocks.MARS_BASALTIC_SAND.asItem());
+
         this.tag(ConventionalItemTags.STONES)
+                .add(GCBlocks.MERCURY_PLAINS_ROCK.asItem(), GCBlocks.MERCURY_IMPACT_BRECCIA.asItem())
+                .add(GCBlocks.MOON_ANORTHOSITE.asItem(), GCBlocks.MOON_IMPACT_BRECCIA.asItem())
+                .add(GCBlocks.MARS_WEATHERED_BASALT.asItem(), GCBlocks.MARS_SEDIMENTARY_ROCK.asItem())
+                .add(GCBlocks.VENUS_PLAINS_BASALT.asItem(), GCBlocks.VENUS_TESSERA_ROCK.asItem(), GCBlocks.VENUS_FLOW_BASALT.asItem())
                 .add(GCBlocks.MOON_SURFACE_ROCK.asItem())
                 .add(GCBlocks.MOON_ROCK.asItem())
                 .add(GCBlocks.LUNASLATE.asItem())

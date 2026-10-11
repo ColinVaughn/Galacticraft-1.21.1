@@ -48,6 +48,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -166,20 +167,31 @@ public class AstroMinerEntity extends GCVehicle {
         this.waypointBase = masterPos.relative(facing, 1);
         this.aiState = AISTATE_ATBASE;
         this.entityData.set(DATA_AI_STATE, this.aiState);
-        this.targetYaw = yawForFacing(facing);
+        dockAtBase();
+    }
+
+    static Vec3 dockPosition(BlockPos master, Direction facing) {
+        // The master is the minimum corner of a 2x2x2 dock, not its center.
+        return new Vec3(master.getX() + 1 + facing.getStepX(), master.getY(),
+                master.getZ() + 1 + facing.getStepZ());
+    }
+
+    private void dockAtBase() {
+        this.setPos(dockPosition(this.posBase, this.baseFacing));
+        this.facingAI = this.baseFacing;
+        this.lastFacing = this.baseFacing;
+        this.targetYaw = yawForFacing(this.baseFacing);
         this.targetPitch = 0;
         this.setYRot(this.targetYaw);
         this.setXRot(0);
-        // Spawn just in front of the base face, at base height.
-        BlockPos spawn = masterPos.relative(facing, 2);
-        this.setPos(spawn.getX() + 0.5, masterPos.getY(), spawn.getZ() + 0.5);
+        this.entityData.set(DATA_FACING, this.baseFacing.get3DDataValue());
     }
 
-    private static float yawForFacing(Direction facing) {
+    static float yawForFacing(Direction facing) {
         return switch (facing) {
             case SOUTH -> 0F;
-            case WEST -> 270F;
-            case EAST -> 90F;
+            case WEST -> 90F;
+            case EAST -> 270F;
             default -> 180F; // NORTH
         };
     }
@@ -324,9 +336,11 @@ public class AstroMinerEntity extends GCVehicle {
         // Pre-carve when the heading changes so a full 3-slab bore opens up.
         if (this.lastFacing != this.facingAI) {
             this.lastFacing = this.facingAI;
-            prepareMove(12, 0);
-            prepareMove(12, 1);
-            prepareMove(12, 2);
+            if (this.aiState != AISTATE_ATBASE && this.aiState != AISTATE_DOCKING) {
+                prepareMove(12, 0);
+                prepareMove(12, 1);
+                prepareMove(12, 2);
+            }
         }
 
         // Energy gate + drain while active (no drain at base/stuck).
@@ -380,11 +394,13 @@ public class AstroMinerEntity extends GCVehicle {
     private void tickDocking() {
         this.speed = SPEED_BASE / 1.6D;
         this.rotSpeed = (float) (ROT_SPEED_BASE / 1.6D);
-        if (this.waypointBase == null) {
+        if (this.posBase == null) {
             setState(AISTATE_STUCK);
             return;
         }
-        if (moveToPos(this.waypointBase, true)) {
+        this.targetYaw = yawForFacing(this.baseFacing);
+        this.targetPitch = 0;
+        if (moveToPos(dockPosition(this.posBase, this.baseFacing), true)) {
             setState(AISTATE_ATBASE);
             zeroMotion();
             this.speed = SPEED_BASE;
@@ -406,6 +422,7 @@ public class AstroMinerEntity extends GCVehicle {
             freeze(); // base destroyed; wait to be rebuilt
             return;
         }
+        dockAtBase();
         this.inventoryDrops = 0;
         // Unload one stack every 5 ticks.
         boolean unloaded = false;
@@ -525,9 +542,16 @@ public class AstroMinerEntity extends GCVehicle {
 
     /** Move one cardinal axis toward {@code target}; returns true when fully aligned. */
     private boolean moveToPos(BlockPos target, boolean reverse) {
-        double tx = target.getX() + 0.5;
-        double ty = target.getY() - 1;
-        double tz = target.getZ() + 0.5;
+        Vec3 destination = target.equals(this.waypointBase) && this.posBase != null
+                ? dockPosition(this.posBase, this.baseFacing)
+                : new Vec3(target.getX() + 0.5, target.getY() - 1, target.getZ() + 0.5);
+        return moveToPos(destination, reverse);
+    }
+
+    private boolean moveToPos(Vec3 target, boolean reverse) {
+        double tx = target.x;
+        double ty = target.y;
+        double tz = target.z;
         boolean zFirst = reverse != (this.baseFacing.get3DDataValue() < 4);
         if (zFirst) {
             if (notAligned(this.getZ(), tz)) { moveToPosZ(tz); return false; }
@@ -550,12 +574,12 @@ public class AstroMinerEntity extends GCVehicle {
         this.targetPitch = 0;
         double diff = x - this.getX();
         if (diff < 0) {
-            if (this.aiState != AISTATE_DOCKING) this.targetYaw = 270;
+            if (this.aiState != AISTATE_DOCKING) this.targetYaw = yawForFacing(Direction.WEST);
             this.mx = -this.speed;
             if (this.mx * this.speedup <= diff) { this.mx = diff; this.noSpeedup = true; }
             this.facingAI = Direction.WEST;
         } else {
-            if (this.aiState != AISTATE_DOCKING) this.targetYaw = 90;
+            if (this.aiState != AISTATE_DOCKING) this.targetYaw = yawForFacing(Direction.EAST);
             this.mx = this.speed;
             if (this.mx * this.speedup >= diff) { this.mx = diff; this.noSpeedup = true; }
             this.facingAI = Direction.EAST;
@@ -760,11 +784,11 @@ public class AstroMinerEntity extends GCVehicle {
     }
 
     private void tryBackIn() {
-        if (this.waypointBase == null) {
+        if (this.posBase == null) {
             freeze();
             return;
         }
-        double distSq = this.distanceToSqr(this.waypointBase.getX() + 0.5, this.waypointBase.getY(), this.waypointBase.getZ() + 0.5);
+        double distSq = this.distanceToSqr(dockPosition(this.posBase, this.baseFacing));
         if (distSq < 9.1D) {
             setState(AISTATE_DOCKING);
             this.targetYaw = yawForFacing(this.baseFacing);

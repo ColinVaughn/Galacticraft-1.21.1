@@ -23,11 +23,20 @@
 package dev.galacticraft.mod.content;
 
 import dev.galacticraft.mod.Constant;
+import dev.galacticraft.mod.world.gen.feature.ExpeditionSupplyFunction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 
 public class GCLootTables {
+    private static final GCRegistry<LootItemFunctionType<?>> LOOT_FUNCTIONS = new GCRegistry<>(BuiltInRegistries.LOOT_FUNCTION_TYPE);
+    public static final LootItemFunctionType<ExpeditionSupplyFunction> EXPEDITION_SUPPLY = new LootItemFunctionType<>(ExpeditionSupplyFunction.CODEC);
+
+    public static void register() {
+        LOOT_FUNCTIONS.register("expedition_supply", EXPEDITION_SUPPLY);
+    }
     public static final ResourceKey<LootTable> BASIC_MOON_RUINS_CHEST = Constant.key(Registries.LOOT_TABLE, Constant.LootTable.BASIC_MOON_RUINS_CHEST);
     public static final ResourceKey<LootTable> MOON_CAVE_EXPEDITION_CACHE = Constant.key(Registries.LOOT_TABLE, Constant.LootTable.MOON_CAVE_EXPEDITION_CACHE);
 

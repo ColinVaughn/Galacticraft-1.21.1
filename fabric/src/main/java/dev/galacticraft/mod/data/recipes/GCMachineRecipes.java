@@ -283,19 +283,6 @@ public class GCMachineRecipes extends FabricRecipeProvider {
                 .emiDefaultRecipe(true)
                 .save(output);
 
-        GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.OXYGEN_DECOMPRESSOR)
-                .define('S', GCItems.COMPRESSED_STEEL)
-                .define('R', Items.REDSTONE_TORCH)
-                .define('C', GCItems.OXYGEN_CONCENTRATOR)
-                .define('A', GCItems.COMPRESSED_ALUMINUM)
-                .define('F', GCItems.OXYGEN_FAN)
-                .pattern("SFS")
-                .pattern("ACA")
-                .pattern("SRS")
-                .unlockedBy(getHasName(GCItems.OXYGEN_CONCENTRATOR), has(GCItems.OXYGEN_CONCENTRATOR))
-                .emiDefaultRecipe(true)
-                .save(output);
-
         GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.FOOD_CANNER)
                 .define('S', GCItems.COMPRESSED_STEEL)
                 .define('P', Items.PISTON)
@@ -362,6 +349,19 @@ public class GCMachineRecipes extends FabricRecipeProvider {
                 .pattern("SCS")
                 .pattern("SWS")
                 .unlockedBy(getHasName(GCItems.BASIC_WAFER), has(GCItems.BASIC_WAFER))
+                .emiDefaultRecipe(true)
+                .save(output);
+
+        GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.LAUNCH_CONTROLLER)
+                .define('D', GCItems.DESH_INGOT)
+                .define('P', GCItems.COMPRESSED_DESH)
+                .define('F', GCItems.FREQUENCY_MODULE)
+                .define('W', GCItems.ADVANCED_WAFER)
+                .define('C', GCBlocks.ALUMINUM_WIRE)
+                .pattern("DFD")
+                .pattern("PWP")
+                .pattern("DCD")
+                .unlockedBy(getHasName(GCItems.DESH_INGOT), has(GCItems.DESH_INGOT))
                 .emiDefaultRecipe(true)
                 .save(output);
 

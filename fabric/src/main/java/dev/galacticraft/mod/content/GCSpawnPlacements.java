@@ -75,6 +75,8 @@ public final class GCSpawnPlacements {
      * {@code monster_spawn_light_level} governs its own surface.
      */
     private static final List<Placement<?>> PLACEMENTS = List.of(
+            new Placement<>(GCEntityTypes.LUNAR_BURROWER, SpawnPlacementTypes.ON_GROUND,
+                    Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, dev.galacticraft.mod.content.entity.LunarBurrowerEntity::checkSpawnRules),
             monster(GCEntityTypes.EVOLVED_ZOMBIE),
             monster(GCEntityTypes.EVOLVED_CREEPER),
             monster(GCEntityTypes.EVOLVED_SKELETON),

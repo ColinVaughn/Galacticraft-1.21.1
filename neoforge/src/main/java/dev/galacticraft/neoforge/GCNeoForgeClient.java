@@ -245,6 +245,8 @@ public final class GCNeoForgeClient {
             ItemBlockRenderTypes.setRenderLayer(GCBlocks.MOON_TANGLE, RenderType.cutout());
             for (Block pipe : GCBlocks.GLASS_FLUID_PIPES.values()) ItemBlockRenderTypes.setRenderLayer(pipe, RenderType.translucent());
             ItemBlockRenderTypes.setRenderLayer(GCBlocks.GLASS_FLUID_PIPE, RenderType.cutout());
+            ItemBlockRenderTypes.setRenderLayer(GCFluids.HELIUM_3, RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(GCFluids.FLOWING_HELIUM_3, RenderType.translucent());
             ItemBlockRenderTypes.setRenderLayer(GCFluids.FUEL, RenderType.translucent());
             ItemBlockRenderTypes.setRenderLayer(GCFluids.FLOWING_FUEL, RenderType.translucent());
             ItemBlockRenderTypes.setRenderLayer(GCFluids.SULFURIC_ACID, RenderType.translucent());
@@ -301,6 +303,8 @@ public final class GCNeoForgeClient {
         event.register(GCKeyBinds.OPEN_CELESTIAL_SCREEN);
         event.register(GCKeyBinds.OPEN_ROCKET_INVENTORY);
         event.register(GCKeyBinds.TOGGLE_SENSOR_GLASSES_MODE);
+        event.register(GCKeyBinds.TOGGLE_BURROWER_TUNNEL);
+        event.register(GCKeyBinds.TOGGLE_ROCKET_LANDING);
     }
 
     private static void onClientTick(ClientTickEvent.Post event) {
@@ -324,6 +328,7 @@ public final class GCNeoForgeClient {
         SolarFlareOverlay.onHudRender(event.getGuiGraphics(), event.getPartialTick());
         SensorGlassesOverlay.onHudRender(event.getGuiGraphics(), event.getPartialTick());
         RocketOverlay.onHudRender(event.getGuiGraphics(), event.getPartialTick());
+        GCKeyBinds.renderBurrowerMode(event.getGuiGraphics(), event.getPartialTick());
         LanderOverlay.onRenderHud(event.getGuiGraphics(), event.getPartialTick());
         CountdownOverlay.renderCountdown(event.getGuiGraphics(), event.getPartialTick());
     }
@@ -355,7 +360,6 @@ public final class GCNeoForgeClient {
         event.register(GCMenuTypes.OXYGEN_COLLECTOR, OxygenCollectorScreen::new);
         event.register(GCMenuTypes.OXYGEN_COMPRESSOR, OxygenCompressorScreen::new);
         event.register(GCMenuTypes.FOOD_CANNER, FoodCannerScreen::new);
-        event.register(GCMenuTypes.OXYGEN_DECOMPRESSOR, OxygenDecompressorScreen::new);
         event.register(GCMenuTypes.PLAYER_INV_GC, GCPlayerInventoryScreen::new);
         event.register(GCMenuTypes.PET_INV_GC, GCPetInventoryScreen::new);
         event.register(GCMenuTypes.OXYGEN_BUBBLE_DISTRIBUTOR, OxygenBubbleDistributorScreen::new);
@@ -391,6 +395,8 @@ public final class GCNeoForgeClient {
         event.registerEntityRenderer(GCEntityTypes.EVOLVED_EVOKER, EvolvedEvokerEntityRenderer::new);
         event.registerEntityRenderer(GCEntityTypes.EVOLVED_PILLAGER, EvolvedPillagerEntityRenderer::new);
         event.registerEntityRenderer(GCEntityTypes.EVOLVED_VINDICATOR, EvolvedVindicatorEntityRenderer::new);
+        event.registerEntityRenderer(GCEntityTypes.LUNAR_BURROWER, LunarBurrowerRenderer::new);
+        event.registerEntityRenderer(GCEntityTypes.BURROWER_BODY, BurrowerBodyRenderer::new);
         event.registerEntityRenderer(GCEntityTypes.GAZER, GazerEntityRenderer::new);
         event.registerEntityRenderer(GCEntityTypes.RUMBLER, RumblerEntityRenderer::new);
         event.registerEntityRenderer(GCEntityTypes.COMET_CUBE, CometCubeEntityRenderer::new);
@@ -409,6 +415,9 @@ public final class GCNeoForgeClient {
         event.registerEntityRenderer(GCEntityTypes.SKELETON_BOSS, EvolvedSkeletonBossRenderer::new);
         event.registerEntityRenderer(GCEntityTypes.CREEPER_BOSS, CreeperBossRenderer::new);
         event.registerEntityRenderer(GCEntityTypes.SPIDER_BOSS, SpiderBossRenderer::new);
+        event.registerEntityRenderer(GCEntityTypes.SPIDER_VENOM, SpiderVenomRenderer::new);
+        event.registerEntityRenderer(GCEntityTypes.SPIDER_EGG, SpiderEggRenderer::new);
+        event.registerEntityRenderer(GCEntityTypes.SPIDERLING, SpiderlingRenderer::new);
         event.registerBlockEntityRenderer(GCBlockEntityTypes.BASIC_SOLAR_PANEL, SolarPanelBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(GCBlockEntityTypes.ADVANCED_SOLAR_PANEL, SolarPanelBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(GCBlockEntityTypes.GLASS_FLUID_PIPE, FluidPipeBlockEntityRenderer::new);
@@ -436,11 +445,13 @@ public final class GCNeoForgeClient {
         event.registerLayerDefinition(GCEntityModelLayer.PARACHEST, dev.galacticraft.mod.client.render.entity.model.ParachestModel::createParachuteLayer);
         event.registerLayerDefinition(GCEntityModelLayer.MOON_VILLAGER, dev.galacticraft.mod.client.render.entity.model.MoonVillagerModel::createBodyLayer);
         event.registerLayerDefinition(GCEntityModelLayer.SKELETON_BOSS, dev.galacticraft.mod.client.model.entity.EvolvedSkeletonBossModel::createBodyLayer);
+        event.registerLayerDefinition(GCEntityModelLayer.SPIDER_QUEEN, dev.galacticraft.mod.client.model.entity.SpiderQueenModel::createBodyLayer);
+        event.registerLayerDefinition(GCEntityModelLayer.SPIDER_VENOM, dev.galacticraft.mod.client.model.entity.SpiderVenomModel::createBodyLayer);
+        event.registerLayerDefinition(GCEntityModelLayer.SPIDER_EGG, dev.galacticraft.mod.client.model.entity.SpiderEggModel::createBodyLayer);
+        event.registerLayerDefinition(GCEntityModelLayer.SPIDERLING, dev.galacticraft.mod.client.model.entity.SpiderlingModel::createBodyLayer);
         event.registerLayerDefinition(GCEntityModelLayer.FLAG, FlagBlockEntityRenderer::createBodyLayer);
         event.registerLayerDefinition(GCEntityModelLayer.SOLAR_PANEL, SolarPanelBlockEntityRenderer::getTexturedModelData);
         event.registerLayerDefinition(GCEntityModelLayer.ROCKET_WORKBENCH, RocketWorkbenchBlockEntityRenderer::getTexturedModelData);
-        event.registerLayerDefinition(GCEntityModelLayer.RADAR, RadarBlockEntityRenderer::createBodyLayer);
-        event.registerLayerDefinition(GCEntityModelLayer.CANNON, CannonBlockEntityRenderer::createBodyLayer);
     }
 
     private static void registerParticles(RegisterParticleProvidersEvent event) {

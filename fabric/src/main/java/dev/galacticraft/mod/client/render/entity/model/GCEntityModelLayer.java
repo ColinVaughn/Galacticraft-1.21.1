@@ -24,9 +24,7 @@ package dev.galacticraft.mod.client.render.entity.model;
 
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.client.model.entity.*;
-import dev.galacticraft.mod.client.render.block.entity.CannonBlockEntityRenderer;
 import dev.galacticraft.mod.client.render.block.entity.FlagBlockEntityRenderer;
-import dev.galacticraft.mod.client.render.block.entity.RadarBlockEntityRenderer;
 import dev.galacticraft.mod.client.render.block.entity.RocketWorkbenchBlockEntityRenderer;
 import dev.galacticraft.mod.client.render.block.entity.SolarPanelBlockEntityRenderer;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
@@ -47,13 +45,15 @@ public class GCEntityModelLayer {
 
     // Bosses
     public static final ModelLayerLocation SKELETON_BOSS = registerModelLayer("skeleton_boss");
+    public static final ModelLayerLocation SPIDER_QUEEN = registerModelLayer("spider_queen");
+    public static final ModelLayerLocation SPIDER_VENOM = registerModelLayer("spider_venom");
+    public static final ModelLayerLocation SPIDER_EGG = registerModelLayer("spider_egg");
+    public static final ModelLayerLocation SPIDERLING = registerModelLayer("spiderling");
 
     // Block Entity Renderers
     public static final ModelLayerLocation FLAG = registerModelLayer("flag");
     public static final ModelLayerLocation SOLAR_PANEL = registerModelLayer("solar_panel");
     public static final ModelLayerLocation ROCKET_WORKBENCH = registerModelLayer("rocket_workbench");
-    public static final ModelLayerLocation RADAR = registerModelLayer("radar");
-    public static final ModelLayerLocation CANNON = registerModelLayer("cannon");
 
     private static ModelLayerLocation registerModelLayer(String id) {
         return new ModelLayerLocation(Constant.id(id), DEFAULT_LAYER);
@@ -71,11 +71,13 @@ public class GCEntityModelLayer {
         EntityModelLayerRegistry.registerModelLayer(MOON_VILLAGER, MoonVillagerModel::createBodyLayer);
 
         EntityModelLayerRegistry.registerModelLayer(SKELETON_BOSS, EvolvedSkeletonBossModel::createBodyLayer);
+        EntityModelLayerRegistry.registerModelLayer(SPIDER_QUEEN, SpiderQueenModel::createBodyLayer);
+        EntityModelLayerRegistry.registerModelLayer(SPIDER_VENOM, SpiderVenomModel::createBodyLayer);
+        EntityModelLayerRegistry.registerModelLayer(SPIDER_EGG, SpiderEggModel::createBodyLayer);
+        EntityModelLayerRegistry.registerModelLayer(SPIDERLING, SpiderlingModel::createBodyLayer);
 
         EntityModelLayerRegistry.registerModelLayer(FLAG, FlagBlockEntityRenderer::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(SOLAR_PANEL, SolarPanelBlockEntityRenderer::getTexturedModelData);
         EntityModelLayerRegistry.registerModelLayer(ROCKET_WORKBENCH, RocketWorkbenchBlockEntityRenderer::getTexturedModelData);
-        EntityModelLayerRegistry.registerModelLayer(RADAR, RadarBlockEntityRenderer::createBodyLayer);
-        EntityModelLayerRegistry.registerModelLayer(CANNON, CannonBlockEntityRenderer::createBodyLayer);
     }
 }

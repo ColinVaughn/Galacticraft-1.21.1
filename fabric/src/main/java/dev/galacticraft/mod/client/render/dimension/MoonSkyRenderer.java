@@ -33,6 +33,7 @@ import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Axis;
 import dev.galacticraft.mod.Constant;
+import dev.galacticraft.mod.client.render.ShaderPackCompat;
 import dev.galacticraft.mod.client.model.GCRenderTypes;
 import dev.galacticraft.mod.client.render.dimension.star.CelestialBodyRendererManager;
 import net.minecraft.client.renderer.FogRenderer;
@@ -81,7 +82,7 @@ public class MoonSkyRenderer extends SpaceSkyRenderer {
         context.profiler().pop();
 
         context.profiler().push("moon_sun");
-        this.renderSun(celestialMatrices.last().pose());
+        this.renderSun(context, skyAngle, celestialMatrices.last().pose());
         context.profiler().pop();
 
         context.profiler().push("moon_earth");
@@ -117,14 +118,16 @@ public class MoonSkyRenderer extends SpaceSkyRenderer {
         RenderSystem.disableBlend();
     }
 
-    private void renderSun(Matrix4f celestialMatrix) {
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        RenderSystem.setShaderTexture(0, Constant.Skybox.SUN_MOON);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.enableBlend();
-        RenderSystem.blendFunc(GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE);
-        drawTexturedBody(celestialMatrix, SUN_SIZE);
-        RenderSystem.disableBlend();
+    private void renderSun(GCWorldRenderContext context, float skyAngle, Matrix4f celestialMatrix) {
+        ShaderPackCompat.renderSun(context.positionMatrix(), skyAngle, celestialMatrix, matrix -> {
+            RenderSystem.setShader(GameRenderer::getPositionTexShader);
+            RenderSystem.setShaderTexture(0, Constant.Skybox.SUN_MOON);
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+            RenderSystem.enableBlend();
+            RenderSystem.blendFunc(GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE);
+            drawTexturedBody(matrix, SUN_SIZE);
+            RenderSystem.disableBlend();
+        });
     }
 
     private void renderEarth(GCWorldRenderContext context) {

@@ -23,6 +23,10 @@
         "galacticraft:moon_dirt",
         "galacticraft:moon_rock",
         "galacticraft:moon_basalt",
+        "galacticraft:moon_rocky_regolith",
+        "galacticraft:moon_mare_regolith",
+        "galacticraft:moon_anorthosite",
+        "galacticraft:moon_impact_breccia",
         "galacticraft:dense_ice",
         "minecraft:packed_ice",
         "minecraft:ice"

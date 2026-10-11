@@ -35,6 +35,7 @@ import dev.galacticraft.mod.content.entity.ScalableFuelLevel;
 import dev.galacticraft.mod.content.item.GCItems;
 import dev.galacticraft.mod.screen.BuggyMenu;
 import dev.galacticraft.mod.util.FluidUtil;
+import dev.galacticraft.mod.util.BuggyAnimationState;
 import dev.galacticraft.mod.storage.SimpleFluidTank;
 import dev.galacticraft.machinelib.api.storage.StorageAccess;
 import net.minecraft.nbt.CompoundTag;
@@ -76,6 +77,8 @@ public class Buggy extends GCVehicle implements ContainerListener, ContainerVehi
     public double speed;
     public float wheelRotationZ;
     public float wheelRotationX;
+    private final BuggyAnimationState animationState = new BuggyAnimationState();
+
     float maxSpeed = 0.5F;
     float accel = 0.2F;
     float turnFactor = 3.0F;
@@ -89,6 +92,8 @@ public class Buggy extends GCVehicle implements ContainerListener, ContainerVehi
         super(entityType, level);
         createInventory();
     }
+
+    public BuggyAnimationState getAnimationState() { return this.animationState; }
 
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
@@ -186,10 +191,11 @@ public class Buggy extends GCVehicle implements ContainerListener, ContainerVehi
 
     @Override
     public void tick() {
+        double previousX = getX(), previousY = getY(), previousZ = getZ();
+        float previousYaw = getYRot();
+        boolean wasBlocked = this.horizontalCollision;
         super.tick();
         if (this.level().isClientSide) {
-            this.wheelRotationX += Mth.sqrt((float) this.getDeltaMovement().horizontalDistanceSqr()) * 150.0F * (this.speed < 0 ? 1 : -1);
-            this.wheelRotationX %= 360;
             this.wheelRotationZ = Mth.clamp(this.wheelRotationZ * 0.9F, -30.0F, 30.0F);
         }
 
@@ -239,6 +245,13 @@ public class Buggy extends GCVehicle implements ContainerListener, ContainerVehi
             }
 
             move(MoverType.SELF, getDeltaMovement());
+        }
+        if (this.level().isClientSide) {
+            float steering = isControlledByLocalInstance() ? this.wheelRotationZ * 6
+                    : -Mth.wrapDegrees(getYRot() - previousYaw) * 20;
+            this.animationState.tick(getX() - previousX, getY() - previousY, getZ() - previousZ,
+                    getYRot(), steering, onGround(), wasBlocked || this.horizontalCollision);
+            this.wheelRotationX = (float) (-360 * (this.animationState.wheelTurns(1) % 1));
         }
     }
 

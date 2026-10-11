@@ -55,12 +55,12 @@ public class GalacticraftRocketPartRenderers {
     private static final float ROCKET_T3_Y_OFFSET = -1.02F;
 
     public static void register() {
-        RocketPartRendererRegistry.INSTANCE.register(GCRocketParts.TIER_1_CONE, new BakedModelRocketPartRenderer(DEFAULT_CONE));
+        RocketPartRendererRegistry.INSTANCE.register(GCRocketParts.TIER_1_CONE, new Tier1RocketPartRenderer(DEFAULT_CONE, Tier1RocketPartRenderer.Part.CONE));
         RocketPartRendererRegistry.INSTANCE.register(GCRocketParts.ADVANCED_CONE, new BakedModelRocketPartRenderer(ADVANCED_CONE));
         RocketPartRendererRegistry.INSTANCE.register(GCRocketParts.SLOPED_CONE, new BakedModelRocketPartRenderer(SLOPED_CONE));
-        RocketPartRendererRegistry.INSTANCE.register(GCRocketParts.TIER_1_BODY, new BakedModelRocketPartRenderer(DEFAULT_BODY));
-        RocketPartRendererRegistry.INSTANCE.register(GCRocketParts.TIER_1_FIN, new BakedModelRocketPartRenderer(DEFAULT_FIN));
-        RocketPartRendererRegistry.INSTANCE.register(GCRocketParts.TIER_1_ENGINE, new BakedModelRocketPartRenderer(DEFAULT_ENGINE));
+        RocketPartRendererRegistry.INSTANCE.register(GCRocketParts.TIER_1_BODY, new Tier1RocketPartRenderer(DEFAULT_BODY, Tier1RocketPartRenderer.Part.BODY));
+        RocketPartRendererRegistry.INSTANCE.register(GCRocketParts.TIER_1_FIN, new Tier1RocketPartRenderer(DEFAULT_FIN, Tier1RocketPartRenderer.Part.FINS));
+        RocketPartRendererRegistry.INSTANCE.register(GCRocketParts.TIER_1_ENGINE, new Tier1RocketPartRenderer(DEFAULT_ENGINE, Tier1RocketPartRenderer.Part.ENGINE));
         RocketPartRendererRegistry.INSTANCE.register(GCRocketParts.STORAGE_UPGRADE, new BakedModelItemRocketPartRenderer(Items.CHEST.getDefaultInstance(), null));
         RocketPartRendererRegistry.INSTANCE.register(GCRocketParts.TIER_1_BOOSTER, new BakedModelRocketPartRenderer(BOOSTER_TIER_1));
 

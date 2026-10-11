@@ -1,8 +1,8 @@
 {
-  "type": "minecraft:forest_rock",
+  "type": "galacticraft:mars_boulder",
   "config": {
     "state": {
-      "Name": "galacticraft:mars_cobblestone"
+      "Name": "galacticraft:mars_weathered_basalt"
     }
   }
 }

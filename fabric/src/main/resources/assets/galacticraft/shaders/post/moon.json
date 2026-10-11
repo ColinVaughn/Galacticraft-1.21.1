@@ -1,0 +1,18 @@
+{
+  "targets": ["moon_surface"],
+  "passes": [
+    {
+      "name": "galacticraft:moon_surface",
+      "intarget": "minecraft:main",
+      "outtarget": "moon_surface",
+      "auxtargets": [{"name": "DepthSampler", "id": "minecraft:main:depth"}]
+    },
+    {
+      "name": "galacticraft:moon_surface",
+      "intarget": "moon_surface",
+      "outtarget": "minecraft:main",
+      "auxtargets": [{"name": "DepthSampler", "id": "moon_surface:depth"}],
+      "uniforms": [{"name": "Strength", "values": [0.0]}]
+    }
+  ]
+}

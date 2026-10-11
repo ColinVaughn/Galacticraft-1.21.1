@@ -25,8 +25,10 @@ package dev.galacticraft.mod.client.render.entity.rocket;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import dev.galacticraft.api.entity.rocket.render.RocketPartRendererRegistry;
+import dev.galacticraft.api.entity.rocket.render.RocketModelSlot;
 import dev.galacticraft.api.rocket.part.RocketPart;
 import dev.galacticraft.mod.content.entity.vehicle.RocketEntity;
+import dev.galacticraft.mod.client.model.Tier1RocketAnimations;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.culling.Frustum;
@@ -40,9 +42,14 @@ import net.minecraft.world.inventory.InventoryMenu;
 import org.joml.Quaternionf;
 
 public class RocketEntityRenderer extends EntityRenderer<RocketEntity> {
+    private final Tier1RocketAnimations tier1Animations;
+
     public RocketEntityRenderer(EntityRendererProvider.Context context) {
         super(context);
+        this.tier1Animations = new Tier1RocketAnimations(Minecraft.getInstance().getResourceManager());
     }
+
+    public Tier1RocketAnimations getTier1Animations() { return tier1Animations; }
 
     @Override
     public void render(RocketEntity entity, float yaw, float partialTick, PoseStack matrices, MultiBufferSource vertexConsumers, int light) {
@@ -55,6 +62,7 @@ public class RocketEntityRenderer extends EntityRenderer<RocketEntity> {
             case LAUNCHED -> 0.04D;
             default -> 0.0D;
         };
+        if (entity.isLanding()) amplitude *= entity.getThrust();
         if (client.options.getCameraType().isFirstPerson()) {
             amplitude *= 0.5D;
         }
@@ -79,20 +87,18 @@ public class RocketEntityRenderer extends EntityRenderer<RocketEntity> {
         }
 
 //        RenderSystem.setShaderTexture(0, getTextureLocation(entity));
-        matrices.translate(0.0F, 0.4375F, 0.0F);
-
         Holder<? extends RocketPart<?, ?>> part = entity.engine();
         if (part != null) {
             matrices.pushPose();
+            RocketModelSlot.ENGINE.mount(matrices);
             RocketPartRendererRegistry.INSTANCE.getRenderer(part.unwrapKey().get()).render(client.level, matrices, entity, vertexConsumers, partialTick, light, OverlayTexture.NO_OVERLAY);
             matrices.popPose();
         }
 
-        matrices.translate(0.0F, 0.5F, 0.0F);
-
         part = entity.booster();
         if (part != null) {
             matrices.pushPose();
+            RocketModelSlot.BOOSTER.mount(matrices);
             RocketPartRendererRegistry.INSTANCE.getRenderer(part.unwrapKey().get()).render(client.level, matrices, entity, vertexConsumers, partialTick, light, OverlayTexture.NO_OVERLAY);
             matrices.popPose();
         }
@@ -100,24 +106,23 @@ public class RocketEntityRenderer extends EntityRenderer<RocketEntity> {
         part = entity.fin();
         if (part != null) {
             matrices.pushPose();
+            RocketModelSlot.FIN.mount(matrices);
             RocketPartRendererRegistry.INSTANCE.getRenderer(part.unwrapKey().get()).render(client.level, matrices, entity, vertexConsumers, partialTick, light, OverlayTexture.NO_OVERLAY);
             matrices.popPose();
         }
-
-        matrices.translate(0.0F, 1.0F, 0.0F);
 
         part = entity.body();
         if (part != null) {
             matrices.pushPose();
+            RocketModelSlot.BODY.mount(matrices);
             RocketPartRendererRegistry.INSTANCE.getRenderer(part.unwrapKey().get()).render(client.level, matrices, entity, vertexConsumers, partialTick, light, OverlayTexture.NO_OVERLAY);
             matrices.popPose();
         }
 
-        matrices.translate(0.0F, 1.75F, 0.0F);
-
         part = entity.cone();
         if (part != null) {
             matrices.pushPose();
+            RocketModelSlot.CONE.mount(matrices);
             RocketPartRendererRegistry.INSTANCE.getRenderer(part.unwrapKey().get()).render(client.level, matrices, entity, vertexConsumers, partialTick, light, OverlayTexture.NO_OVERLAY);
             matrices.popPose();
         }

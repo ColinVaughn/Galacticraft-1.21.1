@@ -54,6 +54,7 @@ import org.lwjgl.util.tinyfd.TinyFileDialogs;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -71,6 +72,8 @@ public class SpaceRaceScreen extends Screen {
     private int teamColor = 0xFF000000;
     private @Nullable ResourceLocation teamFlag;
     private @Nullable Component flagError;
+    private int[] teamFlagPixels;
+    private boolean savedFlagLoaded;
     private @Nullable ServerStatisticsPayload serverStatistics;
     private @Nullable GlobalStatisticsPayload globalStatistics;
     private boolean filePickerOpen;
@@ -150,8 +153,17 @@ public class SpaceRaceScreen extends Screen {
 
         int buttonWidth = 120;
         addButton(Component.translatable(Translations.SpaceRace.SELECT_FLAG),
-                this.width / 2 - buttonWidth / 2, this.height / 2 + 18, buttonWidth, 20,
+                this.width / 2 - buttonWidth / 2, this.height / 2 + 42, buttonWidth, 20,
                 button -> this.openFlagFilePicker());
+        addButton(Component.translatable(Translations.SpaceRace.DRAW_FLAG),
+                this.width / 2 - buttonWidth / 2, this.height / 2 + 18, buttonWidth, 20,
+                button -> {
+                    int[] pixels = this.teamFlagPixels != null ? this.teamFlagPixels
+                            : new FlagCanvas(this.teamColor).copyPixels();
+                    FlagEditorScreen editor = new FlagEditorScreen(this, pixels,
+                            image -> confirmFlag(image, this.minecraft.screen));
+                    this.minecraft.setScreen(editor);
+                });
 
         this.addRenderableOnly((graphics, mouseX, mouseY, delta) -> {
             graphics.drawCenteredString(this.minecraft.font,
@@ -162,7 +174,7 @@ public class SpaceRaceScreen extends Screen {
                     this.width / 2, this.height / 2 - 4, 0xFFAAAAAA);
             if (this.flagError != null) {
                 graphics.drawCenteredString(this.minecraft.font, this.flagError,
-                        this.width / 2, this.height / 2 + 44, 0xFFFF5555);
+                        this.width / 2, this.height / 2 + 68, 0xFFFF5555);
             }
         });
     }
@@ -184,6 +196,10 @@ public class SpaceRaceScreen extends Screen {
     @Override
     protected void init() {
         super.init();
+        if (!this.savedFlagLoaded) {
+            this.savedFlagLoaded = true;
+            loadSavedFlag();
+        }
         if (this.openingStartTime == -1) {
             this.openingStartTime = System.currentTimeMillis();
         }
@@ -455,12 +471,81 @@ public class SpaceRaceScreen extends Screen {
             return;
         }
 
-        final NativeImage finalImage = image;
+        confirmFlag(image, this);
+    }
+
+    private Path savedFlagPath() {
+        return this.minecraft.gameDirectory.toPath().resolve("galacticraft/team_flag.png");
+    }
+
+    private ResourceLocation registerFlag(NativeImage image) {
         ResourceLocation location = Constant.id("temp_flag/" + Long.toUnsignedString(System.nanoTime()));
-        this.minecraft.getTextureManager().register(location, new DynamicTexture(finalImage));
+        this.minecraft.getTextureManager().register(location, new DynamicTexture(image));
         this.ownedFlagTextures.add(location);
+        return location;
+    }
+
+    private void rememberFlag(NativeImage image, ResourceLocation location) {
+        this.teamFlagPixels = new int[FlagCanvas.WIDTH * FlagCanvas.HEIGHT];
+        for (int y = 0; y < FlagCanvas.HEIGHT; y++) {
+            for (int x = 0; x < FlagCanvas.WIDTH; x++) {
+                this.teamFlagPixels[y * FlagCanvas.WIDTH + x] = FlagCanvas.swapRedBlue(image.getPixelRGBA(x, y));
+            }
+        }
+        if (this.teamFlag != null && !this.teamFlag.equals(location)) {
+            this.minecraft.getTextureManager().release(this.teamFlag);
+            this.ownedFlagTextures.remove(this.teamFlag);
+        }
+        this.teamFlag = location;
+    }
+
+    private void loadSavedFlag() {
+        if (!Files.isRegularFile(savedFlagPath())) {
+            return;
+        }
+        try (var input = Files.newInputStream(savedFlagPath())) {
+            NativeImage image = NativeImage.read(input);
+            if (image.getWidth() != FlagCanvas.WIDTH || image.getHeight() != FlagCanvas.HEIGHT) {
+                image.close();
+                this.flagError = Component.translatable(Translations.SpaceRace.FLAG_READ_ERROR);
+                return;
+            }
+            rememberFlag(image, registerFlag(image));
+        } catch (IOException e) {
+            this.flagError = Component.translatable(Translations.SpaceRace.FLAG_READ_ERROR);
+        }
+    }
+
+    private void confirmFlag(NativeImage finalImage, Screen cancelScreen) {
+        this.flagError = null;
+        ResourceLocation location = registerFlag(finalImage);
         this.minecraft.setScreen(new ConfirmFlagScreen(yes -> {
             if (yes) {
+                Path temporary = null;
+                try {
+                    Files.createDirectories(savedFlagPath().getParent());
+                    temporary = Files.createTempFile(savedFlagPath().getParent(), "team_flag", ".png");
+                    finalImage.writeToFile(temporary);
+                    Files.move(temporary, savedFlagPath(), StandardCopyOption.REPLACE_EXISTING);
+                } catch (IOException e) {
+                    Constant.LOGGER.warn("Could not save the local team flag", e);
+                    this.flagError = Component.translatable(Translations.SpaceRace.FLAG_SAVE_ERROR);
+                    this.minecraft.getTextureManager().release(location);
+                    this.ownedFlagTextures.remove(location);
+                    if (cancelScreen instanceof FlagEditorScreen editor) {
+                        editor.showSaveError();
+                    }
+                    this.minecraft.setScreen(cancelScreen);
+                    return;
+                } finally {
+                    if (temporary != null) {
+                        try {
+                            Files.deleteIfExists(temporary);
+                        } catch (IOException e) {
+                            Constant.LOGGER.warn("Could not remove the temporary flag image", e);
+                        }
+                    }
+                }
                 byte[] data = new byte[48 * 32 * 3];
                 int index = 0;
                 for (int y = 0; y < 32; y++) {
@@ -473,16 +558,12 @@ public class SpaceRaceScreen extends Screen {
                 }
 
                 NetworkManager.sendToServer(new FlagDataPayload(data));
-                if (this.teamFlag != null && !this.teamFlag.equals(location)) {
-                    this.minecraft.getTextureManager().release(this.teamFlag);
-                    this.ownedFlagTextures.remove(this.teamFlag);
-                }
-                this.teamFlag = location;
+                rememberFlag(finalImage, location);
             } else {
                 this.minecraft.getTextureManager().release(location);
                 this.ownedFlagTextures.remove(location);
             }
-            this.minecraft.setScreen(SpaceRaceScreen.this);
+            this.minecraft.setScreen(yes ? SpaceRaceScreen.this : cancelScreen);
         }, location, Component.translatable(Translations.SpaceRace.FLAG_CONFIRM),
                 Component.translatable(Translations.SpaceRace.FLAG_CONFIRM_MESSAGE)));
     }

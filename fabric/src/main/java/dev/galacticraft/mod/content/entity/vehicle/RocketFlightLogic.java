@@ -24,8 +24,8 @@
 package dev.galacticraft.mod.content.entity.vehicle;
 
 /**
- * Fuel budget and ascent maths for {@link RocketEntity}, kept free of Minecraft types so the
- * launch can be simulated in a plain unit test.
+ * Fuel budget and flight maths for {@link RocketEntity}, kept free of Minecraft types so
+ * ascent and landing can be simulated in a plain unit test.
  *
  * A rocket's tank is measured here in "burn ticks" -- the number of ticks a tank holds rather
  * than a volume -- so the numbers stay exact and independent of the droplets-per-bucket constant.
@@ -68,6 +68,27 @@ public final class RocketFlightLogic {
     private static final int SIMULATION_TICK_LIMIT = 100_000;
 
     private RocketFlightLogic() {
+    }
+
+    static final double LANDING_DESCENT_SPEED = -0.18;
+    static final double LANDING_HORIZONTAL_SPEED = 0.12;
+    static final int LANDING_DEPLOY_TICKS = 20;
+
+    /** Engine braking uses the same acceleration and fuel burn as powered ascent. */
+    static double landingThrust(double velocityY, boolean hover, boolean cutThrust, double gravity) {
+        if (cutThrust && !hover) return 0;
+        double target = hover ? 0 : LANDING_DESCENT_SPEED;
+        return Math.clamp((target - VERTICAL_DRAG * velocityY + GRAVITY_ACCELERATION * gravity)
+                / THRUST_ACCELERATION, 0, 1);
+    }
+
+    static boolean safeTouchdown(double velocityY, double horizontalSpeedSquared, double pitch, double roll) {
+        return velocityY < 0 && velocityY >= -0.25 && horizontalSpeedSquared <= 0.15 * 0.15
+                && Math.abs(pitch) <= 5 && Math.abs(roll) <= 5;
+    }
+
+    static double nextLandingHorizontalVelocity(double current, double target) {
+        return current + Math.clamp(target - current, -.02, .02);
     }
 
     /** Total ticks of engine burn a full tank provides. */

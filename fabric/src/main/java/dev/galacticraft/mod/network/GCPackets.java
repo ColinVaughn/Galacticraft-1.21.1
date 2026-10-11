@@ -60,10 +60,14 @@ public class GCPackets {
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, ControlEntityPayload.TYPE, ControlEntityPayload.STREAM_CODEC,
                 (payload, context) -> context.queue(() -> payload.apply((ServerPlayer) context.getPlayer())));
         registerC2S(EjectCanPayload.TYPE, EjectCanPayload.STREAM_CODEC);
+        registerC2S(CompressionModePayload.TYPE, CompressionModePayload.STREAM_CODEC);
         registerC2S(LaunchPadRoutePayload.TYPE, LaunchPadRoutePayload.STREAM_CODEC);
+        registerC2S(LaunchControllerSettingsPayload.TYPE, LaunchControllerSettingsPayload.STREAM_CODEC);
         registerC2S(OpenGcInventoryPayload.TYPE, OpenGcInventoryPayload.STREAM_CODEC);
         registerC2S(OpenPetInventoryPayload.TYPE, OpenPetInventoryPayload.STREAM_CODEC);
         registerC2S(OpenRocketPayload.TYPE, OpenRocketPayload.STREAM_CODEC);
+        registerC2S(ToggleBurrowerTunnelPayload.TYPE, ToggleBurrowerTunnelPayload.STREAM_CODEC);
+        registerC2S(ToggleRocketLandingPayload.TYPE, ToggleRocketLandingPayload.STREAM_CODEC);
         registerC2S(PlanetTeleportPayload.TYPE, PlanetTeleportPayload.STREAM_CODEC);
         registerC2S(SatelliteCreationPayload.TYPE, SatelliteCreationPayload.STREAM_CODEC);
         registerC2S(SatelliteUpdatePayload.TYPE, SatelliteUpdatePayload.STREAM_CODEC);

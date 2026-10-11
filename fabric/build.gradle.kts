@@ -54,6 +54,18 @@ loom {
             name("Fabric Client")
             source(sourceSets.test.get())
             property("fabric-tag-conventions-v2.missingTagTranslationWarning", "VERBOSE")
+            if (project.hasProperty("burrowerClientTest")) {
+                runDir("build/burrower-client-test")
+                property("galacticraft.burrower.client-test", "true")
+            }
+            if (project.hasProperty("burrowerVisualTest")) {
+                runDir("build/burrower-visual-test")
+                property("galacticraft.burrower.visual-test", "true")
+            }
+            if (project.hasProperty("burrowerPetTest")) {
+                runDir("build/burrower-pet-test")
+                property("galacticraft.burrower.pet-test", "true")
+            }
         }
         named("server") {
             name("Fabric Server")
@@ -73,6 +85,7 @@ loom {
             server()
             name("Fabric GameTest Server")
             source(sourceSets.test.get())
+            runDir("build/gametest")
             property("fabric-api.gametest")
             property("fabric-api.gametest.report-file", layout.buildDirectory.file("junit.xml").get().asFile.toString())
         }

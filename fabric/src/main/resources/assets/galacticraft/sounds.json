@@ -146,6 +146,15 @@
       }
     ]
   },
+  "machine.oxygen.gas_release": {
+    "subtitle": "subtitles.galacticraft.machine.oxygen.gas_release",
+    "sounds": [
+      {
+        "name": "galacticraft:machine/oxygen/gas_release",
+        "stream": false
+      }
+    ]
+  },
   "machine.whir": {
     "subtitle": "subtitles.galacticraft.machine.whir",
     "sounds": [

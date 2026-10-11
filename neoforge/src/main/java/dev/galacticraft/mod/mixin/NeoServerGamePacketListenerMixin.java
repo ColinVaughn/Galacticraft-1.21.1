@@ -45,6 +45,7 @@ public abstract class NeoServerGamePacketListenerMixin {
 
     @Inject(method = "handlePlayerInput", at = @At("TAIL"))
     private void galacticraft$handleRocketLaunchInput(ServerboundPlayerInputPacket packet, CallbackInfo ci) {
+        // Flight uses ControlEntityPayload; vanilla riding input must not overwrite its key states.
         if (this.player.getVehicle() instanceof RocketEntity rocket
                 && rocket.getLaunchStage().ordinal() < LaunchStage.IGNITED.ordinal()) {
             float leftImpulse = packet.getXxa();

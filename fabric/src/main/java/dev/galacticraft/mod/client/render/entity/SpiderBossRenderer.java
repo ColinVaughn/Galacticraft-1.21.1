@@ -23,30 +23,29 @@
 package dev.galacticraft.mod.client.render.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import dev.galacticraft.mod.Constant;
+import dev.galacticraft.mod.client.model.entity.SpiderQueenModel;
+import dev.galacticraft.mod.client.render.entity.feature.SpiderQueenEmissiveLayer;
+import dev.galacticraft.mod.client.render.entity.model.GCEntityModelLayer;
 import dev.galacticraft.mod.content.entity.boss.SpiderBoss;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.model.SpiderModel;
-import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.resources.ResourceLocation;
 
-/**
- * Renders the Venus {@link SpiderBoss} by reusing the vanilla spider model,
- * scaled up to boss proportions.
- */
 @Environment(EnvType.CLIENT)
-public class SpiderBossRenderer extends MobRenderer<SpiderBoss, SpiderModel<SpiderBoss>> {
-    public static final ResourceLocation TEXTURE = ResourceLocation.withDefaultNamespace("textures/entity/spider/spider.png");
+public class SpiderBossRenderer extends MobRenderer<SpiderBoss, SpiderQueenModel> {
+    public static final ResourceLocation TEXTURE = Constant.id("textures/entity/boss/spider_queen.png");
 
     public SpiderBossRenderer(EntityRendererProvider.Context context) {
-        super(context, new SpiderModel<>(context.bakeLayer(ModelLayers.SPIDER)), 1.5F);
+        super(context, new SpiderQueenModel(context.bakeLayer(GCEntityModelLayer.SPIDER_QUEEN)), 1.5F);
+        this.addLayer(new SpiderQueenEmissiveLayer(this));
     }
 
     @Override
     protected void scale(SpiderBoss entity, PoseStack poseStack, float partialTickTime) {
-        poseStack.scale(2.5F, 2.5F, 2.5F);
+        poseStack.scale(1.5F, 1.5F, 1.5F);
     }
 
     @Override

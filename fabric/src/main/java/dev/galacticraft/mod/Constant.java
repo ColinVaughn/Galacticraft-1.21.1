@@ -87,6 +87,10 @@ public interface Constant {
 
         // Natural
         String MOON_TURF = "moon_turf";
+        String MOON_ROCKY_REGOLITH = "moon_rocky_regolith";
+        String MOON_MARE_REGOLITH = "moon_mare_regolith";
+        String MOON_ANORTHOSITE = "moon_anorthosite";
+        String MOON_IMPACT_BRECCIA = "moon_impact_breccia";
         String MOON_SURFACE_ROCK = "moon_surface_rock";
         String MOON_SURFACE_ROCK_STAIRS = "moon_surface_rock_stairs";
         String MOON_SURFACE_ROCK_SLAB = "moon_surface_rock_slab";
@@ -152,6 +156,10 @@ public interface Constant {
 
         String MOON_DIRT = "moon_dirt";
         String MARS_SURFACE_ROCK = "mars_surface_rock";
+        String MARS_ROCKY_REGOLITH = "mars_rocky_regolith";
+        String MARS_BASALTIC_SAND = "mars_basaltic_sand";
+        String MARS_WEATHERED_BASALT = "mars_weathered_basalt";
+        String MARS_SEDIMENTARY_ROCK = "mars_sedimentary_rock";
         String MARS_DUST_LAYER = "mars_dust_layer";
         String MARS_SUB_SURFACE_ROCK = "mars_sub_surface_rock";
         String MARS_STONE = "mars_stone";
@@ -171,6 +179,10 @@ public interface Constant {
         String SOFT_VENUS_ROCK = "soft_venus_rock";
         String HARD_VENUS_ROCK = "hard_venus_rock";
         String SCORCHED_VENUS_ROCK = "scorched_venus_rock";
+        String VENUS_PLAINS_BASALT = "venus_plains_basalt";
+        String VENUS_TESSERA_ROCK = "venus_tessera_rock";
+        String VENUS_FLOW_BASALT = "venus_flow_basalt";
+        String VENUS_STONY_REGOLITH = "venus_stony_regolith";
         String VOLCANIC_ROCK = "volcanic_rock";
         String PUMICE = "pumice";
         String VAPOR_SPOUT = "vapor_spout";
@@ -180,6 +192,10 @@ public interface Constant {
         String MERCURY_SUB_SURFACE_ROCK = "mercury_sub_surface_rock";
         String MERCURY_STONE = "mercury_stone";
         String MERCURY_SCARP_ROCK = "mercury_scarp_rock";
+        String MERCURY_ROCKY_REGOLITH = "mercury_rocky_regolith";
+        String MERCURY_PLAINS_ROCK = "mercury_plains_rock";
+        String MERCURY_IMPACT_BRECCIA = "mercury_impact_breccia";
+        String MERCURY_DARK_REGOLITH = "mercury_dark_regolith";
         String MERCURY_CRYSTAL_CLUSTER = "mercury_crystal_cluster";
 
         // Ore
@@ -321,7 +337,6 @@ public interface Constant {
         String OXYGEN_COLLECTOR = "oxygen_collector";
         String OXYGEN_COMPRESSOR = "oxygen_compressor";
         String FOOD_CANNER = "food_canner";
-        String OXYGEN_DECOMPRESSOR = "oxygen_decompressor";
         String OXYGEN_DETECTOR = "oxygen_detector";
         String OXYGEN_SEALER = "oxygen_sealer";
         String FLUID_PIPE = "fluid_pipe";
@@ -433,6 +448,8 @@ public interface Constant {
     }
 
     interface Fluid {
+        String HELIUM_3_STILL = "helium_3_still";
+        String HELIUM_3_FLOWING = "helium_3_flow";
         String CRUDE_OIL_FLOWING = "crude_oil_flowing";
         String CRUDE_OIL_STILL = "crude_oil_still";
         String FUEL_FLOWING = "fuel_flowing";
@@ -677,8 +694,6 @@ public interface Constant {
         ResourceLocation ROCKET_INVENTORY_36 = id("textures/gui/rocket_36.png");
         ResourceLocation ROCKET_INVENTORY_54 = id("textures/gui/rocket_54.png");
         ResourceLocation WARNING_SIGN = id("textures/gui/warning.png");
-
-        ResourceLocation OXYGEN_COMPRESSOR_SCREEN = id("textures/gui/oxygen_compressor_screen.png");
         ResourceLocation OXYGEN_STORAGE_MODULE_SCREEN = id("textures/gui/oxygen_storage_module_screen.png");
         ResourceLocation OXYGEN_SEALER_SCREEN = id("textures/gui/oxygen_sealer_screen.png");
         ResourceLocation FUEL_LOADER_SCREEN = id("textures/gui/fuel_loader_screen.png");
@@ -965,6 +980,28 @@ public interface Constant {
         int SCHEMATIC_RECIPE_VIEWER_WIDTH = PAGE_WIDTH - SCHEMATIC_RECIPE_VIEWER_X;
     }
 
+    interface OxygenCompressor {
+        ResourceLocation SCREEN_TEXTURE = id("textures/gui/oxygen_compressor_screen.png");
+
+        int TEXT_X = 106;
+        int TEXT_Y = 29;
+
+        int BUTTON_X = 129;
+        int BUTTON_Y = 55;
+        int BUTTON_WIDTH = 13;
+        int BUTTON_HEIGHT = 13;
+
+        int BUTTON_RED_U = 177;
+        int BUTTON_RED_V = 19;
+        int BUTTON_RED_HOVER_U = 190;
+        int BUTTON_RED_HOVER_V = 19;
+
+        int BUTTON_GREEN_U = 177;
+        int BUTTON_GREEN_V = 32;
+        int BUTTON_GREEN_HOVER_U = 190;
+        int BUTTON_GREEN_HOVER_V = 32;
+    }
+
     interface BubbleDistributor {
         ResourceLocation SCREEN_TEXTURE = id("textures/gui/oxygen_bubble_distributor_screen.png");
 
@@ -1224,6 +1261,9 @@ public interface Constant {
         String EVOLVED_SKELETON_BOSS = "evolved_skeleton_boss";
         String CREEPER_BOSS = "creeper_boss";
         String SPIDER_BOSS = "spider_boss";
+        String SPIDER_VENOM = "spider_venom";
+        String SPIDER_EGG = "spider_egg";
+        String SPIDERLING = "spiderling";
     }
 
     interface SpawnEgg {
@@ -1288,7 +1328,6 @@ public interface Constant {
         String TERRAFORMER_MENU = "terraformer_menu";
         String OXYGEN_COMPRESSOR_MENU = "oxygen_compressor_menu";
         String FOOD_CANNER_MENU = "food_canner_menu";
-        String OXYGEN_DECOMPRESSOR_MENU = "oxygen_decompressor_menu";
         String OXYGEN_STORAGE_MODULE_MENU = "oxygen_storage_module_menu";
         String OXYGEN_SEALER_MENU = "oxygen_sealer_menu";
         String FUEL_LOADER_MENU = "fuel_loader_menu";
@@ -1357,6 +1396,7 @@ public interface Constant {
         String GC_API = "GCApi";
         String CHANGE_COUNT = "Modified";
         String OXYGEN = "Inversion";
+        String COMPRESSION_MODE = "CompressionMode";
         String GEAR_INV = "GearInv";
         String HAS_MASK = "HasMask";
         String HAS_GEAR = "HasGear";

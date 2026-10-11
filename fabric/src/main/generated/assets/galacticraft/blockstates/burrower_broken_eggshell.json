@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "galacticraft:block/burrower_broken_eggshell",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "galacticraft:block/burrower_broken_eggshell",
+      "y": 0
+    },
+    "facing=south": {
+      "model": "galacticraft:block/burrower_broken_eggshell",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "galacticraft:block/burrower_broken_eggshell",
+      "y": 270
+    }
+  }
+}

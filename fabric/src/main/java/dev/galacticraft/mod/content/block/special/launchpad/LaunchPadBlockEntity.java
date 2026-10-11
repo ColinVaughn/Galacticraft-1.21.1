@@ -27,6 +27,7 @@ import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.api.block.entity.FuelDock;
 import dev.galacticraft.mod.api.entity.Dockable;
 import dev.galacticraft.mod.content.GCBlockEntityTypes;
+import dev.galacticraft.mod.content.block.entity.machine.LaunchControllerBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -105,7 +106,8 @@ public class LaunchPadBlockEntity extends BlockEntity implements FuelDock, Exten
     }
 
     public boolean hasDockedEntity() {
-        return this.getDockedEntity() != null;
+        // Chunk block entities load before their entities. A saved UUID still reserves the pad.
+        return this.getDockedEntity() != null || this.entityUUID != null;
     }
 
     @Override
@@ -158,7 +160,18 @@ public class LaunchPadBlockEntity extends BlockEntity implements FuelDock, Exten
     }
 
     public int getDestinationAddress() {
+        LaunchControllerBlockEntity controller = this.getController();
+        if (controller != null) return controller.canRoute() ? controller.getDestination() : -1;
         return this.destinationAddress;
+    }
+
+    public @Nullable LaunchControllerBlockEntity getController() {
+        return this.level == null ? null : LaunchControllerBlockEntity.findController(this.level, this.worldPosition);
+    }
+
+    public boolean keepOnLaunch() {
+        LaunchControllerBlockEntity controller = this.getController();
+        return controller != null && controller.hasOption(LaunchControllerBlockEntity.KEEP_PAD);
     }
 
     public boolean setRoute(int address, int destinationAddress) {

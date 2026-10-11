@@ -1,0 +1,145 @@
+{
+	"format_version": "26.3",
+	"credit": "Made with Blockbench",
+	"textures": {
+		"0": "galacticraft:block/burrower_egg_shell",
+		"4": "galacticraft:block/worm_joint"
+	},
+	"elements": [
+		{
+			"name": "large_egg_heel",
+			"from": [5.2, 0, 5.2],
+			"to": [10.8, 1.3, 10.8],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 0, 8]},
+			"faces": {
+				"north": {"uv": [3, 4, 7, 5], "texture": "#0"},
+				"east": {"uv": [3, 4, 7, 5], "texture": "#0"},
+				"south": {"uv": [3, 4, 7, 5], "rotation": 180, "texture": "#0"},
+				"west": {"uv": [3, 4, 7, 5], "texture": "#0"},
+				"up": {"uv": [3, 4, 7, 8], "texture": "#0"},
+				"down": {"uv": [3, 4, 7, 8], "texture": "#0"}
+			}
+		},
+		{
+			"name": "large_egg_body",
+			"from": [3.8, 1.3, 3.8],
+			"to": [12.2, 6.916, 12.2],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 0, 8]},
+			"faces": {
+				"north": {"uv": [3, 4, 9, 8.32], "texture": "#0"},
+				"east": {"uv": [3, 4, 9, 8.32], "texture": "#0"},
+				"south": {"uv": [3, 4, 9, 8.32], "rotation": 180, "texture": "#0"},
+				"west": {"uv": [3, 4, 9, 8.32], "texture": "#0"},
+				"up": {"uv": [3, 4, 9, 10], "texture": "#0"},
+				"down": {"uv": [3, 4, 9, 10], "texture": "#0"}
+			}
+		},
+		{
+			"name": "large_egg_shoulder",
+			"from": [5.2, 6.916, 5.2],
+			"to": [10.8, 11.7, 10.8],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 0, 8]},
+			"faces": {
+				"north": {"uv": [3, 4, 7, 7.68], "texture": "#0"},
+				"east": {"uv": [3, 4, 7, 7.68], "texture": "#0"},
+				"south": {"uv": [3, 4, 7, 7.68], "rotation": 180, "texture": "#0"},
+				"west": {"uv": [3, 4, 7, 7.68], "texture": "#0"},
+				"up": {"uv": [3, 4, 7, 8], "texture": "#0"},
+				"down": {"uv": [3, 4, 7, 8], "texture": "#0"}
+			}
+		},
+		{
+			"name": "large_egg_crown",
+			"from": [6.6, 11.7, 6.6],
+			"to": [9.4, 13, 9.4],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 0, 8]},
+			"faces": {
+				"north": {"uv": [3, 4, 5, 5], "texture": "#0"},
+				"east": {"uv": [3, 4, 5, 5], "texture": "#0"},
+				"south": {"uv": [3, 4, 5, 5], "rotation": 180, "texture": "#0"},
+				"west": {"uv": [3, 4, 5, 5], "texture": "#0"},
+				"up": {"uv": [3, 4, 5, 6], "texture": "#0"},
+				"down": {"uv": [3, 4, 5, 6], "texture": "#0"}
+			}
+		},
+		{
+			"name": "crack_top",
+			"from": [7, 6.6, 5.15],
+			"to": [8, 10.7, 5.25],
+			"faces": {
+				"north": {"uv": [0, 0, 1, 1], "texture": "#4"},
+				"east": {"uv": [0, 0, 1, 1], "texture": "#4"},
+				"south": {"uv": [0, 0, 1, 1], "texture": "#4"},
+				"west": {"uv": [0, 0, 1, 1], "texture": "#4"},
+				"up": {"uv": [0, 0, 1, 1], "texture": "#4"},
+				"down": {"uv": [0, 0, 1, 1], "texture": "#4"}
+			}
+		},
+		{
+			"name": "crack_step",
+			"from": [6, 6.6, 5.15],
+			"to": [7, 7.4, 5.25],
+			"faces": {
+				"north": {"uv": [0, 0, 1, 1], "texture": "#4"},
+				"east": {"uv": [0, 0, 1, 1], "texture": "#4"},
+				"south": {"uv": [0, 0, 1, 1], "texture": "#4"},
+				"west": {"uv": [0, 0, 1, 1], "texture": "#4"},
+				"up": {"uv": [0, 0, 1, 1], "texture": "#4"},
+				"down": {"uv": [0, 0, 1, 1], "texture": "#4"}
+			}
+		},
+		{
+			"name": "crack_lower",
+			"from": [6, 3.8, 3.75],
+			"to": [7, 6.9, 3.85],
+			"faces": {
+				"north": {"uv": [0, 0, 1, 1], "texture": "#4"},
+				"east": {"uv": [0, 0, 1, 1], "texture": "#4"},
+				"south": {"uv": [0, 0, 1, 1], "texture": "#4"},
+				"west": {"uv": [0, 0, 1, 1], "texture": "#4"},
+				"up": {"uv": [0, 0, 1, 1], "texture": "#4"},
+				"down": {"uv": [0, 0, 1, 1], "texture": "#4"}
+			}
+		},
+		{
+			"name": "split_side",
+			"from": [12.15, 3.5, 7],
+			"to": [12.25, 7, 8],
+			"faces": {
+				"north": {"uv": [0, 0, 1, 1], "texture": "#4"},
+				"east": {"uv": [0, 0, 1, 1], "texture": "#4"},
+				"south": {"uv": [0, 0, 1, 1], "texture": "#4"},
+				"west": {"uv": [0, 0, 1, 1], "texture": "#4"},
+				"up": {"uv": [0, 0, 1, 1], "texture": "#4"},
+				"down": {"uv": [0, 0, 1, 1], "texture": "#4"}
+			}
+		},
+		{
+			"name": "split_step",
+			"from": [12.15, 3.5, 8],
+			"to": [12.25, 4.2, 10],
+			"faces": {
+				"north": {"uv": [0, 0, 1, 1], "texture": "#4"},
+				"east": {"uv": [0, 0, 1, 1], "texture": "#4"},
+				"south": {"uv": [0, 0, 1, 1], "texture": "#4"},
+				"west": {"uv": [0, 0, 1, 1], "texture": "#4"},
+				"up": {"uv": [0, 0, 1, 1], "texture": "#4"},
+				"down": {"uv": [0, 0, 1, 1], "texture": "#4"}
+			}
+		}
+	],
+	"groups": [
+		{
+			"name": "burrower_egg_cluster",
+			"origin": [8, 0, 8],
+			"scope": 0,
+			"color": 0,
+			"children": [0, 1, 2, 3]
+		},
+		4,
+		5,
+		6,
+		7,
+		8
+	]
+}

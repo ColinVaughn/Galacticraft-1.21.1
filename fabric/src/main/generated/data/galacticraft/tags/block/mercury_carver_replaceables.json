@@ -1,5 +1,9 @@
 {
   "values": [
+    "galacticraft:mercury_rocky_regolith",
+    "galacticraft:mercury_plains_rock",
+    "galacticraft:mercury_impact_breccia",
+    "galacticraft:mercury_dark_regolith",
     "galacticraft:mercury_stone",
     "galacticraft:mercury_surface_rock",
     "galacticraft:mercury_sub_surface_rock",

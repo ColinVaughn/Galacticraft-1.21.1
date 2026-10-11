@@ -2,11 +2,11 @@
   "data": {
     "back": "galacticraft:block/machine_side",
     "bottom": "galacticraft:block/machine_side",
-    "front": "galacticraft:block/machine_side",
+    "front": "galacticraft:block/radar_front",
     "left": "galacticraft:block/machine_side",
     "particle": "galacticraft:block/machine_side",
     "right": "galacticraft:block/machine_side",
-    "top": "galacticraft:block/machine_side"
+    "top": "galacticraft:block/radar_top"
   },
   "loader": "machinelib:machine",
   "machinelib:type": "machine"

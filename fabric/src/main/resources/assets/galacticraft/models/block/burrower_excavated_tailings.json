@@ -1,0 +1,880 @@
+{
+  "credit": "Made with Blockbench",
+  "textures": {
+    "2": "galacticraft:block/burrower_tailings",
+    "5": "galacticraft:block/vesicular_lunar_basalt",
+    "particle": "galacticraft:block/burrower_tailings"
+  },
+  "elements": [
+    {
+      "name": "low_spread",
+      "from": [
+        1,
+        0,
+        2
+      ],
+      "to": [
+        15,
+        1,
+        14
+      ],
+      "rotation": {
+        "angle": 0,
+        "axis": "y",
+        "origin": [
+          8,
+          0,
+          8
+        ]
+      },
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            14,
+            1
+          ],
+          "texture": "#2"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            12,
+            1
+          ],
+          "texture": "#2"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            14,
+            1
+          ],
+          "rotation": 180,
+          "texture": "#2"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            12,
+            1
+          ],
+          "texture": "#2"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            14,
+            12
+          ],
+          "texture": "#2"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            14,
+            12
+          ],
+          "texture": "#2"
+        }
+      }
+    },
+    {
+      "name": "main_clod",
+      "from": [
+        3,
+        1,
+        4
+      ],
+      "to": [
+        10,
+        4,
+        11
+      ],
+      "rotation": {
+        "angle": 22.5,
+        "axis": "y",
+        "origin": [
+          6.5,
+          1,
+          7.5
+        ]
+      },
+      "faces": {
+        "north": {
+          "uv": [
+            3,
+            2,
+            10,
+            5
+          ],
+          "texture": "#2"
+        },
+        "east": {
+          "uv": [
+            3,
+            2,
+            10,
+            5
+          ],
+          "texture": "#2"
+        },
+        "south": {
+          "uv": [
+            3,
+            2,
+            10,
+            5
+          ],
+          "rotation": 180,
+          "texture": "#2"
+        },
+        "west": {
+          "uv": [
+            3,
+            2,
+            10,
+            5
+          ],
+          "texture": "#2"
+        },
+        "up": {
+          "uv": [
+            3,
+            2,
+            10,
+            9
+          ],
+          "texture": "#2"
+        },
+        "down": {
+          "uv": [
+            3,
+            2,
+            10,
+            9
+          ],
+          "texture": "#2"
+        }
+      }
+    },
+    {
+      "name": "main_clod_cap",
+      "from": [
+        4,
+        4,
+        5
+      ],
+      "to": [
+        8,
+        5,
+        9
+      ],
+      "rotation": {
+        "angle": 0,
+        "axis": "y",
+        "origin": [
+          8,
+          0,
+          8
+        ]
+      },
+      "faces": {
+        "north": {
+          "uv": [
+            6,
+            4,
+            10,
+            5
+          ],
+          "texture": "#2"
+        },
+        "east": {
+          "uv": [
+            6,
+            4,
+            10,
+            5
+          ],
+          "texture": "#2"
+        },
+        "south": {
+          "uv": [
+            6,
+            4,
+            10,
+            5
+          ],
+          "rotation": 180,
+          "texture": "#2"
+        },
+        "west": {
+          "uv": [
+            6,
+            4,
+            10,
+            5
+          ],
+          "texture": "#2"
+        },
+        "up": {
+          "uv": [
+            6,
+            4,
+            10,
+            8
+          ],
+          "texture": "#2"
+        },
+        "down": {
+          "uv": [
+            6,
+            4,
+            10,
+            8
+          ],
+          "texture": "#2"
+        }
+      }
+    },
+    {
+      "name": "east_clod",
+      "from": [
+        10,
+        1,
+        6
+      ],
+      "to": [
+        15,
+        3,
+        12
+      ],
+      "rotation": {
+        "angle": -22.5,
+        "axis": "y",
+        "origin": [
+          12.5,
+          1,
+          9
+        ]
+      },
+      "faces": {
+        "north": {
+          "uv": [
+            9,
+            6,
+            14,
+            8
+          ],
+          "texture": "#2"
+        },
+        "east": {
+          "uv": [
+            9,
+            6,
+            15,
+            8
+          ],
+          "texture": "#2"
+        },
+        "south": {
+          "uv": [
+            9,
+            6,
+            14,
+            8
+          ],
+          "rotation": 180,
+          "texture": "#2"
+        },
+        "west": {
+          "uv": [
+            9,
+            6,
+            15,
+            8
+          ],
+          "texture": "#2"
+        },
+        "up": {
+          "uv": [
+            9,
+            6,
+            14,
+            12
+          ],
+          "texture": "#2"
+        },
+        "down": {
+          "uv": [
+            9,
+            6,
+            14,
+            12
+          ],
+          "texture": "#2"
+        }
+      }
+    },
+    {
+      "name": "back_clod",
+      "from": [
+        6,
+        1,
+        11
+      ],
+      "to": [
+        11,
+        3,
+        15
+      ],
+      "rotation": {
+        "angle": 0,
+        "axis": "y",
+        "origin": [
+          8,
+          0,
+          8
+        ]
+      },
+      "faces": {
+        "north": {
+          "uv": [
+            1,
+            8,
+            6,
+            10
+          ],
+          "texture": "#2"
+        },
+        "east": {
+          "uv": [
+            1,
+            8,
+            5,
+            10
+          ],
+          "texture": "#2"
+        },
+        "south": {
+          "uv": [
+            1,
+            8,
+            6,
+            10
+          ],
+          "rotation": 180,
+          "texture": "#2"
+        },
+        "west": {
+          "uv": [
+            1,
+            8,
+            5,
+            10
+          ],
+          "texture": "#2"
+        },
+        "up": {
+          "uv": [
+            1,
+            8,
+            6,
+            12
+          ],
+          "texture": "#2"
+        },
+        "down": {
+          "uv": [
+            1,
+            8,
+            6,
+            12
+          ],
+          "texture": "#2"
+        }
+      }
+    },
+    {
+      "name": "small_front_clod",
+      "from": [
+        1,
+        1,
+        2
+      ],
+      "to": [
+        5,
+        2.5,
+        6
+      ],
+      "rotation": {
+        "angle": 0,
+        "axis": "y",
+        "origin": [
+          8,
+          0,
+          8
+        ]
+      },
+      "faces": {
+        "north": {
+          "uv": [
+            3,
+            10,
+            7,
+            11.5
+          ],
+          "texture": "#2"
+        },
+        "east": {
+          "uv": [
+            3,
+            10,
+            7,
+            11.5
+          ],
+          "texture": "#2"
+        },
+        "south": {
+          "uv": [
+            3,
+            10,
+            7,
+            11.5
+          ],
+          "rotation": 180,
+          "texture": "#2"
+        },
+        "west": {
+          "uv": [
+            3,
+            10,
+            7,
+            11.5
+          ],
+          "texture": "#2"
+        },
+        "up": {
+          "uv": [
+            3,
+            10,
+            7,
+            14
+          ],
+          "texture": "#2"
+        },
+        "down": {
+          "uv": [
+            3,
+            10,
+            7,
+            14
+          ],
+          "texture": "#2"
+        }
+      }
+    },
+    {
+      "name": "front_track_a",
+      "from": [
+        7,
+        0,
+        0
+      ],
+      "to": [
+        10,
+        1,
+        2
+      ],
+      "rotation": {
+        "angle": 0,
+        "axis": "y",
+        "origin": [
+          8,
+          0,
+          8
+        ]
+      },
+      "faces": {
+        "north": {
+          "uv": [
+            5,
+            12,
+            8,
+            13
+          ],
+          "texture": "#2"
+        },
+        "east": {
+          "uv": [
+            5,
+            12,
+            7,
+            13
+          ],
+          "texture": "#2"
+        },
+        "south": {
+          "uv": [
+            5,
+            12,
+            8,
+            13
+          ],
+          "rotation": 180,
+          "texture": "#2"
+        },
+        "west": {
+          "uv": [
+            5,
+            12,
+            7,
+            13
+          ],
+          "texture": "#2"
+        },
+        "up": {
+          "uv": [
+            5,
+            12,
+            8,
+            14
+          ],
+          "texture": "#2"
+        },
+        "down": {
+          "uv": [
+            5,
+            12,
+            8,
+            14
+          ],
+          "texture": "#2"
+        }
+      }
+    },
+    {
+      "name": "front_track_b",
+      "from": [
+        11,
+        0,
+        1
+      ],
+      "to": [
+        14,
+        0.6,
+        3
+      ],
+      "rotation": {
+        "angle": 0,
+        "axis": "y",
+        "origin": [
+          8,
+          0,
+          8
+        ]
+      },
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            0,
+            11,
+            0.6
+          ],
+          "texture": "#2"
+        },
+        "east": {
+          "uv": [
+            8,
+            0,
+            10,
+            0.6
+          ],
+          "texture": "#2"
+        },
+        "south": {
+          "uv": [
+            8,
+            0,
+            11,
+            0.6
+          ],
+          "rotation": 180,
+          "texture": "#2"
+        },
+        "west": {
+          "uv": [
+            8,
+            0,
+            10,
+            0.6
+          ],
+          "texture": "#2"
+        },
+        "up": {
+          "uv": [
+            8,
+            0,
+            11,
+            2
+          ],
+          "texture": "#2"
+        },
+        "down": {
+          "uv": [
+            8,
+            0,
+            11,
+            2
+          ],
+          "texture": "#2"
+        }
+      }
+    },
+    {
+      "name": "west_grain",
+      "from": [
+        0,
+        0,
+        9
+      ],
+      "to": [
+        2,
+        1,
+        11
+      ],
+      "rotation": {
+        "angle": 0,
+        "axis": "y",
+        "origin": [
+          8,
+          0,
+          8
+        ]
+      },
+      "faces": {
+        "north": {
+          "uv": [
+            10,
+            2,
+            12,
+            3
+          ],
+          "texture": "#2"
+        },
+        "east": {
+          "uv": [
+            10,
+            2,
+            12,
+            3
+          ],
+          "texture": "#2"
+        },
+        "south": {
+          "uv": [
+            10,
+            2,
+            12,
+            3
+          ],
+          "rotation": 180,
+          "texture": "#2"
+        },
+        "west": {
+          "uv": [
+            10,
+            2,
+            12,
+            3
+          ],
+          "texture": "#2"
+        },
+        "up": {
+          "uv": [
+            10,
+            2,
+            12,
+            4
+          ],
+          "texture": "#2"
+        },
+        "down": {
+          "uv": [
+            10,
+            2,
+            12,
+            4
+          ],
+          "texture": "#2"
+        }
+      }
+    },
+    {
+      "name": "back_grain",
+      "from": [
+        2,
+        0,
+        14
+      ],
+      "to": [
+        4,
+        0.6,
+        16
+      ],
+      "rotation": {
+        "angle": 0,
+        "axis": "y",
+        "origin": [
+          8,
+          0,
+          8
+        ]
+      },
+      "faces": {
+        "north": {
+          "uv": [
+            13,
+            4,
+            15,
+            4.6
+          ],
+          "texture": "#2"
+        },
+        "east": {
+          "uv": [
+            13,
+            4,
+            15,
+            4.6
+          ],
+          "texture": "#2"
+        },
+        "south": {
+          "uv": [
+            13,
+            4,
+            15,
+            4.6
+          ],
+          "rotation": 180,
+          "texture": "#2"
+        },
+        "west": {
+          "uv": [
+            13,
+            4,
+            15,
+            4.6
+          ],
+          "texture": "#2"
+        },
+        "up": {
+          "uv": [
+            13,
+            4,
+            15,
+            6
+          ],
+          "texture": "#2"
+        },
+        "down": {
+          "uv": [
+            13,
+            4,
+            15,
+            6
+          ],
+          "texture": "#2"
+        }
+      }
+    },
+    {
+      "name": "stone_chip",
+      "from": [
+        10,
+        3,
+        8
+      ],
+      "to": [
+        13,
+        4,
+        10
+      ],
+      "rotation": {
+        "angle": 22.5,
+        "axis": "y",
+        "origin": [
+          11.5,
+          3,
+          9
+        ]
+      },
+      "faces": {
+        "north": {
+          "uv": [
+            4,
+            6,
+            7,
+            7
+          ],
+          "texture": "#5"
+        },
+        "east": {
+          "uv": [
+            4,
+            6,
+            6,
+            7
+          ],
+          "texture": "#5"
+        },
+        "south": {
+          "uv": [
+            4,
+            6,
+            7,
+            7
+          ],
+          "rotation": 180,
+          "texture": "#5"
+        },
+        "west": {
+          "uv": [
+            4,
+            6,
+            6,
+            7
+          ],
+          "texture": "#5"
+        },
+        "up": {
+          "uv": [
+            4,
+            6,
+            7,
+            8
+          ],
+          "texture": "#5"
+        },
+        "down": {
+          "uv": [
+            4,
+            6,
+            7,
+            8
+          ],
+          "texture": "#5"
+        }
+      }
+    }
+  ],
+  "parent": "minecraft:block/block"
+}

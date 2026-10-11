@@ -24,6 +24,7 @@ package dev.galacticraft.mod.world.gen.surfacerule;
 
 import dev.galacticraft.mod.content.GCBlocks;
 import dev.galacticraft.mod.world.biome.GCBiomes;
+import dev.galacticraft.mod.world.gen.GCNoiseData;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.SurfaceRules;
@@ -37,22 +38,39 @@ public class VenusSurfaceRules {
     private static final SurfaceRules.RuleSource SOFT_ROCK = block(GCBlocks.SOFT_VENUS_ROCK);
     private static final SurfaceRules.RuleSource SCORCHED_ROCK = block(GCBlocks.SCORCHED_VENUS_ROCK);
     private static final SurfaceRules.RuleSource VOLCANIC_ROCK = block(GCBlocks.VOLCANIC_ROCK);
-    private static final SurfaceRules.RuleSource BASALT = block(Blocks.BASALT);
+    private static final SurfaceRules.RuleSource PLAINS_BASALT = block(GCBlocks.VENUS_PLAINS_BASALT);
+    private static final SurfaceRules.RuleSource TESSERA_ROCK = block(GCBlocks.VENUS_TESSERA_ROCK);
+    private static final SurfaceRules.RuleSource FLOW_BASALT = block(GCBlocks.VENUS_FLOW_BASALT);
+    private static final SurfaceRules.RuleSource STONY_REGOLITH = block(GCBlocks.VENUS_STONY_REGOLITH);
     private static final SurfaceRules.RuleSource MAGMA = block(Blocks.MAGMA_BLOCK);
 
     // Top layer per region.
     private static final SurfaceRules.RuleSource SURFACE_MATERIAL = SurfaceRules.sequence(
             SurfaceRules.ifTrue(SurfaceRules.isBiome(GCBiomes.Venus.VENUS_LAVA_SEA), MAGMA),
-            SurfaceRules.ifTrue(SurfaceRules.isBiome(GCBiomes.Venus.VENUS_SHIELD_VOLCANO), VOLCANIC_ROCK),
-            SurfaceRules.ifTrue(SurfaceRules.isBiome(GCBiomes.Venus.VENUS_SULFUR_FLATS), SOFT_ROCK),
-            SurfaceRules.ifTrue(SurfaceRules.isBiome(GCBiomes.Venus.VENUS_VOLCANIC_PLAINS, GCBiomes.Venus.VENUS_LAVA_CHANNELS), SCORCHED_ROCK),
-            HARD_ROCK // highlands + fallback
+            SurfaceRules.ifTrue(SurfaceRules.isBiome(GCBiomes.Venus.VENUS_SHIELD_VOLCANO), SurfaceRules.sequence(
+                    SurfaceRules.ifTrue(SurfaceRules.steep(), VOLCANIC_ROCK),
+                    SurfaceRules.ifTrue(SurfaceRules.noiseCondition(GCNoiseData.VENUS_SURFACE_PATCHES, 0.4, 100.0), SCORCHED_ROCK),
+                    FLOW_BASALT)),
+            SurfaceRules.ifTrue(SurfaceRules.isBiome(GCBiomes.Venus.VENUS_SULFUR_FLATS), SurfaceRules.sequence(
+                    SurfaceRules.ifTrue(SurfaceRules.noiseCondition(GCNoiseData.VENUS_SURFACE_PATCHES, 0.35, 100.0), SOFT_ROCK),
+                    STONY_REGOLITH)),
+            SurfaceRules.ifTrue(SurfaceRules.isBiome(GCBiomes.Venus.VENUS_LAVA_CHANNELS), SurfaceRules.sequence(
+                    SurfaceRules.ifTrue(SurfaceRules.noiseCondition(GCNoiseData.VENUS_SURFACE_PATCHES, 0.45, 100.0), SCORCHED_ROCK),
+                    FLOW_BASALT)),
+            SurfaceRules.ifTrue(SurfaceRules.isBiome(GCBiomes.Venus.VENUS_VOLCANIC_PLAINS), SurfaceRules.sequence(
+                    SurfaceRules.ifTrue(SurfaceRules.noiseCondition(GCNoiseData.VENUS_SURFACE_PATCHES, 0.5, 100.0), SCORCHED_ROCK),
+                    SurfaceRules.ifTrue(SurfaceRules.noiseCondition(GCNoiseData.VENUS_SURFACE_DETAIL, 0.35, 100.0), STONY_REGOLITH),
+                    PLAINS_BASALT)),
+            SurfaceRules.ifTrue(SurfaceRules.isBiome(GCBiomes.Venus.VENUS_HIGHLANDS), SurfaceRules.sequence(
+                    SurfaceRules.ifTrue(SurfaceRules.noiseCondition(GCNoiseData.VENUS_SURFACE_PATCHES, 0.5, 100.0), HARD_ROCK),
+                    TESSERA_ROCK)),
+            HARD_ROCK
     );
 
     // Layer just beneath the surface.
     private static final SurfaceRules.RuleSource SUBSURFACE_MATERIAL = SurfaceRules.sequence(
             SurfaceRules.ifTrue(SurfaceRules.isBiome(GCBiomes.Venus.VENUS_LAVA_SEA), SCORCHED_ROCK),
-            SurfaceRules.ifTrue(SurfaceRules.isBiome(GCBiomes.Venus.VENUS_SHIELD_VOLCANO), BASALT),
+            SurfaceRules.ifTrue(SurfaceRules.isBiome(GCBiomes.Venus.VENUS_SHIELD_VOLCANO, GCBiomes.Venus.VENUS_LAVA_CHANNELS), FLOW_BASALT),
             SurfaceRules.ifTrue(SurfaceRules.isBiome(GCBiomes.Venus.VENUS_SULFUR_FLATS), SOFT_ROCK),
             HARD_ROCK
     );

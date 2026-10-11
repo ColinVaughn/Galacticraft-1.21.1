@@ -56,6 +56,11 @@ public class GCEntityLoot extends GCEntityLootSubProvider {
 
     @Override
     public void generate() {
+        add(GCEntityTypes.LUNAR_BURROWER, LootTable.lootTable().withPool(LootPool.lootPool()
+                .setRolls(ConstantValue.exactly(1)).add(LootItem.lootTableItem(dev.galacticraft.mod.content.GCBlocks.BURROWER_DEN_SCRAPS)
+                        .apply(SetItemCountFunction.setCount(UniformGenerator.between(1, 2))))));
+        add(GCEntityTypes.SPIDER_EGG, noDrops());
+        add(GCEntityTypes.SPIDERLING, noDrops());
         add(GCEntityTypes.EVOLVED_ZOMBIE,
                 LootTable.lootTable()
                         .withPool(

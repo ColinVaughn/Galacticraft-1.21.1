@@ -58,8 +58,33 @@ public class GCCreativeModeTabs {
                     output.accept(decorationSet.detailedWallItem());
                 }
 
+                // MOON UNDERGROUND
+                output.accept(VESICULAR_LUNAR_BASALT);
+                output.accept(ICE_BEARING_BRECCIA);
+                output.accept(LUNAR_BREAKDOWN_RUBBLE);
+                output.accept(LUNAR_SCATTERED_FRAGMENTS);
+                output.accept(LUNAR_FALLEN_ROOF_SLAB);
+                output.accept(LUNAR_FRACTURED_OUTCROP);
+                output.accept(LUNAR_BASALT_WALL_SHELF);
+                output.accept(LUNAR_CEILING_BREAKDOWN);
+                output.accept(LUNAR_BASALT_BREAKDOWN_RUBBLE);
+                output.accept(LUNAR_FROSTED_BREAKDOWN_RUBBLE);
+                output.accept(ABANDONED_SURVEY_BEACON);
+                output.accept(HELION_NODULES);
+                output.accept(HELION_WALL_CRUST);
+                output.accept(HELIUM_3_VENT);
+                output.accept(BURROWER_EGG_CLUSTER);
+                output.accept(LUNAR_BURROWER_EGG);
+                output.accept(BURROWER_BROKEN_EGGSHELL);
+                output.accept(BURROWER_EXCAVATED_TAILINGS);
+                output.accept(BURROWER_DEN_SCRAPS);
+
                 // MOON NATURAL
                 output.accept(MOON_TURF);
+                output.accept(MOON_ROCKY_REGOLITH);
+                output.accept(MOON_MARE_REGOLITH);
+                output.accept(MOON_ANORTHOSITE);
+                output.accept(MOON_IMPACT_BRECCIA);
                 output.accept(MOON_DIRT);
                 output.accept(MOON_DIRT_PATH);
                 output.accept(MOON_DUNGEON_BRICK);
@@ -130,6 +155,10 @@ public class GCCreativeModeTabs {
 
                 // MARS NATURAL
                 output.accept(MARS_SURFACE_ROCK);
+                output.accept(MARS_ROCKY_REGOLITH);
+                output.accept(MARS_BASALTIC_SAND);
+                output.accept(MARS_WEATHERED_BASALT);
+                output.accept(MARS_SEDIMENTARY_ROCK);
                 output.accept(MARS_SUB_SURFACE_ROCK);
                 output.accept(MARS_STONE);
                 output.accept(MARS_STONE_STAIRS);
@@ -150,12 +179,20 @@ public class GCCreativeModeTabs {
                 output.accept(SOFT_VENUS_ROCK);
                 output.accept(HARD_VENUS_ROCK);
                 output.accept(SCORCHED_VENUS_ROCK);
+                output.accept(VENUS_PLAINS_BASALT);
+                output.accept(VENUS_TESSERA_ROCK);
+                output.accept(VENUS_FLOW_BASALT);
+                output.accept(VENUS_STONY_REGOLITH);
                 output.accept(VOLCANIC_ROCK);
                 output.accept(PUMICE);
                 output.accept(VAPOR_SPOUT);
                 output.accept(VOLCANO_VENT);
 
                 // MERCURY NATURAL
+                output.accept(MERCURY_ROCKY_REGOLITH);
+                output.accept(MERCURY_PLAINS_ROCK);
+                output.accept(MERCURY_IMPACT_BRECCIA);
+                output.accept(MERCURY_DARK_REGOLITH);
                 output.accept(MERCURY_SURFACE_ROCK);
                 output.accept(MERCURY_SUB_SURFACE_ROCK);
                 output.accept(MERCURY_STONE);
@@ -307,6 +344,7 @@ public class GCCreativeModeTabs {
                 output.accept(REFINERY);
                 output.accept(FUEL_LOADER);
                 output.accept(CARGO_LOADER);
+                output.accept(LAUNCH_CONTROLLER);
                 output.accept(CARGO_UNLOADER);
                 output.accept(ASTRO_MINER_BASE);
                 output.accept(RADAR);
@@ -316,7 +354,6 @@ public class GCCreativeModeTabs {
                 output.accept(OXYGEN_BUBBLE_DISTRIBUTOR);
                 output.accept(TERRAFORMER);
                 output.accept(OXYGEN_DETECTOR);
-                output.accept(OXYGEN_DECOMPRESSOR);
                 output.accept(OXYGEN_COMPRESSOR);
                 output.accept(OXYGEN_STORAGE_MODULE);
                 output.accept(FOOD_CANNER);
@@ -589,6 +626,7 @@ public class GCCreativeModeTabs {
                 output.accept(LEGACY_MUSIC_DISC_SPACERACE);
 
                 // FLUID BUCKETS
+                output.accept(HELIUM_3_BUCKET);
                 output.accept(CRUDE_OIL_BUCKET);
                 output.accept(FUEL_BUCKET);
                 output.accept(SULFURIC_ACID_BUCKET);

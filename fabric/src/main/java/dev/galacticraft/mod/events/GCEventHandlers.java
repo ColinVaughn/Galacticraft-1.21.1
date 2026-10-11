@@ -27,6 +27,8 @@ import dev.galacticraft.api.registry.ExtinguishableBlockRegistry;
 import dev.galacticraft.api.registry.AcidTransformItemRegistry;
 import dev.galacticraft.api.registry.AddonRegistries;
 import dev.architectury.event.events.common.TickEvent;
+import dev.architectury.event.events.common.LifecycleEvent;
+import dev.galacticraft.mod.content.block.special.launchpad.CargoPadRegistry;
 import dev.architectury.networking.NetworkManager;
 import dev.galacticraft.api.universe.celestialbody.CelestialBody;
 import dev.galacticraft.api.universe.celestialbody.landable.Landable;
@@ -66,6 +68,7 @@ public class GCEventHandlers {
         GCSleepEventHandlers.init();
         GCInteractionEventHandlers.init();
         GlobalStatisticsReporter.init();
+        LifecycleEvent.SERVER_STARTED.register(CargoPadRegistry::restoreControllers);
         TickEvent.SERVER_LEVEL_POST.register(GCEventHandlers::onWorldTick);
     }
 

@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "galacticraft:block/burrower_den_scraps",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "galacticraft:block/burrower_den_scraps",
+      "y": 0
+    },
+    "facing=south": {
+      "model": "galacticraft:block/burrower_den_scraps",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "galacticraft:block/burrower_den_scraps",
+      "y": 270
+    }
+  }
+}

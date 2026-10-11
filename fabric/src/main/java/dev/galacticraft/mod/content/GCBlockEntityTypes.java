@@ -60,7 +60,6 @@ public class GCBlockEntityTypes {
     // OXYGEN MACHINES
     public static final BlockEntityType<OxygenCollectorBlockEntity> OXYGEN_COLLECTOR = register(Constant.Block.OXYGEN_COLLECTOR, OxygenCollectorBlockEntity::new, GCBlocks.OXYGEN_COLLECTOR);
     public static final BlockEntityType<OxygenCompressorBlockEntity> OXYGEN_COMPRESSOR = register(Constant.Block.OXYGEN_COMPRESSOR, OxygenCompressorBlockEntity::new, GCBlocks.OXYGEN_COMPRESSOR);
-    public static final BlockEntityType<OxygenDecompressorBlockEntity> OXYGEN_DECOMPRESSOR = register(Constant.Block.OXYGEN_DECOMPRESSOR, OxygenDecompressorBlockEntity::new, GCBlocks.OXYGEN_DECOMPRESSOR);
     public static final BlockEntityType<OxygenSealerBlockEntity> OXYGEN_SEALER = register(Constant.Block.OXYGEN_SEALER, OxygenSealerBlockEntity::new, GCBlocks.OXYGEN_SEALER);
     public static final BlockEntityType<OxygenBubbleDistributorBlockEntity> OXYGEN_BUBBLE_DISTRIBUTOR = register(Constant.Block.OXYGEN_BUBBLE_DISTRIBUTOR, OxygenBubbleDistributorBlockEntity::new, GCBlocks.OXYGEN_BUBBLE_DISTRIBUTOR);
     public static final BlockEntityType<TerraformerBlockEntity> TERRAFORMER = register(Constant.Block.TERRAFORMER, TerraformerBlockEntity::new, GCBlocks.TERRAFORMER);
@@ -75,6 +74,7 @@ public class GCBlockEntityTypes {
     public static final BlockEntityType<LaunchPadBlockEntity> LAUNCH_PAD = register(Constant.Block.ROCKET_LAUNCH_PAD, LaunchPadBlockEntity::new, GCBlocks.ROCKET_LAUNCH_PAD, GCBlocks.FUELING_PAD);
     public static final BlockEntityType<FuelLoaderBlockEntity> FUEL_LOADER = register(Constant.Block.FUEL_LOADER, FuelLoaderBlockEntity::new, GCBlocks.FUEL_LOADER);
     public static final BlockEntityType<CargoLoaderBlockEntity> CARGO_LOADER = register(Constant.Block.CARGO_LOADER, CargoLoaderBlockEntity::new, GCBlocks.CARGO_LOADER);
+    public static final BlockEntityType<LaunchControllerBlockEntity> LAUNCH_CONTROLLER = register(Constant.Block.LAUNCH_CONTROLLER, LaunchControllerBlockEntity::new, GCBlocks.LAUNCH_CONTROLLER);
     public static final BlockEntityType<CargoUnloaderBlockEntity> CARGO_UNLOADER = register(Constant.Block.CARGO_UNLOADER, CargoUnloaderBlockEntity::new, GCBlocks.CARGO_UNLOADER);
     public static final BlockEntityType<AstroMinerBaseBlockEntity> ASTRO_MINER_BASE = register(Constant.Block.ASTRO_MINER_BASE, AstroMinerBaseBlockEntity::new, GCBlocks.ASTRO_MINER_BASE);
     public static final BlockEntityType<RadarBlockEntity> RADAR = register(Constant.Block.RADAR, RadarBlockEntity::new, GCBlocks.RADAR);

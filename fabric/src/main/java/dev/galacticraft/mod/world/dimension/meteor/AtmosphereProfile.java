@@ -51,7 +51,7 @@ public record AtmosphereProfile(double surfaceDensity, double scaleHeight, doubl
     /**
      * Metres of real altitude represented by one block of Minecraft height.
      *
-     * This is the single deliberate fudge in the model. Earth's true 8.4 km scale height would
+     * Earth's true 8.4 km scale height would
      * be perfectly flat across a 384-block world, so meteors would either burn instantly or not at
      * all. Compressing altitude by this factor puts Earth's scale height at roughly 60 blocks, so
      * density climbs meaningfully as a meteor crosses the visible sky, and a body spawned above the

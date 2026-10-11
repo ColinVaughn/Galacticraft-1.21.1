@@ -27,6 +27,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import dev.galacticraft.api.component.GCDataComponents;
 import dev.galacticraft.api.entity.rocket.render.RocketPartRendererRegistry;
+import dev.galacticraft.api.entity.rocket.render.RocketModelSlot;
 import dev.galacticraft.api.rocket.RocketData;
 import dev.galacticraft.api.rocket.RocketPrefabs;
 import dev.galacticraft.mod.client.util.LazyRocketEntity;
@@ -92,39 +93,40 @@ public class RocketItemRenderer {
                 matrices.scale(0.2F, 0.2F, 0.2F);
         }
         RenderSystem.setShaderTexture(0, InventoryMenu.BLOCK_ATLAS);
+        // Preserve the item's existing engine-centred display transforms.
+        matrices.translate(0, -RocketModelSlot.ENGINE.y(), 0);
 
         data.engine().ifPresent(part -> {
             matrices.pushPose();
+            RocketModelSlot.ENGINE.mount(matrices);
             RocketPartRendererRegistry.INSTANCE.getRenderer(part.key()).render(level, matrices, rocket, vertexConsumers, 0, light, overlay);
             matrices.popPose();
         });
 
-        matrices.translate(0.0F, 0.5F, 0.0F);
-
         data.booster().ifPresent(part -> {
             matrices.pushPose();
+            RocketModelSlot.BOOSTER.mount(matrices);
             RocketPartRendererRegistry.INSTANCE.getRenderer(part.key()).render(level, matrices, rocket, vertexConsumers, 0, light, overlay);
             matrices.popPose();
         });
 
         data.fin().ifPresent(part -> {
             matrices.pushPose();
+            RocketModelSlot.FIN.mount(matrices);
             RocketPartRendererRegistry.INSTANCE.getRenderer(part.key()).render(level, matrices, rocket, vertexConsumers, 0, light, overlay);
             matrices.popPose();
         });
-
-        matrices.translate(0.0F, 1.0F, 0.0F);
 
         data.body().ifPresent(part -> {
             matrices.pushPose();
+            RocketModelSlot.BODY.mount(matrices);
             RocketPartRendererRegistry.INSTANCE.getRenderer(part.key()).render(level, matrices, rocket, vertexConsumers, 0, light, overlay);
             matrices.popPose();
         });
 
-        matrices.translate(0.0F, 1.75F, 0.0F);
-
         data.cone().ifPresent(part -> {
             matrices.pushPose();
+            RocketModelSlot.CONE.mount(matrices);
             RocketPartRendererRegistry.INSTANCE.getRenderer(part.key()).render(level, matrices, rocket, vertexConsumers, 0, light, overlay);
             matrices.popPose();
         });

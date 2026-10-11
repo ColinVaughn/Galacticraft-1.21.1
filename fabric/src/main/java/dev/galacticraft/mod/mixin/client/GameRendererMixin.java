@@ -23,13 +23,21 @@
 package dev.galacticraft.mod.mixin.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import dev.galacticraft.mod.Constant;
+import dev.galacticraft.mod.client.render.ShaderPackCompat;
+import dev.galacticraft.mod.Galacticraft;
 import dev.galacticraft.mod.client.accessor.GameRendererAccessor;
 import dev.galacticraft.mod.client.render.dimension.LunarSkyExposure;
+import dev.galacticraft.mod.client.render.dimension.MoonSurfaceShader;
 import dev.galacticraft.mod.world.dimension.GCDimensions;
 import net.minecraft.client.Camera;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.PostChain;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceProvider;
@@ -81,6 +89,9 @@ public abstract class GameRendererMixin implements GameRendererAccessor {
 
     @Shadow
     private PostChain postEffect;
+
+    @Shadow
+    private boolean effectActive;
 
     @Shadow
     public abstract void shutdownEffect();
@@ -146,14 +157,38 @@ public abstract class GameRendererMixin implements GameRendererAccessor {
 
     @Unique
     private ResourceLocation galacticraft$getPlanetPostEffect() {
-        if (this.minecraft.level == null) return null;
+        if (this.minecraft.level == null || ShaderPackCompat.isActive()) return null;
+        if (this.minecraft.level.dimension().equals(GCDimensions.MOON)
+                && Galacticraft.CONFIG.moonSurfaceShaderStrength() > 0.0F) return MoonSurfaceShader.EFFECT;
         if (this.minecraft.level.dimension().equals(GCDimensions.MARS)) return MARS_POST_EFFECT;
         return null;
     }
 
     @Unique
     private static boolean galacticraft$isPlanetPostEffect(ResourceLocation effect) {
-        return effect.equals(MARS_POST_EFFECT);
+        return effect.equals(MARS_POST_EFFECT) || effect.equals(MoonSurfaceShader.EFFECT);
+    }
+
+    @WrapOperation(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;renderLevel(Lnet/minecraft/client/DeltaTracker;ZLnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/GameRenderer;Lnet/minecraft/client/renderer/LightTexture;Lorg/joml/Matrix4f;Lorg/joml/Matrix4f;)V"))
+    private void galacticraft$shadeMoonSurface(LevelRenderer renderer, DeltaTracker delta, boolean outline,
+                                             Camera camera, GameRenderer gameRenderer, LightTexture lightTexture,
+                                             Matrix4f view, Matrix4f projection, Operation<Void> original) {
+        boolean shadeMoon = this.effectActive && this.postEffect != null
+                && !ShaderPackCompat.isActive()
+                && MoonSurfaceShader.EFFECT.equals(this.galacticraft$activePlanetPostEffect)
+                && this.minecraft.level.dimension().equals(GCDimensions.MOON);
+        original.call(renderer, delta, outline, camera, gameRenderer, lightTexture, view, projection);
+        if (shadeMoon) {
+            MoonSurfaceShader.render(this.minecraft, this.postEffect, camera, view, projection, delta);
+        }
+    }
+
+    @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/PostChain;process(F)V"))
+    private void galacticraft$skipSecondMoonPass(PostChain effect, float delta, Operation<Void> original) {
+        // Lunar geometry is shaded before the hand clears world depth, and only once.
+        if (!MoonSurfaceShader.EFFECT.equals(this.galacticraft$activePlanetPostEffect)) {
+            original.call(effect, delta);
+        }
     }
 
     @Override

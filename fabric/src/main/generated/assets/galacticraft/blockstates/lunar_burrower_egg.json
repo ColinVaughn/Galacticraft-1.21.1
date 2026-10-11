@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "hatch=0": {
+      "model": "galacticraft:block/lunar_burrower_egg"
+    },
+    "hatch=1": {
+      "model": "galacticraft:block/lunar_burrower_egg_cracked"
+    },
+    "hatch=2": {
+      "model": "galacticraft:block/lunar_burrower_egg_hatching"
+    }
+  }
+}

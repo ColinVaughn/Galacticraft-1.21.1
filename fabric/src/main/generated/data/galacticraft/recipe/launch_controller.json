@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "galacticraft:aluminum_wire"
+    },
+    "D": {
+      "item": "galacticraft:desh_ingot"
+    },
+    "F": {
+      "item": "galacticraft:frequency_module"
+    },
+    "P": {
+      "item": "galacticraft:compressed_desh"
+    },
+    "W": {
+      "item": "galacticraft:advanced_wafer"
+    }
+  },
+  "pattern": [
+    "DFD",
+    "PWP",
+    "DCD"
+  ],
+  "result": {
+    "count": 1,
+    "id": "galacticraft:launch_controller"
+  }
+}

@@ -31,6 +31,8 @@ import dev.galacticraft.mod.client.model.GCModelLoader;
 import dev.galacticraft.mod.client.model.GCModelState;
 import dev.galacticraft.mod.client.model.GCRenderTypes;
 import dev.galacticraft.mod.client.render.entity.BuggyRenderer;
+import dev.galacticraft.api.component.GCDataComponents;
+import dev.galacticraft.mod.content.entity.vehicle.Buggy;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -47,24 +49,16 @@ import net.minecraft.world.item.ItemStack;
  * still.
  */
 public class BuggyItemRenderer {
-    /** Wheel mounting points, copied from {@link BuggyRenderer} so the item matches the placed vehicle. */
-    private static final float FRONT_AXLE_X = 1.25F;
-    private static final float REAR_AXLE_X = 1.9F;
-    private static final float AXLE_Y = 0.976F;
-    private static final float AXLE_Z = 2.727F;
-
     // Centre of the assembled buggy's bounding box - chassis, wheels at their mounts and dish included -
     // so the framing below turns about the middle of the vehicle rather than the middle of the chassis.
     private static final float CENTER_X = 0.0F;
-    private static final float CENTER_Y = 2.25F;
-    private static final float CENTER_Z = 0.03F;
+    private static final float CENTER_Y = 2.42F;
+    private static final float CENTER_Z = 0.0F;
 
     private GCModel model;
 
     public void render(ItemStack stack, ItemDisplayContext mode, PoseStack matrices, MultiBufferSource vertexConsumers, int light, int overlay) {
-        if (this.model == null) {
-            this.model = GCModelLoader.INSTANCE.getModel(BuggyRenderer.MODEL);
-        }
+        this.model = GCModelLoader.INSTANCE.getModel(BuggyRenderer.MODEL);
         VertexConsumer consumer = vertexConsumers.getBuffer(GCRenderTypes.obj(GCRenderTypes.OBJ_ATLAS));
         matrices.pushPose();
 
@@ -94,15 +88,21 @@ public class BuggyItemRenderer {
         }
         matrices.translate(-CENTER_X, -CENTER_Y, -CENTER_Z);
 
-        wheel(matrices, consumer, light, FRONT_AXLE_X, -AXLE_Z, BuggyRenderer.WHEEL_RIGHT_COVER, BuggyRenderer.WHEEL_RIGHT);
-        wheel(matrices, consumer, light, -FRONT_AXLE_X, -AXLE_Z, BuggyRenderer.WHEEL_LEFT_COVER, BuggyRenderer.WHEEL_LEFT);
-        wheel(matrices, consumer, light, REAR_AXLE_X, AXLE_Z, null, BuggyRenderer.WHEEL_RIGHT);
-        wheel(matrices, consumer, light, -REAR_AXLE_X, AXLE_Z, null, BuggyRenderer.WHEEL_LEFT);
+        wheel(matrices, consumer, light, BuggyRenderer.FRONT_AXLE_X, -BuggyRenderer.AXLE_Z, BuggyRenderer.WHEEL_RIGHT_COVER, BuggyRenderer.WHEEL_RIGHT);
+        wheel(matrices, consumer, light, -BuggyRenderer.FRONT_AXLE_X, -BuggyRenderer.AXLE_Z, BuggyRenderer.WHEEL_LEFT_COVER, BuggyRenderer.WHEEL_LEFT);
+        wheel(matrices, consumer, light, BuggyRenderer.REAR_AXLE_X, BuggyRenderer.AXLE_Z, null, BuggyRenderer.WHEEL_RIGHT);
+        wheel(matrices, consumer, light, -BuggyRenderer.REAR_AXLE_X, BuggyRenderer.AXLE_Z, null, BuggyRenderer.WHEEL_LEFT);
 
         this.model.render(matrices, BuggyRenderer.MAIN_MODEL, consumer, light, OverlayTexture.NO_OVERLAY);
+        matrices.pushPose();
+        matrices.translate(0, BuggyRenderer.STEERING_Y, BuggyRenderer.STEERING_Z);
+        this.model.render(matrices, BuggyRenderer.STEERING_WHEEL, consumer, light, OverlayTexture.NO_OVERLAY);
+        matrices.popPose();
+        BuggyRenderer.renderCargo(this.model, Buggy.BuggyType.byId(stack.getOrDefault(GCDataComponents.BUGGY_TYPE, 0)),
+                matrices, consumer, light, OverlayTexture.NO_OVERLAY);
 
         matrices.pushPose();
-        matrices.translate(-1.178F, 4.1F, -2.397F);
+        matrices.translate(BuggyRenderer.RADAR_X, BuggyRenderer.RADAR_Y, BuggyRenderer.RADAR_Z);
         this.model.render(matrices, BuggyRenderer.RADAR_DISH, consumer, light, OverlayTexture.NO_OVERLAY);
         matrices.popPose();
 
@@ -112,7 +112,7 @@ public class BuggyItemRenderer {
     private void wheel(PoseStack matrices, VertexConsumer consumer, int light, float x, float z,
                        GCModelState cover, GCModelState wheel) {
         matrices.pushPose();
-        matrices.translate(x, AXLE_Y, z);
+        matrices.translate(x, BuggyRenderer.AXLE_Y, z);
         if (cover != null) {
             this.model.render(matrices, cover, consumer, light, OverlayTexture.NO_OVERLAY);
         }

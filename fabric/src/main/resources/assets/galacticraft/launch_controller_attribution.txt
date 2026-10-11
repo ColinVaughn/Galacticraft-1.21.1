@@ -1,0 +1,8 @@
+Launch Controller assets adapted from Team Galacticraft's Galacticraft Legacy:
+https://github.com/TeamGalacticraft/Galacticraft-Legacy/tree/master-1.12
+
+Original block and GUI textures are reused unchanged. The original cube model's
+front/back controller panels and right-hand power input are generated through
+MachineLib, using the legacy machine textures already shared by the terraformer.
+
+Copyright (c) 2022 Team Galacticraft. MIT License (included in the mod's LICENSE).

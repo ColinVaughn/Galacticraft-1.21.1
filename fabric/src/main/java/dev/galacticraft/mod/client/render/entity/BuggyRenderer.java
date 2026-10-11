@@ -27,11 +27,13 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.client.model.GCModel;
+import dev.galacticraft.mod.client.model.BuggyAnimations;
 import dev.galacticraft.mod.client.model.GCModelLoader;
 import dev.galacticraft.mod.client.model.GCModelState;
 import dev.galacticraft.mod.client.model.GCRenderTypes;
 import dev.galacticraft.mod.content.entity.vehicle.Buggy;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -41,25 +43,40 @@ import net.minecraft.util.Mth;
 public class BuggyRenderer extends EntityRenderer<Buggy> {
     public static final ResourceLocation MODEL = Constant.id("models/misc/buggy.json");
     public static final GCModelState MAIN_MODEL = new GCModelState("MainBody");
-    public static final GCModelState RADAR_DISH = new GCModelState("RadarDish_Dish");
-    public static final GCModelState WHEEL_LEFT_COVER = new GCModelState("Wheel_Left_Cover");
-    public static final GCModelState WHEEL_RIGHT = new GCModelState("Wheel_Right");
-    public static final GCModelState WHEEL_LEFT = new GCModelState("Wheel_Left");
-    public static final GCModelState WHEEL_RIGHT_COVER = new GCModelState("Wheel_Right_Cover");
+    public static final GCModelState RADAR_DISH = new GCModelState("RadarDish");
+    public static final GCModelState WHEEL_LEFT_COVER = new GCModelState("LeftFender");
+    public static final GCModelState WHEEL_RIGHT = new GCModelState("WheelRight");
+    public static final GCModelState WHEEL_LEFT = new GCModelState("WheelLeft");
+    public static final GCModelState WHEEL_RIGHT_COVER = new GCModelState("RightFender");
     public static final GCModelState CARGO_LEFT = new GCModelState("CargoLeft");
     public static final GCModelState CARGO_MID = new GCModelState("CargoMid");
     public static final GCModelState CARGO_RIGHT = new GCModelState("CargoRight");
+    public static final GCModelState STEERING_WHEEL = new GCModelState("SteeringWheel");
 
-    private GCModel buggyModel;
+    public static final float FRONT_AXLE_X = 1.9F;
+    public static final float REAR_AXLE_X = 1.9F;
+    public static final float AXLE_Y = 0.976F;
+    public static final float AXLE_Z = 2.727F;
+    public static final float RADAR_X = -0.720683F;
+    public static final float RADAR_Y = 4.1F;
+    public static final float RADAR_Z = -2.397F;
+    public static final float STEERING_Y = 12.9F / BuggyAnimations.UNITS_PER_OBJ;
+    public static final float STEERING_Z = -7.45F / BuggyAnimations.UNITS_PER_OBJ;
+
+    private final BuggyAnimations animations;
 
     public BuggyRenderer(EntityRendererProvider.Context context) {
         super(context);
+        this.animations = new BuggyAnimations(Minecraft.getInstance().getResourceManager());
     }
 
     @Override
     public void render(Buggy buggy, float yaw, float tickDelta, PoseStack matrices, MultiBufferSource vertexConsumers, int light) {
-        if (this.buggyModel == null)
-            this.buggyModel = GCModelLoader.INSTANCE.getModel(MODEL);
+        GCModel model = GCModelLoader.INSTANCE.getModel(MODEL);
+        var motion = buggy.getAnimationState();
+        double turns = motion.wheelTurns(tickDelta);
+        float steering = motion.steering(tickDelta);
+        double seconds = (buggy.tickCount + (double) tickDelta) / 20;
         float pitch = Mth.lerp(tickDelta, buggy.xRotO, buggy.getXRot());
         VertexConsumer consumer = vertexConsumers.getBuffer(GCRenderTypes.obj(GCRenderTypes.OBJ_ATLAS));
         matrices.pushPose();
@@ -68,68 +85,64 @@ public class BuggyRenderer extends EntityRenderer<Buggy> {
         matrices.mulPose(Axis.ZP.rotationDegrees(-pitch));
         matrices.scale(0.41F, 0.41F, 0.41F);
 
-        // Front wheels
-        matrices.pushPose();
-        float dZ = -2.727F;
-        float dY = 0.976F;
-        float dX = 1.25F;
-        float rotation = buggy.wheelRotationX;
-        matrices.translate(dX, dY, dZ);
-        matrices.mulPose(Axis.YP.rotationDegrees(buggy.wheelRotationZ));
-        this.buggyModel.render(matrices, WHEEL_RIGHT_COVER, consumer, light, OverlayTexture.NO_OVERLAY);
-        matrices.mulPose(Axis.XP.rotationDegrees(rotation));
-        this.buggyModel.render(matrices, WHEEL_RIGHT, consumer, light, OverlayTexture.NO_OVERLAY);
-        matrices.popPose();
+        // Pitch the complete vehicle about its trailing axle so mounted parts stay connected.
+        float climbPivot = AXLE_Z * motion.climbDirection();
+        matrices.translate(0, AXLE_Y, climbPivot);
+        BuggyAnimations.apply(matrices, animations.sample("climb", "Climb", motion.climbTime(tickDelta)), motion.climbDirection());
+        matrices.translate(0, -AXLE_Y, -climbPivot);
+
+        wheel(model, matrices, consumer, light, FRONT_AXLE_X, -AXLE_Z, WHEEL_RIGHT_COVER, WHEEL_RIGHT, turns, steering);
+        wheel(model, matrices, consumer, light, -FRONT_AXLE_X, -AXLE_Z, WHEEL_LEFT_COVER, WHEEL_LEFT, turns, steering);
+        wheel(model, matrices, consumer, light, REAR_AXLE_X, AXLE_Z, null, WHEEL_RIGHT, turns, 0);
+        wheel(model, matrices, consumer, light, -REAR_AXLE_X, AXLE_Z, null, WHEEL_LEFT, turns, 0);
 
         matrices.pushPose();
-        matrices.translate(-dX, dY, dZ);
-        matrices.mulPose(Axis.YP.rotationDegrees(buggy.wheelRotationZ));
-        this.buggyModel.render(matrices, WHEEL_LEFT_COVER, consumer, light, OverlayTexture.NO_OVERLAY);
-        matrices.mulPose(Axis.XP.rotationDegrees(rotation));
-        this.buggyModel.render(matrices, WHEEL_LEFT, consumer, light, OverlayTexture.NO_OVERLAY);
-        matrices.popPose();
-
-        // Back wheels
-        matrices.pushPose();
-        dX = 1.9F;
-        dZ = -dZ;
-        matrices.translate(dX, dY, dZ);
-        matrices.mulPose(Axis.YP.rotationDegrees(-buggy.wheelRotationZ));
-        matrices.mulPose(Axis.XP.rotationDegrees(rotation));
-        this.buggyModel.render(matrices, WHEEL_RIGHT, consumer, light, OverlayTexture.NO_OVERLAY);
-        matrices.popPose();
+        matrices.translate(0, AXLE_Y, 0);
+        BuggyAnimations.apply(matrices, animations.sample("suspension", "Chassis", seconds), motion.drive(tickDelta));
+        matrices.translate(0, -AXLE_Y, 0);
+        model.render(matrices, MAIN_MODEL, consumer, light, OverlayTexture.NO_OVERLAY);
+        renderCargo(model, buggy.getVariant(), matrices, consumer, light, OverlayTexture.NO_OVERLAY);
 
         matrices.pushPose();
-        matrices.translate(-dX, dY, dZ);
-        matrices.mulPose(Axis.YP.rotationDegrees(-buggy.wheelRotationZ));
-        matrices.mulPose(Axis.XP.rotationDegrees(rotation));
-        this.buggyModel.render(matrices, WHEEL_LEFT, consumer, light, OverlayTexture.NO_OVERLAY);
+        matrices.translate(0, STEERING_Y, STEERING_Z);
+        BuggyAnimations.apply(matrices, animations.steering("SteeringWheel", steering), 1);
+        model.render(matrices, STEERING_WHEEL, consumer, light, OverlayTexture.NO_OVERLAY);
         matrices.popPose();
-
-        this.buggyModel.render(matrices, MAIN_MODEL, consumer, light, OverlayTexture.NO_OVERLAY);
 
         // Radar Dish
         matrices.pushPose();
-        matrices.translate(-1.178F, 4.1F, -2.397F);
-        int ticks = buggy.tickCount + buggy.getId() * 10000;
-        matrices.mulPose(Axis.XP.rotationDegrees(Mth.sin(ticks * 0.05F) * 50.0F));
-        matrices.mulPose(Axis.ZP.rotationDegrees(Mth.cos(ticks * 0.1F) * 50.0F));
-        this.buggyModel.render(matrices, RADAR_DISH, consumer, light, OverlayTexture.NO_OVERLAY);
+        matrices.translate(RADAR_X, RADAR_Y, RADAR_Z);
+        BuggyAnimations.apply(matrices, animations.sample("radar", "RadarDish", seconds + buggy.getId() % 8), 1);
+        model.render(matrices, RADAR_DISH, consumer, light, OverlayTexture.NO_OVERLAY);
         matrices.popPose();
 
-//        if (buggy.buggyType > 0) {
-//            ClientUtil.drawBakedModel(this.cargoLeft);
-//
-//            if (entity.buggyType > 1) {
-//                ClientUtil.drawBakedModel(this.cargoMid);
-//
-//                if (entity.buggyType > 2) {
-//                    ClientUtil.drawBakedModel(this.cargoRight);
-//                }
-//            }
-//        }
-
         matrices.popPose();
+        matrices.popPose();
+    }
+
+    private void wheel(GCModel model, PoseStack matrices, VertexConsumer consumer, int light, float x, float z,
+                       GCModelState cover, GCModelState wheel, double turns, float steering) {
+        matrices.pushPose();
+        matrices.translate(x, AXLE_Y, z);
+        if (cover != null) {
+            BuggyAnimations.apply(matrices, animations.steering(wheel.getName(), steering), 1);
+            model.render(matrices, cover, consumer, light, OverlayTexture.NO_OVERLAY);
+        }
+        BuggyAnimations.apply(matrices, animations.sample("roll", wheel.getName(), turns), 1);
+        model.render(matrices, wheel, consumer, light, OverlayTexture.NO_OVERLAY);
+        matrices.popPose();
+    }
+
+    public static void renderCargo(GCModel model, Buggy.BuggyType type, PoseStack matrices,
+                                   VertexConsumer consumer, int light, int overlay) {
+        switch (type) {
+            case NORMAL -> { }
+            case STORAGE_18 -> model.render(matrices, CARGO_MID, consumer, light, overlay);
+            case STORAGE_36 -> {
+                model.render(matrices, CARGO_LEFT, consumer, light, overlay);
+                model.render(matrices, CARGO_RIGHT, consumer, light, overlay);
+            }
+        }
     }
 
     @Override

@@ -1,5 +1,13 @@
 {
   "values": [
+    "galacticraft:burrower_excavated_tailings",
+    "galacticraft:mercury_rocky_regolith",
+    "galacticraft:mercury_dark_regolith",
+    "galacticraft:moon_rocky_regolith",
+    "galacticraft:moon_mare_regolith",
+    "galacticraft:mars_rocky_regolith",
+    "galacticraft:mars_basaltic_sand",
+    "galacticraft:venus_stony_regolith",
     "galacticraft:moon_turf",
     "galacticraft:moon_dirt",
     "galacticraft:moon_dirt_path"

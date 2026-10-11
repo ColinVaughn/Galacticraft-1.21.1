@@ -77,7 +77,7 @@ public class FallingMeteorEntity extends Entity {
     /** Fragments may not fragment again, so a breakup cannot cascade. */
     private static final byte MAX_GENERATION = 1;
     /** Safety valve: nothing stays in flight longer than this, whatever the physics says. */
-    private static final int MAX_LIFETIME_TICKS = 1200;
+    private static final int MAX_LIFETIME_TICKS = (int) (1200 / MeteorPhysics.FLIGHT_TIME_SCALE);
     /** Mass a body must still have for a breakup to be worth spawning fragments for, kg. */
     private static final double FRAGMENT_MASS_THRESHOLD = 2000.0;
     /** Fraction of remaining mass shed per tick when a body is too small to fragment properly. */
@@ -212,11 +212,13 @@ public class FallingMeteorEntity extends Entity {
         // A body too small (or too fragmented) to break into pieces flattens and sheds mass
         // instead - real pancaking, and it keeps a breakup from cascading into an entity storm.
         if (step.breakup() && !canFragment()) {
-            this.physics = this.physics.withMass(this.physics.mass() * (1.0 - PANCAKE_MASS_LOSS));
+            this.physics = this.physics.withMass(this.physics.mass()
+                    * Math.pow(1.0 - PANCAKE_MASS_LOSS, MeteorPhysics.FLIGHT_TIME_SCALE));
         }
 
         this.entityData.set(DATA_MASS_FRACTION, (float) Mth.clamp(this.physics.mass() / this.entryMass, 0.0, 1.0));
-        this.entityData.set(DATA_GLOW, (float) Mth.clamp(step.ablatedMass() / (this.entryMass * GLOW_SATURATION), 0.0, 1.0));
+        this.entityData.set(DATA_GLOW, (float) Mth.clamp(step.ablatedMass()
+                / (this.entryMass * GLOW_SATURATION * MeteorPhysics.FLIGHT_TIME_SCALE), 0.0, 1.0));
 
         if (step.burnedOut()) {
             burnUp(level);
@@ -333,6 +335,13 @@ public class FallingMeteorEntity extends Entity {
     public EntityDimensions getDimensions(Pose pose) {
         float diameter = (float) (MeteoroidShape.radiusFor(getSize()) * 2.0);
         return EntityDimensions.scalable(diameter, diameter);
+    }
+
+    @Override
+    public boolean shouldRenderAtSqrDistance(double distance) {
+        // Small meteors should be visible in the sky before vanilla's size-based culling allows them.
+        double range = 512.0 * getViewScale();
+        return distance < range * range;
     }
 
     @Override

@@ -154,10 +154,13 @@ public class MoonBiomes {
         addDefaultSoftDisks(generation);
         generation.addCarver(GenerationStep.Carving.AIR, GCConfiguredCarvers.MOON_CRATER_CARVER);
         generation.addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, GCPlacedFeatures.MOON_CAVE_LANDMARK);
+        generation.addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, GCPlacedFeatures.MOON_CAVE_DECORATIONS);
+        generation.addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, GCPlacedFeatures.MOON_BURROWER_DEN);
         return generation;
     }
 
     private static Biome moon(BiomeGenerationSettings.Builder generation, MobSpawnSettings.Builder spawnBuilder, int fogColor) {
+        spawnBuilder.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(GCEntityTypes.LUNAR_BURROWER, 2, 1, 1));
         BiomeSpecialEffects.Builder specialEffects = new BiomeSpecialEffects.Builder();
         specialEffects.waterColor(4159204)
                 .waterFogColor(329011)

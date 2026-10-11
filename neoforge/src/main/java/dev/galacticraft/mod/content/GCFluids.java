@@ -25,6 +25,7 @@ package dev.galacticraft.mod.content;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.content.fluid.CrudeOilFluid;
 import dev.galacticraft.mod.content.fluid.FuelFluid;
+import dev.galacticraft.mod.content.fluid.Helium3Fluid;
 import dev.galacticraft.mod.content.fluid.OxygenFluid;
 import dev.galacticraft.mod.content.fluid.SulfuricAcidFluid;
 import net.minecraft.core.Registry;
@@ -34,6 +35,8 @@ import net.minecraft.world.level.material.Fluid;
 
 /** NeoForge fluid registry facade; fluid attributes are supplied by native FluidTypes. */
 public final class GCFluids {
+    public static final FlowingFluid HELIUM_3 = new Helium3Fluid.Still();
+    public static final FlowingFluid FLOWING_HELIUM_3 = new Helium3Fluid.Flowing();
     public static final FlowingFluid CRUDE_OIL = new CrudeOilFluid.Still();
     public static final FlowingFluid FLOWING_CRUDE_OIL = new CrudeOilFluid.Flowing();
     public static final FlowingFluid FUEL = new FuelFluid.Still();
@@ -46,6 +49,8 @@ public final class GCFluids {
     }
 
     public static void register() {
+        register(Constant.Fluid.HELIUM_3_STILL, HELIUM_3);
+        register(Constant.Fluid.HELIUM_3_FLOWING, FLOWING_HELIUM_3);
         register(Constant.Fluid.CRUDE_OIL_STILL, CRUDE_OIL);
         register(Constant.Fluid.CRUDE_OIL_FLOWING, FLOWING_CRUDE_OIL);
         register(Constant.Fluid.FUEL_STILL, FUEL);

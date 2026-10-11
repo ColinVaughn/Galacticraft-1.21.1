@@ -83,6 +83,8 @@ public class CannonBlockEntity extends MachineBlockEntity {
     private int cooldown;
     private @Nullable Vec3 shotPosition;
     private int shotTicks;
+    private long lastShotTime = -1;
+    private boolean shotInFlight;
     private boolean operational;
 
     public CannonBlockEntity(BlockPos pos, BlockState state) {
@@ -192,6 +194,8 @@ public class CannonBlockEntity extends MachineBlockEntity {
     private void beginShot(ServerLevel level, FallingMeteorEntity target) {
         this.shotPosition = muzzle(target.position());
         this.shotTicks = 0;
+        this.lastShotTime = level.getGameTime();
+        sync(level);
         particles(level, ParticleTypes.FLASH, this.shotPosition, 1, 0.0, 0.0);
         particles(level, ParticleTypes.LARGE_SMOKE, this.shotPosition, 16, 0.35, 0.04);
         particles(level, ParticleTypes.FLAME, this.shotPosition, 8, 0.2, 0.06);
@@ -268,6 +272,9 @@ public class CannonBlockEntity extends MachineBlockEntity {
         return this.targetPosition;
     }
 
+    public long getLastShotTime() { return this.lastShotTime; }
+    public boolean isShotInFlight() { return this.shotInFlight; }
+
     public static int countLinked(ServerLevel level, BlockPos radarPos) {
         return (int) LOADED_CANNONS.getOrDefault(level, Set.of()).stream()
                 .filter(pos -> pos.distSqr(radarPos) <= RadarBlockEntity.LINK_RANGE * RadarBlockEntity.LINK_RANGE)
@@ -302,6 +309,8 @@ public class CannonBlockEntity extends MachineBlockEntity {
     public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         this.targetEntityId = tag.getInt("target_entity");
+        this.lastShotTime = tag.contains("last_shot_time") ? tag.getLong("last_shot_time") : -1;
+        this.shotInFlight = tag.getBoolean("shot_in_flight");
         this.targetPosition = tag.contains("target_x")
                 ? new Vec3(tag.getDouble("target_x"), tag.getDouble("target_y"), tag.getDouble("target_z")) : null;
     }
@@ -315,6 +324,8 @@ public class CannonBlockEntity extends MachineBlockEntity {
     @Override
     public void populateUpdateTag(CompoundTag tag) {
         super.populateUpdateTag(tag);
+        tag.putLong("last_shot_time", this.lastShotTime);
+        tag.putBoolean("shot_in_flight", this.shotPosition != null);
         tag.putInt("target_entity", this.targetEntityId);
         if (this.targetPosition != null) {
             tag.putDouble("target_x", this.targetPosition.x);

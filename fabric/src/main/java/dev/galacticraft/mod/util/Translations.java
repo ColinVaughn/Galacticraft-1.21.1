@@ -225,7 +225,6 @@ public interface Translations {
         String ELECTRIC_ARC_FURNACE_BONUS_CHANCE = "config.galacticraft.energy.machines.electric_arc_furnace_bonus_chance";
         String OXYGEN_COLLECTOR_ENERGY_CONSUMPTION_RATE = "config.galacticraft.energy.machines.oxygen_collector_energy_consumption_rate";
         String OXYGEN_COMPRESSOR_ENERGY_CONSUMPTION_RATE = "config.galacticraft.energy.machines.oxygen_compressor_energy_consumption_rate";
-        String OXYGEN_DECOMPRESSOR_ENERGY_CONSUMPTION_RATE = "config.galacticraft.energy.machines.oxygen_decompressor_energy_consumption_rate";
         String OXYGEN_SEALER_ENERGY_CONSUMPTION_RATE = "config.galacticraft.energy.machines.oxygen_sealer_energy_consumption_rate";
         String OXYGEN_SEALER_OXYGEN_CONSUMPTION_RATE = "config.galacticraft.energy.machines.oxygen_sealer_oxygen_consumption_rate";
         String OXYGEN_SEALER_UNSEALED_OXYGEN_CONSUMPTION_RATE = "config.galacticraft.energy.machines.oxygen_sealer_unsealed_oxygen_consumption_rate";
@@ -276,6 +275,8 @@ public interface Translations {
         String ROCKET_INVENTORY = "key.galacticraft.rocket.inventory";
         String OPEN_CELESTIAL_SCREEN = "key.galacticraft.open_celestial_screen";
         String SENSOR_GLASSES_MODE = "key.galacticraft.sensor_glasses_mode";
+        String BURROWER_TUNNEL = "key.galacticraft.burrower_tunnel";
+        String ROCKET_LANDING = "key.galacticraft.rocket.landing";
     }
 
     interface Items {
@@ -381,6 +382,12 @@ public interface Translations {
         String FLAG_INVALID_SIZE = "ui.galacticraft.space_race_manager.flag.invalid_size";
         String FLAG_READ_ERROR = "ui.galacticraft.space_race_manager.flag.read_error";
         String FLAG_PICKER_ERROR = "ui.galacticraft.space_race_manager.flag.picker_error";
+        String DRAW_FLAG = "ui.galacticraft.space_race_manager.flag.draw";
+        String FLAG_DRAW_HINT = "ui.galacticraft.space_race_manager.flag.draw_hint";
+        String FLAG_UNDO = "ui.galacticraft.space_race_manager.flag.undo";
+        String FLAG_FILL = "ui.galacticraft.space_race_manager.flag.fill";
+        String FLAG_USE = "ui.galacticraft.space_race_manager.flag.use";
+        String FLAG_SAVE_ERROR = "ui.galacticraft.space_race_manager.flag.save_error";
         String TEAM_COLOR_1 = "ui.galacticraft.space_race_manager.team_color_1";
         String TEAM_COLOR_2 = "ui.galacticraft.space_race_manager.team_color_2";
         String TEAM_COLOR_3 = "ui.galacticraft.space_race_manager.team_color_3";
@@ -525,6 +532,7 @@ public interface Translations {
         String ALPHA_WARNING_3 = "ui.galacticraft.alpha_warning.content3";
         String ALPHA_WARNING_HEADER = "ui.galacticraft.alpha_warning.header";
 
+        String OXYGEN_COMPRESSOR_DECOMPRESSOR_TITLE = "ui.galacticraft.oxygen_compressor.decompressor_mode";
         String BUBBLE_CURRENT_SIZE = "ui.galacticraft.bubble_distributor.current_size";
         String BUBBLE_NOT_VISIBLE = "ui.galacticraft.bubble_distributor.not_visible";
         String BUBBLE_TARGET_SIZE = "ui.galacticraft.bubble_distributor.size";
@@ -588,6 +596,9 @@ public interface Translations {
         String ROCKET_FUEL = "ui.galacticraft.rocket.fuel";
         String ROCKET_FULL = "ui.galacticraft.rocket.full";
         String ROCKET_NO_FUEL = "ui.galacticraft.rocket.no_fuel";
+        String ROCKET_LANDING = "ui.galacticraft.rocket.landing";
+        String ROCKET_LANDING_HINT = "ui.galacticraft.rocket.landing_hint";
+        String ROCKET_LANDING_THRUST = "ui.galacticraft.rocket.landing_thrust";
         String LANDER_WARNING = "ui.galacticraft.lander.warning";
         String LANDER_CONTROLS = "ui.galacticraft.lander.controls";
         String LANDER_VELOCITY = "ui.galacticraft.lander.velocity";

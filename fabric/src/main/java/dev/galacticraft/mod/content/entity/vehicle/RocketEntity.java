@@ -45,6 +45,7 @@ import dev.galacticraft.mod.content.GCRocketParts;
 import dev.galacticraft.mod.content.GCStats;
 import dev.galacticraft.mod.content.advancements.GCTriggers;
 import dev.galacticraft.mod.content.block.special.launchpad.AbstractLaunchPad;
+import dev.galacticraft.mod.content.block.special.launchpad.CargoPadRegistry;
 import dev.galacticraft.mod.content.block.special.launchpad.LaunchPadBlockEntity;
 import dev.galacticraft.mod.content.entity.data.GCEntityDataSerializers;
 import dev.galacticraft.mod.content.item.GCItems;
@@ -61,6 +62,7 @@ import dev.galacticraft.mod.util.FluidUtil;
 import dev.galacticraft.mod.storage.SimpleFluidTank;
 import dev.galacticraft.machinelib.api.storage.StorageAccess;
 import dev.galacticraft.mod.util.Translations;
+import dev.galacticraft.mod.util.Tier1RocketAnimationState;
 import dev.architectury.networking.NetworkManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -98,6 +100,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.TntBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.portal.DimensionTransition;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -115,6 +118,7 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
     private static final EntityDataAccessor<RocketData> ROCKET_DATA = SynchedEntityData.defineId(RocketEntity.class, GCEntityDataSerializers.ROCKET_DATA);
     private static final EntityDataAccessor<Long> FUEL = SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.LONG);
     private static final EntityDataAccessor<Boolean> CREATIVE = SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> MANUAL_LANDING = SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.BOOLEAN);
 
     private static final int CRASH_ARM_DELAY_TICKS = 20;
     private static final int ROCKET_LAUNCH_PAD_BLOCKS = 9;
@@ -150,7 +154,13 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
     private SimpleContainer inventory = new SimpleContainer(GCServerPlayer.RESERVED_RETURN_STACKS);
 
     private int timeBeforeLaunch;
+    private int controllerDestination = -1;
     private float timeSinceLaunch;
+    private int landingTicks;
+    private int landingInputTick;
+    private float landingForward, landingStrafe;
+    private boolean landingHover, landingCutThrust;
+    private final Tier1RocketAnimationState tier1AnimationState = new Tier1RocketAnimationState();
 
     private float zRot;
     public float zRotO;
@@ -166,6 +176,22 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
 
     public RocketEntity(EntityType<?> entityType, Level level) {
         super(entityType, level);
+    }
+
+    public Tier1RocketAnimationState getTier1AnimationState() { return tier1AnimationState; }
+
+    public boolean isLanding() { return getLaunchStage() == LaunchStage.LAUNCHED && this.entityData.get(MANUAL_LANDING); }
+
+    public void toggleLanding(ServerPlayer pilot) {
+        if (this.level().isClientSide() || this.getFirstPassenger() != pilot || getLaunchStage() != LaunchStage.LAUNCHED) return;
+        if (isTankEmpty()) {
+            pilot.sendSystemMessage(Component.translatable(Translations.Ui.ROCKET_NO_FUEL), true);
+            return;
+        }
+        this.entityData.set(MANUAL_LANDING, !isLanding());
+        this.landingTicks = 0;
+        this.landingForward = this.landingStrafe = 0;
+        this.landingHover = this.landingCutThrust = false;
     }
 
     public int getTimeAsState() {
@@ -195,6 +221,7 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
     public void setLaunchStage(LaunchStage launchStage) {
         LaunchStage oldStage = getLaunchStage();
         if (oldStage != launchStage) {
+            if (launchStage != LaunchStage.LAUNCHED) this.entityData.set(MANUAL_LANDING, false);
             this.entityData.set(STAGE, launchStage);
             setTimeAsState(0);
             RocketEvents.STAGE_CHANGED.invoker().onStageChanged(this, oldStage);
@@ -307,12 +334,78 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
         // Must be a real answer, not a constant: LaunchPadBlockEntity#getDockedEntity relies on this
         // to re-attach a rocket that resolved its own link to nothing, which is what every reload
         // looks like when the pad's block entity is not reachable yet.
-        return dock instanceof LaunchPadBlockEntity pad && pad.getPadType() == LaunchPadBlockEntity.Type.ROCKET;
+        return !this.inFlight() && dock instanceof LaunchPadBlockEntity pad && pad.getPadType() == LaunchPadBlockEntity.Type.ROCKET;
     }
 
     @Override
     public boolean inFlight() {
-        return false;
+        return this.getLaunchStage().ordinal() >= LaunchStage.LAUNCHED.ordinal();
+    }
+
+    public boolean igniteFromController() {
+        if (this.level().isClientSide || this.getLaunchStage().ordinal() >= LaunchStage.IGNITED.ordinal()
+                || this.getPassengers().isEmpty() || this.isTankEmpty()) return false;
+        int destination = this.controllerRoute();
+        if (destination < 0) return false;
+        this.ignite(destination);
+        return true;
+    }
+
+    private void ignite(int destination) {
+        this.controllerDestination = destination;
+        this.timeBeforeLaunch = this.getPreLaunchWait();
+        this.setLaunchStage(LaunchStage.IGNITED);
+        this.launchConfirmState = LaunchConfirmState.IDLE;
+    }
+
+    private int controllerRoute() {
+        if (!(this.level() instanceof ServerLevel level) || !(this.getLandingPad() instanceof LaunchPadBlockEntity pad)
+                || pad.getController() == null) return -1;
+        int address = pad.getDestinationAddress();
+        CargoPadRegistry.ResolvedPad destination = CargoPadRegistry.get(level.getServer()).resolve(level.getServer(), address).orElse(null);
+        return destination != null && destination.pad() != pad && !destination.pad().hasDockedEntity()
+                && this.canTravelTo(destination.level()) ? address : -1;
+    }
+
+    private boolean canTravelTo(ServerLevel destination) {
+        if (destination == this.level()) return true;
+        Holder<CelestialBody<?, ?>> from = this.level().galacticraft$getCelestialBody();
+        Holder<CelestialBody<?, ?>> to = destination.galacticraft$getCelestialBody();
+        return to != null && this.getRocketData().canTravel(this.registryAccess(), from == null ? null : from.value(), to.value());
+    }
+
+    private boolean landAtController() {
+        if (this.controllerDestination < 0 || !(this.level() instanceof ServerLevel level)) return false;
+        CargoPadRegistry.ResolvedPad destination = CargoPadRegistry.get(level.getServer())
+                .resolve(level.getServer(), this.controllerDestination).orElse(null);
+        if (destination == null || destination.pad().hasDockedEntity() || !this.canTravelTo(destination.level())) return false;
+        BlockPos pos = destination.pad().getBlockPos();
+        Vec3 landing = new Vec3(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D);
+        if (!destination.level().noCollision(this, this.getBoundingBox().move(landing.subtract(this.position())))) return false;
+        for (Entity passenger : this.getPassengers()) {
+            if (passenger instanceof ServerPlayer player) player.closeContainer();
+        }
+        // Dimension changes replace the rocket instance and carry its passengers through vanilla's transition.
+        Entity moved = this.changeDimension(new DimensionTransition(destination.level(), landing, Vec3.ZERO,
+                this.getYRot(), 0.0F, DimensionTransition.DO_NOTHING));
+        if (!(moved instanceof RocketEntity arrived)) return false;
+        arrived.controllerDestination = -1;
+        arrived.setLaunchStage(LaunchStage.IDLE);
+        arrived.setThrust(0.0F);
+        arrived.setXRot(0.0F);
+        arrived.setZRot(0.0F);
+        arrived.resetCrashSystem();
+        arrived.setPad(destination.pad());
+        arrived.setOnGround(true);
+        destination.pad().setDockedEntity(arrived);
+        for (Entity passenger : arrived.getPassengers()) {
+            if (passenger instanceof ServerPlayer player) {
+                GCServerPlayer data = GCServerPlayer.get(player);
+                player.getInventory().placeItemBackInInventory(data.getLaunchpadStack());
+                data.setLaunchpadStack(ItemStack.EMPTY);
+            }
+        }
+        return true;
     }
 
     @Override
@@ -489,7 +582,7 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
 
     @Override
     public void move(MoverType type, Vec3 vec3d) {
-        if (onGround()) {
+        if (onGround() && vec3d.y < 0) {
             vec3d = vec3d.multiply(1.0D, 0.0D, 1.0D);
         }
         super.move(type, vec3d);
@@ -512,6 +605,7 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
         builder.define(ROCKET_DATA, RocketPrefabs.TIER_1);
         builder.define(FUEL, 0L);
         builder.define(CREATIVE, false);
+        builder.define(MANUAL_LANDING, false);
     }
 
     @Override
@@ -712,6 +806,13 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
         if (this.crashed) return;
         if (this.getLaunchStage().ordinal() < LaunchStage.LAUNCHED.ordinal()) return;
 
+        if (isLanding() && landingTicks >= RocketFlightLogic.LANDING_DEPLOY_TICKS && this.onGround()
+                && this.verticalCollision && !this.horizontalCollision && !this.isInWall()
+                && RocketFlightLogic.safeTouchdown(preMoveDelta.y, preMoveDelta.horizontalDistanceSqr(), getXRot(), getZRot())) {
+            finishManualLanding();
+            return;
+        }
+
         this.crashArmTimer++;
         if (!isCrashArmed()) return;
 
@@ -747,7 +848,11 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
             this.spawnParticles();
         }
 
-        if (level().isClientSide()) return;
+        if (level().isClientSide()) {
+            if (isLanding()) setZRot(Mth.approachDegrees(getZRot(), 0, 3));
+            this.tier1AnimationState.tick(getLaunchStage(), !getPassengers().isEmpty(), isLanding());
+            return;
+        }
 
         // The pad's chunk may have finished loading after this rocket did.
         this.resolveLinkedPad();
@@ -797,18 +902,20 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
 
                 BlockPos dockPos = this.getLinkedPad();
                 if (dockPos != BlockPos.ZERO) {
+                    boolean keepPad = this.linkedPad instanceof LaunchPadBlockEntity pad && pad.keepOnLaunch();
                     if (passenger instanceof ServerPlayer player) {
                         GCServerPlayer gcPlayer = GCServerPlayer.get(player);
                         gcPlayer.setRocketData(this.getRocketData());
-                        gcPlayer.setLaunchpadStack(new ItemStack(GCBlocks.ROCKET_LAUNCH_PAD, ROCKET_LAUNCH_PAD_BLOCKS));
+                        gcPlayer.setLaunchpadStack(keepPad ? ItemStack.EMPTY : new ItemStack(GCBlocks.ROCKET_LAUNCH_PAD, ROCKET_LAUNCH_PAD_BLOCKS));
                     }
 
                     this.linkedPad.setDockedEntity(null);
 
-                    if (level().getBlockState(dockPos).getBlock() == GCBlocks.ROCKET_LAUNCH_PAD
+                    if (!keepPad && level().getBlockState(dockPos).getBlock() == GCBlocks.ROCKET_LAUNCH_PAD
                             && level().getBlockState(dockPos).getValue(AbstractLaunchPad.PART) != AbstractLaunchPad.Part.NONE) {
                         level().destroyBlock(dockPos, false);
                     }
+                    this.setPad(null);
                 }
             }
 
@@ -820,11 +927,17 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
                     this.getTank().extract(fuelBurnPerTick());
                 }
 
-                this.setThrust(this.getThrust() + 0.005F);
-                this.tickInAir();
+                if (isLanding()) {
+                    this.landingTicks = Math.min(this.landingTicks + 1, RocketFlightLogic.LANDING_DEPLOY_TICKS);
+                    this.tickLanding();
+                } else {
+                    this.setThrust(this.getThrust() + 0.005F);
+                    this.tickInAir();
+                }
             }
 
-            if (this.position().y() >= Constant.ESCAPE_HEIGHT) {
+            if (!isLanding() && getLaunchStage() == LaunchStage.LAUNCHED && this.position().y() >= Constant.ESCAPE_HEIGHT) {
+                if (this.landAtController()) return;
                 if (this.getPassengers().isEmpty()) {
                     this.remove(RemovalReason.DISCARDED);
                     return;
@@ -922,8 +1035,46 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
         this.setDeltaMovement(new Vec3(velX, velY, velZ));
     }
 
+    private void tickLanding() {
+        setXRot(Mth.approachDegrees(getXRot(), 0, 3));
+        setZRot(Mth.approachDegrees(getZRot(), 0, 3));
+        if (getPassengers().isEmpty() || tickCount - landingInputTick > 10) {
+            landingForward = landingStrafe = 0;
+            landingHover = landingCutThrust = false;
+        }
+        Holder<CelestialBody<?, ?>> body = this.level().galacticraft$getCelestialBody();
+        double gravity = body != null ? body.value().gravity() : 1.0;
+        Vec3 velocity = getDeltaMovement();
+        setThrust((float) RocketFlightLogic.landingThrust(velocity.y, landingHover, landingCutThrust, gravity));
+        double yaw = getYRot() * Mth.DEG_TO_RAD;
+        double scale = RocketFlightLogic.LANDING_HORIZONTAL_SPEED / Math.max(1, Math.hypot(landingForward, landingStrafe));
+        double targetX = (landingStrafe * Math.cos(yaw) - landingForward * Math.sin(yaw)) * scale;
+        double targetZ = (landingForward * Math.cos(yaw) + landingStrafe * Math.sin(yaw)) * scale;
+        setDeltaMovement(RocketFlightLogic.nextLandingHorizontalVelocity(velocity.x, targetX),
+                RocketFlightLogic.nextVerticalVelocity(velocity.y, getThrust(), 0, gravity),
+                RocketFlightLogic.nextLandingHorizontalVelocity(velocity.z, targetZ));
+    }
+
+    private void finishManualLanding() {
+        boolean jumpHeld = landingHover;
+        setLaunchStage(LaunchStage.IDLE);
+        this.lastJumping = jumpHeld;
+        this.controllerDestination = -1;
+        setThrust(0);
+        setDeltaMovement(Vec3.ZERO);
+        setXRot(0);
+        setZRot(0);
+        resetCrashSystem();
+        for (Entity passenger : getPassengers()) if (passenger instanceof ServerPlayer player) {
+            GCServerPlayer data = GCServerPlayer.get(player);
+            player.getInventory().placeItemBackInInventory(data.getLaunchpadStack());
+            data.setLaunchpadStack(ItemStack.EMPTY);
+        }
+    }
+
     protected void spawnParticles() {
         if (!this.isAlive()) return;
+        if (isLanding() && getThrust() <= 0) return;
 
         double sinPitch = Mth.sin(this.getXRot() * Mth.DEG_TO_RAD);
         double x1 = 2 * sinPitch * Mth.sin(this.getYRot() * Mth.DEG_TO_RAD);
@@ -992,6 +1143,9 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
         if (tag.contains("InitialYRot")) this.setInitialYRot(tag.getFloat("InitialYRot"));
         if (tag.contains("Fuel")) this.setFuel(tag.getLong("Fuel"));
         if (tag.contains("Creative")) this.setCreative(tag.getBoolean("Creative"));
+        this.entityData.set(MANUAL_LANDING, getLaunchStage() == LaunchStage.LAUNCHED && tag.getBoolean("ManualLanding"));
+        this.landingTicks = Math.clamp(tag.getInt("LandingTicks"), 0, RocketFlightLogic.LANDING_DEPLOY_TICKS);
+        this.controllerDestination = tag.contains("ControllerDestination") ? tag.getInt("ControllerDestination") : -1;
 
         if (tag.contains("CrashArmTimer")) this.crashArmTimer = tag.getInt("CrashArmTimer");
         if (tag.contains("Crashed")) this.crashed = tag.getBoolean("Crashed");
@@ -1018,7 +1172,10 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
         tag.putFloat("ZRot", this.getZRot());
         tag.putFloat("InitialYRot", this.getInitialYRot());
         tag.putLong("Fuel", this.getFuel());
+        tag.putInt("ControllerDestination", this.controllerDestination);
         tag.putBoolean("Creative", this.isCreative());
+        tag.putBoolean("ManualLanding", isLanding());
+        tag.putInt("LandingTicks", this.landingTicks);
 
         tag.putInt("CrashArmTimer", this.crashArmTimer);
         tag.putBoolean("Crashed", this.crashed);
@@ -1070,6 +1227,16 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
 
         LaunchStage stage = this.getLaunchStage();
 
+        if (isLanding()) {
+            this.landingInputTick = tickCount;
+            // Use the same key states as ascent; mounted movement impulses may already be zeroed.
+            this.landingForward = (up ? 1 : 0) - (down ? 1 : 0);
+            this.landingStrafe = (left ? 1 : 0) - (right ? 1 : 0);
+            this.landingHover = jumping;
+            this.landingCutThrust = shiftKeyDown;
+            return;
+        }
+
         // Launch confirmation is server-authoritative and only happens on press-down.
         if (!this.level().isClientSide() && stage.ordinal() < LaunchStage.IGNITED.ordinal()) {
             if (isTankEmpty() && !debugMode) {
@@ -1092,9 +1259,7 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
                         }
 
                         case WAITING_SECOND_PRESS -> {
-                            this.timeBeforeLaunch = getPreLaunchWait();
-                            this.setLaunchStage(LaunchStage.IGNITED);
-                            this.launchConfirmState = LaunchConfirmState.IDLE;
+                            this.ignite(this.controllerRoute());
                         }
                     }
                 }

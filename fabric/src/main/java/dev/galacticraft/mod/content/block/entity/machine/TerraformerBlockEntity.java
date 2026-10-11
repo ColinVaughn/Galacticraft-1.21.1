@@ -304,7 +304,7 @@ public class TerraformerBlockEntity extends MachineBlockEntity {
         }
         BlockPos above = pos.above();
         BlockState aboveState = level.getBlockState(above);
-        if (state.is(GCBlocks.MARS_SURFACE_ROCK)) {
+        if (state.is(GCBlocks.MARS_SURFACE_ROCK) || state.is(GCBlocks.MARS_ROCKY_REGOLITH)) {
             return !Block.isShapeFullBlock(aboveState.getCollisionShape(level, above));
         }
         return aboveState.isAir();

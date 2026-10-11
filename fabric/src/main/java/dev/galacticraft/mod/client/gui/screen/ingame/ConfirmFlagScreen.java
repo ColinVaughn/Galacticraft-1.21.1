@@ -31,10 +31,12 @@ import net.minecraft.util.Mth;
 
 public class ConfirmFlagScreen extends ConfirmScreen {
     protected final ResourceLocation imageLocation;
+    private final Component saveMessage;
 
     public ConfirmFlagScreen(BooleanConsumer booleanConsumer, ResourceLocation flagImage, Component component, Component component2) {
-        super(booleanConsumer, component, component2);
+        super(booleanConsumer, component, Component.empty());
         this.imageLocation = flagImage;
+        this.saveMessage = component2;
     }
 
     private int titleTop() {
@@ -47,8 +49,19 @@ public class ConfirmFlagScreen extends ConfirmScreen {
     }
 
     @Override
+    protected void addButtons(int y) {
+        super.addButtons(Math.max(y, this.flagTop() + 32 + this.font.lineHeight + 20));
+    }
+
+    @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
         super.render(graphics, mouseX, mouseY, delta);
         graphics.blit(this.imageLocation, this.width / 2 - 24, this.flagTop(), 0, 0, 0, 48, 32, 48, 32);
+        graphics.drawCenteredString(this.font, this.saveMessage, this.width / 2, this.flagTop() + 40, 0xFFAAAAAA);
+    }
+
+    @Override
+    public Component getNarrationMessage() {
+        return super.getNarrationMessage().copy().append(" ").append(this.saveMessage);
     }
 }

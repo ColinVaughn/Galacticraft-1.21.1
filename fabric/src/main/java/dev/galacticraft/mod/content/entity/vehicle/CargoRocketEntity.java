@@ -68,6 +68,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.portal.DimensionTransition;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -201,9 +202,11 @@ public class CargoRocketEntity extends GCVehicle
         if (!CargoPadRegistry.isValidAddress(destination)) {
             return this.failIgnition("ui.galacticraft.cargo_rocket.no_route");
         }
-        if (CargoPadRegistry.get(level.getServer()).resolve(level.getServer(), destination).isEmpty()) {
+        CargoPadRegistry.ResolvedPad target = CargoPadRegistry.get(level.getServer()).resolve(level.getServer(), destination).orElse(null);
+        if (target == null || target.pad() == pad) {
             return this.failIgnition("ui.galacticraft.cargo_rocket.destination_unavailable");
         }
+        if (target.pad().hasDockedEntity()) return this.failIgnition("ui.galacticraft.cargo_rocket.destination_blocked");
         if (this.tank.getAmount() < FLIGHT_FUEL) {
             return this.failIgnition("ui.galacticraft.cargo_rocket.no_fuel");
         }
@@ -301,18 +304,19 @@ public class CargoRocketEntity extends GCVehicle
 
     private boolean teleportAndDock(ServerLevel destination, LaunchPadBlockEntity pad) {
         BlockPos pos = pad.getBlockPos();
-        boolean teleported = this.teleportTo(destination, pos.getX() + 0.5D, pos.getY() + PAD_Y_OFFSET,
-                pos.getZ() + 0.5D, NO_RELATIVE_MOVEMENT, this.getYRot(), 0.0F);
-        if (!teleported) return false;
+        Vec3 landing = new Vec3(pos.getX() + 0.5D, pos.getY() + PAD_Y_OFFSET, pos.getZ() + 0.5D);
+        if (!destination.noCollision(this, this.getBoundingBox().move(landing.subtract(this.position())))) return false;
+        Entity moved = this.changeDimension(new DimensionTransition(destination, landing, Vec3.ZERO,
+                this.getYRot(), 0.0F, DimensionTransition.DO_NOTHING));
+        if (!(moved instanceof CargoRocketEntity arrived)) return false;
 
-        this.setDeltaMovement(Vec3.ZERO);
-        this.flightState = FlightState.IDLE;
-        this.launchTicks = 0;
-        this.targetAddress = -1;
-        this.originDimension = null;
-        this.originPadPos = null;
-        this.placeOnPad(pad);
-        pad.setDockedEntity(this);
+        arrived.flightState = FlightState.IDLE;
+        arrived.launchTicks = 0;
+        arrived.targetAddress = -1;
+        arrived.originDimension = null;
+        arrived.originPadPos = null;
+        arrived.placeOnPad(pad);
+        pad.setDockedEntity(arrived);
         return true;
     }
 

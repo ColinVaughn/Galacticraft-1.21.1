@@ -133,7 +133,9 @@
                 "type": "minecraft:condition",
                 "if_true": {
                   "type": "minecraft:biome",
-                  "biome_is": ["galacticraft:mars_polar"]
+                  "biome_is": [
+                    "galacticraft:mars_polar"
+                  ]
                 },
                 "then_run": {
                   "type": "minecraft:sequence",
@@ -148,10 +150,30 @@
                         "secondary_depth_range": 0
                       },
                       "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "minecraft:packed_ice"
-                        }
+                        "type": "minecraft:sequence",
+                        "sequence": [
+                          {
+                            "type": "minecraft:condition",
+                            "if_true": {
+                              "type": "minecraft:noise_threshold",
+                              "noise": "galacticraft:mars_surface_patches",
+                              "min_threshold": 0.55,
+                              "max_threshold": 100
+                            },
+                            "then_run": {
+                              "type": "minecraft:block",
+                              "result_state": {
+                                "Name": "galacticraft:mars_rocky_regolith"
+                              }
+                            }
+                          },
+                          {
+                            "type": "minecraft:block",
+                            "result_state": {
+                              "Name": "minecraft:packed_ice"
+                            }
+                          }
+                        ]
                       }
                     },
                     {
@@ -167,20 +189,56 @@
                 "type": "minecraft:condition",
                 "if_true": {
                   "type": "minecraft:biome",
-                  "biome_is": ["galacticraft:mars_dunes"]
+                  "biome_is": [
+                    "galacticraft:mars_dunes"
+                  ]
                 },
                 "then_run": {
-                  "type": "minecraft:block",
-                  "result_state": {
-                    "Name": "minecraft:red_sand"
-                  }
+                  "type": "minecraft:sequence",
+                  "sequence": [
+                    {
+                      "type": "minecraft:condition",
+                      "if_true": {
+                        "type": "minecraft:steep"
+                      },
+                      "then_run": {
+                        "type": "minecraft:block",
+                        "result_state": {
+                          "Name": "galacticraft:mars_sedimentary_rock"
+                        }
+                      }
+                    },
+                    {
+                      "type": "minecraft:condition",
+                      "if_true": {
+                        "type": "minecraft:noise_threshold",
+                        "noise": "galacticraft:mars_surface_patches",
+                        "min_threshold": -0.15,
+                        "max_threshold": 100
+                      },
+                      "then_run": {
+                        "type": "minecraft:block",
+                        "result_state": {
+                          "Name": "galacticraft:mars_basaltic_sand"
+                        }
+                      }
+                    },
+                    {
+                      "type": "minecraft:block",
+                      "result_state": {
+                        "Name": "minecraft:red_sand"
+                      }
+                    }
+                  ]
                 }
               },
               {
                 "type": "minecraft:condition",
                 "if_true": {
                   "type": "minecraft:biome",
-                  "biome_is": ["galacticraft:mars_volcanics"]
+                  "biome_is": [
+                    "galacticraft:mars_volcanics"
+                  ]
                 },
                 "then_run": {
                   "type": "minecraft:sequence",
@@ -195,19 +253,63 @@
                         "secondary_depth_range": 0
                       },
                       "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "minecraft:basalt",
-                          "Properties": {
-                            "axis": "y"
+                        "type": "minecraft:sequence",
+                        "sequence": [
+                          {
+                            "type": "minecraft:condition",
+                            "if_true": {
+                              "type": "minecraft:steep"
+                            },
+                            "then_run": {
+                              "type": "minecraft:block",
+                              "result_state": {
+                                "Name": "galacticraft:mars_weathered_basalt"
+                              }
+                            }
+                          },
+                          {
+                            "type": "minecraft:condition",
+                            "if_true": {
+                              "type": "minecraft:noise_threshold",
+                              "noise": "galacticraft:mars_surface_patches",
+                              "min_threshold": 0.35,
+                              "max_threshold": 100
+                            },
+                            "then_run": {
+                              "type": "minecraft:block",
+                              "result_state": {
+                                "Name": "galacticraft:mars_rocky_regolith"
+                              }
+                            }
+                          },
+                          {
+                            "type": "minecraft:condition",
+                            "if_true": {
+                              "type": "minecraft:noise_threshold",
+                              "noise": "galacticraft:mars_surface_detail",
+                              "min_threshold": -0.25,
+                              "max_threshold": 0.05
+                            },
+                            "then_run": {
+                              "type": "minecraft:block",
+                              "result_state": {
+                                "Name": "galacticraft:mars_basaltic_sand"
+                              }
+                            }
+                          },
+                          {
+                            "type": "minecraft:block",
+                            "result_state": {
+                              "Name": "galacticraft:mars_weathered_basalt"
+                            }
                           }
-                        }
+                        ]
                       }
                     },
                     {
                       "type": "minecraft:block",
                       "result_state": {
-                        "Name": "minecraft:blackstone"
+                        "Name": "minecraft:basalt"
                       }
                     }
                   ]
@@ -217,41 +319,168 @@
                 "type": "minecraft:condition",
                 "if_true": {
                   "type": "minecraft:biome",
-                  "biome_is": ["galacticraft:mars_canyon"]
+                  "biome_is": [
+                    "galacticraft:mars_canyon"
+                  ]
                 },
                 "then_run": {
-                  "type": "minecraft:block",
-                  "result_state": {
-                    "Name": "galacticraft:mars_sub_surface_rock"
-                  }
+                  "type": "minecraft:sequence",
+                  "sequence": [
+                    {
+                      "type": "minecraft:condition",
+                      "if_true": {
+                        "type": "minecraft:stone_depth",
+                        "offset": 0,
+                        "surface_type": "floor",
+                        "add_surface_depth": false,
+                        "secondary_depth_range": 0
+                      },
+                      "then_run": {
+                        "type": "minecraft:sequence",
+                        "sequence": [
+                          {
+                            "type": "minecraft:condition",
+                            "if_true": {
+                              "type": "minecraft:steep"
+                            },
+                            "then_run": {
+                              "type": "minecraft:block",
+                              "result_state": {
+                                "Name": "galacticraft:mars_sedimentary_rock"
+                              }
+                            }
+                          },
+                          {
+                            "type": "minecraft:condition",
+                            "if_true": {
+                              "type": "minecraft:noise_threshold",
+                              "noise": "galacticraft:mars_surface_patches",
+                              "min_threshold": 0.3,
+                              "max_threshold": 100
+                            },
+                            "then_run": {
+                              "type": "minecraft:block",
+                              "result_state": {
+                                "Name": "galacticraft:mars_rocky_regolith"
+                              }
+                            }
+                          },
+                          {
+                            "type": "minecraft:condition",
+                            "if_true": {
+                              "type": "minecraft:noise_threshold",
+                              "noise": "galacticraft:mars_surface_detail",
+                              "min_threshold": -100,
+                              "max_threshold": -0.4
+                            },
+                            "then_run": {
+                              "type": "minecraft:block",
+                              "result_state": {
+                                "Name": "galacticraft:mars_basaltic_sand"
+                              }
+                            }
+                          },
+                          {
+                            "type": "minecraft:block",
+                            "result_state": {
+                              "Name": "galacticraft:mars_sedimentary_rock"
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "type": "minecraft:block",
+                      "result_state": {
+                        "Name": "galacticraft:mars_sedimentary_rock"
+                      }
+                    }
+                  ]
                 }
               },
               {
-                "type": "minecraft:sequence",
-                "sequence": [
-                  {
-                    "type": "minecraft:condition",
-                    "if_true": {
-                      "type": "minecraft:stone_depth",
-                      "offset": 0,
-                      "surface_type": "floor",
-                      "add_surface_depth": false,
-                      "secondary_depth_range": 0
+                "type": "minecraft:condition",
+                "if_true": {
+                  "type": "minecraft:stone_depth",
+                  "offset": 0,
+                  "surface_type": "floor",
+                  "add_surface_depth": false,
+                  "secondary_depth_range": 0
+                },
+                "then_run": {
+                  "type": "minecraft:sequence",
+                  "sequence": [
+                    {
+                      "type": "minecraft:condition",
+                      "if_true": {
+                        "type": "minecraft:steep"
+                      },
+                      "then_run": {
+                        "type": "minecraft:block",
+                        "result_state": {
+                          "Name": "galacticraft:mars_weathered_basalt"
+                        }
+                      }
                     },
-                    "then_run": {
+                    {
+                      "type": "minecraft:condition",
+                      "if_true": {
+                        "type": "minecraft:noise_threshold",
+                        "noise": "galacticraft:mars_surface_patches",
+                        "min_threshold": 0.15,
+                        "max_threshold": 100
+                      },
+                      "then_run": {
+                        "type": "minecraft:block",
+                        "result_state": {
+                          "Name": "galacticraft:mars_rocky_regolith"
+                        }
+                      }
+                    },
+                    {
+                      "type": "minecraft:condition",
+                      "if_true": {
+                        "type": "minecraft:noise_threshold",
+                        "noise": "galacticraft:mars_surface_patches",
+                        "min_threshold": -100,
+                        "max_threshold": -0.55
+                      },
+                      "then_run": {
+                        "type": "minecraft:block",
+                        "result_state": {
+                          "Name": "galacticraft:mars_sedimentary_rock"
+                        }
+                      }
+                    },
+                    {
+                      "type": "minecraft:condition",
+                      "if_true": {
+                        "type": "minecraft:noise_threshold",
+                        "noise": "galacticraft:mars_surface_detail",
+                        "min_threshold": 0.5,
+                        "max_threshold": 100
+                      },
+                      "then_run": {
+                        "type": "minecraft:block",
+                        "result_state": {
+                          "Name": "galacticraft:mars_weathered_basalt"
+                        }
+                      }
+                    },
+                    {
                       "type": "minecraft:block",
                       "result_state": {
                         "Name": "galacticraft:mars_surface_rock"
                       }
                     }
-                  },
-                  {
-                    "type": "minecraft:block",
-                    "result_state": {
-                      "Name": "galacticraft:mars_sub_surface_rock"
-                    }
-                  }
-                ]
+                  ]
+                }
+              },
+              {
+                "type": "minecraft:block",
+                "result_state": {
+                  "Name": "galacticraft:mars_sub_surface_rock"
+                }
               }
             ]
           }

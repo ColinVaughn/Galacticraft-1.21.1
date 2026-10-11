@@ -23,6 +23,7 @@
 package dev.galacticraft.mod.content.block.special.launchpad;
 
 import dev.galacticraft.mod.Constant;
+import dev.galacticraft.mod.content.block.entity.machine.LaunchControllerBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
@@ -34,6 +35,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.saveddata.SavedData;
 
 import java.util.HashMap;
@@ -41,7 +43,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 
-/** Persistent, server-wide address book for cargo-rocket launch pads. */
+/** Persistent, server-wide address book for launch pads and launch controllers. */
 public final class CargoPadRegistry extends SavedData {
     public static final int MIN_ADDRESS = 0;
     public static final int MAX_ADDRESS = 999_999;
@@ -64,7 +66,7 @@ public final class CargoPadRegistry extends SavedData {
 
         PadTarget existing = this.pads.get(address);
         if (existing != null && !existing.equals(target)) {
-            if (this.resolve(server, address).isPresent()) return false;
+            if (this.resolveOwner(server, address) != null) return false;
             this.pads.remove(address);
         }
 
@@ -82,6 +84,19 @@ public final class CargoPadRegistry extends SavedData {
         return this.pads.containsKey(address);
     }
 
+    public boolean isAssigned(int address, PadTarget target) {
+        return target.equals(this.pads.get(address));
+    }
+
+    public static void restoreControllers(MinecraftServer server) {
+        CargoPadRegistry registry = get(server);
+        for (int address : java.util.List.copyOf(registry.pads.keySet())) {
+            if (registry.resolveOwner(server, address) instanceof LaunchControllerBlockEntity controller) {
+                controller.keepLoaded((ServerLevel) controller.getLevel());
+            }
+        }
+    }
+
     private boolean removeTarget(PadTarget target) {
         boolean removed = false;
         Iterator<Map.Entry<Integer, PadTarget>> iterator = this.pads.entrySet().iterator();
@@ -96,28 +111,40 @@ public final class CargoPadRegistry extends SavedData {
 
     /** Loads and validates the destination chunk before returning the pad. */
     public Optional<ResolvedPad> resolve(MinecraftServer server, int address) {
+        BlockEntity owner = this.resolveOwner(server, address);
+        if (owner instanceof LaunchControllerBlockEntity controller) {
+            LaunchPadBlockEntity pad = controller.getConnectedPad();
+            return pad == null ? Optional.empty() : Optional.of(new ResolvedPad((ServerLevel) pad.getLevel(), pad));
+        }
+        return owner instanceof LaunchPadBlockEntity pad
+                ? Optional.of(new ResolvedPad((ServerLevel) pad.getLevel(), pad)) : Optional.empty();
+    }
+
+    private BlockEntity resolveOwner(MinecraftServer server, int address) {
         PadTarget target = this.pads.get(address);
-        if (target == null) return Optional.empty();
+        if (target == null) return null;
 
         ServerLevel level = server.getLevel(target.dimension());
         if (level == null) {
             this.pads.remove(address);
             this.setDirty();
-            return Optional.empty();
+            return null;
         }
 
         level.getChunkAt(target.pos());
+        if (level.getBlockEntity(target.pos()) instanceof LaunchControllerBlockEntity controller
+                && controller.getFrequency() == address) return controller;
         if (level.getBlockEntity(target.pos()) instanceof LaunchPadBlockEntity pad
                 && pad.getPadType() == LaunchPadBlockEntity.Type.ROCKET
                 && pad.getBlockState().getBlock() instanceof AbstractLaunchPad
                 && pad.getBlockState().getValue(AbstractLaunchPad.PART) == AbstractLaunchPad.Part.CENTER
                 && pad.getAddress() == address) {
-            return Optional.of(new ResolvedPad(level, pad));
+            return pad;
         }
 
         this.pads.remove(address);
         this.setDirty();
-        return Optional.empty();
+        return null;
     }
 
     public static CargoPadRegistry load(CompoundTag tag, HolderLookup.Provider registries) {

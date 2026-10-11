@@ -46,7 +46,7 @@ import java.util.List;
 @SuppressWarnings("unused")
 public class GCItems {
     public static java.util.List<Item> spawnEggs() {
-        return java.util.List.of(MOON_VILLAGER_SPAWN_EGG, EVOLVED_ZOMBIE_SPAWN_EGG,
+        return java.util.List.of(LUNAR_BURROWER_SPAWN_EGG, MOON_VILLAGER_SPAWN_EGG, EVOLVED_ZOMBIE_SPAWN_EGG,
                 EVOLVED_CREEPER_SPAWN_EGG, EVOLVED_SKELETON_SPAWN_EGG, EVOLVED_SPIDER_SPAWN_EGG,
                 EVOLVED_ENDERMAN_SPAWN_EGG, EVOLVED_WITCH_SPAWN_EGG, EVOLVED_PILLAGER_SPAWN_EGG,
                 EVOLVED_EVOKER_SPAWN_EGG, EVOLVED_VINDICATOR_SPAWN_EGG, GAZER_SPAWN_EGG,
@@ -315,6 +315,7 @@ public class GCItems {
     public static final Item LEGACY_MUSIC_DISC_SPACERACE = ITEMS.register(Constant.Item.LEGACY_MUSIC_DISC_SPACERACE, new Item(new Item.Properties().stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(GCJukeboxSongs.SPACERACE)));
 
     // FLUID BUCKETS
+    public static final Item HELIUM_3_BUCKET = ITEMS.register("helium_3_bucket", new BucketItem(GCFluids.HELIUM_3, new Item.Properties().craftRemainder(Items.BUCKET).stacksTo(1)));
     public static final Item CRUDE_OIL_BUCKET = ITEMS.register(Constant.Item.CRUDE_OIL_BUCKET, new BucketItem(GCFluids.CRUDE_OIL, new Item.Properties().craftRemainder(Items.BUCKET).stacksTo(1)));
     public static final Item FUEL_BUCKET = ITEMS.register(Constant.Item.FUEL_BUCKET, new BucketItem(GCFluids.FUEL, new Item.Properties().craftRemainder(Items.BUCKET).stacksTo(1)));
     public static final Item SULFURIC_ACID_BUCKET = ITEMS.register(Constant.Item.SULFURIC_ACID_BUCKET, new BucketItem(GCFluids.SULFURIC_ACID, new Item.Properties().craftRemainder(Items.BUCKET).stacksTo(1)));
@@ -334,6 +335,7 @@ public class GCItems {
     public static final Item EVOLVED_PILLAGER_SPAWN_EGG = ITEMS.register(Constant.SpawnEgg.EVOLVED_PILLAGER, new SpawnEggItem(GCEntityTypes.EVOLVED_PILLAGER, 0x532f36, 0x264747, new Item.Properties()));
     public static final Item EVOLVED_EVOKER_SPAWN_EGG = ITEMS.register(Constant.SpawnEgg.EVOLVED_EVOKER, new SpawnEggItem(GCEntityTypes.EVOLVED_EVOKER, 0x1e1c1a, 0xd3cf99, new Item.Properties()));
     public static final Item EVOLVED_VINDICATOR_SPAWN_EGG = ITEMS.register(Constant.SpawnEgg.EVOLVED_VINDICATOR, new SpawnEggItem(GCEntityTypes.EVOLVED_VINDICATOR, 0x3f3b37, 0x275e61, new Item.Properties()));
+    public static final Item LUNAR_BURROWER_SPAWN_EGG = ITEMS.register("lunar_burrower_spawn_egg", new SpawnEggItem(GCEntityTypes.LUNAR_BURROWER, 0x545954, 0xb7ead8, new Item.Properties()));
     public static final Item GAZER_SPAWN_EGG = ITEMS.register(Constant.SpawnEgg.GAZER, new SpawnEggItem(GCEntityTypes.GAZER, 0xdbdddb, 0x5c5c5c, new Item.Properties()));
     public static final Item RUMBLER_SPAWN_EGG = ITEMS.register(Constant.SpawnEgg.RUMBLER, new SpawnEggItem(GCEntityTypes.RUMBLER, 0x5c5c5c, 0x36383e, new Item.Properties()));
     public static final Item COMET_CUBE_SPAWN_EGG = ITEMS.register(Constant.SpawnEgg.COMET_CUBE, new SpawnEggItem(GCEntityTypes.COMET_CUBE, 0xd5d8d8, 0x92b9fe, new Item.Properties()));
@@ -347,6 +349,7 @@ public class GCItems {
 
     public static void register() {
         DispenserBlock.registerBehavior(FUEL_BUCKET, DispenserBlock.DISPENSER_REGISTRY.get(Items.WATER_BUCKET));
+        DispenserBlock.registerBehavior(HELIUM_3_BUCKET, DispenserBlock.DISPENSER_REGISTRY.get(Items.WATER_BUCKET));
         DispenserBlock.registerBehavior(CRUDE_OIL_BUCKET, DispenserBlock.DISPENSER_REGISTRY.get(Items.WATER_BUCKET));
         DispenserBlock.registerBehavior(SULFURIC_ACID_BUCKET, DispenserBlock.DISPENSER_REGISTRY.get(Items.WATER_BUCKET));
 
@@ -360,6 +363,7 @@ public class GCItems {
         DispenserBlock.registerBehavior(EVOLVED_PILLAGER_SPAWN_EGG, DispenserBlock.DISPENSER_REGISTRY.get(Items.CREEPER_SPAWN_EGG));
         DispenserBlock.registerBehavior(EVOLVED_EVOKER_SPAWN_EGG, DispenserBlock.DISPENSER_REGISTRY.get(Items.CREEPER_SPAWN_EGG));
         DispenserBlock.registerBehavior(EVOLVED_VINDICATOR_SPAWN_EGG, DispenserBlock.DISPENSER_REGISTRY.get(Items.CREEPER_SPAWN_EGG));
+        DispenserBlock.registerBehavior(LUNAR_BURROWER_SPAWN_EGG, DispenserBlock.DISPENSER_REGISTRY.get(Items.CREEPER_SPAWN_EGG));
         DispenserBlock.registerBehavior(GAZER_SPAWN_EGG, DispenserBlock.DISPENSER_REGISTRY.get(Items.CREEPER_SPAWN_EGG));
         DispenserBlock.registerBehavior(RUMBLER_SPAWN_EGG, DispenserBlock.DISPENSER_REGISTRY.get(Items.CREEPER_SPAWN_EGG));
         DispenserBlock.registerBehavior(COMET_CUBE_SPAWN_EGG, DispenserBlock.DISPENSER_REGISTRY.get(Items.CREEPER_SPAWN_EGG));

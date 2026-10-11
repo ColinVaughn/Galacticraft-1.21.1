@@ -58,8 +58,6 @@ public interface Config {
 
     long oxygenCompressorEnergyConsumptionRate();
 
-    long oxygenDecompressorEnergyConsumptionRate();
-
     long oxygenSealerEnergyConsumptionRate();
 
     long oxygenSealerOxygenConsumptionRate();
@@ -159,6 +157,9 @@ public interface Config {
     boolean machineDustEnabled();
 
     boolean terrainDustEnabled();
+
+    /** Client lunar surface shading, from zero (disabled) to one (full strength). */
+    default float moonSurfaceShaderStrength() { return 1.0F; }
 
     double bossHealthMultiplier();
 

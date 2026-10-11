@@ -29,6 +29,12 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
 
 public class GCNoiseData {
+    public static final ResourceKey<NormalNoise.NoiseParameters> MOON_SURFACE_PATCHES = createKey("moon/surface_patches");
+    public static final ResourceKey<NormalNoise.NoiseParameters> MOON_SURFACE_DETAIL = createKey("moon/surface_detail");
+    public static final ResourceKey<NormalNoise.NoiseParameters> VENUS_SURFACE_PATCHES = createKey("venus/surface_patches");
+    public static final ResourceKey<NormalNoise.NoiseParameters> VENUS_SURFACE_DETAIL = createKey("venus/surface_detail");
+    public static final ResourceKey<NormalNoise.NoiseParameters> MERCURY_SURFACE_PATCHES = createKey("mercury/surface_patches");
+    public static final ResourceKey<NormalNoise.NoiseParameters> MERCURY_SURFACE_DETAIL = createKey("mercury/surface_detail");
     public static final ResourceKey<NormalNoise.NoiseParameters> EROSION = createKey("moon/erosion");
     public static final ResourceKey<NormalNoise.NoiseParameters> BASALT_MARE = createKey("moon/basalt_mare");
     public static final ResourceKey<NormalNoise.NoiseParameters> BASALT_MARE_HEIGHT = createKey("moon/basalt_mare_height");
@@ -38,6 +44,12 @@ public class GCNoiseData {
     }
 
     public static void bootstrapRegistries(BootstrapContext<NormalNoise.NoiseParameters> context) {
+        register(context, MOON_SURFACE_PATCHES, -5, 1.0, 0.5);
+        register(context, MOON_SURFACE_DETAIL, -3, 1.0, 0.5);
+        register(context, VENUS_SURFACE_PATCHES, -4, 1.0, 0.5);
+        register(context, VENUS_SURFACE_DETAIL, -3, 1.0, 0.5);
+        register(context, MERCURY_SURFACE_PATCHES, -5, 1.0, 0.5);
+        register(context, MERCURY_SURFACE_DETAIL, -3, 1.0, 0.5);
 //        register(context, EROSION, -11, 1, 1, 0, 1, 1);
 //        register(context, BASALT_MARE, 5, 0, 0.1, 0.2, 0.1, 0, 0, 0, 0);
 //        register(context, BASALT_MARE_HEIGHT, -12, 0.3);

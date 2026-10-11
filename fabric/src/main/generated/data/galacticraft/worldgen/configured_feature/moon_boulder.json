@@ -1,8 +1,8 @@
 {
-  "type": "minecraft:forest_rock",
+  "type": "galacticraft:moon_boulder",
   "config": {
     "state": {
-      "Name": "galacticraft:moon_rock"
+      "Name": "galacticraft:moon_impact_breccia"
     }
   }
 }

@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "galacticraft:block/abandoned_survey_beacon",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "galacticraft:block/abandoned_survey_beacon",
+      "y": 0
+    },
+    "facing=south": {
+      "model": "galacticraft:block/abandoned_survey_beacon",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "galacticraft:block/abandoned_survey_beacon",
+      "y": 270
+    }
+  }
+}

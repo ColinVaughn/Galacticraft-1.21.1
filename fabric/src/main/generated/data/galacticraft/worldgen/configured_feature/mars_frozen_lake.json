@@ -22,6 +22,10 @@
         "galacticraft:mars_surface_rock",
         "galacticraft:mars_sub_surface_rock",
         "galacticraft:mars_stone",
+        "galacticraft:mars_rocky_regolith",
+        "galacticraft:mars_basaltic_sand",
+        "galacticraft:mars_weathered_basalt",
+        "galacticraft:mars_sedimentary_rock",
         "minecraft:red_sand",
         "minecraft:packed_ice",
         "minecraft:blue_ice"

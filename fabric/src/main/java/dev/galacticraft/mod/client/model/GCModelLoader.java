@@ -103,6 +103,9 @@ public class GCModelLoader implements ModelLoadingPlugin, IdentifiableResourceRe
         });
 
         pluginContext.modifyModelAfterBake().register((model, context) -> {
+            ResourceLocation lunarModelId = context.resourceId() != null ? context.resourceId() : context.topLevelId().id();
+            if (model != null && !(model instanceof FabricLunarEmissiveBakedModel)
+                    && LunarEmissiveBakedModel.matches(lunarModelId)) return new FabricLunarEmissiveBakedModel(model);
             if (context.resourceId() != null && context.resourceId().equals(Constant.BakedModel.CANNED_FOOD)) {
                 return new CannedFoodBakedModel(model);
             }

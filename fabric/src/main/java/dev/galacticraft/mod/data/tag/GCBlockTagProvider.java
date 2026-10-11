@@ -90,6 +90,15 @@ public class GCBlockTagProvider extends FabricTagProvider.BlockTagProvider {
 
     @Override
     protected void addTags(HolderLookup.Provider provider) {
+        this.tag(GCBlockTags.MOON_CAVE_SUBSTRATE).add(GCBlocks.MOON_ROCK, GCBlocks.MOON_SURFACE_ROCK,
+                GCBlocks.MOON_BASALT, GCBlocks.LUNASLATE, GCBlocks.COBBLED_MOON_ROCK, GCBlocks.COBBLED_LUNASLATE,
+                GCBlocks.MOON_ANORTHOSITE, GCBlocks.MOON_IMPACT_BRECCIA, GCBlocks.VESICULAR_LUNAR_BASALT,
+                GCBlocks.ICE_BEARING_BRECCIA, GCBlocks.DENSE_ICE);
+        this.tag(GCBlockTags.MOON_CAVE_FORMATIONS).add(GCBlocks.LUNAR_BREAKDOWN_RUBBLE, GCBlocks.LUNAR_SCATTERED_FRAGMENTS, GCBlocks.LUNAR_FALLEN_ROOF_SLAB, GCBlocks.LUNAR_FRACTURED_OUTCROP, GCBlocks.LUNAR_BASALT_WALL_SHELF, GCBlocks.LUNAR_CEILING_BREAKDOWN, GCBlocks.LUNAR_BASALT_BREAKDOWN_RUBBLE, GCBlocks.LUNAR_FROSTED_BREAKDOWN_RUBBLE, GCBlocks.ABANDONED_SURVEY_BEACON, GCBlocks.HELION_NODULES, GCBlocks.HELION_WALL_CRUST, GCBlocks.HELIUM_3_VENT, GCBlocks.BURROWER_EGG_CLUSTER, GCBlocks.BURROWER_BROKEN_EGGSHELL, GCBlocks.BURROWER_EXCAVATED_TAILINGS, GCBlocks.BURROWER_DEN_SCRAPS);
+        this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(GCBlocks.VESICULAR_LUNAR_BASALT, GCBlocks.ICE_BEARING_BRECCIA, GCBlocks.LUNAR_BREAKDOWN_RUBBLE, GCBlocks.LUNAR_SCATTERED_FRAGMENTS, GCBlocks.LUNAR_FALLEN_ROOF_SLAB, GCBlocks.LUNAR_FRACTURED_OUTCROP, GCBlocks.LUNAR_BASALT_WALL_SHELF, GCBlocks.LUNAR_CEILING_BREAKDOWN, GCBlocks.LUNAR_BASALT_BREAKDOWN_RUBBLE, GCBlocks.LUNAR_FROSTED_BREAKDOWN_RUBBLE, GCBlocks.ABANDONED_SURVEY_BEACON, GCBlocks.HELION_NODULES, GCBlocks.HELION_WALL_CRUST, GCBlocks.HELIUM_3_VENT, GCBlocks.BURROWER_DEN_SCRAPS);
+        this.tag(BlockTags.MINEABLE_WITH_SHOVEL).add(GCBlocks.BURROWER_EXCAVATED_TAILINGS);
+        this.tag(GCBlockTags.MOON_BASALT_ORE_REPLACEABLES).add(GCBlocks.VESICULAR_LUNAR_BASALT);
+
         this.tag(GCBlockTags.SEALABLE)
                 .add(GCBlocks.AIR_LOCK_SEAL)
                 .add(GCBlocks.ROCKET_WORKBENCH)
@@ -117,7 +126,8 @@ public class GCBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                 .add(GCBlocks.BOSS_SPAWNER)
                 .add(GCBlocks.MOON_CHEESE_LEAVES);
 
-        this.tag(GCBlockTags.FOOTPRINTS)
+        this.tag(GCBlockTags.FOOTPRINTS).add(GCBlocks.MOON_ROCKY_REGOLITH, GCBlocks.MOON_MARE_REGOLITH)
+                .add(GCBlocks.MERCURY_ROCKY_REGOLITH, GCBlocks.MERCURY_DARK_REGOLITH)
                 .add(GCBlocks.MOON_TURF);
 
         this.tag(GCBlockTags.SENSOR_GLASSES_DETECTABLE)
@@ -152,6 +162,8 @@ public class GCBlockTagProvider extends FabricTagProvider.BlockTagProvider {
         this.tag(GCBlockTags.BASE_STONE_MOON)
                 .add(GCBlocks.MOON_ROCK);
         this.tag(GCBlockTags.MOON_CARVER_REPLACEABLES)
+                .add(GCBlocks.OLIVINE_BASALT)
+                .add(GCBlocks.MOON_ROCKY_REGOLITH, GCBlocks.MOON_MARE_REGOLITH, GCBlocks.MOON_ANORTHOSITE, GCBlocks.MOON_IMPACT_BRECCIA)
                 .add(GCBlocks.MOON_ROCK)
                 .add(GCBlocks.MOON_SURFACE_ROCK)
                 .add(GCBlocks.MOON_BASALT)
@@ -166,6 +178,8 @@ public class GCBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                 .add(GCBlocks.OLIVINE_CLUSTER)
                 .add(GCBlocks.BUDDING_OLIVINE);
         this.tag(GCBlockTags.MOON_CRATER_CARVER_REPLACEABLES)
+                .add(GCBlocks.OLIVINE_BASALT)
+                .add(GCBlocks.MOON_ROCKY_REGOLITH, GCBlocks.MOON_MARE_REGOLITH, GCBlocks.MOON_ANORTHOSITE, GCBlocks.MOON_IMPACT_BRECCIA)
                 .add(GCBlocks.MOON_ROCK)
                 .add(GCBlocks.MOON_SURFACE_ROCK)
                 .add(GCBlocks.MOON_BASALT)
@@ -175,6 +189,7 @@ public class GCBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                 .add(GCBlocks.LUNASLATE);
 
         this.tag(GCBlockTags.MARS_CARVER_REPLACEABLES)
+                .add(GCBlocks.MARS_ROCKY_REGOLITH, GCBlocks.MARS_BASALTIC_SAND, GCBlocks.MARS_WEATHERED_BASALT, GCBlocks.MARS_SEDIMENTARY_ROCK)
                 .add(GCBlocks.MARS_STONE)
                 .add(GCBlocks.MARS_SURFACE_ROCK)
                 .add(GCBlocks.MARS_SUB_SURFACE_ROCK)
@@ -191,6 +206,8 @@ public class GCBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                 .add(GCBlocks.HARD_VENUS_ROCK)
                 .add(GCBlocks.SOFT_VENUS_ROCK)
                 .add(GCBlocks.SCORCHED_VENUS_ROCK)
+                .add(GCBlocks.VENUS_PLAINS_BASALT, GCBlocks.VENUS_TESSERA_ROCK, GCBlocks.VENUS_FLOW_BASALT)
+                .add(GCBlocks.VENUS_STONY_REGOLITH)
                 .add(GCBlocks.VOLCANIC_ROCK)
                 .add(GCBlocks.PUMICE)
                 .add(Blocks.BASALT)
@@ -200,6 +217,8 @@ public class GCBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                 .addTag(GCBlockTags.VENUS_CARVER_REPLACEABLES);
 
         this.tag(GCBlockTags.MERCURY_CARVER_REPLACEABLES)
+                .add(GCBlocks.MERCURY_ROCKY_REGOLITH, GCBlocks.MERCURY_PLAINS_ROCK,
+                        GCBlocks.MERCURY_IMPACT_BRECCIA, GCBlocks.MERCURY_DARK_REGOLITH)
                 .add(GCBlocks.MERCURY_STONE)
                 .add(GCBlocks.MERCURY_SURFACE_ROCK)
                 .add(GCBlocks.MERCURY_SUB_SURFACE_ROCK)
@@ -428,6 +447,10 @@ public class GCBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                 .addTag(GCBlockTags.RAW_LEAD_BLOCKS);
 
         this.tag(ConventionalBlockTags.STONES)
+                .add(GCBlocks.MERCURY_PLAINS_ROCK, GCBlocks.MERCURY_IMPACT_BRECCIA)
+                .add(GCBlocks.MOON_ANORTHOSITE, GCBlocks.MOON_IMPACT_BRECCIA)
+                .add(GCBlocks.MARS_WEATHERED_BASALT, GCBlocks.MARS_SEDIMENTARY_ROCK)
+                .add(GCBlocks.VENUS_PLAINS_BASALT, GCBlocks.VENUS_TESSERA_ROCK, GCBlocks.VENUS_FLOW_BASALT)
                 .add(GCBlocks.MOON_SURFACE_ROCK)
                 .add(GCBlocks.MOON_ROCK)
                 .add(GCBlocks.LUNASLATE)
@@ -478,6 +501,7 @@ public class GCBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                 GCBlocks.REFINERY,
                 GCBlocks.FUEL_LOADER,
                 GCBlocks.CARGO_LOADER,
+                GCBlocks.LAUNCH_CONTROLLER,
                 GCBlocks.CARGO_UNLOADER,
                 GCBlocks.ASTRO_MINER_BASE,
                 GCBlocks.RADAR,
@@ -486,7 +510,6 @@ public class GCBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                 GCBlocks.OXYGEN_SEALER,
                 GCBlocks.OXYGEN_BUBBLE_DISTRIBUTOR,
                 GCBlocks.TERRAFORMER,
-                GCBlocks.OXYGEN_DECOMPRESSOR,
                 GCBlocks.OXYGEN_COMPRESSOR,
                 GCBlocks.OXYGEN_STORAGE_MODULE,
                 GCBlocks.FOOD_CANNER,
@@ -496,11 +519,16 @@ public class GCBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                 GCBlocks.ROCKET_WORKBENCH
         );
 
-        this.tag(GCBlockTags.TERRAFORMABLE).add(
+        this.tag(GCBlockTags.TERRAFORMABLE).add(GCBlocks.MOON_ROCKY_REGOLITH, GCBlocks.MOON_MARE_REGOLITH).add(
+                GCBlocks.MARS_ROCKY_REGOLITH,
                 GCBlocks.MOON_TURF,
                 GCBlocks.MARS_SURFACE_ROCK,
                 GCBlocks.SOFT_VENUS_ROCK,
-                GCBlocks.HARD_VENUS_ROCK
+                GCBlocks.HARD_VENUS_ROCK,
+                GCBlocks.VENUS_PLAINS_BASALT,
+                GCBlocks.VENUS_TESSERA_ROCK,
+                GCBlocks.VENUS_FLOW_BASALT,
+                GCBlocks.VENUS_STONY_REGOLITH
         );
 
         this.tag(GCBlockTags.GLASS_FLUID_PIPES).add(GCBlocks.GLASS_FLUID_PIPE).addTag(GCBlockTags.STAINED_GLASS_FLUID_PIPES);
@@ -655,6 +683,10 @@ public class GCBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                 .add(GCBlocks.METEORIC_IRON_DOOR);
 
         this.tag(BlockTags.MINEABLE_WITH_PICKAXE)
+                .add(GCBlocks.MERCURY_PLAINS_ROCK, GCBlocks.MERCURY_IMPACT_BRECCIA)
+                .add(GCBlocks.MOON_ANORTHOSITE, GCBlocks.MOON_IMPACT_BRECCIA)
+                .add(GCBlocks.MARS_WEATHERED_BASALT, GCBlocks.MARS_SEDIMENTARY_ROCK)
+                .add(GCBlocks.VENUS_PLAINS_BASALT, GCBlocks.VENUS_TESSERA_ROCK, GCBlocks.VENUS_FLOW_BASALT)
                 .forceAddTag(GCBlockTags.MACHINES)
                 .add(stairs)
                 .add(slabs)
@@ -740,6 +772,9 @@ public class GCBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                         GCBlocks.SOFT_VENUS_ROCK,
                         GCBlocks.HARD_VENUS_ROCK,
                         GCBlocks.SCORCHED_VENUS_ROCK,
+                        GCBlocks.VENUS_PLAINS_BASALT,
+                        GCBlocks.VENUS_TESSERA_ROCK,
+                        GCBlocks.VENUS_FLOW_BASALT,
                         GCBlocks.VOLCANIC_ROCK,
                         GCBlocks.PUMICE,
                         GCBlocks.VAPOR_SPOUT,
@@ -793,7 +828,13 @@ public class GCBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                 .add(GCBlocks.LUNAR_CARTOGRAPHY_TABLE)
                 .add(GCBlocks.PARACHEST);
 
+        this.tag(BlockTags.SAND).add(GCBlocks.MARS_BASALTIC_SAND);
+
         this.tag(BlockTags.MINEABLE_WITH_SHOVEL)
+                .add(GCBlocks.MERCURY_ROCKY_REGOLITH, GCBlocks.MERCURY_DARK_REGOLITH)
+                .add(GCBlocks.MOON_ROCKY_REGOLITH, GCBlocks.MOON_MARE_REGOLITH)
+                .add(GCBlocks.MARS_ROCKY_REGOLITH, GCBlocks.MARS_BASALTIC_SAND)
+                .add(GCBlocks.VENUS_STONY_REGOLITH)
                 .add(GCBlocks.MOON_TURF)
                 .add(GCBlocks.MOON_DIRT)
                 .add(GCBlocks.MOON_DIRT_PATH);

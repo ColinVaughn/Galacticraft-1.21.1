@@ -32,6 +32,9 @@ import dev.galacticraft.mod.content.item.GCItems;
 import dev.galacticraft.mod.screen.AstroMinerBaseMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.LongTag;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
@@ -115,6 +118,55 @@ public final class AstroMinerBaseTestSuite implements GalacticraftGameTest {
             context.fail("eight Astro Miner Base blocks did not assemble around " + MASTER);
         }
         return base;
+    }
+
+    @GameTest(template = EMPTY_STRUCTURE)
+    public void deployedSavedAndReturningMinersUseTheSameDockInEveryFacing(GameTestHelper context) {
+        AstroMinerBaseBlockEntity base = buildBase(context);
+        BlockPos master = base.getBlockPos();
+        for (Direction facing : Direction.Plane.HORIZONTAL) {
+            base.setFacing(facing);
+            Vec3 expected = new Vec3(master.getX() + 1 + facing.getStepX(), master.getY(),
+                    master.getZ() + 1 + facing.getStepZ());
+            AstroMinerEntity miner = new AstroMinerEntity(GCEntityTypes.ASTRO_MINER, context.getLevel());
+            miner.prepareDeploy(master, facing, java.util.UUID.randomUUID());
+            assertDock(context, miner, expected, facing, "deployment");
+
+            // Load the old off-center, sunken parked position to exercise existing saves.
+            miner.setPos(expected.add(-0.5, -1, -0.5));
+            CompoundTag saved = miner.saveWithoutId(new CompoundTag());
+            miner.load(saved);
+            miner.tick();
+            assertDock(context, miner, expected, facing, "saved miner");
+
+            miner.setPos(expected.add(facing.getStepX() * 2, 1, facing.getStepZ() * 2));
+            saved = miner.saveWithoutId(new CompoundTag());
+            saved.putInt("AIState", AstroMinerEntity.AISTATE_RETURNING);
+            saved.putInt("Energy", 4000);
+            ListTag route = new ListTag();
+            route.add(LongTag.valueOf(master.relative(facing).asLong()));
+            saved.put("WayPoints", route);
+            miner.load(saved);
+            for (int tick = 0; tick < 600 && miner.getAiState() != AstroMinerEntity.AISTATE_ATBASE; tick++) {
+                miner.tick();
+            }
+            if (miner.getAiState() != AstroMinerEntity.AISTATE_ATBASE) context.fail("Miner did not dock facing " + facing);
+            miner.tick();
+            assertDock(context, miner, expected, facing, "return");
+            forEachPart(context, pos -> {
+                if (!context.getBlockState(pos).is(GCBlocks.ASTRO_MINER_BASE)) context.fail("Docking damaged the base");
+            });
+            miner.discard();
+        }
+        context.succeed();
+    }
+
+    private static void assertDock(GameTestHelper context, AstroMinerEntity miner, Vec3 expected,
+                                   Direction facing, String stage) {
+        if (miner.position().distanceToSqr(expected) > 0.000001
+                || Math.abs(net.minecraft.util.Mth.wrapDegrees(miner.getYRot() - facing.toYRot())) > 0.001) {
+            context.fail(stage + " is misaligned facing " + facing + ": " + miner.position() + " yaw=" + miner.getYRot());
+        }
     }
 
     private static void forEachPart(GameTestHelper context, java.util.function.Consumer<BlockPos> action) {

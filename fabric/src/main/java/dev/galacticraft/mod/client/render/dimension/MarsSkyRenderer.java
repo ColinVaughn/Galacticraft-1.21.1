@@ -27,6 +27,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Axis;
 import dev.galacticraft.mod.Constant;
+import dev.galacticraft.mod.client.render.ShaderPackCompat;
 import dev.galacticraft.mod.client.render.dimension.duststorm.ClientDustStorms;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -157,12 +158,14 @@ public class MarsSkyRenderer {
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         Matrix4f last = poseStack.last().pose();
-        renderSunHalo(last, Mth.lerp(lowSun, 20.0F, 29.0F), haloRed, haloGreen, haloBlue,
-                Mth.lerp(lowSun, 0.18F, 0.50F) * haloVisibility);
-        renderSunHalo(last, Mth.lerp(lowSun, 40.0F, 58.0F), haloRed, haloGreen, haloBlue,
-                Mth.lerp(lowSun, 0.08F, 0.26F) * haloVisibility);
-        renderSunHalo(last, Mth.lerp(lowSun, 62.0F, 88.0F), haloRed, haloGreen, haloBlue,
-                lowSun * 0.10F * haloVisibility);
+        if (!ShaderPackCompat.isActive()) {
+            renderSunHalo(last, Mth.lerp(lowSun, 20.0F, 29.0F), haloRed, haloGreen, haloBlue,
+                    Mth.lerp(lowSun, 0.18F, 0.50F) * haloVisibility);
+            renderSunHalo(last, Mth.lerp(lowSun, 40.0F, 58.0F), haloRed, haloGreen, haloBlue,
+                    Mth.lerp(lowSun, 0.08F, 0.26F) * haloVisibility);
+            renderSunHalo(last, Mth.lerp(lowSun, 62.0F, 88.0F), haloRed, haloGreen, haloBlue,
+                    lowSun * 0.10F * haloVisibility);
+        }
         poseStack.popPose();
 
         RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
@@ -174,27 +177,31 @@ public class MarsSkyRenderer {
         poseStack.translate(f7, f8, f9);
         poseStack.mulPose(Axis.YN.rotationDegrees(90.0F));
         poseStack.mulPose(Axis.XP.rotationDegrees(-level.getTimeOfDay(partialTicks) * 360.0F));
-        // Render sun
-        RenderSystem.setShaderColor(0.0F, 0.0F, 0.0F, 1.0F);
-        // Some blanking to conceal the stars
-        f10 = this.sunSize / 3.5F;
         Matrix4f last2 = poseStack.last().pose();
-        buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
-        buffer.addVertex(last2, -f10, 99.9F, -f10)
-                .addVertex(last2, f10, 99.9F, -f10)
-                .addVertex(last2, f10, 99.9F, f10)
-                .addVertex(last2, -f10, 99.9F, f10);
-        BufferUploader.drawWithShader(buffer.buildOrThrow());
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 0.1F);
-        f10 = this.sunSize;
-        RenderSystem.setShaderTexture(0, Constant.Skybox.SUN_MARS);
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-        buffer.addVertex(last2, -f10, 100.0F, -f10).setUv(0.0F, 0.0F)
-                .addVertex(last2, f10, 100.0F, -f10).setUv(1.0F, 0.0F)
-                .addVertex(last2, f10, 100.0F, f10).setUv(1.0F, 1.0F)
-                .addVertex(last2, -f10, 100.0F, f10).setUv(0.0F, 1.0F);
-        BufferUploader.drawWithShader(buffer.buildOrThrow());
+        if (!ShaderPackCompat.isActive()) {
+            // Render sun
+            RenderSystem.setShaderColor(0.0F, 0.0F, 0.0F, 1.0F);
+            // Some blanking to conceal the stars
+            f10 = this.sunSize / 3.5F;
+            buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
+            buffer.addVertex(last2, -f10, 99.9F, -f10)
+                    .addVertex(last2, f10, 99.9F, -f10)
+                    .addVertex(last2, f10, 99.9F, f10)
+                    .addVertex(last2, -f10, 99.9F, f10);
+            BufferUploader.drawWithShader(buffer.buildOrThrow());
+        }
+        ShaderPackCompat.renderSun(context.positionMatrix(), level.getTimeOfDay(partialTicks) * 360.0F, last2, sunMatrix -> {
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 0.1F);
+            float radius = this.sunSize;
+            RenderSystem.setShaderTexture(0, Constant.Skybox.SUN_MARS);
+            RenderSystem.setShader(GameRenderer::getPositionTexShader);
+            BufferBuilder sunBuffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+            sunBuffer.addVertex(sunMatrix, -radius, 100.0F, -radius).setUv(0.0F, 0.0F)
+                    .addVertex(sunMatrix, radius, 100.0F, -radius).setUv(1.0F, 0.0F)
+                    .addVertex(sunMatrix, radius, 100.0F, radius).setUv(1.0F, 1.0F)
+                    .addVertex(sunMatrix, -radius, 100.0F, radius).setUv(0.0F, 1.0F);
+            BufferUploader.drawWithShader(sunBuffer.buildOrThrow());
+        });
 
         // Render earth
         f10 = 0.5F;

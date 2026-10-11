@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class RocketFlightLogicTest {
     private static final double ESCAPE_HEIGHT = 1200.0;
@@ -161,5 +162,85 @@ class RocketFlightLogicTest {
         double atDefault = required / (double) RocketFlightLogic.DEFAULT_BURN_TICKS_PER_BUCKET;
         double atDouble = required / (double) (RocketFlightLogic.DEFAULT_BURN_TICKS_PER_BUCKET * 2);
         assertEquals(atDefault / 2.0, atDouble, 1.0E-9);
+    }
+
+    @Test void landingBrakeSettlesFromAscentAndFreefallInEveryGravity() {
+        for (double gravity : new double[]{EARTH_GRAVITY, VENUS_GRAVITY, MARS_GRAVITY, MOON_GRAVITY, ASTEROID_GRAVITY}) {
+            for (double initial : new double[]{2, 0, -1}) {
+                double velocity = initial;
+                for (int tick = 0; tick < 1000; tick++) {
+                    double thrust = RocketFlightLogic.landingThrust(velocity, false, false, gravity);
+                    assertTrue(thrust >= 0 && thrust <= 1);
+                    velocity = RocketFlightLogic.nextVerticalVelocity(velocity, thrust, 0, gravity);
+                }
+                // Very low gravity can settle at a slower natural fall speed with the engine off.
+                double expected = Math.max(RocketFlightLogic.LANDING_DESCENT_SPEED, -gravity * .08 / (1 - .955));
+                assertEquals(expected, velocity, .000001);
+                assertTrue(RocketFlightLogic.safeTouchdown(velocity, 0, 0, 0));
+            }
+        }
+    }
+
+    @Test void landingHoverAndResumeAscentUseTheNormalFlightPhysics() {
+        for (double gravity : new double[]{EARTH_GRAVITY, MOON_GRAVITY}) {
+            double velocity = RocketFlightLogic.LANDING_DESCENT_SPEED;
+            for (int tick = 0; tick < 1000; tick++)
+                velocity = RocketFlightLogic.nextVerticalVelocity(velocity, RocketFlightLogic.landingThrust(velocity, true, false, gravity), 0, gravity);
+            assertEquals(0, velocity, .000001);
+            for (int tick = 0; tick < 100; tick++)
+                velocity = RocketFlightLogic.nextVerticalVelocity(velocity, 1, 0, gravity);
+            assertTrue(velocity > 0);
+        }
+    }
+
+    @Test void cuttingThrustSpeedsDescentAndReleasingItRestoresSafeSpeed() {
+        for (double gravity : new double[]{EARTH_GRAVITY, VENUS_GRAVITY, MARS_GRAVITY, MOON_GRAVITY}) {
+            double velocity = RocketFlightLogic.LANDING_DESCENT_SPEED;
+            for (int tick = 0; tick < 120; tick++) {
+                double thrust = RocketFlightLogic.landingThrust(velocity, false, true, gravity);
+                assertEquals(0, thrust);
+                velocity = RocketFlightLogic.nextVerticalVelocity(velocity, thrust, 0, gravity);
+            }
+            assertTrue(velocity < RocketFlightLogic.LANDING_DESCENT_SPEED - .01);
+            assertFalse(RocketFlightLogic.safeTouchdown(velocity, 0, 0, 0));
+            for (int tick = 0; tick < 120; tick++)
+                velocity = RocketFlightLogic.nextVerticalVelocity(velocity,
+                        RocketFlightLogic.landingThrust(velocity, false, false, gravity), 0, gravity);
+            assertEquals(RocketFlightLogic.LANDING_DESCENT_SPEED, velocity, .000001);
+            assertTrue(RocketFlightLogic.safeTouchdown(velocity, 0, 0, 0));
+        }
+    }
+
+    @Test void hoverOverridesThrustCutAndBrakesTowardZero() {
+        double velocity = -1.5;
+        assertEquals(RocketFlightLogic.landingThrust(velocity, true, false, EARTH_GRAVITY),
+                RocketFlightLogic.landingThrust(velocity, true, true, EARTH_GRAVITY));
+        for (int tick = 0; tick < 120; tick++)
+            velocity = RocketFlightLogic.nextVerticalVelocity(velocity,
+                    RocketFlightLogic.landingThrust(velocity, true, true, EARTH_GRAVITY), 0, EARTH_GRAVITY);
+        assertEquals(0, velocity, .000001);
+    }
+
+    @Test void safeLandingDoesNotExcuseHardFastTiltedOrNonFiniteImpacts() {
+        assertTrue(RocketFlightLogic.safeTouchdown(-.18, .12 * .12, 0, 0));
+        assertFalse(RocketFlightLogic.safeTouchdown(-.26, 0, 0, 0));
+        assertFalse(RocketFlightLogic.safeTouchdown(-.18, .16 * .16, 0, 0));
+        assertFalse(RocketFlightLogic.safeTouchdown(-.18, 0, 6, 0));
+        assertFalse(RocketFlightLogic.safeTouchdown(-.18, 0, 0, 6));
+        assertFalse(RocketFlightLogic.safeTouchdown(0, 0, 0, 0));
+        assertFalse(RocketFlightLogic.safeTouchdown(Double.NaN, 0, 0, 0));
+    }
+
+    @Test void landingSteeringBrakesSmoothlyAndStopsWithoutInput() {
+        double velocity = 1;
+        for (int tick = 0; tick < 100; tick++) {
+            double next = RocketFlightLogic.nextLandingHorizontalVelocity(velocity, 0);
+            assertTrue(Math.abs(next - velocity) <= .0200001);
+            velocity = next;
+        }
+        assertEquals(0, velocity, .000001);
+        for (int tick = 0; tick < 20; tick++)
+            velocity = RocketFlightLogic.nextLandingHorizontalVelocity(velocity, RocketFlightLogic.LANDING_HORIZONTAL_SPEED);
+        assertEquals(RocketFlightLogic.LANDING_HORIZONTAL_SPEED, velocity, .000001);
     }
 }

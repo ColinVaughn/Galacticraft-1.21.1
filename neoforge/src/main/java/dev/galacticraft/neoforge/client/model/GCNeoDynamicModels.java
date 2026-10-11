@@ -53,6 +53,8 @@ import java.util.List;
 /** Installs loader-native baked replacements for block-entity connected models. */
 public final class GCNeoDynamicModels {
     public static void modifyBakingResult(ModelEvent.ModifyBakingResult event) {
+        event.getModels().replaceAll((location, model) -> dev.galacticraft.mod.client.model.LunarEmissiveBakedModel.matches(location.id())
+                ? new dev.galacticraft.mod.client.model.LunarEmissiveBakedModel(model) : model);
         event.getModels().replaceAll((location, model) ->
                 location.id().getNamespace().equals(Constant.MOD_ID)
                                 && "inventory".equals(location.variant())

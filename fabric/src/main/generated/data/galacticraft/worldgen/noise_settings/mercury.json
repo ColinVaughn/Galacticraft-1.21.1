@@ -174,10 +174,57 @@
                       ]
                     },
                     "then_run": {
-                      "type": "minecraft:block",
-                      "result_state": {
-                        "Name": "galacticraft:mercury_scarp_rock"
-                      }
+                      "type": "minecraft:sequence",
+                      "sequence": [
+                        {
+                          "type": "minecraft:condition",
+                          "if_true": {
+                            "type": "minecraft:steep"
+                          },
+                          "then_run": {
+                            "type": "minecraft:block",
+                            "result_state": {
+                              "Name": "galacticraft:mercury_scarp_rock"
+                            }
+                          }
+                        },
+                        {
+                          "type": "minecraft:condition",
+                          "if_true": {
+                            "type": "minecraft:noise_threshold",
+                            "max_threshold": 100.0,
+                            "min_threshold": 0.3,
+                            "noise": "galacticraft:mercury/surface_patches"
+                          },
+                          "then_run": {
+                            "type": "minecraft:block",
+                            "result_state": {
+                              "Name": "galacticraft:mercury_dark_regolith"
+                            }
+                          }
+                        },
+                        {
+                          "type": "minecraft:condition",
+                          "if_true": {
+                            "type": "minecraft:noise_threshold",
+                            "max_threshold": 100.0,
+                            "min_threshold": 0.2,
+                            "noise": "galacticraft:mercury/surface_detail"
+                          },
+                          "then_run": {
+                            "type": "minecraft:block",
+                            "result_state": {
+                              "Name": "galacticraft:mercury_rocky_regolith"
+                            }
+                          }
+                        },
+                        {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "galacticraft:mercury_impact_breccia"
+                          }
+                        }
+                      ]
                     }
                   },
                   {
@@ -189,16 +236,105 @@
                       ]
                     },
                     "then_run": {
+                      "type": "minecraft:sequence",
+                      "sequence": [
+                        {
+                          "type": "minecraft:condition",
+                          "if_true": {
+                            "type": "minecraft:steep"
+                          },
+                          "then_run": {
+                            "type": "minecraft:block",
+                            "result_state": {
+                              "Name": "galacticraft:mercury_impact_breccia"
+                            }
+                          }
+                        },
+                        {
+                          "type": "minecraft:condition",
+                          "if_true": {
+                            "type": "minecraft:noise_threshold",
+                            "max_threshold": 100.0,
+                            "min_threshold": 0.25,
+                            "noise": "galacticraft:mercury/surface_patches"
+                          },
+                          "then_run": {
+                            "type": "minecraft:block",
+                            "result_state": {
+                              "Name": "galacticraft:mercury_dark_regolith"
+                            }
+                          }
+                        },
+                        {
+                          "type": "minecraft:condition",
+                          "if_true": {
+                            "type": "minecraft:noise_threshold",
+                            "max_threshold": 100.0,
+                            "min_threshold": 0.35,
+                            "noise": "galacticraft:mercury/surface_detail"
+                          },
+                          "then_run": {
+                            "type": "minecraft:block",
+                            "result_state": {
+                              "Name": "galacticraft:mercury_impact_breccia"
+                            }
+                          }
+                        },
+                        {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "galacticraft:mercury_plains_rock"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "minecraft:condition",
+                    "if_true": {
+                      "type": "minecraft:steep"
+                    },
+                    "then_run": {
                       "type": "minecraft:block",
                       "result_state": {
-                        "Name": "galacticraft:mercury_sub_surface_rock"
+                        "Name": "galacticraft:mercury_scarp_rock"
+                      }
+                    }
+                  },
+                  {
+                    "type": "minecraft:condition",
+                    "if_true": {
+                      "type": "minecraft:noise_threshold",
+                      "max_threshold": 100.0,
+                      "min_threshold": 0.25,
+                      "noise": "galacticraft:mercury/surface_patches"
+                    },
+                    "then_run": {
+                      "type": "minecraft:block",
+                      "result_state": {
+                        "Name": "galacticraft:mercury_rocky_regolith"
+                      }
+                    }
+                  },
+                  {
+                    "type": "minecraft:condition",
+                    "if_true": {
+                      "type": "minecraft:noise_threshold",
+                      "max_threshold": -0.4,
+                      "min_threshold": -100.0,
+                      "noise": "galacticraft:mercury/surface_detail"
+                    },
+                    "then_run": {
+                      "type": "minecraft:block",
+                      "result_state": {
+                        "Name": "galacticraft:mercury_dark_regolith"
                       }
                     }
                   },
                   {
                     "type": "minecraft:block",
                     "result_state": {
-                      "Name": "galacticraft:mercury_surface_rock"
+                      "Name": "galacticraft:mercury_plains_rock"
                     }
                   }
                 ]
@@ -225,10 +361,27 @@
                       ]
                     },
                     "then_run": {
-                      "type": "minecraft:block",
-                      "result_state": {
-                        "Name": "galacticraft:mercury_scarp_rock"
-                      }
+                      "type": "minecraft:sequence",
+                      "sequence": [
+                        {
+                          "type": "minecraft:condition",
+                          "if_true": {
+                            "type": "minecraft:steep"
+                          },
+                          "then_run": {
+                            "type": "minecraft:block",
+                            "result_state": {
+                              "Name": "galacticraft:mercury_scarp_rock"
+                            }
+                          }
+                        },
+                        {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "galacticraft:mercury_impact_breccia"
+                          }
+                        }
+                      ]
                     }
                   },
                   {

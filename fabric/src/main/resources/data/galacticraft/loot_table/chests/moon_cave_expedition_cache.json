@@ -41,11 +41,13 @@
         {
           "type": "minecraft:item",
           "weight": 6,
+          "functions": [{ "function": "galacticraft:expedition_supply" }],
           "name": "galacticraft:battery"
         },
         {
           "type": "minecraft:item",
           "weight": 5,
+          "functions": [{ "function": "galacticraft:expedition_supply" }],
           "name": "galacticraft:small_oxygen_tank"
         },
         {

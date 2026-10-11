@@ -1,7 +1,16 @@
 {
   "variants": {
-    "": {
+    "oxygen_tank_size=large": {
+      "model": "galacticraft:machine/oxygen_compressor_large"
+    },
+    "oxygen_tank_size=medium": {
+      "model": "galacticraft:machine/oxygen_compressor_medium"
+    },
+    "oxygen_tank_size=none": {
       "model": "galacticraft:machine/oxygen_compressor"
+    },
+    "oxygen_tank_size=small": {
+      "model": "galacticraft:machine/oxygen_compressor_small"
     }
   }
 }

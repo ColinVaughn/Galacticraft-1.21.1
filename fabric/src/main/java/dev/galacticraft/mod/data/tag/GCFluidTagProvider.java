@@ -39,6 +39,8 @@ public class GCFluidTagProvider extends FabricTagProvider.FluidTagProvider {
 
     @Override
     protected void addTags(HolderLookup.Provider arg) {
+        this.getOrCreateTagBuilder(GCFluidTags.HELIUM_3).add(GCFluids.HELIUM_3, GCFluids.FLOWING_HELIUM_3);
+        this.getOrCreateTagBuilder(GCFluidTags.NON_BREATHABLE).addTag(GCFluidTags.HELIUM_3);
         this.getOrCreateTagBuilder(GCFluidTags.OIL)
                 .add(GCFluids.CRUDE_OIL)
                 .add(GCFluids.FLOWING_CRUDE_OIL);

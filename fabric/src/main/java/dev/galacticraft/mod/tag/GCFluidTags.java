@@ -29,6 +29,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.material.Fluid;
 
 public class GCFluidTags {
+    public static final TagKey<Fluid> HELIUM_3 = galacticraftTag("helium_3");
     public static final TagKey<Fluid> OIL = galacticraftTag("oil");
     public static final TagKey<Fluid> OIL_COMMON = commonTag("oil");
     public static final TagKey<Fluid> FUEL = galacticraftTag("fuel");

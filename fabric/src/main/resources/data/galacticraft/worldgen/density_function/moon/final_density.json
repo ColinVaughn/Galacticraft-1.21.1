@@ -1,7 +1,7 @@
 //[df-editor]:{"pos":[1387,502],"collapsed":false}
 {
   //[df-editor]:{"pos":[1091,551],"collapsed":false}
-  "type": "min",
+  "type": "add",
   "argument1": {
     //[df-editor]:{"pos":[665.6972045898438,307.0037841796875],"collapsed":false}
     "type": "interpolated",
@@ -129,5 +129,5 @@
       }
     }
   },
-  "argument2": "galacticraft:caves/noodles" //[df-editor]:{"pos":[750,889],"collapsed":true}
+  "argument2": 0.0
 }

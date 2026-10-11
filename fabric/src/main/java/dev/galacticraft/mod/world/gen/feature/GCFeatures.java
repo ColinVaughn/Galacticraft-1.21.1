@@ -23,19 +23,31 @@
 package dev.galacticraft.mod.world.gen.feature;
 
 import dev.galacticraft.mod.Constant;
+import dev.galacticraft.mod.tag.GCBlockTags;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.levelgen.feature.configurations.BlockStateConfiguration;
 
 /** Registry of Galacticraft's custom worldgen {@link Feature} types. */
 public class GCFeatures {
+    public static final Feature<BlockStateConfiguration> MARS_BOULDER = new PlanetBoulderFeature(GCBlockTags.MARS_CARVER_REPLACEABLES);
+    public static final Feature<BlockStateConfiguration> MOON_BOULDER = new PlanetBoulderFeature(GCBlockTags.MOON_CRATER_CARVER_REPLACEABLES);
     public static final Feature<NoneFeatureConfiguration> VOLCANO = new VolcanoFeature(NoneFeatureConfiguration.CODEC);
     public static final Feature<NoneFeatureConfiguration> OLIVINE_SPIRE = new OlivineSpireFeature(NoneFeatureConfiguration.CODEC);
     public static final Feature<NoneFeatureConfiguration> CHEESE_TREE = new CheeseTreeFeature(NoneFeatureConfiguration.CODEC);
     public static final Feature<NoneFeatureConfiguration> LUNAR_CAVE_LANDMARK = new LunarCaveLandmarkFeature(NoneFeatureConfiguration.CODEC);
 
+    public static final Feature<NoneFeatureConfiguration> MOON_CAVE_DECORATIONS = new LunarCaveDecorationFeature(NoneFeatureConfiguration.CODEC);
+
+    public static final Feature<NoneFeatureConfiguration> MOON_BURROWER_DEN = new LunarBurrowerDenFeature(NoneFeatureConfiguration.CODEC);
+
     public static void register() {
+        Registry.register(BuiltInRegistries.FEATURE, Constant.id("moon_burrower_den"), MOON_BURROWER_DEN);
+        Registry.register(BuiltInRegistries.FEATURE, Constant.id("moon_cave_decorations"), MOON_CAVE_DECORATIONS);
+        Registry.register(BuiltInRegistries.FEATURE, Constant.id("mars_boulder"), MARS_BOULDER);
+        Registry.register(BuiltInRegistries.FEATURE, Constant.id("moon_boulder"), MOON_BOULDER);
         Registry.register(BuiltInRegistries.FEATURE, Constant.id("volcano"), VOLCANO);
         Registry.register(BuiltInRegistries.FEATURE, Constant.id("olivine_spire"), OLIVINE_SPIRE);
         Registry.register(BuiltInRegistries.FEATURE, Constant.id("cheese_tree"), CHEESE_TREE);

@@ -129,8 +129,37 @@ public class GCTranslationProvider extends TranslationProvider {
         this.decorationSet(GCBlocks.TITANIUM_DECORATION, "Titanium Decoration");
         this.decorationSet(GCBlocks.DARK_DECORATION, "Dark Decoration");
 
+        this.block(GCBlocks.VESICULAR_LUNAR_BASALT, "Vesicular Lunar Basalt");
+        this.block(GCBlocks.ICE_BEARING_BRECCIA, "Ice Bearing Breccia");
+        this.block(GCBlocks.LUNAR_BREAKDOWN_RUBBLE, "Lunar Breakdown Rubble");
+        this.block(GCBlocks.LUNAR_SCATTERED_FRAGMENTS, "Lunar Scattered Fragments");
+        this.block(GCBlocks.LUNAR_FALLEN_ROOF_SLAB, "Lunar Fallen Roof Slab");
+        this.block(GCBlocks.LUNAR_FRACTURED_OUTCROP, "Lunar Fractured Outcrop");
+        this.block(GCBlocks.LUNAR_BASALT_WALL_SHELF, "Lunar Basalt Wall Shelf");
+        this.block(GCBlocks.LUNAR_CEILING_BREAKDOWN, "Lunar Ceiling Breakdown");
+        this.block(GCBlocks.LUNAR_BASALT_BREAKDOWN_RUBBLE, "Lunar Basalt Breakdown Rubble");
+        this.block(GCBlocks.LUNAR_FROSTED_BREAKDOWN_RUBBLE, "Lunar Frosted Breakdown Rubble");
+        this.block(GCBlocks.ABANDONED_SURVEY_BEACON, "Abandoned Survey Beacon");
+        this.block(GCBlocks.HELION_NODULES, "Helion Nodules");
+        this.block(GCBlocks.HELION_WALL_CRUST, "Helion Wall Crust");
+        this.block(GCBlocks.HELIUM_3_VENT, "Helium-3 Vent");
+        this.block(GCBlocks.BURROWER_EGG_CLUSTER, "Burrower Egg Cluster");
+        this.block(GCBlocks.LUNAR_BURROWER_EGG, "Lunar Burrower Egg");
+        this.add("entity.galacticraft.lunar_burrower.cargo", "Burrower Cargo");
+        this.add("entity.galacticraft.lunar_burrower.tunnel_on", "Tunneling ON [%s] · Look to aim, move forward to dig");
+        this.add("entity.galacticraft.lunar_burrower.tunnel_off", "Tunneling OFF [%s]");
+        this.block(GCBlocks.BURROWER_BROKEN_EGGSHELL, "Burrower Broken Eggshell");
+        this.block(GCBlocks.BURROWER_EXCAVATED_TAILINGS, "Excavated Lunar Dirt");
+        this.block(GCBlocks.BURROWER_DEN_SCRAPS, "Burrower Den Scraps");
+        this.block(GCBlocks.HELIUM_3, "Helium-3 Condensate");
+        this.add("item.galacticraft.helium_3_bucket", "Helium-3 Condensate Bucket");
+
         // MOON NATURAL
         this.block(GCBlocks.MOON_TURF, "Moon Turf");
+        this.block(GCBlocks.MOON_ROCKY_REGOLITH, "Moon Rocky Regolith");
+        this.block(GCBlocks.MOON_MARE_REGOLITH, "Moon Mare Regolith");
+        this.block(GCBlocks.MOON_ANORTHOSITE, "Moon Anorthosite");
+        this.block(GCBlocks.MOON_IMPACT_BRECCIA, "Moon Impact Breccia");
         this.block(GCBlocks.MOON_DIRT, "Moon Dirt");
         this.block(GCBlocks.MOON_DIRT_PATH, "Moon Dirt Path");
         this.block(GCBlocks.MOON_DUNGEON_BRICK, "Moon Dungeon Brick");
@@ -204,6 +233,10 @@ public class GCTranslationProvider extends TranslationProvider {
 
         // MARS NATURAL
         this.block(GCBlocks.MARS_SURFACE_ROCK, "Mars Surface Rock");
+        this.block(GCBlocks.MARS_ROCKY_REGOLITH, "Mars Rocky Regolith");
+        this.block(GCBlocks.MARS_BASALTIC_SAND, "Mars Basaltic Sand");
+        this.block(GCBlocks.MARS_WEATHERED_BASALT, "Mars Weathered Basalt");
+        this.block(GCBlocks.MARS_SEDIMENTARY_ROCK, "Mars Sedimentary Rock");
         this.block(GCBlocks.MARS_DUST_LAYER, "Martian Dust");
         this.block(GCBlocks.MARS_SUB_SURFACE_ROCK, "Mars Sub-Surface Rock");
 
@@ -226,12 +259,20 @@ public class GCTranslationProvider extends TranslationProvider {
         this.block(GCBlocks.SOFT_VENUS_ROCK, "Soft Venus Rock");
         this.block(GCBlocks.HARD_VENUS_ROCK, "Hard Venus Rock");
         this.block(GCBlocks.SCORCHED_VENUS_ROCK, "Scorched Venus Rock");
+        this.block(GCBlocks.VENUS_PLAINS_BASALT, "Venus Plains Basalt");
+        this.block(GCBlocks.VENUS_TESSERA_ROCK, "Venus Tessera Rock");
+        this.block(GCBlocks.VENUS_FLOW_BASALT, "Venus Flow Basalt");
+        this.block(GCBlocks.VENUS_STONY_REGOLITH, "Venus Stony Regolith");
         this.block(GCBlocks.VOLCANIC_ROCK, "Volcanic Rock");
         this.block(GCBlocks.PUMICE, "Pumice");
         this.block(GCBlocks.VAPOR_SPOUT, "Vapor Spout");
         this.block(GCBlocks.VOLCANO_VENT, "Volcano Vent");
 
         // MERCURY NATURAL
+        this.block(GCBlocks.MERCURY_ROCKY_REGOLITH, "Mercury Rocky Regolith");
+        this.block(GCBlocks.MERCURY_PLAINS_ROCK, "Mercury Plains Rock");
+        this.block(GCBlocks.MERCURY_IMPACT_BRECCIA, "Mercury Impact Breccia");
+        this.block(GCBlocks.MERCURY_DARK_REGOLITH, "Mercury Dark Regolith");
         this.block(GCBlocks.MERCURY_SURFACE_ROCK, "Mercury Surface Rock");
         this.block(GCBlocks.MERCURY_SUB_SURFACE_ROCK, "Mercury Sub-Surface Rock");
         this.block(GCBlocks.MERCURY_STONE, "Mercury Stone");
@@ -402,11 +443,11 @@ public class GCTranslationProvider extends TranslationProvider {
         this.block(GCBlocks.OXYGEN_SEALER, "Oxygen Sealer");
         this.block(GCBlocks.OXYGEN_BUBBLE_DISTRIBUTOR, "Bubble Distributor");
         this.block(GCBlocks.TERRAFORMER, "Terraformer");
-        this.block(GCBlocks.OXYGEN_DECOMPRESSOR, "Oxygen Decompressor");
         this.block(GCBlocks.OXYGEN_COMPRESSOR, "Oxygen Compressor");
         this.block(GCBlocks.OXYGEN_STORAGE_MODULE, "Oxygen Storage Module");
         this.block(GCBlocks.FUEL_LOADER, "Fuel Loader");
         this.block(GCBlocks.CARGO_LOADER, "Cargo Loader");
+        this.block(GCBlocks.LAUNCH_CONTROLLER, "Launch Controller");
         this.block(GCBlocks.CARGO_UNLOADER, "Cargo Unloader");
         this.block(GCBlocks.ASTRO_MINER_BASE, "Astro Miner Base");
         this.block(GCBlocks.FLUID_TANK, "Fluid Tank");
@@ -865,10 +906,16 @@ public class GCTranslationProvider extends TranslationProvider {
         this.entity(GCEntityTypes.SKELETON_BOSS, "Evolved Skeleton Boss");
         this.entity(GCEntityTypes.CREEPER_BOSS, "Evolved Creeper Boss");
         this.entity(GCEntityTypes.SPIDER_BOSS, "Evolved Spider Queen");
+        this.entity(GCEntityTypes.SPIDER_EGG, "Spider Brood Egg");
+        this.entity(GCEntityTypes.SPIDERLING, "Spiderling");
         this.entity(GCEntityTypes.EVOLVED_SPIDER, "Evolved Spider");
         this.entity(GCEntityTypes.EVOLVED_VINDICATOR, "Evolved Vindicator");
         this.entity(GCEntityTypes.EVOLVED_WITCH, "Evolved Witch");
         this.entity(GCEntityTypes.EVOLVED_ZOMBIE, "Evolved Zombie");
+        this.entity(GCEntityTypes.LUNAR_BURROWER, "Lunar Burrower");
+        this.entity(GCEntityTypes.BURROWER_BODY, "Lunar Burrower");
+        this.item(GCItems.LUNAR_BURROWER_SPAWN_EGG, "Lunar Burrower Spawn Egg");
+        this.add("entity.galacticraft.lunar_burrower.escape", "Sneak to escape! An ally can interrupt the swallow.");
         this.entity(GCEntityTypes.GAZER, "Gazer");
         this.entity(GCEntityTypes.GREY, "Grey");
         this.entity(GCEntityTypes.LANDER, "Lander");
@@ -1084,6 +1131,7 @@ public class GCTranslationProvider extends TranslationProvider {
         this.blockDesc(GCBlocks.FOOD_CANNER, "Compresses several food items into a single can. Canned foods can be eaten while wearing an oxygen mask.");
         this.blockDesc(GCBlocks.FUEL_LOADER, "Loads fuel into a rocket placed on an adjacent launch pad.");
         this.blockDesc(GCBlocks.CARGO_LOADER, "Pushes items from its buffer into an adjacent container or docked cargo rocket.");
+        this.blockDesc(GCBlocks.LAUNCH_CONTROLLER, "Place beside a rocket launch pad. Links unique frequencies, schedules launches and can keep the pad after takeoff. Requires power; configured controllers keep nearby chunks loaded.");
         this.blockDesc(GCBlocks.CARGO_UNLOADER, "Pulls items from an adjacent container or docked cargo rocket into its buffer.");
         this.blockDesc(GCBlocks.FLUID_TANK, "Stores a large amount of any single fluid and connects to fluid pipes.");
         this.blockDesc(GCBlocks.PAINTER, "Recolors dyeable blocks such as glass, terracotta, and concrete using a dye.");
@@ -1093,9 +1141,8 @@ public class GCTranslationProvider extends TranslationProvider {
         this.blockDesc(GCBlocks.MOON_CHEESE_WHEEL, "Can be placed and eaten like a cake. Made with all-natural Moon cheese.");
         this.blockDesc(GCBlocks.OXYGEN_BUBBLE_DISTRIBUTOR, "Creates a breathable bubble of oxygen in a small area.");
         this.blockDesc(GCBlocks.TERRAFORMER, "Used to add greenery to distant planets, adding grass, trees, and water when supplied with the correct materials.");
-        this.blockDesc(GCBlocks.OXYGEN_DECOMPRESSOR, "Empties oxygen tanks.");
         this.blockDesc(GCBlocks.OXYGEN_COLLECTOR, "Collects oxygen from nearby crops and trees.");
-        this.blockDesc(GCBlocks.OXYGEN_COMPRESSOR, "Fills oxygen tanks.");
+        this.blockDesc(GCBlocks.OXYGEN_COMPRESSOR, "Fills or drains oxygen tanks by switching between compressor and decompressor modes.");
         this.blockDesc(GCBlocks.OXYGEN_SEALER, "Fills an airtight room with oxygen to make it breathable.");
         this.blockDesc(GCBlocks.OXYGEN_STORAGE_MODULE, "Stores a large amount of oxygen.");
         this.blockDesc(GCBlocks.PARACHEST, "Falls from the sky when you travel to certain planets, carrying your rocket, fuel, and cargo.");
@@ -1160,7 +1207,6 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(Config.ELECTRIC_ARC_FURNACE_BONUS_CHANCE, "Electric Arc Furnace Bonus Chance");
         this.add(Config.OXYGEN_COLLECTOR_ENERGY_CONSUMPTION_RATE, "Oxygen Collector Energy Consumption Rate/t");
         this.add(Config.OXYGEN_COMPRESSOR_ENERGY_CONSUMPTION_RATE, "Oxygen Compressor Energy Consumption Rate/t");
-        this.add(Config.OXYGEN_DECOMPRESSOR_ENERGY_CONSUMPTION_RATE, "Oxygen Decompressor Energy Consumption Rate/t");
         this.add(Config.OXYGEN_SEALER_ENERGY_CONSUMPTION_RATE, "Oxygen Sealer Energy Consumption Rate/t");
         this.add(Config.OXYGEN_SEALER_OXYGEN_CONSUMPTION_RATE, "Oxygen Sealer Oxygen Consumption Rate/t");
         this.add(Config.OXYGEN_SEALER_UNSEALED_OXYGEN_CONSUMPTION_RATE, "Oxygen Sealer Unsealed Oxygen Consumption Rate/t");
@@ -1204,6 +1250,8 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(Keybindings.ROCKET_INVENTORY, "Open Rocket Inventory");
         this.add(Keybindings.OPEN_CELESTIAL_SCREEN, "Open Celestial Map");
         this.add(Keybindings.SENSOR_GLASSES_MODE, "Toggle Sensor Goggles Mode");
+        this.add(Keybindings.BURROWER_TUNNEL, "Toggle Burrower Tunneling");
+        this.add(Keybindings.ROCKET_LANDING, "Toggle Rocket Landing");
         this.add(Ui.SENSOR_ADVANCED, "Advanced Mode");
         this.add(Ui.SENSOR_ADVANCED_ON, "ON");
         this.add(Ui.SENSOR_ADVANCED_OFF, "OFF");
@@ -1227,7 +1275,7 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(SpaceRace.SERVER_STATS, "Server Statistics");
         this.add(SpaceRace.SERVER_STATS_SUMMARY, "%s tracked players • %s online");
         this.add(SpaceRace.FLAG_CONFIRM, "Use this team flag?");
-        this.add(SpaceRace.FLAG_CONFIRM_MESSAGE, "");
+        this.add(SpaceRace.FLAG_CONFIRM_MESSAGE, "Your design is saved on this computer.");
         this.add(SpaceRace.CUSTOMIZE_FLAG, "Customize Flag");
         this.add(SpaceRace.DRAG_AND_DROP_FLAG, "Drag and drop an image to use as a flag");
         this.add(SpaceRace.SELECT_FLAG, "Select Image...");
@@ -1235,6 +1283,12 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(SpaceRace.FLAG_INVALID_SIZE, "That image is %s x %s; flags must be 48 x 32.");
         this.add(SpaceRace.FLAG_READ_ERROR, "Could not open that image.");
         this.add(SpaceRace.FLAG_PICKER_ERROR, "Could not open the file picker.");
+        this.add(SpaceRace.DRAW_FLAG, "Draw Flag...");
+        this.add(SpaceRace.FLAG_DRAW_HINT, "Drag to draw; arrows + Space to paint.");
+        this.add(SpaceRace.FLAG_UNDO, "Undo");
+        this.add(SpaceRace.FLAG_FILL, "Fill");
+        this.add(SpaceRace.FLAG_USE, "Use Flag");
+        this.add(SpaceRace.FLAG_SAVE_ERROR, "Could not save the flag. Please try again.");
         this.add(SpaceRace.TEAM_COLOR_1, "Change");
         this.add(SpaceRace.TEAM_COLOR_2, "Team");
         this.add(SpaceRace.TEAM_COLOR_3, "Color");
@@ -1341,6 +1395,33 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(Ui.ENGINE, "Engine");
         this.add(Ui.UPGRADE, "Upgrade");
         this.add(Ui.COLOR, "Color");
+        this.add("ui.galacticraft.launch_controller.frequency", "Frequency:");
+        this.add("ui.galacticraft.launch_controller.destination", "Destination:");
+        this.add("ui.galacticraft.launch_controller.save", "Save");
+        this.add("ui.galacticraft.launch_controller.advanced", "Advanced");
+        this.add("ui.galacticraft.launch_controller.back", "Back");
+        this.add("ui.galacticraft.launch_controller.enable", "Enable");
+        this.add("ui.galacticraft.launch_controller.disable", "Disable");
+        this.add("ui.galacticraft.launch_controller.hide", "Hide target");
+        this.add("ui.galacticraft.launch_controller.show", "Show target");
+        this.add("ui.galacticraft.launch_controller.hidden", "Hidden");
+        this.add("ui.galacticraft.launch_controller.keep_pad", "Keep launch pad: %s");
+        this.add("ui.galacticraft.launch_controller.schedule", "Auto launch: %s");
+        this.add("ui.galacticraft.launch_controller.conflict", "Frequency already in use");
+        this.add("ui.galacticraft.launch_controller.no_pad", "No connected launch pad");
+        this.add("ui.galacticraft.launch_controller.invalid_frequency", "Set a unique frequency");
+        this.add("ui.galacticraft.launch_controller.invalid_destination", "Destination unavailable");
+        this.add("ui.galacticraft.launch_controller.ready", "Destination ready");
+        this.add("ui.galacticraft.launch_controller.disabled", "Controller disabled");
+        this.add("ui.galacticraft.launch_controller.no_power", "Not enough power");
+        this.add("ui.galacticraft.launch_controller.condition.0", "Cargo is unloaded");
+        this.add("ui.galacticraft.launch_controller.condition.1", "Cargo is full");
+        this.add("ui.galacticraft.launch_controller.condition.2", "Rocket is fully fueled");
+        this.add("ui.galacticraft.launch_controller.condition.3", "Launch instantly");
+        this.add("ui.galacticraft.launch_controller.condition.4", "Wait 10 seconds");
+        this.add("ui.galacticraft.launch_controller.condition.5", "Wait 30 seconds");
+        this.add("ui.galacticraft.launch_controller.condition.6", "Wait 1 minute");
+        this.add("ui.galacticraft.launch_controller.condition.7", "Redstone signal");
         this.add(Ui.LAUNCH_PAD_ADDRESS, "Pad Address:");
         this.add(Ui.LAUNCH_PAD_DESTINATION, "Destination:");
         this.add(Ui.LAUNCH_PAD_ROUTING, "Cargo Rocket Routing");
@@ -1374,6 +1455,7 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(Ui.ALPHA_WARNING_2, "Please report all issues you find.");
         this.add(Ui.ALPHA_WARNING_3, "Press [ESC] or click to continue.");
         this.add(Ui.ALPHA_WARNING_HEADER, "WARNING");
+        this.add(Ui.OXYGEN_COMPRESSOR_DECOMPRESSOR_TITLE, "Oxygen Decompressor");
         this.add(Ui.BUBBLE_CURRENT_SIZE, "Current Size: %s");
         this.add(Ui.BUBBLE_NOT_VISIBLE, "Bubble Not Visible");
         this.add(Ui.BUBBLE_TARGET_SIZE, "Target Size: ");
@@ -1438,6 +1520,9 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(Ui.ROCKET_FUEL, "Fuel:");
         this.add(Ui.ROCKET_FULL, "% full");
         this.add(Ui.ROCKET_NO_FUEL, "No fuel");
+        this.add(Ui.ROCKET_LANDING, "Landing: WASD to steer, %s to resume ascent");
+        this.add(Ui.ROCKET_LANDING_HINT, "Press %s for controlled landing");
+        this.add(Ui.ROCKET_LANDING_THRUST, "%s: hover | %s: cut thrust | Thrust: %s%%");
         this.add(Ui.LANDER_WARNING, "WARNING");
         this.add(Ui.LANDER_CONTROLS, "Hold \"%s\" to slow down!");
         this.add(Ui.LANDER_VELOCITY, "Entry Velocity: %s m/s");

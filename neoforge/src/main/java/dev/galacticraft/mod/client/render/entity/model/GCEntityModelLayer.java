@@ -36,6 +36,10 @@ public final class GCEntityModelLayer {
     public static final ModelLayerLocation PARACHEST = layer("parachest");
     public static final ModelLayerLocation MOON_VILLAGER = layer("moon_villager");
     public static final ModelLayerLocation SKELETON_BOSS = layer("skeleton_boss");
+    public static final ModelLayerLocation SPIDER_QUEEN = layer("spider_queen");
+    public static final ModelLayerLocation SPIDER_VENOM = layer("spider_venom");
+    public static final ModelLayerLocation SPIDER_EGG = layer("spider_egg");
+    public static final ModelLayerLocation SPIDERLING = layer("spiderling");
     public static final ModelLayerLocation FLAG = layer("flag");
     public static final ModelLayerLocation SOLAR_PANEL = layer("solar_panel");
     public static final ModelLayerLocation ROCKET_WORKBENCH = layer("rocket_workbench");

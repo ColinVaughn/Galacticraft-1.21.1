@@ -142,7 +142,6 @@ public class GalacticraftClient implements ClientModInitializer {
         MenuRegistry.registerScreenFactory(GCMenuTypes.OXYGEN_COLLECTOR, OxygenCollectorScreen::new);
         MenuRegistry.registerScreenFactory(GCMenuTypes.OXYGEN_COMPRESSOR, OxygenCompressorScreen::new);
         MenuRegistry.registerScreenFactory(GCMenuTypes.FOOD_CANNER, FoodCannerScreen::new);
-        MenuRegistry.registerScreenFactory(GCMenuTypes.OXYGEN_DECOMPRESSOR, OxygenDecompressorScreen::new);
         MenuRegistry.registerScreenFactory(GCMenuTypes.PLAYER_INV_GC, GCPlayerInventoryScreen::new);
         MenuRegistry.registerScreenFactory(GCMenuTypes.PET_INV_GC, GCPetInventoryScreen::new);
         MenuRegistry.registerScreenFactory(GCMenuTypes.OXYGEN_BUBBLE_DISTRIBUTOR, OxygenBubbleDistributorScreen::new);
@@ -151,6 +150,7 @@ public class GalacticraftClient implements ClientModInitializer {
         MenuRegistry.registerScreenFactory(GCMenuTypes.OXYGEN_SEALER, OxygenSealerScreen::new);
         MenuRegistry.registerScreenFactory(GCMenuTypes.FUEL_LOADER, FuelLoaderScreen::new);
         MenuRegistry.registerScreenFactory(GCMenuTypes.CARGO_LOADER, CargoLoaderScreen::new);
+        MenuRegistry.registerScreenFactory(GCMenuTypes.LAUNCH_CONTROLLER, LaunchControllerScreen::new);
         MenuRegistry.registerScreenFactory(GCMenuTypes.CARGO_UNLOADER, CargoUnloaderScreen::new);
         MenuRegistry.registerScreenFactory(GCMenuTypes.FLUID_TANK, FluidTankScreen::new);
         MenuRegistry.registerScreenFactory(GCMenuTypes.PAINTER, PainterScreen::new);
@@ -176,6 +176,8 @@ public class GalacticraftClient implements ClientModInitializer {
         EntityRendererRegistry.register(GCEntityTypes.EVOLVED_EVOKER, EvolvedEvokerEntityRenderer::new);
         EntityRendererRegistry.register(GCEntityTypes.EVOLVED_PILLAGER, EvolvedPillagerEntityRenderer::new);
         EntityRendererRegistry.register(GCEntityTypes.EVOLVED_VINDICATOR, EvolvedVindicatorEntityRenderer::new);
+        EntityRendererRegistry.register(GCEntityTypes.LUNAR_BURROWER, LunarBurrowerRenderer::new);
+        EntityRendererRegistry.register(GCEntityTypes.BURROWER_BODY, BurrowerBodyRenderer::new);
         EntityRendererRegistry.register(GCEntityTypes.GAZER, GazerEntityRenderer::new);
         EntityRendererRegistry.register(GCEntityTypes.RUMBLER, RumblerEntityRenderer::new);
         EntityRendererRegistry.register(GCEntityTypes.COMET_CUBE, CometCubeEntityRenderer::new);
@@ -194,6 +196,9 @@ public class GalacticraftClient implements ClientModInitializer {
         EntityRendererRegistry.register(GCEntityTypes.SKELETON_BOSS, EvolvedSkeletonBossRenderer::new);
         EntityRendererRegistry.register(GCEntityTypes.CREEPER_BOSS, CreeperBossRenderer::new);
         EntityRendererRegistry.register(GCEntityTypes.SPIDER_BOSS, SpiderBossRenderer::new);
+        EntityRendererRegistry.register(GCEntityTypes.SPIDER_VENOM, SpiderVenomRenderer::new);
+        EntityRendererRegistry.register(GCEntityTypes.SPIDER_EGG, SpiderEggRenderer::new);
+        EntityRendererRegistry.register(GCEntityTypes.SPIDERLING, SpiderlingRenderer::new);
 
         GCBlockEntityRenderer.register();
         GCEntityModelLayer.register();
@@ -264,6 +269,8 @@ public class GalacticraftClient implements ClientModInitializer {
                 Constant.Fluid.fluidId(Constant.Fluid.SULFURIC_ACID_FLOWING)
         );
 
+        FluidRenderHandlerRegistry.INSTANCE.register(GCFluids.HELIUM_3, GCFluids.FLOWING_HELIUM_3, new SimpleFluidRenderHandler(Constant.Fluid.fluidId(Constant.Fluid.HELIUM_3_STILL), Constant.Fluid.fluidId(Constant.Fluid.HELIUM_3_FLOWING)));
+        BlockRenderLayerMap.INSTANCE.putFluids(RenderType.translucent(), GCFluids.HELIUM_3, GCFluids.FLOWING_HELIUM_3);
         FluidRenderHandlerRegistry.INSTANCE.register(GCFluids.CRUDE_OIL, GCFluids.FLOWING_CRUDE_OIL, oil);
         FluidRenderHandlerRegistry.INSTANCE.register(GCFluids.FUEL, GCFluids.FLOWING_FUEL, fuel);
         FluidRenderHandlerRegistry.INSTANCE.register(GCFluids.SULFURIC_ACID, GCFluids.FLOWING_SULFURIC_ACID, sulfuricAcid);

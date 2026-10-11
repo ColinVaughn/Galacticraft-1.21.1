@@ -27,6 +27,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Axis;
 import dev.galacticraft.mod.Constant;
+import dev.galacticraft.mod.client.render.ShaderPackCompat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.FogRenderer;
@@ -134,72 +135,76 @@ public class VenusSkyRenderer {
             poseStack.popPose();
         }
 
-        float[] afloat = new float[4];
-        poseStack.pushPose();
-        poseStack.mulPose(Axis.YN.rotationDegrees(90.0F));
-        poseStack.mulPose(Axis.XN.rotationDegrees(level.getTimeOfDay(partialTicks) * 360.0F));
-        afloat[0] = 255 / 255.0F;
-        afloat[1] = 194 / 255.0F;
-        afloat[2] = 180 / 255.0F;
-        afloat[3] = 0.3F;
-        f6 = afloat[0];
-        f7 = afloat[1];
-        f8 = afloat[2];
+        BufferBuilder buffer;
+        if (!ShaderPackCompat.isActive()) {
+            float[] afloat = new float[4];
+            poseStack.pushPose();
+            poseStack.mulPose(Axis.YN.rotationDegrees(90.0F));
+            poseStack.mulPose(Axis.XN.rotationDegrees(level.getTimeOfDay(partialTicks) * 360.0F));
+            afloat[0] = 255 / 255.0F;
+            afloat[1] = 194 / 255.0F;
+            afloat[2] = 180 / 255.0F;
+            afloat[3] = 0.3F;
+            f6 = afloat[0];
+            f7 = afloat[1];
+            f8 = afloat[2];
 
-        starBrightness = 1.0F - starBrightness;
+            starBrightness = 1.0F - starBrightness;
 
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
-        float r = f6 * starBrightness;
-        float g = f7 * starBrightness;
-        float b = f8 * starBrightness;
-        float a = afloat[3] * 2 / starBrightness;
-        buffer.addVertex(poseStack.last().pose(), 0.0F, 100.0F, 0.0F).setColor(r, g, b, a);
-        r = afloat[0] * starBrightness;
-        g = afloat[1] * starBrightness;
-        b = afloat[2] * starBrightness / 20.0F;
-        a = 0.0F;
+            RenderSystem.setShader(GameRenderer::getPositionColorShader);
+            buffer = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
+            float r = f6 * starBrightness;
+            float g = f7 * starBrightness;
+            float b = f8 * starBrightness;
+            float a = afloat[3] * 2 / starBrightness;
+            buffer.addVertex(poseStack.last().pose(), 0.0F, 100.0F, 0.0F).setColor(r, g, b, a);
+            r = afloat[0] * starBrightness;
+            g = afloat[1] * starBrightness;
+            b = afloat[2] * starBrightness / 20.0F;
+            a = 0.0F;
 
-        // Render sun aura
-        f10 = 20.0F;
-        Matrix4f last = poseStack.last().pose();
-        buffer.addVertex(last, -f10, 100.0F, -f10).setColor(r, g, b, a)
-                .addVertex(last, 0, 100.0F, -f10 * 1.5F).setColor(r, g, b, a)
-                .addVertex(last, f10, 100.0F, -f10).setColor(r, g, b, a)
-                .addVertex(last, f10 * 1.5F, 100.0F, 0).setColor(r, g, b, a)
-                .addVertex(last, f10, 100.0F, f10).setColor(r, g, b, a)
-                .addVertex(last, 0, 100.0F, f10 * 1.5F).setColor(r, g, b, a)
-                .addVertex(last, -f10, 100.0F, f10).setColor(r, g, b, a)
-                .addVertex(last, -f10 * 1.5F, 100.0F, 0).setColor(r, g, b, a)
-                .addVertex(last, -f10, 100.0F, -f10).setColor(r, g, b, a);
+            // Render sun aura
+            f10 = 20.0F;
+            Matrix4f last = poseStack.last().pose();
+            buffer.addVertex(last, -f10, 100.0F, -f10).setColor(r, g, b, a)
+                    .addVertex(last, 0, 100.0F, -f10 * 1.5F).setColor(r, g, b, a)
+                    .addVertex(last, f10, 100.0F, -f10).setColor(r, g, b, a)
+                    .addVertex(last, f10 * 1.5F, 100.0F, 0).setColor(r, g, b, a)
+                    .addVertex(last, f10, 100.0F, f10).setColor(r, g, b, a)
+                    .addVertex(last, 0, 100.0F, f10 * 1.5F).setColor(r, g, b, a)
+                    .addVertex(last, -f10, 100.0F, f10).setColor(r, g, b, a)
+                    .addVertex(last, -f10 * 1.5F, 100.0F, 0).setColor(r, g, b, a)
+                    .addVertex(last, -f10, 100.0F, -f10).setColor(r, g, b, a);
 
-        BufferUploader.drawWithShader(buffer.buildOrThrow());
-        buffer = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
+            BufferUploader.drawWithShader(buffer.buildOrThrow());
+            buffer = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
 
-        r = f6 * starBrightness;
-        g = f7 * starBrightness;
-        b = f8 * starBrightness;
-        a = afloat[3] * starBrightness;
-        buffer.addVertex(last, 0.0F, 100.0F, 0.0F).setColor(r, g, b, a);
-        r = afloat[0] * starBrightness;
-        g = afloat[1] * starBrightness;
-        b = afloat[2] * starBrightness;
-        a = 0.0F;
+            r = f6 * starBrightness;
+            g = f7 * starBrightness;
+            b = f8 * starBrightness;
+            a = afloat[3] * starBrightness;
+            buffer.addVertex(last, 0.0F, 100.0F, 0.0F).setColor(r, g, b, a);
+            r = afloat[0] * starBrightness;
+            g = afloat[1] * starBrightness;
+            b = afloat[2] * starBrightness;
+            a = 0.0F;
 
-        // Render larger sun aura
-        f10 = 40.0F;
-        buffer.addVertex(last, -f10, 100.0F, -f10).setColor(r, g, b, a)
-                .addVertex(last, 0, 100.0F, -f10 * 1.5F).setColor(r, g, b, a)
-                .addVertex(last, f10, 100.0F, -f10).setColor(r, g, b, a)
-                .addVertex(last, f10 * 1.5F, 100.0F, 0).setColor(r, g, b, a)
-                .addVertex(last, f10, 100.0F, f10).setColor(r, g, b, a)
-                .addVertex(last, 0, 100.0F, f10 * 1.5F).setColor(r, g, b, a)
-                .addVertex(last, -f10, 100.0F, f10).setColor(r, g, b, a)
-                .addVertex(last, -f10 * 1.5F, 100.0F, 0).setColor(r, g, b, a)
-                .addVertex(last, -f10, 100.0F, -f10).setColor(r, g, b, a);
+            // Render larger sun aura
+            f10 = 40.0F;
+            buffer.addVertex(last, -f10, 100.0F, -f10).setColor(r, g, b, a)
+                    .addVertex(last, 0, 100.0F, -f10 * 1.5F).setColor(r, g, b, a)
+                    .addVertex(last, f10, 100.0F, -f10).setColor(r, g, b, a)
+                    .addVertex(last, f10 * 1.5F, 100.0F, 0).setColor(r, g, b, a)
+                    .addVertex(last, f10, 100.0F, f10).setColor(r, g, b, a)
+                    .addVertex(last, 0, 100.0F, f10 * 1.5F).setColor(r, g, b, a)
+                    .addVertex(last, -f10, 100.0F, f10).setColor(r, g, b, a)
+                    .addVertex(last, -f10 * 1.5F, 100.0F, 0).setColor(r, g, b, a)
+                    .addVertex(last, -f10, 100.0F, -f10).setColor(r, g, b, a);
 
-        BufferUploader.drawWithShader(buffer.buildOrThrow());
-        poseStack.popPose();
+            BufferUploader.drawWithShader(buffer.buildOrThrow());
+            poseStack.popPose();
+
+        }
 
         RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
         poseStack.pushPose();
@@ -210,26 +215,30 @@ public class VenusSkyRenderer {
         poseStack.mulPose(Axis.YN.rotationDegrees(90.0F));
         poseStack.mulPose(Axis.XP.rotationDegrees(-level.getTimeOfDay(partialTicks) * 360.0F));
         // Render sun
-        RenderSystem.setShaderColor(0.0F, 0.0F, 0.0F, 1.0F);
-        // Some blanking to conceal the stars
-        f10 = this.sunSize / 3.5F;
         Matrix4f last2 = poseStack.last().pose();
-        buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
-        buffer.addVertex(last2, -f10, 99.9F, -f10)
-                .addVertex(last2, f10, 99.9F, -f10)
-                .addVertex(last2, f10, 99.9F, f10)
-                .addVertex(last2, -f10, 99.9F, f10);
-        BufferUploader.drawWithShader(buffer.buildOrThrow());
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 0.1F);
-        f10 = this.sunSize;
-        RenderSystem.setShaderTexture(0, Constant.Skybox.SUN_VENUS);
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-        buffer.addVertex(last2, -f10, 100.0F, -f10).setUv(0.0F, 0.0F)
-                .addVertex(last2, f10, 100.0F, -f10).setUv(1.0F, 0.0F)
-                .addVertex(last2, f10, 100.0F, f10).setUv(1.0F, 1.0F)
-                .addVertex(last2, -f10, 100.0F, f10).setUv(0.0F, 1.0F);
-        BufferUploader.drawWithShader(buffer.buildOrThrow());
+        if (!ShaderPackCompat.isActive()) {
+            RenderSystem.setShaderColor(0.0F, 0.0F, 0.0F, 1.0F);
+            // Some blanking to conceal the stars
+            f10 = this.sunSize / 3.5F;
+            buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
+            buffer.addVertex(last2, -f10, 99.9F, -f10)
+                    .addVertex(last2, f10, 99.9F, -f10)
+                    .addVertex(last2, f10, 99.9F, f10)
+                    .addVertex(last2, -f10, 99.9F, f10);
+            BufferUploader.drawWithShader(buffer.buildOrThrow());
+        }
+        ShaderPackCompat.renderSun(context.positionMatrix(), level.getTimeOfDay(partialTicks) * 360.0F, last2, sunMatrix -> {
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 0.1F);
+            float radius = this.sunSize;
+            RenderSystem.setShaderTexture(0, Constant.Skybox.SUN_VENUS);
+            RenderSystem.setShader(GameRenderer::getPositionTexShader);
+            BufferBuilder sunBuffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+            sunBuffer.addVertex(sunMatrix, -radius, 100.0F, -radius).setUv(0.0F, 0.0F)
+                    .addVertex(sunMatrix, radius, 100.0F, -radius).setUv(1.0F, 0.0F)
+                    .addVertex(sunMatrix, radius, 100.0F, radius).setUv(1.0F, 1.0F)
+                    .addVertex(sunMatrix, -radius, 100.0F, radius).setUv(0.0F, 1.0F);
+            BufferUploader.drawWithShader(sunBuffer.buildOrThrow());
+        });
 
         // Render earth
         f10 = 0.5F;

@@ -1,13 +1,11 @@
 {
   "schemaVersion": 1,
-  
   "id": "galacticraft-test",
   "version": "0.1.0",
   "name": "Galacticraft Test Mod",
   "icon": "assets/galacticraft-test/icon.png",
   "description": "The test mod for Galacticraft 5.",
   "license": "MIT",
-
   "contact": {
     "homepage": "https://galacticraft.team/",
     "sources": "https://github.com/TeamGalacticraft/Galacticraft/",
@@ -22,29 +20,38 @@
       }
     }
   ],
-
   "environment": "*",
   "entrypoints": {
     "fabric-gametest": [
+      "dev.galacticraft.mod.gametest.MercuryGenerationTestSuite",
+      "dev.galacticraft.mod.gametest.MarsGenerationTestSuite",
+      "dev.galacticraft.mod.gametest.MoonGenerationTestSuite",
+      "dev.galacticraft.mod.world.gen.carver.LunarUndergroundTestSuite",
+      "dev.galacticraft.mod.world.gen.feature.LunarDiscoveryTestSuite",
       "dev.galacticraft.mod.gametest.BuggyItemTestSuite",
+      "dev.galacticraft.mod.gametest.AstroMinerBaseTestSuite",
       "dev.galacticraft.mod.gametest.CannedFoodEatingTestSuite",
       "dev.galacticraft.mod.gametest.CreativeOxygenTestSuite",
-    "dev.galacticraft.mod.gametest.DimensionTimeTestSuite",
+      "dev.galacticraft.mod.gametest.DimensionTimeTestSuite",
       "dev.galacticraft.mod.gametest.DungeonBossDefeatTestSuite",
+      "dev.galacticraft.mod.gametest.SpiderBroodTestSuite",
       "dev.galacticraft.mod.gametest.GratingTestSuite",
       "dev.galacticraft.mod.gametest.MachineEnergyTransferTestSuite",
-    "dev.galacticraft.mod.gametest.MonsterSpawnRuleTestSuite",
+      "dev.galacticraft.mod.gametest.MonsterSpawnRuleTestSuite",
       "dev.galacticraft.mod.gametest.OxygenSealerTestSuite",
       "dev.galacticraft.mod.gametest.OxygenStorageModuleTestSuite",
       "dev.galacticraft.mod.gametest.ParachuteTestSuite",
       "dev.galacticraft.mod.gametest.PolishTestSuite",
       "dev.galacticraft.mod.gametest.RocketCargoTransferTestSuite",
+      "dev.galacticraft.mod.gametest.LaunchControllerTestSuite",
       "dev.galacticraft.mod.gametest.RocketLaunchPadPersistenceTestSuite",
+      "dev.galacticraft.mod.gametest.RocketManualLandingTestSuite",
       "dev.galacticraft.mod.gametest.SatelliteWorldMigrationTestSuite",
       "dev.galacticraft.mod.gametest.VacuumTorchTestSuite",
       "dev.galacticraft.mod.gametest.VehiclePersistenceTestSuite",
       "dev.galacticraft.mod.content.block.entity.machine.OxygenBubbleDistributorGameTest",
       "dev.galacticraft.mod.content.block.entity.machine.OxygenCollectorGameTest",
+      "dev.galacticraft.mod.content.block.entity.machine.OxygenCompressorGameTest",
       "dev.galacticraft.mod.gametest.machine.AdvancedSolarPanelTestSuite",
       "dev.galacticraft.mod.gametest.machine.BasicSolarPanelTestSuite",
       "dev.galacticraft.mod.gametest.machine.CircuitFabricatorTestSuite",
@@ -60,8 +67,13 @@
       "dev.galacticraft.mod.gametest.PipeTestSuite",
       "dev.galacticraft.mod.gametest.RocketWorkbenchTestSuite",
       "dev.galacticraft.mod.gametest.RocketWorkbenchSchematicTestSuite",
-    "dev.galacticraft.mod.gametest.SealablePipeTestSuite",
-      "dev.galacticraft.mod.gametest.WireTestSuite"
+      "dev.galacticraft.mod.gametest.SealablePipeTestSuite",
+      "dev.galacticraft.mod.gametest.WireTestSuite",
+      "dev.galacticraft.mod.gametest.LunarBurrowerTestSuite"
+    ],
+    "client": [
+      "dev.galacticraft.mod.client.model.BurrowerClientSmokeTest",
+      "dev.galacticraft.mod.client.model.BurrowerVisualTest"
     ]
   },
   "mixins": [],

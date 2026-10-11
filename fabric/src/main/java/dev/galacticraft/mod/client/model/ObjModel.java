@@ -28,39 +28,46 @@ import de.javagl.obj.*;
 import dev.galacticraft.mod.client.model.types.UnbakedObjModel;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A Model rendered via a VBO.
  */
 public class ObjModel implements GCModel {
     private final Obj obj;
-    private final List<UnbakedObjModel.BakedMaterial> materials;
+    private final Map<ObjFace, UnbakedObjModel.BakedMaterial> faceMaterials = new IdentityHashMap<>();
 
     public ObjModel(Obj obj, List<UnbakedObjModel.BakedMaterial> materials) {
         this.obj = ObjUtils.convertToRenderable(obj);
-        this.materials = materials;
+        // OBJ material activations span groups, including parts rendered separately for animation.
+        UnbakedObjModel.BakedMaterial material = null;
+        for (int index = 0; index < this.obj.getNumFaces(); index++) {
+            ObjFace face = this.obj.getFace(index);
+            material = findMaterial(this.obj.getActivatedMaterialGroupName(face), material, materials);
+            faceMaterials.put(face, material);
+        }
     }
 
     @Override
     public void render(PoseStack modelStack, @Nullable GCModelState state, VertexConsumer consumer, int light, int overlay, int color) {
-        UnbakedObjModel.BakedMaterial lastMaterial = null;
         if (state == null) {
             for (int index = 0; index < obj.getNumFaces(); index++) {
                 ObjFace face = obj.getFace(index);
-                lastMaterial = renderFace(lastMaterial, face, consumer, modelStack, light, overlay, color);
+                renderFace(face, consumer, modelStack, light, overlay, color);
             }
         } else {
             ObjGroup group = obj.getGroup(state.getName());
             for (int index = 0; index < group.getNumFaces(); index++) {
                 ObjFace face = group.getFace(index);
-                lastMaterial = renderFace(lastMaterial, face, consumer, modelStack, light, overlay, color);
+                renderFace(face, consumer, modelStack, light, overlay, color);
             }
         }
     }
 
-    protected UnbakedObjModel.BakedMaterial renderFace(UnbakedObjModel.BakedMaterial lastMaterial, ObjFace face, VertexConsumer consumer, PoseStack matrices, int light, int overlay, int color) {
-        UnbakedObjModel.BakedMaterial material = findMaterial(this.obj.getActivatedMaterialGroupName(face), lastMaterial, materials);
+    protected void renderFace(ObjFace face, VertexConsumer consumer, PoseStack matrices, int light, int overlay, int color) {
+        UnbakedObjModel.BakedMaterial material = faceMaterials.get(face);
         consumer = (material != null ? material.sprite() : GCModelLoader.INSTANCE.getDefaultSprite()).wrap(consumer);
         PoseStack.Pose last = matrices.last();
         for (int vtx = 0; vtx < face.getNumVertices(); vtx++) {
@@ -75,8 +82,6 @@ public class ObjModel implements GCModel {
             FloatTuple normals = obj.getNormal(face.getNormalIndex(vtx));
             consumer.setNormal(last, normals.getX(), normals.getY(), normals.getZ());
         }
-
-        return material;
     }
 
     public static UnbakedObjModel.BakedMaterial findMaterial(String name, UnbakedObjModel.BakedMaterial lastMaterial, List<UnbakedObjModel.BakedMaterial> materials) {

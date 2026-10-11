@@ -39,14 +39,15 @@ package dev.galacticraft.mod.world.dimension.meteor;
  * bodies take the hit at full energy.
  *
  * Units:
- * Everything here is SI. Callers convert with {@link AtmosphereProfile#ALTITUDE_COMPRESSION}:
- * altitudes and velocities are compressed uniformly on the way into block space (so entry angles
- * are preserved), while the meteoroid body itself and the crater it digs stay at one block per
- * metre.
+ * Everything here is SI. Altitude is compressed into block space and the flight clock runs at
+ * {@link #FLIGHT_TIME_SCALE} speed, giving players time to see an entry without reducing its
+ * physical velocity, heating or impact energy. Movement uses the same clock as the integration.
  */
 public final class MeteorPhysics {
     /** Real seconds in one game tick. */
     public static final double TICK_SECONDS = 0.05;
+    /** Simulated flight seconds per real second; slows the descent and physics together. */
+    public static final double FLIGHT_TIME_SCALE = 0.25;
     /**
      * Euler substeps per tick. Accelerations during peak heating reach thousands of m/s^2, so a
      * single step per tick would overshoot badly; eight keeps the integration stable for free.
@@ -60,7 +61,8 @@ public final class MeteorPhysics {
     public static final double MIN_SPEED = 1.0;
 
     /** Divisor converting SI velocity (m/s) into Minecraft delta movement (blocks/tick). */
-    public static final double VELOCITY_TO_BLOCKS_PER_TICK = AtmosphereProfile.ALTITUDE_COMPRESSION / TICK_SECONDS;
+    public static final double VELOCITY_TO_BLOCKS_PER_TICK = AtmosphereProfile.ALTITUDE_COMPRESSION
+            / (TICK_SECONDS * FLIGHT_TIME_SCALE);
 
     private MeteorPhysics() {
     }
@@ -94,7 +96,7 @@ public final class MeteorPhysics {
         double altitude = state.altitude();
 
         double burnoutMass = entryMass * BURNOUT_FRACTION;
-        double dt = TICK_SECONDS / SUBSTEPS;
+        double dt = TICK_SECONDS * FLIGHT_TIME_SCALE / SUBSTEPS;
         double peakPressure = 0.0;
         double ablated = 0.0;
         boolean breakup = false;

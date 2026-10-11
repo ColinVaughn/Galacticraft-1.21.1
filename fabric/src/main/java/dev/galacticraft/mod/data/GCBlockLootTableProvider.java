@@ -86,7 +86,31 @@ public class GCBlockLootTableProvider extends FabricBlockLootTableProvider {
             this.dropSelf(decorationSet.detailedWall());
         }
 
+        this.dropSelf(GCBlocks.VESICULAR_LUNAR_BASALT);
+        this.dropSelf(GCBlocks.LUNAR_BREAKDOWN_RUBBLE);
+        this.dropSelf(GCBlocks.LUNAR_SCATTERED_FRAGMENTS);
+        this.dropSelf(GCBlocks.LUNAR_FALLEN_ROOF_SLAB);
+        this.dropSelf(GCBlocks.LUNAR_FRACTURED_OUTCROP);
+        this.dropSelf(GCBlocks.LUNAR_BASALT_WALL_SHELF);
+        this.dropSelf(GCBlocks.LUNAR_CEILING_BREAKDOWN);
+        this.dropSelf(GCBlocks.LUNAR_BASALT_BREAKDOWN_RUBBLE);
+        this.dropSelf(GCBlocks.LUNAR_FROSTED_BREAKDOWN_RUBBLE);
+        this.dropSelf(GCBlocks.ABANDONED_SURVEY_BEACON);
+        this.dropSelf(GCBlocks.HELION_NODULES);
+        this.dropSelf(GCBlocks.HELION_WALL_CRUST);
+        this.dropSelf(GCBlocks.HELIUM_3_VENT);
+        this.dropSelf(GCBlocks.BURROWER_EGG_CLUSTER);
+        this.dropSelf(GCBlocks.LUNAR_BURROWER_EGG);
+        this.dropSelf(GCBlocks.BURROWER_BROKEN_EGGSHELL);
+        this.dropSelf(GCBlocks.BURROWER_EXCAVATED_TAILINGS);
+        this.dropSelf(GCBlocks.BURROWER_DEN_SCRAPS);
+        this.add(GCBlocks.ICE_BEARING_BRECCIA, this.createSilkTouchDispatchTable(GCBlocks.ICE_BEARING_BRECCIA, LootItem.lootTableItem(Blocks.ICE)));
+
         this.dropSelf(GCBlocks.MOON_TURF);
+        this.dropSelf(GCBlocks.MOON_ROCKY_REGOLITH);
+        this.dropSelf(GCBlocks.MOON_MARE_REGOLITH);
+        this.dropSelf(GCBlocks.MOON_ANORTHOSITE);
+        this.dropSelf(GCBlocks.MOON_IMPACT_BRECCIA);
         this.dropSelf(GCBlocks.MOON_DIRT);
         this.dropOther(GCBlocks.MOON_DIRT_PATH, GCBlocks.MOON_DIRT);
         this.dropSelf(GCBlocks.MOON_DUNGEON_BRICK);
@@ -157,6 +181,10 @@ public class GCBlockLootTableProvider extends FabricBlockLootTableProvider {
         this.dropSelf(GCBlocks.MOON_TANGLE);
 
         this.dropSelf(GCBlocks.MARS_SURFACE_ROCK);
+        this.dropSelf(GCBlocks.MARS_ROCKY_REGOLITH);
+        this.dropSelf(GCBlocks.MARS_BASALTIC_SAND);
+        this.dropSelf(GCBlocks.MARS_WEATHERED_BASALT);
+        this.dropSelf(GCBlocks.MARS_SEDIMENTARY_ROCK);
         this.dropSelf(GCBlocks.MARS_SUB_SURFACE_ROCK);
 
         this.add(GCBlocks.MARS_STONE, this.createSingleItemTableWithSilkTouch(GCBlocks.MARS_STONE, GCBlocks.MARS_COBBLESTONE));
@@ -177,11 +205,19 @@ public class GCBlockLootTableProvider extends FabricBlockLootTableProvider {
         this.dropSelf(GCBlocks.SOFT_VENUS_ROCK);
         this.dropSelf(GCBlocks.HARD_VENUS_ROCK);
         this.dropSelf(GCBlocks.SCORCHED_VENUS_ROCK);
+        this.dropSelf(GCBlocks.VENUS_PLAINS_BASALT);
+        this.dropSelf(GCBlocks.VENUS_TESSERA_ROCK);
+        this.dropSelf(GCBlocks.VENUS_FLOW_BASALT);
+        this.dropSelf(GCBlocks.VENUS_STONY_REGOLITH);
         this.add(GCBlocks.VOLCANIC_ROCK, this.createSilkTouchOnlyTable(GCBlocks.VOLCANIC_ROCK));
         this.dropSelf(GCBlocks.PUMICE);
         this.add(GCBlocks.VAPOR_SPOUT, this.createSingleItemTableWithSilkTouch(GCBlocks.VAPOR_SPOUT, GCBlocks.SOFT_VENUS_ROCK));
 
         this.dropSelf(GCBlocks.MERCURY_SURFACE_ROCK);
+        this.dropSelf(GCBlocks.MERCURY_ROCKY_REGOLITH);
+        this.dropSelf(GCBlocks.MERCURY_PLAINS_ROCK);
+        this.dropSelf(GCBlocks.MERCURY_IMPACT_BRECCIA);
+        this.dropSelf(GCBlocks.MERCURY_DARK_REGOLITH);
         this.dropSelf(GCBlocks.MERCURY_SUB_SURFACE_ROCK);
         this.dropSelf(GCBlocks.MERCURY_STONE);
         this.dropSelf(GCBlocks.MERCURY_SCARP_ROCK);
@@ -353,11 +389,11 @@ public class GCBlockLootTableProvider extends FabricBlockLootTableProvider {
         this.dropSelf(GCBlocks.OXYGEN_SEALER);
         this.dropSelf(GCBlocks.OXYGEN_BUBBLE_DISTRIBUTOR);
         this.dropSelf(GCBlocks.TERRAFORMER);
-        this.dropSelf(GCBlocks.OXYGEN_DECOMPRESSOR);
         this.dropSelf(GCBlocks.OXYGEN_COMPRESSOR);
         this.dropSelf(GCBlocks.OXYGEN_STORAGE_MODULE);
         this.dropSelf(GCBlocks.FUEL_LOADER);
         this.dropSelf(GCBlocks.CARGO_LOADER);
+        this.dropSelf(GCBlocks.LAUNCH_CONTROLLER);
         this.dropSelf(GCBlocks.CARGO_UNLOADER);
         this.dropSelf(GCBlocks.ASTRO_MINER_BASE);
         this.dropSelf(GCBlocks.RADAR);

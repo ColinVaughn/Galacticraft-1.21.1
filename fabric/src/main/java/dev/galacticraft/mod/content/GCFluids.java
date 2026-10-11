@@ -33,6 +33,8 @@ import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
 
 public class GCFluids {
+    public static final FlowingFluid HELIUM_3 = new Helium3Fluid.Still();
+    public static final FlowingFluid FLOWING_HELIUM_3 = new Helium3Fluid.Flowing();
     public static final FlowingFluid CRUDE_OIL = new CrudeOilFluid.Still();
     public static final FlowingFluid FLOWING_CRUDE_OIL = new CrudeOilFluid.Flowing();
     public static final FlowingFluid FUEL = new FuelFluid.Still();
@@ -43,6 +45,8 @@ public class GCFluids {
     public static final Fluid LIQUID_OXYGEN = new OxygenFluid();
 
     public static void register() {
+        register(Constant.Fluid.HELIUM_3_STILL, HELIUM_3);
+        register(Constant.Fluid.HELIUM_3_FLOWING, FLOWING_HELIUM_3);
         register(Constant.Fluid.CRUDE_OIL_STILL, CRUDE_OIL);
         register(Constant.Fluid.CRUDE_OIL_FLOWING, FLOWING_CRUDE_OIL);
         register(Constant.Fluid.FUEL_STILL, FUEL);
@@ -53,6 +57,7 @@ public class GCFluids {
     }
 
     public static void registerFluidVariantAttributes() {
+        FluidVariantAttributes.register(HELIUM_3, new GCFluidAttribute(Component.translatable(GCBlocks.HELIUM_3.getDescriptionId()), 2000, false));
         FluidVariantAttributes.register(CRUDE_OIL, new GCFluidAttribute(
                 Component.translatable(GCBlocks.CRUDE_OIL.getDescriptionId())
                         .setStyle(Constant.Text.DARK_GRAY_STYLE),

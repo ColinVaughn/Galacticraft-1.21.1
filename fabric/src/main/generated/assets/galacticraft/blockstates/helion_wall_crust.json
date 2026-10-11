@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "galacticraft:block/helion_wall_crust",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "galacticraft:block/helion_wall_crust",
+      "y": 0
+    },
+    "facing=south": {
+      "model": "galacticraft:block/helion_wall_crust",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "galacticraft:block/helion_wall_crust",
+      "y": 270
+    }
+  }
+}

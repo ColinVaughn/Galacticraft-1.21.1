@@ -24,126 +24,87 @@
 package dev.galacticraft.mod.client.render.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Axis;
 import dev.galacticraft.mod.Constant;
+import dev.galacticraft.mod.client.model.MeteorDefenseModel;
 import dev.galacticraft.mod.content.entity.FallingMeteorEntity;
-import dev.galacticraft.mod.world.dimension.meteor.MeteoroidClass;
-import dev.galacticraft.mod.world.dimension.meteor.MeteoroidPalette;
 import dev.galacticraft.mod.world.dimension.meteor.MeteoroidShape;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.state.BlockState;
-import org.joml.Matrix4f;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionf;
 
-import java.util.List;
-
-/**
- * Draws a meteoroid as the block body it actually is.
- *
- * The voxel list is rebuilt from the entity's synced seed, and only the first
- * {@code survivingVoxelCount()} entries are drawn. Because {@link MeteoroidShape} orders voxels
- * from the centre outwards, ablation reads as the body eroding from the outside in without a
- * single block ever crossing the network.
- *
- * An additive bloom scaled by the entity's ablation rate rides on top, so a body glows in
- * proportion to how hard the atmosphere is actually working on it: fiercely over Venus, briefly
- * over Earth, and not at all over an airless body.
- */
+/** Blockbench rock, ember seams and animated flame cards driven by the existing ablation signal. */
 @Environment(EnvType.CLIENT)
 public class FallingMeteorRenderer extends EntityRenderer<FallingMeteorEntity> {
-    private static final ResourceLocation TEXTURE = Constant.id("textures/block/fallen_meteor.png");
-    /** Relative sizes and weights of the nested bloom quads, innermost last. */
-    private static final float[] GLOW_LAYER_SCALE = {1.0f, 0.66f, 0.36f};
-    private static final float[] GLOW_LAYER_ALPHA = {0.22f, 0.45f, 0.95f};
-
-    private final BlockRenderDispatcher dispatcher;
+    private static final ResourceLocation STONY = texture("stony");
+    private static final ResourceLocation IRON = texture("iron");
+    private static final ResourceLocation PALLASITE = texture("pallasite");
+    private static final ResourceLocation GLOW = texture("glow");
+    private static final ResourceLocation FLAMES = texture("flames");
+    private final MeteorDefenseModel model;
 
     public FallingMeteorRenderer(EntityRendererProvider.Context ctx) {
         super(ctx);
-        this.dispatcher = ctx.getBlockRenderDispatcher();
+        this.model = new MeteorDefenseModel(Minecraft.getInstance().getResourceManager(), "entity", "falling_meteor");
     }
 
     @Override
     public void render(FallingMeteorEntity entity, float yaw, float partialTick, PoseStack matrices,
                        MultiBufferSource vertexConsumers, int light) {
-        List<MeteoroidShape.Voxel> voxels = entity.voxels();
-        int surviving = Math.min(entity.survivingVoxelCount(), voxels.size());
-        if (surviving <= 0) return;
-
-        this.shadowRadius = (float) MeteoroidShape.radiusFor(entity.getSize());
-        MeteoroidClass type = entity.getMeteoroidClass();
-
+        float scale = bodyScale(entity.getSize(), entity.getMassFraction());
+        if (scale <= 0) return;
+        this.shadowRadius = scale;
+        double seconds = (entity.tickCount + (double) partialTick) / 20 + Math.floorMod(entity.getSeed(), 120) / 20.0;
+        model.reset();
+        model.animate("animation.falling_meteor.tumble", seconds);
         matrices.pushPose();
-        matrices.mulPose(Axis.YP.rotationDegrees(entity.getYRot()));
-        matrices.mulPose(Axis.XP.rotationDegrees(entity.getXRot()));
-
-        for (int i = 0; i < surviving; i++) {
-            MeteoroidShape.Voxel voxel = voxels.get(i);
-            BlockState state = MeteoroidPalette.bodyState(type, voxel.roll());
-
-            matrices.pushPose();
-            matrices.translate(voxel.x() - 0.5, voxel.y() - 0.5, voxel.z() - 0.5);
-            this.dispatcher.renderBatched(
-                    state,
-                    entity.blockPosition(),
-                    entity.level(),
-                    matrices,
-                    vertexConsumers.getBuffer(ItemBlockRenderTypes.getMovingBlockRenderType(state)),
-                    false,
-                    entity.getRandom());
-            matrices.popPose();
+        matrices.scale(scale, scale, scale);
+        model.renderBone("body", matrices, vertexConsumers.getBuffer(RenderType.entityCutoutNoCull(getTextureLocation(entity))),
+                light, OverlayTexture.NO_OVERLAY, -1);
+        float heat = Mth.clamp(entity.getGlow(), 0, 1);
+        if (heat > 0.02f) {
+            int color = (Math.round(heat * 255) << 24) | 0xFFFFFF;
+            var embers = vertexConsumers.getBuffer(RenderType.entityTranslucentEmissive(GLOW));
+            model.renderBone("body", matrices, embers, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, color);
+            model.animate("animation.falling_meteor.burn", seconds);
+            alignFlames(matrices, entity.getDeltaMovement());
+            model.bone("burning").yScale = 0.4f + 0.6f * heat;
+            model.renderBone("burning", matrices, vertexConsumers.getBuffer(RenderType.entityTranslucentEmissive(FLAMES)),
+                    LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, color);
         }
-
         matrices.popPose();
-
-        renderGlow(entity, matrices, vertexConsumers);
+        super.render(entity, yaw, partialTick, matrices, vertexConsumers, light);
     }
 
-    /**
-     * Stacks a few additive quads facing the camera. Overlapping them fakes a radial falloff far
-     * more cheaply than a textured billboard, and they are skipped entirely when the body is not
-     * ablating - which is exactly what happens in a vacuum.
-     */
-    private void renderGlow(FallingMeteorEntity entity, PoseStack matrices, MultiBufferSource vertexConsumers) {
-        float glow = entity.getGlow();
-        if (glow <= 0.02f) return;
+    static float bodyScale(int size, float massFraction) {
+        return (float) (MeteoroidShape.radiusFor(size) * Math.cbrt(Mth.clamp(massFraction, 0, 1)));
+    }
 
-        float radius = (float) MeteoroidShape.radiusFor(entity.getSize());
-        VertexConsumer consumer = vertexConsumers.getBuffer(RenderType.lightning());
+    static void alignFlames(PoseStack matrices, Vec3 velocity) {
+        if (velocity.lengthSqr() < 1.0e-8) return;
+        Vec3 tail = velocity.normalize().scale(-1);
+        matrices.mulPose(new Quaternionf().rotationTo(0, 1, 0, (float) tail.x, (float) tail.y, (float) tail.z));
+    }
 
-        matrices.pushPose();
-        matrices.mulPose(this.entityRenderDispatcher.cameraOrientation());
-        Matrix4f pose = matrices.last().pose();
-
-        for (int layer = 0; layer < GLOW_LAYER_SCALE.length; layer++) {
-            float size = radius * (1.7f + glow * 0.9f) * GLOW_LAYER_SCALE[layer];
-            int alpha = (int) (Math.min(1.0f, glow * GLOW_LAYER_ALPHA[layer]) * 255.0f);
-            if (alpha <= 0) continue;
-
-            // Cooler orange in the outer haze, white hot at the core.
-            float core = GLOW_LAYER_SCALE[GLOW_LAYER_SCALE.length - 1 - layer];
-            int green = 140 + (int) (100.0f * core);
-            int blue = 60 + (int) (170.0f * core);
-
-            consumer.addVertex(pose, -size, -size, 0.0f).setColor(255, green, blue, alpha);
-            consumer.addVertex(pose, size, -size, 0.0f).setColor(255, green, blue, alpha);
-            consumer.addVertex(pose, size, size, 0.0f).setColor(255, green, blue, alpha);
-            consumer.addVertex(pose, -size, size, 0.0f).setColor(255, green, blue, alpha);
-        }
-
-        matrices.popPose();
+    private static ResourceLocation texture(String material) {
+        return Constant.id("textures/entity/meteor/falling_meteor_" + material + ".png");
     }
 
     @Override
     public ResourceLocation getTextureLocation(FallingMeteorEntity entity) {
-        return TEXTURE;
+        return switch (entity.getMeteoroidClass()) {
+            case STONY -> STONY;
+            case IRON -> IRON;
+            case PALLASITE -> PALLASITE;
+        };
     }
 }

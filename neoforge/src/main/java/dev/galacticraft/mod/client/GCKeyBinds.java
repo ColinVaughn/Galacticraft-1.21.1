@@ -28,6 +28,9 @@ import dev.galacticraft.mod.client.gui.screen.ingame.CelestialSelectionScreen;
 import dev.galacticraft.mod.content.entity.vehicle.Buggy;
 import dev.galacticraft.mod.content.entity.vehicle.RocketEntity;
 import dev.galacticraft.mod.network.c2s.OpenRocketPayload;
+import dev.galacticraft.mod.network.c2s.ToggleBurrowerTunnelPayload;
+import dev.galacticraft.mod.network.c2s.ToggleRocketLandingPayload;
+import dev.galacticraft.mod.content.entity.LunarBurrowerEntity;
 import dev.galacticraft.mod.util.Translations;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -41,6 +44,10 @@ public final class GCKeyBinds {
             Translations.Keybindings.ROCKET_INVENTORY, GLFW.GLFW_KEY_F, KeyMapping.CATEGORY_INVENTORY);
     public static final KeyMapping TOGGLE_SENSOR_GLASSES_MODE = new KeyMapping(
             Translations.Keybindings.SENSOR_GLASSES_MODE, GLFW.GLFW_KEY_K, KeyMapping.CATEGORY_MISC);
+    public static final KeyMapping TOGGLE_BURROWER_TUNNEL = new KeyMapping(
+            Translations.Keybindings.BURROWER_TUNNEL, GLFW.GLFW_KEY_G, KeyMapping.CATEGORY_MISC);
+    public static final KeyMapping TOGGLE_ROCKET_LANDING = new KeyMapping(
+            Translations.Keybindings.ROCKET_LANDING, GLFW.GLFW_KEY_V, KeyMapping.CATEGORY_MISC);
 
     public static void handleKeybinds(Minecraft client) {
         if (client.level == null || client.player == null || client.screen != null) return;
@@ -56,6 +63,25 @@ public final class GCKeyBinds {
         while (TOGGLE_SENSOR_GLASSES_MODE.consumeClick()) {
             SensorGlassesOverlay.toggleAdvancedMode();
         }
+        while (TOGGLE_BURROWER_TUNNEL.consumeClick()) {
+            if (client.player.getVehicle() instanceof LunarBurrowerEntity worm && worm.getControllingPassenger() == client.player)
+                NetworkManager.sendToServer(ToggleBurrowerTunnelPayload.INSTANCE);
+        }
+        while (TOGGLE_ROCKET_LANDING.consumeClick()) {
+            if (client.player.getVehicle() instanceof RocketEntity)
+                NetworkManager.sendToServer(ToggleRocketLandingPayload.INSTANCE);
+        }
+    }
+
+    public static void renderBurrowerMode(net.minecraft.client.gui.GuiGraphics graphics, net.minecraft.client.DeltaTracker delta) {
+        Minecraft client = Minecraft.getInstance();
+        if (client.options.hideGui || client.player == null || !(client.player.getVehicle() instanceof LunarBurrowerEntity worm)
+                || worm.getControllingPassenger() != client.player) return;
+        var text = net.minecraft.network.chat.Component.translatable(worm.isTunnelMode()
+                ? "entity.galacticraft.lunar_burrower.tunnel_on" : "entity.galacticraft.lunar_burrower.tunnel_off",
+                TOGGLE_BURROWER_TUNNEL.getTranslatedKeyMessage());
+        graphics.drawCenteredString(client.font, text, graphics.guiWidth() / 2, graphics.guiHeight() - 64,
+                worm.isTunnelMode() ? 0x7AE7D9 : 0xFFFFFF);
     }
 
     private GCKeyBinds() {}

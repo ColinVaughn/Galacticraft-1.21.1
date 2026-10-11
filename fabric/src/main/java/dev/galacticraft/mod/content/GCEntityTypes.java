@@ -30,6 +30,9 @@ import dev.galacticraft.mod.content.entity.*;
 import dev.galacticraft.mod.content.entity.boss.CreeperBoss;
 import dev.galacticraft.mod.content.entity.boss.SkeletonBoss;
 import dev.galacticraft.mod.content.entity.boss.SpiderBoss;
+import dev.galacticraft.mod.content.entity.boss.SpiderVenomEntity;
+import dev.galacticraft.mod.content.entity.boss.SpiderEggEntity;
+import dev.galacticraft.mod.content.entity.boss.SpiderlingEntity;
 import dev.galacticraft.mod.content.entity.vehicle.AstroMinerEntity;
 import dev.galacticraft.mod.content.entity.vehicle.CargoRocketEntity;
 import dev.galacticraft.mod.content.entity.vehicle.Buggy;
@@ -46,6 +49,12 @@ import java.util.function.BiConsumer;
 
 public class GCEntityTypes {
     public static final GCRegistry<EntityType<?>> ENTITIES = new GCRegistry<>(BuiltInRegistries.ENTITY_TYPE);
+    public static final EntityType<LunarBurrowerEntity> LUNAR_BURROWER = ENTITIES.register("lunar_burrower",
+            EntityType.Builder.of(LunarBurrowerEntity::new, MobCategory.MONSTER).sized(1.6F, 1.4F)
+                    .eyeHeight(0.8F).clientTrackingRange(12).updateInterval(2).build(Constant.id("lunar_burrower").toString()));
+    public static final EntityType<BurrowerBodyEntity> BURROWER_BODY = ENTITIES.register("burrower_body",
+            EntityType.Builder.<BurrowerBodyEntity>of(BurrowerBodyEntity::new, MobCategory.MISC).sized(1.5F, 1.2F)
+                    .noSave().noSummon().clientTrackingRange(12).updateInterval(2).build(Constant.id("burrower_body").toString()));
     public static final EntityType<MoonVillagerEntity> MOON_VILLAGER = ENTITIES.register(Entity.MOON_VILLAGER, EntityType.Builder.of(MoonVillagerEntity::new, MobCategory.MISC)
             .sized(0.6F, 2.5F)
             .eyeHeight(1.72F)
@@ -209,6 +218,23 @@ public class GCEntityTypes {
             .clientTrackingRange(80)
             .updateInterval(3), true)
             .build(Constant.id(Entity.SPIDER_BOSS).toString()));
+    public static final EntityType<SpiderVenomEntity> SPIDER_VENOM = ENTITIES.register(Entity.SPIDER_VENOM, velocityUpdates(EntityType.Builder.<SpiderVenomEntity>of(SpiderVenomEntity::new, MobCategory.MISC)
+            .sized(0.65F, 0.65F)
+            .clientTrackingRange(80)
+            .updateInterval(1)
+            .noSave()
+            .noSummon(), true)
+            .build(Constant.id(Entity.SPIDER_VENOM).toString()));
+    public static final EntityType<SpiderEggEntity> SPIDER_EGG = ENTITIES.register(Entity.SPIDER_EGG, EntityType.Builder.of(SpiderEggEntity::new, MobCategory.MONSTER)
+            .sized(0.8F, 0.85F)
+            .clientTrackingRange(64)
+            .updateInterval(3)
+            .build(Constant.id(Entity.SPIDER_EGG).toString()));
+    public static final EntityType<SpiderlingEntity> SPIDERLING = ENTITIES.register(Entity.SPIDERLING, velocityUpdates(EntityType.Builder.of(SpiderlingEntity::new, MobCategory.MONSTER)
+            .sized(0.7F, 0.5F)
+            .clientTrackingRange(64)
+            .updateInterval(2), true)
+            .build(Constant.id(Entity.SPIDERLING).toString()));
 
     private static <T extends net.minecraft.world.entity.Entity> EntityType.Builder<T> velocityUpdates(
             EntityType.Builder<T> builder, boolean enabled) {
@@ -229,6 +255,7 @@ public class GCEntityTypes {
     }
 
     public static void registerAttributes(BiConsumer<EntityType<? extends LivingEntity>, AttributeSupplier.Builder> register) {
+        register.accept(LUNAR_BURROWER, LunarBurrowerEntity.createAttributes().add(GcApiEntityAttributes.CAN_BREATHE_IN_SPACE, 1.0D));
         register.accept(MOON_VILLAGER, MoonVillagerEntity.createMobAttributes().add(GcApiEntityAttributes.CAN_BREATHE_IN_SPACE, 1.0D));
         register.accept(EVOLVED_ZOMBIE, EvolvedZombieEntity.createAttributes().add(GcApiEntityAttributes.CAN_BREATHE_IN_SPACE, 1.0D).add(Attributes.MOVEMENT_SPEED, 0.35D).add(Attributes.MAX_HEALTH, 25.0D));
         register.accept(EVOLVED_CREEPER, EvolvedCreeperEntity.createAttributes().add(GcApiEntityAttributes.CAN_BREATHE_IN_SPACE, 1.0D).add(Attributes.MAX_HEALTH, 25.0D));
@@ -248,5 +275,7 @@ public class GCEntityTypes {
         register.accept(SKELETON_BOSS, SkeletonBoss.createAttributes().add(GcApiEntityAttributes.CAN_BREATHE_IN_SPACE, 1.0D));
         register.accept(CREEPER_BOSS, CreeperBoss.createAttributes().add(GcApiEntityAttributes.CAN_BREATHE_IN_SPACE, 1.0D));
         register.accept(SPIDER_BOSS, SpiderBoss.createAttributes().add(GcApiEntityAttributes.CAN_BREATHE_IN_SPACE, 1.0D));
+        register.accept(SPIDER_EGG, SpiderEggEntity.createAttributes().add(GcApiEntityAttributes.CAN_BREATHE_IN_SPACE, 1.0D));
+        register.accept(SPIDERLING, SpiderlingEntity.createAttributes().add(GcApiEntityAttributes.CAN_BREATHE_IN_SPACE, 1.0D));
     }
 }

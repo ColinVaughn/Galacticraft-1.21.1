@@ -33,7 +33,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.chunk.CarvingMask;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.levelgen.Aquifer;
-import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.levelgen.DensityFunction;
 import net.minecraft.world.level.levelgen.carver.CarvingContext;
 import net.minecraft.world.level.levelgen.carver.CaveCarverConfiguration;
 import net.minecraft.world.level.levelgen.carver.WorldCarver;
@@ -93,7 +93,12 @@ public class LunarLavaTubeCarver extends WorldCarver<CaveCarverConfiguration> {
 
         List<TubeNode> mainTube = createPath(random, startX, startY, startZ, heading, pitch, radius,
                 verticalScale, length, firstChamber, secondChamber, true);
-        carvePath(context, config, chunk, posToBiome, aquifer, carvingMask, mainTube);
+        List<List<TubeNode>> paths = new ArrayList<>();
+        paths.add(mainTube);
+        List<LunarChamber> rooms = new ArrayList<>();
+        TubeNode first = mainTube.get(firstChamber), second = mainTube.get(secondChamber);
+        rooms.add(room(first, LunarChamber.Kind.COLLAPSE, random));
+        rooms.add(room(second, LunarChamber.choose(posToBiome.apply(BlockPos.containing(second.x, second.y, second.z)), random), random));
 
         for (int branchIndex = 0; branchIndex < branchCount; branchIndex++) {
             int branchPoint = length / 5 + random.nextInt(Math.max(1, length * 3 / 5));
@@ -104,30 +109,76 @@ public class LunarLavaTubeCarver extends WorldCarver<CaveCarverConfiguration> {
                     junction.heading + branchTurn, pitch * 0.5 + (random.nextDouble() - 0.5) * 0.045,
                     radius * (0.52 + random.nextDouble() * 0.22), verticalScale, branchLength,
                     branchLength / 2, -100, true);
-            carvePath(context, config, chunk, posToBiome, aquifer, carvingMask, branch);
+            paths.add(branch);
+            TubeNode destination = branch.getLast();
+            rooms.add(room(destination, LunarChamber.choose(posToBiome.apply(
+                    BlockPos.containing(destination.x, destination.y, destination.z)), random), random));
         }
 
         // A bypass rejoins the main conduit and turns an otherwise linear tube into a natural loop.
         // Split-flow passages like this form where a lava stream flows around a stable obstruction.
-        if (random.nextFloat() < 0.48F) {
+        if (random.nextFloat() < 0.85F) {
             int bypassStart = length / 4;
             int bypassEnd = length * 3 / 4;
             List<TubeNode> bypass = createBypass(random, mainTube.get(bypassStart), mainTube.get(bypassEnd),
                     radius * 0.58, verticalScale);
-            carvePath(context, config, chunk, posToBiome, aquifer, carvingMask, bypass);
+            paths.add(bypass);
+        }
+
+        // Separate levels share two ramps and an overlook breach, so the lower route rejoins.
+        if (random.nextFloat() < 0.45F) {
+            int from = length / 4, to = length * 3 / 4;
+            List<TubeNode> lower = new ArrayList<>();
+            for (int index = from; index <= to; index++) {
+                TubeNode upper = mainTube.get(index);
+                lower.add(new TubeNode(upper.x, upper.y - 11, upper.z, radius * 0.72,
+                        Math.max(2.4, radius * 0.65), upper.heading));
+            }
+            paths.add(lower);
+            paths.add(createBypass(random, mainTube.get(from - 9), lower.getFirst(), 2.8, 1.0));
+            paths.add(createBypass(random, lower.getLast(), mainTube.get(Math.min(length - 1, to + 9)), 2.8, 1.0));
+            TubeNode overlook = mainTube.get((from + to) / 2);
+            paths.add(List.of(new TubeNode(overlook.x, overlook.y - 5.5, overlook.z, 2.2, 8, overlook.heading)));
+            rooms.add(room(lower.get(lower.size() / 2), LunarChamber.Kind.HELION, random));
+        }
+
+        for (List<TubeNode> path : paths) carvePath(context, config, chunk, posToBiome, aquifer, carvingMask, path, rooms);
+        for (LunarChamber chamber : rooms) {
+            this.carveEllipsoid(context, config, chunk, posToBiome, aquifer, chamber.x(), chamber.y(), chamber.z(),
+                    chamber.radius(), chamber.height(), carvingMask,
+                    (ignored, nx, ny, nz, absoluteY) -> chamber.skip(nx, ny, nz));
         }
 
         if (hasSkylight) {
             carveSkylight(context, config, chunk, posToBiome, aquifer, carvingMask, mainTube.get(skylightPoint));
         }
 
-        placeBreakdownFormations(chunk, random, mainTube.get(firstChamber));
-        placeBreakdownFormations(chunk, random, mainTube.get(secondChamber));
+        for (List<TubeNode> path : paths) linePath(chunk, path);
+        for (LunarChamber chamber : rooms) {
+            chamber.decorate(chunk);
+            // Trace a real carved approach backwards from the destination.
+            List<TubeNode> approach = paths.stream().filter(path -> path.stream().anyMatch(node ->
+                    Math.abs(node.x - chamber.x()) < 0.1 && Math.abs(node.y - chamber.y()) < 0.1
+                            && Math.abs(node.z - chamber.z()) < 0.1))
+                    .findFirst().orElse(mainTube);
+            int closest = 0;
+            double best = Double.MAX_VALUE;
+            for (int index = 0; index < approach.size(); index++) {
+                TubeNode node = approach.get(index);
+                double distance = Mth.square(node.x - chamber.x()) + Mth.square(node.y - chamber.y())
+                        + Mth.square(node.z - chamber.z());
+                if (distance < best) { best = distance; closest = index; }
+            }
+            for (int index = Math.max(0, closest - 24); index < closest; index += 3) {
+                TubeNode node = approach.get(index);
+                chamber.clue(chunk, node.x, node.y, node.z, 1.0 - (closest - index) / 28.0);
+            }
+        }
 
         return true;
     }
 
-    private static List<TubeNode> createPath(RandomSource random, double x, double y, double z, double heading,
+    static List<TubeNode> createPath(RandomSource random, double x, double y, double z, double heading,
                                              double pitch, double baseRadius, double verticalScale, int length,
                                              int firstChamber, int secondChamber, boolean allowChamber) {
         List<TubeNode> nodes = new ArrayList<>(length);
@@ -138,8 +189,8 @@ public class LunarLavaTubeCarver extends WorldCarver<CaveCarverConfiguration> {
             double firstPulse = Math.max(0.0, 1.0 - Math.abs(step - firstChamber) / 7.0);
             double secondPulse = Math.max(0.0, 1.0 - Math.abs(step - secondChamber) / 8.0);
             double chamber = allowChamber ? Math.max(firstPulse, secondPulse) : 0.0;
-            double pulse = 1.0 + Math.sin(step * 0.31) * 0.08 + chamber * 0.42;
-            double horizontalRadius = Math.min(7.5, baseRadius * pulse);
+            double pulse = 1.0 + Math.sin(step * 0.31) * 0.08 + chamber * 0.15;
+            double horizontalRadius = Math.min(6.0, baseRadius * pulse);
             double verticalRadius = Math.max(2.0, horizontalRadius * verticalScale);
             nodes.add(new TubeNode(x, y, z, horizontalRadius, verticalRadius, heading));
 
@@ -157,10 +208,11 @@ public class LunarLavaTubeCarver extends WorldCarver<CaveCarverConfiguration> {
         return nodes;
     }
 
-    private static List<TubeNode> createBypass(RandomSource random, TubeNode start, TubeNode end,
+    static List<TubeNode> createBypass(RandomSource random, TubeNode start, TubeNode end,
                                                 double radius, double verticalScale) {
-        int length = Math.max(18, Mth.floor(Math.sqrt(Mth.square(end.x - start.x)
-                + Mth.square(end.y - start.y) + Mth.square(end.z - start.z)) / STEP_LENGTH));
+        int length = Math.max(18, Math.max(Mth.ceil(Math.abs(end.y - start.y) / 0.35),
+                Mth.ceil(Math.sqrt(Mth.square(end.x - start.x)
+                + Mth.square(end.y - start.y) + Mth.square(end.z - start.z)) / STEP_LENGTH)));
         List<TubeNode> nodes = new ArrayList<>(length + 1);
         double side = random.nextBoolean() ? 1.0 : -1.0;
         double lateralX = -Math.sin(start.heading) * side;
@@ -170,7 +222,7 @@ public class LunarLavaTubeCarver extends WorldCarver<CaveCarverConfiguration> {
             double progress = (double) step / length;
             double offset = Math.sin(progress * Math.PI) * bow;
             double x = Mth.lerp(progress, start.x, end.x) + lateralX * offset;
-            double y = Mth.lerp(progress, start.y, end.y) + Math.sin(progress * Mth.TWO_PI) * 1.5;
+            double y = Mth.lerp(progress, start.y, end.y) + Math.sin(progress * Math.PI * 2.0) * 0.65;
             double z = Mth.lerp(progress, start.z, end.z) + lateralZ * offset;
             double heading = Math.atan2(end.z - start.z, end.x - start.x);
             nodes.add(new TubeNode(x, y, z, radius, Math.max(2.0, radius * verticalScale), heading));
@@ -180,15 +232,21 @@ public class LunarLavaTubeCarver extends WorldCarver<CaveCarverConfiguration> {
 
     private void carvePath(CarvingContext context, CaveCarverConfiguration config, ChunkAccess chunk,
                            Function<BlockPos, Holder<Biome>> posToBiome, Aquifer aquifer, CarvingMask carvingMask,
-                           List<TubeNode> nodes) {
+                           List<TubeNode> nodes, List<LunarChamber> rooms) {
         // Adjacent ellipsoids overlap at this spacing, producing a continuous conduit without the
         // giant spherical rooms and recursive tangles of the vanilla cave algorithm.
         for (int i = 0; i < nodes.size(); i += 2) {
             TubeNode node = nodes.get(i);
             this.carveEllipsoid(context, config, chunk, posToBiome, aquifer, node.x, node.y, node.z,
-                    node.horizontalRadius, node.verticalRadius, carvingMask, TUBE_SHAPE);
+                    node.horizontalRadius, node.verticalRadius, carvingMask,
+                    (context2, nx, ny, nz, absoluteY) -> TUBE_SHAPE.shouldSkip(context2, nx, ny, nz, absoluteY)
+                            || LunarChamber.protectedStone(rooms, node.x + nx * node.horizontalRadius,
+                            node.y + ny * node.verticalRadius, node.z + nz * node.horizontalRadius));
         }
 
+    }
+
+    private static void linePath(ChunkAccess chunk, List<TubeNode> nodes) {
         // A narrow, dark basalt gutter marks the last lava that drained through the conduit. It
         // also gives explorers a visual trail through junctions without adding artificial light.
         BlockPos.MutableBlockPos floorPos = new BlockPos.MutableBlockPos();
@@ -226,54 +284,15 @@ public class LunarLavaTubeCarver extends WorldCarver<CaveCarverConfiguration> {
         }
     }
 
-    private static void placeBreakdownFormations(ChunkAccess chunk, RandomSource random, TubeNode chamber) {
-        int centerX = Mth.floor(chamber.x);
-        int centerZ = Mth.floor(chamber.z);
-        if (!chunk.getPos().equals(new ChunkPos(new BlockPos(centerX, 0, centerZ)))) {
-            return;
-        }
-
-        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-        int attempts = 10 + random.nextInt(7);
-        for (int attempt = 0; attempt < attempts; attempt++) {
-            double angle = random.nextDouble() * Mth.TWO_PI;
-            double distance = Math.sqrt(random.nextDouble()) * chamber.horizontalRadius * 0.72;
-            int x = Mth.floor(chamber.x + Math.cos(angle) * distance);
-            int z = Mth.floor(chamber.z + Math.sin(angle) * distance);
-            if (x < chunk.getPos().getMinBlockX() || x > chunk.getPos().getMaxBlockX()
-                    || z < chunk.getPos().getMinBlockZ() || z > chunk.getPos().getMaxBlockZ()) {
-                continue;
-            }
-
-            int centerY = Mth.floor(chamber.y);
-            int roof = Mth.ceil(chamber.y + chamber.verticalRadius + 2.0);
-            pos.set(x, centerY, z);
-            while (pos.getY() <= roof && chunk.getBlockState(pos).isAir()) {
-                pos.move(0, 1, 0);
-            }
-            if (pos.getY() <= roof && random.nextFloat() < 0.62F) {
-                int dripLength = 1 + random.nextInt(3);
-                pos.move(0, -1, 0);
-                for (int dy = 0; dy < dripLength && chunk.getBlockState(pos).isAir(); dy++) {
-                    chunk.setBlockState(pos, GCBlocks.MOON_BASALT.defaultBlockState(), false);
-                    pos.move(0, -1, 0);
-                }
-            }
-
-            int floor = Mth.floor(chamber.y - chamber.verticalRadius - 2.0);
-            pos.set(x, centerY, z);
-            while (pos.getY() >= floor && chunk.getBlockState(pos).isAir()) {
-                pos.move(0, -1, 0);
-            }
-            if (pos.getY() >= floor && random.nextFloat() < 0.48F) {
-                pos.move(0, 1, 0);
-                int rubbleHeight = random.nextFloat() < 0.22F ? 2 : 1;
-                for (int dy = 0; dy < rubbleHeight && chunk.getBlockState(pos).isAir(); dy++) {
-                    chunk.setBlockState(pos, GCBlocks.MOON_BASALT.defaultBlockState(), false);
-                    pos.move(0, 1, 0);
-                }
-            }
-        }
+    private static LunarChamber room(TubeNode node, LunarChamber.Kind kind, RandomSource random) {
+        double radius = 18 + random.nextDouble() * 6;
+        double height = switch (kind) {
+            case COLD_TRAP -> 18;
+            case CHEESE -> 9;
+            case HELION -> 14;
+            default -> 12;
+        };
+        return new LunarChamber(node.x, node.y, node.z, radius, height, node.heading, kind, random.nextLong());
     }
 
     private void carveSkylight(CarvingContext context, CaveCarverConfiguration config, ChunkAccess chunk,
@@ -281,18 +300,12 @@ public class LunarLavaTubeCarver extends WorldCarver<CaveCarverConfiguration> {
                                CarvingMask carvingMask, TubeNode node) {
         int blockX = Mth.floor(node.x);
         int blockZ = Mth.floor(node.z);
-        if (!chunk.getPos().equals(new ChunkPos(new BlockPos(blockX, 0, blockZ)))) {
-            return;
-        }
-
-        int localX = blockX & 15;
-        int localZ = blockZ & 15;
-        int surfaceY = chunk.getHeight(Heightmap.Types.WORLD_SURFACE_WG, localX, localZ);
+        if (blockX + 4 < chunk.getPos().getMinBlockX() || blockX - 4 > chunk.getPos().getMaxBlockX()
+                || blockZ + 4 < chunk.getPos().getMinBlockZ() || blockZ - 4 > chunk.getPos().getMaxBlockZ()) return;
         double roofY = node.y + node.verticalRadius * 0.75;
-        double overburden = surfaceY - roofY;
-        if (overburden < 5.0 || overburden > 30.0) {
-            return;
-        }
+        // Sample the same terrain column in every target chunk; local heightmaps cannot do this.
+        int surfaceY = surfaceHeight(context.randomState().router().finalDensity(), blockX, blockZ, roofY);
+        if (surfaceY < 0) return;
 
         double shaftRadius = Math.min(2.4, node.horizontalRadius * 0.42);
         for (double y = roofY; y <= surfaceY; y += 1.5) {
@@ -306,7 +319,16 @@ public class LunarLavaTubeCarver extends WorldCarver<CaveCarverConfiguration> {
                 shaftRadius + 1.2, 2.2, carvingMask, ROUND_SHAPE);
     }
 
-    private record TubeNode(double x, double y, double z, double horizontalRadius, double verticalRadius,
+    static int surfaceHeight(DensityFunction density, int x, int z, double roofY) {
+        int top = Mth.ceil(roofY + 48);
+        if (density.compute(new DensityFunction.SinglePointContext(x, top, z)) > 0) return -1;
+        for (int y = top - 1; y >= Mth.ceil(roofY + 5); y--) {
+            if (density.compute(new DensityFunction.SinglePointContext(x, y, z)) > 0) return y + 1;
+        }
+        return -1;
+    }
+
+    record TubeNode(double x, double y, double z, double horizontalRadius, double verticalRadius,
                             double heading) {
     }
 }

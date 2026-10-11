@@ -72,6 +72,7 @@ public class ClientEventHandler {
         HudRenderCallback.EVENT.register(SolarFlareOverlay::onHudRender);
         HudRenderCallback.EVENT.register(SensorGlassesOverlay::onHudRender);
         HudRenderCallback.EVENT.register(RocketOverlay::onHudRender);
+        HudRenderCallback.EVENT.register(GCKeyBinds::renderBurrowerMode);
         HudRenderCallback.EVENT.register(LanderOverlay::onRenderHud);
         HudRenderCallback.EVENT.register(CountdownOverlay::renderCountdown);
     }

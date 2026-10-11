@@ -1,0 +1,138 @@
+{
+	"format_version": "1.12.0",
+	"minecraft:geometry": [
+		{
+			"description": {
+				"identifier": "geometry.galacticraft.falling_meteor",
+				"texture_width": 128,
+				"texture_height": 128,
+				"visible_bounds_width": 4,
+				"visible_bounds_height": 4,
+				"visible_bounds_offset": [0, 1, 0]
+			},
+			"bones": [
+				{
+					"name": "body",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [-8, -8, -8], "size": [16, 16, 16], "uv": [0, 0]},
+						{"origin": [-5, 8, -5], "size": [11, 4, 10], "uv": [65, 0]},
+						{"origin": [-5, -12, -6], "size": [10, 4, 10], "uv": [65, 15]}
+					]
+				},
+				{
+					"name": "crust_west",
+					"parent": "body",
+					"pivot": [7, 0, 0],
+					"rotation": [0, 0, 15],
+					"cubes": [
+						{"origin": [7, -6, -6], "size": [6, 11, 11], "uv": [0, 69]},
+						{"origin": [12, -2, -3], "size": [3, 6, 6], "uv": [92, 30]}
+					]
+				},
+				{
+					"name": "crust_east",
+					"parent": "body",
+					"pivot": [-7, 0, 0],
+					"rotation": [0, 0, -22.5],
+					"cubes": [
+						{"origin": [-13, -6, -5], "size": [6, 12, 11], "uv": [47, 50]},
+						{"origin": [-15, -4, 0], "size": [4, 6, 4], "uv": [102, 87]}
+					]
+				},
+				{
+					"name": "crust_crown",
+					"parent": "body",
+					"pivot": [0, 7, 0],
+					"rotation": [-15, 0, -10],
+					"cubes": [
+						{"origin": [-4, 7, -7], "size": [12, 6, 10], "uv": [47, 33]},
+						{"origin": [-1, 12, -4], "size": [6, 3, 6], "uv": [26, 92]}
+					]
+				},
+				{
+					"name": "crust_north",
+					"parent": "body",
+					"pivot": [0, 0, -7],
+					"rotation": [12, -10, 0],
+					"cubes": [
+						{"origin": [-7, -5, -13], "size": [14, 11, 6], "uv": [0, 51]},
+						{"origin": [-6, -2, -15], "size": [5, 6, 3], "uv": [102, 98]}
+					]
+				},
+				{
+					"name": "crust_south",
+					"parent": "body",
+					"pivot": [0, 0, 7],
+					"rotation": [-22.5, 0, 12],
+					"cubes": [
+						{"origin": [-6, -6, 7], "size": [12, 11, 6], "uv": [35, 74]},
+						{"origin": [-2, -4, 12], "size": [6, 6, 3], "uv": [99, 61]}
+					]
+				},
+				{
+					"name": "crust_belly",
+					"parent": "body",
+					"pivot": [0, -7, 0],
+					"rotation": [0, -20, 8],
+					"cubes": [
+						{"origin": [-5, -13, -5], "size": [12, 6, 11], "uv": [0, 33]}
+					]
+				},
+				{
+					"name": "burning",
+					"pivot": [0, 0, 0]
+				},
+				{
+					"name": "flame_main",
+					"parent": "burning",
+					"pivot": [0, 8, 0],
+					"cubes": [
+						{"origin": [-4, 8, 0], "size": [8, 20, 0], "uv": [82, 50]},
+						{"origin": [0, 8, -4], "size": [0, 20, 8], "uv": [72, 74]}
+					]
+				},
+				{
+					"name": "flame_west",
+					"parent": "burning",
+					"pivot": [8, 5, -2],
+					"rotation": [0, 0, 18],
+					"cubes": [
+						{"origin": [5, 5, -2], "size": [6, 16, 0], "uv": [26, 102]},
+						{"origin": [8, 5, -5], "size": [0, 16, 6], "uv": [13, 92]}
+					]
+				},
+				{
+					"name": "flame_east",
+					"parent": "burning",
+					"pivot": [-8, 5, 2],
+					"rotation": [0, 0, -20],
+					"cubes": [
+						{"origin": [-11, 5, 2], "size": [6, 17, 0], "uv": [99, 43]},
+						{"origin": [-8, 5, -1], "size": [0, 17, 6], "uv": [0, 92]}
+					]
+				},
+				{
+					"name": "flame_north",
+					"parent": "burning",
+					"pivot": [-2, 5, -8],
+					"rotation": [16, 0, 0],
+					"cubes": [
+						{"origin": [-5, 5, -8], "size": [6, 15, 0], "uv": [102, 71]},
+						{"origin": [-2, 5, -11], "size": [0, 15, 6], "uv": [51, 92]}
+					]
+				},
+				{
+					"name": "flame_south",
+					"parent": "burning",
+					"pivot": [2, 5, 8],
+					"rotation": [-18, 0, 0],
+					"cubes": [
+						{"origin": [-1, 5, 8], "size": [6, 18, 0], "uv": [89, 96]},
+						{"origin": [2, 5, 5], "size": [0, 18, 6], "uv": [89, 71]}
+					]
+				}
+			]
+		}
+	]
+}

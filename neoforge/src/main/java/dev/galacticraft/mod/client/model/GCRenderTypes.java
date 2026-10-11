@@ -25,6 +25,7 @@ package dev.galacticraft.mod.client.model;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import dev.galacticraft.mod.Constant;
+import dev.galacticraft.mod.client.render.ShaderPackCompat;
 import net.minecraft.Util;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
@@ -51,6 +52,19 @@ public final class GCRenderTypes {
                             .setOverlayState(RenderType.OVERLAY)
                             .createCompositeState(outline)));
 
+    private static final BiFunction<ResourceLocation, Boolean, RenderType> OBJ_TRANSLUCENT = Util.memoize((texture, outline) ->
+            RenderType.create("galacticraft_obj_translucent", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.TRIANGLES,
+                    RenderType.TRANSIENT_BUFFER_SIZE, false, true, RenderType.CompositeState.builder()
+                            .setShaderState(RenderType.RENDERTYPE_ENTITY_TRANSLUCENT_SHADER)
+                            .setTextureState(new RenderStateShard.TextureStateShard(texture, false, false))
+                            .setTransparencyState(RenderType.TRANSLUCENT_TRANSPARENCY)
+                            .setCullState(RenderType.NO_CULL)
+                            // Glass must not hide a passenger rendered later in the entity batch.
+                            .setWriteMaskState(RenderType.COLOR_WRITE)
+                            .setLightmapState(RenderType.LIGHTMAP)
+                            .setOverlayState(RenderType.OVERLAY)
+                            .createCompositeState(outline)));
+
     private static final BiFunction<ResourceLocation, Boolean, RenderType> BUBBLE = Util.memoize((texture, outline) ->
             RenderType.create("galacticraft_bubble", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.TRIANGLES,
                     RenderType.TRANSIENT_BUFFER_SIZE, false, true, RenderType.CompositeState.builder()
@@ -62,10 +76,25 @@ public final class GCRenderTypes {
                             .setOverlayState(RenderType.OVERLAY)
                             .createCompositeState(outline)));
 
+    private static final BiFunction<ResourceLocation, Boolean, RenderType> SHADER_PACK_BUBBLE = Util.memoize((texture, outline) ->
+            RenderType.create("galacticraft_bubble_translucent", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.TRIANGLES,
+                    RenderType.TRANSIENT_BUFFER_SIZE, false, true, RenderType.CompositeState.builder()
+                            .setShaderState(RenderType.RENDERTYPE_ENTITY_TRANSLUCENT_SHADER)
+                            .setTextureState(new RenderStateShard.TextureStateShard(texture, false, false))
+                            .setTransparencyState(RenderType.TRANSLUCENT_TRANSPARENCY)
+                            .setCullState(RenderType.NO_CULL)
+                            .setWriteMaskState(RenderType.COLOR_WRITE)
+                            .setLightmapState(RenderType.LIGHTMAP)
+                            .setOverlayState(RenderType.OVERLAY)
+                            .createCompositeState(outline)));
+
     public static RenderType obj(ResourceLocation texture) { return obj(texture, true); }
     public static RenderType obj(ResourceLocation texture, boolean outline) { return OBJ.apply(texture, outline); }
+    public static RenderType objTranslucent(ResourceLocation texture) { return OBJ_TRANSLUCENT.apply(texture, true); }
     public static RenderType bubble(ResourceLocation texture) { return bubble(texture, true); }
-    public static RenderType bubble(ResourceLocation texture, boolean outline) { return BUBBLE.apply(texture, outline); }
+    public static RenderType bubble(ResourceLocation texture, boolean outline) {
+        return (ShaderPackCompat.isActive() ? SHADER_PACK_BUBBLE : BUBBLE).apply(texture, outline);
+    }
     public static void setBubbleShader(ShaderInstance shader) { bubbleShader = shader; }
     public static @Nullable ShaderInstance getSpaceStarShader() { return spaceStarShader; }
     public static void setSpaceStarShader(ShaderInstance shader) { spaceStarShader = shader; }

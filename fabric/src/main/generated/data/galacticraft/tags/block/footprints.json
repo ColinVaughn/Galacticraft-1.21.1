@@ -1,5 +1,9 @@
 {
   "values": [
+    "galacticraft:moon_rocky_regolith",
+    "galacticraft:moon_mare_regolith",
+    "galacticraft:mercury_rocky_regolith",
+    "galacticraft:mercury_dark_regolith",
     "galacticraft:moon_turf"
   ]
 }

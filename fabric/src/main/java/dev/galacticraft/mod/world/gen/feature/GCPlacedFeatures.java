@@ -82,6 +82,10 @@ public class GCPlacedFeatures {
     public static final ResourceKey<PlacedFeature> MOON_CHEESE_FLORA = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("moon_cheese_flora"));
     public static final ResourceKey<PlacedFeature> MOON_CAVE_LANDMARK = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("moon_cave_landmark"));
 
+    public static final ResourceKey<PlacedFeature> MOON_CAVE_DECORATIONS = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("moon_cave_decorations"));
+
+    public static final ResourceKey<PlacedFeature> MOON_BURROWER_DEN = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("moon_burrower_den"));
+
     private static PlacedFeature surfaceScatter(HolderGetter<ConfiguredFeature<?, ?>> lookup, ResourceKey<ConfiguredFeature<?, ?>> feature, int rarity) {
         return new PlacedFeature(lookup.getOrThrow(feature), List.of(
                 RarityFilter.onAverageOnceEvery(rarity),
@@ -93,6 +97,10 @@ public class GCPlacedFeatures {
 
     public static void bootstrapRegistries(BootstrapContext<PlacedFeature> context) {
         HolderGetter<ConfiguredFeature<?, ?>> configuredFeatureLookup = context.lookup(Registries.CONFIGURED_FEATURE);
+        context.register(MOON_CAVE_DECORATIONS, new PlacedFeature(configuredFeatureLookup.getOrThrow(GCConfiguredFeature.MOON_CAVE_DECORATIONS), List.of(
+                CountPlacement.of(2), InSquarePlacement.spread(), BiomeFilter.biome())));
+        context.register(MOON_BURROWER_DEN, new PlacedFeature(configuredFeatureLookup.getOrThrow(GCConfiguredFeature.MOON_BURROWER_DEN), List.of(
+                RarityFilter.onAverageOnceEvery(24), InSquarePlacement.spread(), BiomeFilter.biome())));
         context.register(MARS_BOULDER, surfaceScatter(configuredFeatureLookup, GCConfiguredFeature.MARS_BOULDER, 5));
         context.register(MARS_BOULDER_SPARSE, surfaceScatter(configuredFeatureLookup, GCConfiguredFeature.MARS_BOULDER, 14));
         context.register(MARS_HEMATITE_DEPOSIT, surfaceScatter(configuredFeatureLookup, GCConfiguredFeature.MARS_HEMATITE_DEPOSIT, 10));

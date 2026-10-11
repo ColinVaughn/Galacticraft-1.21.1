@@ -6,13 +6,35 @@
 
 # Galacticraft - Boobcat Edition
 
-> Multi-loader port in progress: the project now has Architectury `common`, `fabric`, and `neoforge` modules. Fabric remains the playable implementation while subsystems are migrated to common code. See [the multi-loader port plan](docs/multiloader-port.md) for status and build commands.
+> Multi-loader port in progress: the project now has Architectury `common`, `fabric`, and `neoforge` modules. Fabric remains the playable implementation while subsystems are migrated to common code.
 
 > **A fork by [Boobcat](https://github.com/ColinVaughn), based on [Team Galacticraft's](https://github.com/TeamGalacticraft/Galacticraft) 1.21.1 branch.**
 >
 > This fork layers extra content and tweaks on top of upstream Galacticraft for Minecraft 1.21.1 - including a landable Mercury dimension, a multi-biome Moon overhaul, Mars dust storms, distinct tier-2/tier-3 rockets, and the autonomous astro miner / cargo rocket.
 >
 > All credit for Galacticraft itself belongs to Team Galacticraft. This fork is unofficial and is not affiliated with or endorsed by them. Fork source: <https://github.com/ColinVaughn/Galacticraft-1.21.1>.
+
+## Building this fork
+
+Use JDK 21 and the Gradle wrapper. On Windows:
+
+```powershell
+.\gradlew.bat :fabric:compileJava :neoforge:compileJava
+.\gradlew.bat :fabric:test
+.\gradlew.bat :fabric:runClient
+```
+
+On Linux or macOS, use `./gradlew` instead. After changing data providers, run `:fabric:runDatagen`, then run `:fabric:runGametest` in a separate Gradle invocation so it loads the regenerated resources.
+
+The Moon's surface lighting uses `moon_surface_shader_strength` in `config/galacticraft.json` (default 1, range 0 to 1). Set it to 0 and restart to disable the effect. It uses scene color and depth, so neutral gray objects can also be affected. Optional GPU checks run with:
+
+```powershell
+$env:GC_SHADER_GL_TEST='1'
+$env:GC_SHADER_BENCHMARK='1'
+.\gradlew.bat :fabric:test --tests '*MoonSurfaceShaderTest'
+```
+
+GPU timing covers the Moon lighting pass, rather than complete Minecraft frame time.
 
 ---
 

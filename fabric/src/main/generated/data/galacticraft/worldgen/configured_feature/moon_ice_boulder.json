@@ -1,5 +1,5 @@
 {
-  "type": "minecraft:forest_rock",
+  "type": "galacticraft:moon_boulder",
   "config": {
     "state": {
       "Name": "galacticraft:dense_ice"

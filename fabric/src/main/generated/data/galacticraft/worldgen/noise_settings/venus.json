@@ -189,10 +189,42 @@
                       ]
                     },
                     "then_run": {
-                      "type": "minecraft:block",
-                      "result_state": {
-                        "Name": "galacticraft:volcanic_rock"
-                      }
+                      "type": "minecraft:sequence",
+                      "sequence": [
+                        {
+                          "type": "minecraft:condition",
+                          "if_true": {
+                            "type": "minecraft:steep"
+                          },
+                          "then_run": {
+                            "type": "minecraft:block",
+                            "result_state": {
+                              "Name": "galacticraft:volcanic_rock"
+                            }
+                          }
+                        },
+                        {
+                          "type": "minecraft:condition",
+                          "if_true": {
+                            "type": "minecraft:noise_threshold",
+                            "max_threshold": 100.0,
+                            "min_threshold": 0.4,
+                            "noise": "galacticraft:venus/surface_patches"
+                          },
+                          "then_run": {
+                            "type": "minecraft:block",
+                            "result_state": {
+                              "Name": "galacticraft:scorched_venus_rock"
+                            }
+                          }
+                        },
+                        {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "galacticraft:venus_flow_basalt"
+                          }
+                        }
+                      ]
                     }
                   },
                   {
@@ -204,10 +236,30 @@
                       ]
                     },
                     "then_run": {
-                      "type": "minecraft:block",
-                      "result_state": {
-                        "Name": "galacticraft:soft_venus_rock"
-                      }
+                      "type": "minecraft:sequence",
+                      "sequence": [
+                        {
+                          "type": "minecraft:condition",
+                          "if_true": {
+                            "type": "minecraft:noise_threshold",
+                            "max_threshold": 100.0,
+                            "min_threshold": 0.35,
+                            "noise": "galacticraft:venus/surface_patches"
+                          },
+                          "then_run": {
+                            "type": "minecraft:block",
+                            "result_state": {
+                              "Name": "galacticraft:soft_venus_rock"
+                            }
+                          }
+                        },
+                        {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "galacticraft:venus_stony_regolith"
+                          }
+                        }
+                      ]
                     }
                   },
                   {
@@ -215,15 +267,119 @@
                     "if_true": {
                       "type": "minecraft:biome",
                       "biome_is": [
-                        "galacticraft:venus_volcanic_plains",
                         "galacticraft:venus_lava_channels"
                       ]
                     },
                     "then_run": {
-                      "type": "minecraft:block",
-                      "result_state": {
-                        "Name": "galacticraft:scorched_venus_rock"
-                      }
+                      "type": "minecraft:sequence",
+                      "sequence": [
+                        {
+                          "type": "minecraft:condition",
+                          "if_true": {
+                            "type": "minecraft:noise_threshold",
+                            "max_threshold": 100.0,
+                            "min_threshold": 0.45,
+                            "noise": "galacticraft:venus/surface_patches"
+                          },
+                          "then_run": {
+                            "type": "minecraft:block",
+                            "result_state": {
+                              "Name": "galacticraft:scorched_venus_rock"
+                            }
+                          }
+                        },
+                        {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "galacticraft:venus_flow_basalt"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "minecraft:condition",
+                    "if_true": {
+                      "type": "minecraft:biome",
+                      "biome_is": [
+                        "galacticraft:venus_volcanic_plains"
+                      ]
+                    },
+                    "then_run": {
+                      "type": "minecraft:sequence",
+                      "sequence": [
+                        {
+                          "type": "minecraft:condition",
+                          "if_true": {
+                            "type": "minecraft:noise_threshold",
+                            "max_threshold": 100.0,
+                            "min_threshold": 0.5,
+                            "noise": "galacticraft:venus/surface_patches"
+                          },
+                          "then_run": {
+                            "type": "minecraft:block",
+                            "result_state": {
+                              "Name": "galacticraft:scorched_venus_rock"
+                            }
+                          }
+                        },
+                        {
+                          "type": "minecraft:condition",
+                          "if_true": {
+                            "type": "minecraft:noise_threshold",
+                            "max_threshold": 100.0,
+                            "min_threshold": 0.35,
+                            "noise": "galacticraft:venus/surface_detail"
+                          },
+                          "then_run": {
+                            "type": "minecraft:block",
+                            "result_state": {
+                              "Name": "galacticraft:venus_stony_regolith"
+                            }
+                          }
+                        },
+                        {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "galacticraft:venus_plains_basalt"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "minecraft:condition",
+                    "if_true": {
+                      "type": "minecraft:biome",
+                      "biome_is": [
+                        "galacticraft:venus_highlands"
+                      ]
+                    },
+                    "then_run": {
+                      "type": "minecraft:sequence",
+                      "sequence": [
+                        {
+                          "type": "minecraft:condition",
+                          "if_true": {
+                            "type": "minecraft:noise_threshold",
+                            "max_threshold": 100.0,
+                            "min_threshold": 0.5,
+                            "noise": "galacticraft:venus/surface_patches"
+                          },
+                          "then_run": {
+                            "type": "minecraft:block",
+                            "result_state": {
+                              "Name": "galacticraft:hard_venus_rock"
+                            }
+                          }
+                        },
+                        {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "galacticraft:venus_tessera_rock"
+                          }
+                        }
+                      ]
                     }
                   },
                   {
@@ -267,16 +423,14 @@
                     "if_true": {
                       "type": "minecraft:biome",
                       "biome_is": [
-                        "galacticraft:venus_shield_volcano"
+                        "galacticraft:venus_shield_volcano",
+                        "galacticraft:venus_lava_channels"
                       ]
                     },
                     "then_run": {
                       "type": "minecraft:block",
                       "result_state": {
-                        "Name": "minecraft:basalt",
-                        "Properties": {
-                          "axis": "y"
-                        }
+                        "Name": "galacticraft:venus_flow_basalt"
                       }
                     }
                   },

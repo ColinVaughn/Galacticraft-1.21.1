@@ -38,6 +38,7 @@ import net.neoforged.neoforge.registries.RegisterEvent;
 import org.jetbrains.annotations.Nullable;
 
 public final class GCNeoForgeFluidTypes {
+    private static final FluidType HELIUM_3 = new FluidType(FluidType.Properties.create().descriptionId("block.galacticraft.helium_3").density(800).viscosity(2000).lightLevel(10));
     private static final FluidType CRUDE_OIL = new FluidType(FluidType.Properties.create()
             .descriptionId("block.galacticraft.crude_oil")
             .density(900)
@@ -81,6 +82,7 @@ public final class GCNeoForgeFluidTypes {
 
     public static void register(RegisterEvent event) {
         event.register(NeoForgeRegistries.Keys.FLUID_TYPES, helper -> {
+            helper.register(Constant.id("helium_3"), HELIUM_3);
             helper.register(Constant.id("crude_oil"), CRUDE_OIL);
             helper.register(Constant.id("fuel"), FUEL);
             helper.register(Constant.id("sulfuric_acid"), SULFURIC_ACID);
@@ -90,6 +92,7 @@ public final class GCNeoForgeFluidTypes {
     }
 
     public static @Nullable FluidType get(Fluid fluid) {
+        if (fluid == GCFluids.HELIUM_3 || fluid == GCFluids.FLOWING_HELIUM_3) return HELIUM_3;
         if (fluid == GCFluids.CRUDE_OIL || fluid == GCFluids.FLOWING_CRUDE_OIL) {
             return CRUDE_OIL;
         }
@@ -109,6 +112,7 @@ public final class GCNeoForgeFluidTypes {
     }
 
     public static void registerClientExtensions(RegisterClientExtensionsEvent event) {
+        event.registerFluidType(textures(Constant.Fluid.fluidId(Constant.Fluid.HELIUM_3_STILL), Constant.Fluid.fluidId(Constant.Fluid.HELIUM_3_FLOWING)), HELIUM_3);
         event.registerFluidType(textures(Constant.Fluid.fluidId(Constant.Fluid.CRUDE_OIL_STILL),
                 Constant.Fluid.fluidId(Constant.Fluid.CRUDE_OIL_FLOWING)), CRUDE_OIL);
         event.registerFluidType(textures(Constant.Fluid.fluidId(Constant.Fluid.FUEL_STILL),

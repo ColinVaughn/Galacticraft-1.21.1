@@ -30,6 +30,7 @@ import dev.galacticraft.mod.content.GCEntityTypes;
 import dev.galacticraft.mod.content.entity.FallingMeteorEntity;
 import dev.galacticraft.mod.network.s2c.MeteorShowerSyncPayload;
 import dev.galacticraft.mod.util.Translations;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -39,7 +40,10 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.List;
 
 /**
  * Server-side driver of one dimension's meteor activity. Ticked once per world tick from
@@ -56,9 +60,10 @@ public final class MeteorShowerManager {
     private static final long KEEPALIVE_TICKS = 40L;
     /** Blocks above the build limit that meteoroids enter at. */
     private static final int ENTRY_HEIGHT_ABOVE_BUILD_LIMIT = 160;
-    /** Meteoroids are aimed to pass through a point this far from the player, in blocks. */
-    private static final int TARGET_MIN_OFFSET = 24;
-    private static final int TARGET_MAX_OFFSET = 96;
+    /** Keep natural flight paths away from occupied bases, while allowing strikes farther out. */
+    private static final int TARGET_MIN_OFFSET = 96;
+    private static final int TARGET_MAX_OFFSET = 256;
+    private static final int PLACEMENT_ATTEMPTS = 12;
     /** Real meteoroid entry speeds, m/s. */
     private static final double MIN_ENTRY_SPEED = 11000.0;
     private static final double MAX_ENTRY_SPEED = 30000.0;
@@ -147,6 +152,7 @@ public final class MeteorShowerManager {
         int interval = Math.max(1, (int) (worldInterval / spawnRate));
 
         for (ServerPlayer player : level.players()) {
+            if (player.isSpectator()) continue;
             if (level.random.nextInt(interval) != 0) continue;
 
             // Two players standing together should not each pull their own meteor.
@@ -168,54 +174,85 @@ public final class MeteorShowerManager {
         MeteoroidClass type = MeteoroidClass.random(random);
         int size = rollSize(random);
         double speed = MIN_ENTRY_SPEED + random.nextDouble() * (MAX_ENTRY_SPEED - MIN_ENTRY_SPEED);
-
         double spawnY = level.getMaxBuildHeight() + ENTRY_HEIGHT_ABOVE_BUILD_LIMIT;
+        int tickingDistance = Math.min(level.getServer().getPlayerList().getViewDistance(),
+                level.getServer().getPlayerList().getSimulationDistance());
+        int maxOffset = targetMaxOffset(tickingDistance);
+        if (maxOffset < TARGET_MIN_OFFSET) return;
+        List<Vec3> occupied = level.players().stream().filter(p -> !p.isSpectator()).map(Player::position).toList();
 
-        // Aim for a point near the player rather than at them, then back-project the entry path.
-        double targetAngle = random.nextDouble() * Math.PI * 2.0;
-        double targetRange = TARGET_MIN_OFFSET + random.nextDouble() * (TARGET_MAX_OFFSET - TARGET_MIN_OFFSET);
-        double targetX = player.getX() + Math.cos(targetAngle) * targetRange;
-        double targetZ = player.getZ() + Math.sin(targetAngle) * targetRange;
-        double targetY = player.getY();
+        for (int attempt = 0; attempt < PLACEMENT_ATTEMPTS; attempt++) {
+            Vec3 candidate = player.position().add(targetOffset(random, maxOffset));
+            BlockPos column = BlockPos.containing(candidate);
+            if (!level.isPositionEntityTicking(column) || !level.getWorldBorder().isWithinBounds(column)) continue;
+            // Aim at the surface, even when the observer is underground or on a tall roof.
+            Vec3 target = new Vec3(candidate.x, level.getHeight(Heightmap.Types.OCEAN_FLOOR,
+                    column.getX(), column.getZ()), candidate.z);
+            double drop = spawnY - target.y;
+            int maxRun = Math.max(16, (tickingDistance - 2) * 16);
+            float minPitch = (float) Math.toDegrees(Math.atan2(drop, maxRun));
+            float yaw;
+            float pitch;
+            if (state.phase().isShowerActive()) {
+                yaw = state.radiantYaw() + (random.nextFloat() - 0.5f) * 12.0f;
+                pitch = Math.max(minPitch, state.radiantPitch());
+            } else {
+                yaw = random.nextFloat() * 360.0f;
+                pitch = Mth.lerp(random.nextFloat(), Math.max(minPitch, 50.0f), Math.max(minPitch, 88.0f));
+            }
+            pitch = Mth.clamp(pitch, minPitch, 90.0f);
 
-        double drop = spawnY - targetY;
-        // Entries must be steep enough that the whole path stays inside ticking chunks; a shallow
-        // grazing entry over a 400-block drop would start a kilometre away and never tick.
-        int maxRun = Math.max(48, (level.getServer().getPlayerList().getViewDistance() - 2) * 16);
-        float minPitch = (float) Math.toDegrees(Math.atan2(drop, maxRun));
+            double pitchRad = Math.toRadians(pitch), yawRad = Math.toRadians(yaw);
+            Vec3 radiant = new Vec3(Math.cos(pitchRad) * Math.sin(yawRad), Math.sin(pitchRad),
+                    Math.cos(pitchRad) * Math.cos(yawRad));
+            Vec3 entry = target.add(radiant.scale(drop / radiant.y));
+            if (!pathClearsPlayers(entry, target, occupied) || !pathIsTicking(level, entry, target)) continue;
 
-        float yaw;
-        float pitch;
-        if (state.phase().isShowerActive()) {
-            // Shower meteors all stream from the shower's radiant, as real ones do.
-            yaw = state.radiantYaw() + (random.nextFloat() - 0.5f) * 12.0f;
-            pitch = Math.max(minPitch, state.radiantPitch());
-        } else {
-            yaw = random.nextFloat() * 360.0f;
-            pitch = Mth.lerp(random.nextFloat(), Math.max(minPitch, 50.0f), 88.0f);
+            FallingMeteorEntity meteor = new FallingMeteorEntity(GCEntityTypes.FALLING_METEOR, level);
+            meteor.setPos(entry.x, entry.y, entry.z);
+            meteor.initialise(type, size, random.nextInt(), radiant.scale(-speed));
+            level.addFreshEntity(meteor);
+            if (size >= WARNING_SIZE) warnNearby(level, target.x, target.z);
+            return;
         }
-        pitch = Mth.clamp(pitch, minPitch, 89.0f);
+        // Never fall back to dropping a meteor closer to the player when placement fails.
+    }
 
-        // Unit vector pointing at the radiant; the body travels the opposite way.
-        double pitchRad = Math.toRadians(pitch);
-        double yawRad = Math.toRadians(yaw);
-        double radiantX = Math.cos(pitchRad) * Math.sin(yawRad);
-        double radiantY = Math.sin(pitchRad);
-        double radiantZ = Math.cos(pitchRad) * Math.cos(yawRad);
+    static int targetMaxOffset(int tickingDistance) {
+        return Math.min(TARGET_MAX_OFFSET, (tickingDistance + 1) * 16);
+    }
 
-        double travel = drop / radiantY;
-        double spawnX = targetX + radiantX * travel;
-        double spawnZ = targetZ + radiantZ * travel;
+    static Vec3 targetOffset(RandomSource random, int maxOffset) {
+        if (maxOffset < TARGET_MIN_OFFSET) throw new IllegalArgumentException("No distant target area");
+        double angle = random.nextDouble() * Math.PI * 2;
+        // Uniform area: a uniform radius disproportionately bombards the inner edge near bases.
+        double range = Math.sqrt(Mth.lerp(random.nextDouble(), TARGET_MIN_OFFSET * TARGET_MIN_OFFSET,
+                (double) maxOffset * maxOffset));
+        return new Vec3(Math.cos(angle) * range, 0, Math.sin(angle) * range);
+    }
 
-        FallingMeteorEntity meteor = new FallingMeteorEntity(GCEntityTypes.FALLING_METEOR, level);
-        meteor.setPos(spawnX, spawnY, spawnZ);
-        meteor.initialise(type, size, random.nextInt(),
-                new Vec3(-radiantX * speed, -radiantY * speed, -radiantZ * speed));
-        level.addFreshEntity(meteor);
-
-        if (size >= WARNING_SIZE) {
-            warnNearby(level, spawnX, spawnZ);
+    static boolean pathClearsPlayers(Vec3 entry, Vec3 target, List<Vec3> players) {
+        double dx = target.x - entry.x, dz = target.z - entry.z;
+        double lengthSquared = dx * dx + dz * dz;
+        for (Vec3 player : players) {
+            double along = lengthSquared == 0 ? 0 : Mth.clamp(
+                    ((player.x - entry.x) * dx + (player.z - entry.z) * dz) / lengthSquared, 0, 1);
+            double x = entry.x + along * dx - player.x, z = entry.z + along * dz - player.z;
+            if (x * x + z * z < TARGET_MIN_OFFSET * TARGET_MIN_OFFSET) return false;
         }
+        return true;
+    }
+
+    private static boolean pathIsTicking(ServerLevel level, Vec3 entry, Vec3 target) {
+        BlockPos start = BlockPos.containing(entry), end = BlockPos.containing(target);
+        if (!level.getWorldBorder().isWithinBounds(start) || !level.getWorldBorder().isWithinBounds(end)) return false;
+        // Check the enclosing chunk rectangle, covering every crossed chunk without loading any.
+        for (int x = Math.min(start.getX(), end.getX()) >> 4; x <= (Math.max(start.getX(), end.getX()) >> 4); x++) {
+            for (int z = Math.min(start.getZ(), end.getZ()) >> 4; z <= (Math.max(start.getZ(), end.getZ()) >> 4); z++) {
+                if (!level.isPositionEntityTicking(new BlockPos(x << 4, 0, z << 4))) return false;
+            }
+        }
+        return true;
     }
 
     /** A big one is coming in: everyone nearby hears it and gets told. */

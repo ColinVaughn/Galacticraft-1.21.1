@@ -93,6 +93,7 @@ sourceSets {
             exclude("dev/galacticraft/mod/client/ClientCapeLoginSync.java")
             exclude("dev/galacticraft/mod/client/event/RocketAtlasCallback.java")
             exclude("dev/galacticraft/mod/client/model/ParachestUnbakedModel.java")
+            exclude("dev/galacticraft/mod/client/model/FabricLunarEmissiveBakedModel.java")
             exclude("dev/galacticraft/mod/client/model/PipeUnbakedModel.java")
             exclude("dev/galacticraft/mod/client/model/VacuumGlassUnbakedModel.java")
             exclude("dev/galacticraft/mod/client/render/dimension/EmptyCloudRenderer.java")

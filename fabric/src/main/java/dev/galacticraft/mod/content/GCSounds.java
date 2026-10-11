@@ -49,6 +49,7 @@ public class GCSounds {
     public static final SoundEvent AIRLOCK_OPEN = register("machine.airlock.open");
     public static final SoundEvent CIRCUIT_SCRITCH = register("machine.circuit.scritch");
     public static final SoundEvent MACHINE_BUZZ = register("machine.buzz");
+    public static final SoundEvent GAS_RELEASE = register("machine.oxygen.gas_release");
     public static final SoundEvent MACHINE_WHIR = register("machine.whir");
     public static final SoundEvent OXYGEN_FAN = register("machine.oxygen.fan");
     // Music

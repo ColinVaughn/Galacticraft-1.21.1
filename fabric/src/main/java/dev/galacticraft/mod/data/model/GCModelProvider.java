@@ -30,6 +30,7 @@ import dev.galacticraft.machinelib.api.data.model.MachineModelGenerator;
 import dev.galacticraft.machinelib.client.api.model.MachineTextureBase;
 import dev.galacticraft.machinelib.client.api.model.TextureProvider;
 import dev.galacticraft.mod.Constant;
+import dev.galacticraft.mod.api.oxygencompressor.OxygenTankInside;
 import dev.galacticraft.mod.content.GCBlockRegistry;
 import dev.galacticraft.mod.content.GCBlocks;
 import dev.galacticraft.mod.content.block.decoration.FlagBlock;
@@ -40,6 +41,7 @@ import dev.galacticraft.mod.content.block.machine.CoalGeneratorBlock;
 import dev.galacticraft.mod.content.block.machine.FoodCannerBlock;
 import dev.galacticraft.mod.content.block.machine.FuelLoaderBlock;
 import dev.galacticraft.mod.content.block.machine.ResourceStorageBlock;
+import dev.galacticraft.mod.content.block.machine.OxygenCompressorBlock;
 import dev.galacticraft.mod.content.block.special.ParachestBlock;
 import dev.galacticraft.mod.content.block.special.RocketWorkbench;
 import dev.galacticraft.mod.content.block.special.launchpad.AbstractLaunchPad;
@@ -116,6 +118,34 @@ public class GCModelProvider extends FabricModelProvider {
         generator.createLantern(GCBlocks.UNLIT_LANTERN);
         generator.createLantern(GCBlocks.UNLIT_SOUL_LANTERN);
 
+        // Models authored in Blockbench are kept in resources; datagen owns the states and item delegates.
+        createLunarFormation(generator, GCBlocks.LUNAR_BREAKDOWN_RUBBLE);
+        createLunarFormation(generator, GCBlocks.LUNAR_SCATTERED_FRAGMENTS);
+        createLunarFormation(generator, GCBlocks.LUNAR_FALLEN_ROOF_SLAB);
+        createLunarFormation(generator, GCBlocks.LUNAR_FRACTURED_OUTCROP);
+        createLunarFormation(generator, GCBlocks.LUNAR_BASALT_WALL_SHELF);
+        createLunarFormation(generator, GCBlocks.LUNAR_CEILING_BREAKDOWN);
+        createLunarFormation(generator, GCBlocks.LUNAR_BASALT_BREAKDOWN_RUBBLE);
+        createLunarFormation(generator, GCBlocks.LUNAR_FROSTED_BREAKDOWN_RUBBLE);
+        createLunarFormation(generator, GCBlocks.ABANDONED_SURVEY_BEACON);
+        createLunarFormation(generator, GCBlocks.HELION_NODULES);
+        createLunarFormation(generator, GCBlocks.HELION_WALL_CRUST);
+        createLunarFormation(generator, GCBlocks.HELIUM_3_VENT);
+        createLunarFormation(generator, GCBlocks.BURROWER_EGG_CLUSTER);
+        generator.blockStateOutput.accept(MultiVariantGenerator.multiVariant(GCBlocks.LUNAR_BURROWER_EGG)
+                .with(PropertyDispatch.property(dev.galacticraft.mod.content.block.environment.LunarBurrowerEggBlock.HATCH)
+                        .generate(stage -> Variant.variant().with(VariantProperties.MODEL,
+                                Constant.id("block/lunar_burrower_egg" + (stage == 0 ? "" : stage == 1 ? "_cracked" : "_hatching"))))));
+        generator.delegateItemModel(GCBlocks.LUNAR_BURROWER_EGG, Constant.id("block/lunar_burrower_egg"));
+        createLunarFormation(generator, GCBlocks.BURROWER_BROKEN_EGGSHELL);
+        createLunarFormation(generator, GCBlocks.BURROWER_EXCAVATED_TAILINGS);
+        createLunarFormation(generator, GCBlocks.BURROWER_DEN_SCRAPS);
+        generator.blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(GCBlocks.VESICULAR_LUNAR_BASALT, ModelLocationUtils.getModelLocation(GCBlocks.VESICULAR_LUNAR_BASALT)));
+        generator.delegateItemModel(GCBlocks.VESICULAR_LUNAR_BASALT, ModelLocationUtils.getModelLocation(GCBlocks.VESICULAR_LUNAR_BASALT));
+        generator.blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(GCBlocks.ICE_BEARING_BRECCIA, ModelLocationUtils.getModelLocation(GCBlocks.ICE_BEARING_BRECCIA)));
+        generator.delegateItemModel(GCBlocks.ICE_BEARING_BRECCIA, ModelLocationUtils.getModelLocation(GCBlocks.ICE_BEARING_BRECCIA));
+        generator.blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(GCBlocks.HELIUM_3, ModelLocationUtils.getModelLocation(GCBlocks.HELIUM_3)));
+
         // MOON NATURAL
         this.createMoonTurf(generator);
         generator.createTrivialCube(GCBlocks.MOON_DIRT);
@@ -128,6 +158,14 @@ public class GCModelProvider extends FabricModelProvider {
 
         // MARS NATURAL
         generator.createTrivialCube(GCBlocks.MARS_SURFACE_ROCK);
+        generator.createTrivialCube(GCBlocks.MOON_ROCKY_REGOLITH);
+        generator.createTrivialCube(GCBlocks.MOON_MARE_REGOLITH);
+        generator.createTrivialCube(GCBlocks.MOON_ANORTHOSITE);
+        generator.createTrivialCube(GCBlocks.MOON_IMPACT_BRECCIA);
+        generator.createTrivialCube(GCBlocks.MARS_ROCKY_REGOLITH);
+        generator.createTrivialCube(GCBlocks.MARS_BASALTIC_SAND);
+        generator.createTrivialCube(GCBlocks.MARS_WEATHERED_BASALT);
+        generator.createTrivialCube(GCBlocks.MARS_SEDIMENTARY_ROCK);
         generator.createTrivialCube(GCBlocks.MARS_SUB_SURFACE_ROCK);
 
         // ASTEROID NATURAL
@@ -140,6 +178,10 @@ public class GCModelProvider extends FabricModelProvider {
         generator.createTrivialCube(GCBlocks.SOFT_VENUS_ROCK);
         generator.createTrivialCube(GCBlocks.HARD_VENUS_ROCK);
         generator.createTrivialCube(GCBlocks.SCORCHED_VENUS_ROCK);
+        generator.createTrivialCube(GCBlocks.VENUS_PLAINS_BASALT);
+        generator.createTrivialCube(GCBlocks.VENUS_TESSERA_ROCK);
+        generator.createTrivialCube(GCBlocks.VENUS_FLOW_BASALT);
+        generator.createTrivialCube(GCBlocks.VENUS_STONY_REGOLITH);
         generator.createTrivialCube(GCBlocks.VOLCANIC_ROCK);
         generator.createTrivialCube(GCBlocks.PUMICE);
         this.createVaporSpout(generator);
@@ -149,6 +191,10 @@ public class GCModelProvider extends FabricModelProvider {
                 ModelTemplates.CUBE_ALL);
 
         // MERCURY NATURAL
+        generator.createTrivialCube(GCBlocks.MERCURY_ROCKY_REGOLITH);
+        generator.createTrivialCube(GCBlocks.MERCURY_PLAINS_ROCK);
+        generator.createTrivialCube(GCBlocks.MERCURY_IMPACT_BRECCIA);
+        generator.createTrivialCube(GCBlocks.MERCURY_DARK_REGOLITH);
         generator.createTrivialCube(GCBlocks.MERCURY_SURFACE_ROCK);
         generator.createTrivialCube(GCBlocks.MERCURY_SUB_SURFACE_ROCK);
         generator.createTrivialCube(GCBlocks.MERCURY_STONE);
@@ -311,21 +357,33 @@ public class GCModelProvider extends FabricModelProvider {
         MachineModelGenerator.setupMachineBaseTextures(generator, Constant.MOD_ID, MachineTextureBase.prefixed(Constant.MOD_ID, "block/machine"));
 
         //Front deduced automatically
-        createTrivialFrontFaceMachine(generator, GCBlocks.CARGO_LOADER, Constant.MOD_ID);
-        createTrivialFrontFaceMachine(generator, GCBlocks.CARGO_UNLOADER, Constant.MOD_ID);
-        createTrivialFrontFaceMachine(generator, GCBlocks.PAINTER, Constant.MOD_ID);
-        createTrivialFrontFaceMachine(generator, GCBlocks.ENERGY_STORAGE_MODULE, Constant.MOD_ID);
-        createTrivialFrontFaceMachine(generator, GCBlocks.ENERGY_STORAGE_CLUSTER, Constant.MOD_ID);
-        createTrivialFrontFaceMachine(generator, GCBlocks.ELECTRIC_ARC_FURNACE, Constant.MOD_ID);
-        createTrivialFrontFaceMachine(generator, GCBlocks.ELECTRIC_FURNACE, Constant.MOD_ID);
+        createTrivialFrontFaceMachine(generator, GCBlocks.CARGO_LOADER);
+        MachineModelGenerator.createTrivialMachine(generator, GCBlocks.LAUNCH_CONTROLLER,
+                TextureProvider.builder(Constant.MOD_ID)
+                        .all("block/terraformer_machine")
+                        .front("block/launch_controller")
+                        .back("block/launch_controller")
+                        .right("block/terraformer_machine_input")
+                        .particle("block/terraformer_machine")
+                        .build());
+        createTrivialFrontFaceMachine(generator, GCBlocks.CARGO_UNLOADER);
+        createTrivialFrontFaceMachine(generator, GCBlocks.PAINTER);
+        createTrivialFrontFaceMachine(generator, GCBlocks.ENERGY_STORAGE_MODULE);
+        createTrivialFrontFaceMachine(generator, GCBlocks.ENERGY_STORAGE_CLUSTER);
+        createTrivialFrontFaceMachine(generator, GCBlocks.ELECTRIC_ARC_FURNACE);
+        createTrivialFrontFaceMachine(generator, GCBlocks.ELECTRIC_FURNACE);
 
         //Custom front
-        createTrivialFrontFaceMachine(generator, GCBlocks.DECONSTRUCTOR, Constant.MOD_ID, "block/machine_side");
-        createTrivialFrontFaceMachine(generator, GCBlocks.FLUID_TANK, Constant.MOD_ID, "block/machine_side");
+        createTrivialFrontFaceMachine(generator, GCBlocks.DECONSTRUCTOR, "block/machine_side");
+        createTrivialFrontFaceMachine(generator, GCBlocks.FLUID_TANK, "block/machine_side");
 
         //Multivariant block, custom fronts
         createOxygenStorage(generator, GCBlocks.OXYGEN_STORAGE_MODULE, new String[]{
                 "_1", "_2", "_3", "_4"
+        });
+
+        createOxygenCompressor(generator, GCBlocks.OXYGEN_COMPRESSOR, new String[]{
+                "_small", "_medium", "_large"
         });
 
         createCoalGenerator(generator, GCBlocks.COAL_GENERATOR, new String[]{
@@ -358,6 +416,15 @@ public class GCModelProvider extends FabricModelProvider {
                         .build()
         );
 
+        MachineModelGenerator.createTrivialMachine(generator, GCBlocks.RADAR,
+                TextureProvider.builder(Constant.MOD_ID).all("block/machine_side")
+                        .front("block/radar_front").top("block/radar_top").build()
+        );
+
+        MachineModelGenerator.createTrivialMachine(generator, GCBlocks.CANNON,
+                TextureProvider.builder(Constant.MOD_ID).all("block/machine_side").build()
+        );
+
         //Active blocks
         createFullCubeActiveMachine(generator, GCBlocks.OXYGEN_COLLECTOR);
         createFullCubeActiveMachine(generator, GCBlocks.OXYGEN_BUBBLE_DISTRIBUTOR);
@@ -366,8 +433,6 @@ public class GCModelProvider extends FabricModelProvider {
         createActiveMachine(generator, GCBlocks.OXYGEN_SEALER);
 
         //Dedicated generations methods
-        createOxygenCompressor(generator, GCBlocks.OXYGEN_COMPRESSOR);
-        createOxygenCompressor(generator, GCBlocks.OXYGEN_DECOMPRESSOR);
         createSolarPanel(generator, GCBlocks.BASIC_SOLAR_PANEL);
         createSolarPanel(generator, GCBlocks.ADVANCED_SOLAR_PANEL);
         createFuelLoader(generator, GCBlocks.FUEL_LOADER);
@@ -377,10 +442,6 @@ public class GCModelProvider extends FabricModelProvider {
         generator.createNonTemplateModelBlock(GCBlocks.FUEL);
         generator.createNonTemplateModelBlock(GCBlocks.SULFURIC_ACID);
         generator.createTrivialCube(GCBlocks.AIR_LOCK_FRAME);
-        MachineModelGenerator.createTrivialMachine(generator, GCBlocks.RADAR,
-                TextureProvider.builder(Constant.MOD_ID).all("block/machine_side").build());
-        MachineModelGenerator.createTrivialMachine(generator, GCBlocks.CANNON,
-                TextureProvider.builder(Constant.MOD_ID).all("block/machine_side").build());
         this.createAirLockController(generator);
         this.createParachests(generator);
     }
@@ -404,16 +465,16 @@ public class GCModelProvider extends FabricModelProvider {
         return model_location;
     }
 
-    public static void createTrivialFrontFaceMachine(BlockModelGenerators generator, Block block, String MOD_ID, @Nullable String front) {
-        MachineModelGenerator.createTrivialMachine(generator, block, TextureProvider.builder(MOD_ID)
+    public static void createTrivialFrontFaceMachine(BlockModelGenerators generator, Block block, @Nullable String front) {
+        MachineModelGenerator.createTrivialMachine(generator, block, TextureProvider.builder(Constant.MOD_ID)
                 .sides("block/machine_side")
                 .front(front == null ? TextureMapping.getBlockTexture(block).getPath() : front)
                 .build()
         );
     }
 
-    public static void createTrivialFrontFaceMachine(BlockModelGenerators generator, Block block, String MOD_ID) {
-        createTrivialFrontFaceMachine(generator, block, MOD_ID, null);
+    public static void createTrivialFrontFaceMachine(BlockModelGenerators generator, Block block) {
+        createTrivialFrontFaceMachine(generator, block, null);
     }
 
     private static void createActiveMachine(BlockModelGenerators generator, Block block) {
@@ -496,13 +557,15 @@ public class GCModelProvider extends FabricModelProvider {
                 )));
     }
 
-    private static void createOxygenCompressor(BlockModelGenerators generator, Block compressor) {
-        MachineModelGenerator.createTrivialMachine(generator, compressor, TextureProvider.builder(Constant.MOD_ID)
-                .sides("block/machine_side")
-                .front(TextureMapping.getBlockTexture(compressor))
-                .back("block/oxygen_compressor_back")
-                .build()
-        );
+    private static void createOxygenCompressor(BlockModelGenerators generator, Block block, String[] state) {
+        ResourceLocation[] model_location = generateMultiMachineModel(generator, Constant.MOD_ID, block, state);
+
+        generator.blockStateOutput.accept(MultiVariantGenerator.multiVariant(block).with(PropertyDispatch.property(OxygenCompressorBlock.OXYGEN_TANK_INSIDE)
+                .select(OxygenTankInside.NONE, Variant.variant().with(VariantProperties.MODEL, model_location[0]))
+                .select(OxygenTankInside.SMALL, Variant.variant().with(VariantProperties.MODEL, model_location[1]))
+                .select(OxygenTankInside.MEDIUM, Variant.variant().with(VariantProperties.MODEL, model_location[2]))
+                .select(OxygenTankInside.LARGE, Variant.variant().with(VariantProperties.MODEL, model_location[3]))
+        ));
     }
 
     private static void createSolarPanel(BlockModelGenerators generator, Block block) {
@@ -589,6 +652,15 @@ public class GCModelProvider extends FabricModelProvider {
                     .with(VariantProperties.MODEL, ResourceLocation.parse("galacticraft:block/parachest/" + state.getValue(ParachestBlock.COLOR) + "_chute")));
         });
         generator.blockStateOutput.accept(para);
+    }
+
+    private void createLunarFormation(BlockModelGenerators generator, Block block) {
+        ResourceLocation model = ModelLocationUtils.getModelLocation(block);
+        generator.blockStateOutput.accept(MultiVariantGenerator.multiVariant(block)
+                .with(PropertyDispatch.property(BlockStateProperties.HORIZONTAL_FACING).generate(direction ->
+                        Variant.variant().with(VariantProperties.MODEL, model)
+                                .with(VariantProperties.Y_ROT, getRotationFromDirection(direction)))));
+        generator.delegateItemModel(block, model);
     }
 
     private void createAutoGeneratedModel(BlockModelGenerators generator, Block block, ResourceLocation id) {
@@ -774,6 +846,8 @@ public class GCModelProvider extends FabricModelProvider {
         generator.generateFlatItem(GCItems.BATTERY, ModelTemplates.FLAT_ITEM);
         this.createLayeredItem(generator, GCItems.INFINITE_BATTERY, Constant.Item.INFINITE_INDICATOR);
 
+        generator.generateFlatItem(GCItems.HELIUM_3_BUCKET, ModelTemplates.FLAT_ITEM);
+
         // FLUID BUCKETS
         generator.generateFlatItem(GCItems.CRUDE_OIL_BUCKET, ModelTemplates.FLAT_ITEM);
         generator.generateFlatItem(GCItems.FUEL_BUCKET, ModelTemplates.FLAT_ITEM);
@@ -854,6 +928,7 @@ public class GCModelProvider extends FabricModelProvider {
         generator.generateFlatItem(GCItems.EVOLVED_PILLAGER_SPAWN_EGG, GCModelTemplates.SPAWN_EGG);
         generator.generateFlatItem(GCItems.EVOLVED_EVOKER_SPAWN_EGG, GCModelTemplates.SPAWN_EGG);
         generator.generateFlatItem(GCItems.EVOLVED_VINDICATOR_SPAWN_EGG, GCModelTemplates.SPAWN_EGG);
+        generator.generateFlatItem(GCItems.LUNAR_BURROWER_SPAWN_EGG, GCModelTemplates.SPAWN_EGG);
         generator.generateFlatItem(GCItems.GAZER_SPAWN_EGG, GCModelTemplates.SPAWN_EGG);
         generator.generateFlatItem(GCItems.RUMBLER_SPAWN_EGG, GCModelTemplates.SPAWN_EGG);
         generator.generateFlatItem(GCItems.COMET_CUBE_SPAWN_EGG, GCModelTemplates.SPAWN_EGG);

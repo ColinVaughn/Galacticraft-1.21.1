@@ -83,7 +83,6 @@ public class ConfigImpl implements Config {
     private float electricArcFurnaceBonusChance = 0.25F;
     private long oxygenCollectorEnergyConsumptionRate = 10;
     private long oxygenCompressorEnergyConsumptionRate = 15;
-    private long oxygenDecompressorEnergyConsumptionRate = 15;
     private long oxygenSealerEnergyConsumptionRate = 10;
     private long oxygenSealerOxygenConsumptionRate = 1000;
     private long oxygenSealerUnsealedOxygenConsumptionRate = 6000;
@@ -131,6 +130,7 @@ public class ConfigImpl implements Config {
     private boolean solarFlareDamage = true;
     private boolean machineDustEnabled = true;
     private boolean terrainDustEnabled = true;
+    private float moonSurfaceShaderStrength = 1.0F;
     private double bossHealthMultiplier = 1.0;
     private int rocketFuelTankCapacity = RocketFlightLogic.DEFAULT_FUEL_TANK_CAPACITY_BUCKETS;
     private int rocketBurnTicksPerBucket = RocketFlightLogic.DEFAULT_BURN_TICKS_PER_BUCKET;
@@ -286,15 +286,6 @@ public class ConfigImpl implements Config {
 
     public void setOxygenCompressorEnergyConsumptionRate(long amount) {
         this.oxygenCompressorEnergyConsumptionRate = amount;
-    }
-
-    @Override
-    public long oxygenDecompressorEnergyConsumptionRate() {
-        return oxygenDecompressorEnergyConsumptionRate;
-    }
-
-    public void setOxygenDecompressorEnergyConsumptionRate(long amount) {
-        this.oxygenDecompressorEnergyConsumptionRate = amount;
     }
 
     @Override
@@ -727,6 +718,12 @@ public class ConfigImpl implements Config {
     }
 
     @Override
+    public float moonSurfaceShaderStrength() {
+        return Float.isFinite(this.moonSurfaceShaderStrength)
+                ? Mth.clamp(this.moonSurfaceShaderStrength, 0.0F, 1.0F) : 1.0F;
+    }
+
+    @Override
     public double bossHealthMultiplier() {
         return this.bossHealthMultiplier;
     }
@@ -1069,17 +1066,6 @@ public class ConfigImpl implements Config {
 
             machines.add(new LongFieldBuilder(
                     Component.translatable(Translations.Config.RESET),
-                    labelSub.apply(Translations.Config.OXYGEN_DECOMPRESSOR_ENERGY_CONSUMPTION_RATE),
-                    config.oxygenDecompressorEnergyConsumptionRate())
-                    .setTooltip(tooltipSingularSub.apply(Translations.Config.OXYGEN_DECOMPRESSOR_ENERGY_CONSUMPTION_RATE))
-                    .setSaveConsumer(config::setOxygenDecompressorEnergyConsumptionRate)
-                    .setDefaultValue(15)
-                    .requireRestart()
-                    .build()
-            );
-
-            machines.add(new LongFieldBuilder(
-                    Component.translatable(Translations.Config.RESET),
                     labelSub.apply(Translations.Config.OXYGEN_SEALER_ENERGY_CONSUMPTION_RATE),
                     config.oxygenSealerEnergyConsumptionRate())
                     .setTooltip(tooltipSingularSub.apply(Translations.Config.OXYGEN_SEALER_ENERGY_CONSUMPTION_RATE))
@@ -1144,17 +1130,6 @@ public class ConfigImpl implements Config {
                     config.foodCannerEnergyConsumptionRate())
                     .setTooltip(tooltipSingularSub.apply(Translations.Config.FOOD_CANNER_ENERGY_CONSUMPTION_RATE))
                     .setSaveConsumer(config::setFoodCannerEnergyConsumptionRate)
-                    .setDefaultValue(15)
-                    .requireRestart()
-                    .build()
-            );
-
-            machines.add(new LongFieldBuilder(
-                    Component.translatable(Translations.Config.RESET),
-                    labelSub.apply(Translations.Config.OXYGEN_DECOMPRESSOR_ENERGY_CONSUMPTION_RATE),
-                    config.oxygenDecompressorEnergyConsumptionRate())
-                    .setTooltip(tooltipSingularSub.apply(Translations.Config.OXYGEN_DECOMPRESSOR_ENERGY_CONSUMPTION_RATE))
-                    .setSaveConsumer(config::setOxygenDecompressorEnergyConsumptionRate)
                     .setDefaultValue(15)
                     .requireRestart()
                     .build()
