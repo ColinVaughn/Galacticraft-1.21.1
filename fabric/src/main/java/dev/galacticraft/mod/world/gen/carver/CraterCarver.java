@@ -66,55 +66,65 @@ public class CraterCarver extends WorldCarver<CraterCarverConfig> {
         boolean fresh = random.nextInt(16) == 1;
         for (int innerChunkX = 0; innerChunkX < 16; innerChunkX++) { //iterate through positions in chunk
             for (int innerChunkZ = 0; innerChunkZ < 16; innerChunkZ++) {
-                double toDig = 0;
-
                 double xDev = Math.abs((chunk.getPos().getBlockX(innerChunkX)) - craterCenter.getX());
                 double zDev = Math.abs((chunk.getPos().getBlockZ(innerChunkZ)) - craterCenter.getZ());
                 if (xDev >= 0 && xDev < 64 && zDev >= 0 && zDev < 64) { // reach cap; must exceed max crater radius
-                    if (xDev * xDev + zDev * zDev < radius * radius) { //distance to crater and depth
-                        xDev /= radius;
-                        zDev /= radius;
-                        final double sqrtY = xDev * xDev + zDev * zDev;
-                        double yDev = sqrtY * sqrtY * 6;
-                        double craterDepth = 5 - yDev;
-                        craterDepth *= depthMultiplier;
-                        craterDepth *= config.depthScale; // scale bowl depth (massive craters)
-                        if (craterDepth > 0.0) {
-                            toDig = craterDepth;
-                        }
-                    }
-
-                    if (toDig >= 1) {
-                        toDig++; // Increase crater depth, but for sum, not each crater
-                        if (fresh) toDig++; // Dig one more block, because we're not replacing the top with turf
-                    }
-                    BlockPos.MutableBlockPos copy = new BlockPos.MutableBlockPos();
-                    // At the carver stage this height resolves to the top occupied block, while the
-                    // loop moves down before carving. Start one block above it so the visible
-                    // surface is removed instead of leaving a one-block lid over the crater.
-                    int surfaceY = chunk.getHeight(Heightmap.Types.WORLD_SURFACE_WG, innerChunkX, innerChunkZ) + 1;
-                    mutable.set(innerChunkX, surfaceY, innerChunkZ);
-                    for (int dug = 0; dug < toDig; dug++) {
-                        mutable.move(Direction.DOWN);
-                        if (!this.canReplaceBlock(config, chunk.getBlockState(mutable))) {
-                            break;
-                        }
-                        if (!chunk.getBlockState(mutable).isAir()
-                                || carvingMask.get(innerChunkX, mutable.getY() + 64, innerChunkZ)
-                                || dug > 0) {
-                            chunk.setBlockState(mutable, AIR, false);
-                            if (dug == 0) {
-                                carvingMask.set(innerChunkX, mutable.getY() + 64, innerChunkZ);
-                            }
-                            if (!fresh && dug + 1 >= toDig && !chunk.getBlockState(copy.set(mutable).move(Direction.DOWN, 2)).isAir()) {
-                                context.topMaterial(posToBiome, chunk, mutable, false).ifPresent(blockStatex -> chunk.setBlockState(mutable.move(Direction.DOWN), blockStatex, false));
-                            }
-                        }
-                    }
+                    double toDig = craterDepth(config, xDev, zDev, radius, depthMultiplier, fresh);
+                    carveColumn(context, config, chunk, posToBiome, carvingMask, mutable, innerChunkX, innerChunkZ, toDig, fresh);
                 }
             }
         }
         return true;
+    }
+
+    private static double craterDepth(CraterCarverConfig config, double xDev, double zDev, double radius, double depthMultiplier, boolean fresh) {
+        double toDig = 0;
+        if (xDev * xDev + zDev * zDev < radius * radius) { //distance to crater and depth
+            xDev /= radius;
+            zDev /= radius;
+            final double sqrtY = xDev * xDev + zDev * zDev;
+            double yDev = sqrtY * sqrtY * 6;
+            double craterDepth = 5 - yDev;
+            craterDepth *= depthMultiplier;
+            craterDepth *= config.depthScale; // scale bowl depth (massive craters)
+            if (craterDepth > 0.0) {
+                toDig = craterDepth;
+            }
+        }
+
+        if (toDig >= 1) {
+            toDig++; // Increase crater depth, but for sum, not each crater
+            if (fresh) toDig++; // Dig one more block, because we're not replacing the top with turf
+        }
+        return toDig;
+    }
+
+    private void carveColumn(CarvingContext context, CraterCarverConfig config, ChunkAccess chunk,
+                             Function<BlockPos, Holder<Biome>> posToBiome, CarvingMask carvingMask,
+                             BlockPos.MutableBlockPos mutable, int innerChunkX, int innerChunkZ, double toDig, boolean fresh) {
+        BlockPos.MutableBlockPos copy = new BlockPos.MutableBlockPos();
+        // At the carver stage this height resolves to the top occupied block, while the
+        // loop moves down before carving. Start one block above it so the visible
+        // surface is removed instead of leaving a one-block lid over the crater.
+        int surfaceY = chunk.getHeight(Heightmap.Types.WORLD_SURFACE_WG, innerChunkX, innerChunkZ) + 1;
+        mutable.set(innerChunkX, surfaceY, innerChunkZ);
+        for (int dug = 0; dug < toDig; dug++) {
+            mutable.move(Direction.DOWN);
+            if (!this.canReplaceBlock(config, chunk.getBlockState(mutable))) {
+                break;
+            }
+            if (!chunk.getBlockState(mutable).isAir()
+                    || carvingMask.get(innerChunkX, mutable.getY() + 64, innerChunkZ)
+                    || dug > 0) {
+                chunk.setBlockState(mutable, AIR, false);
+                if (dug == 0) {
+                    carvingMask.set(innerChunkX, mutable.getY() + 64, innerChunkZ);
+                }
+                if (!fresh && dug + 1 >= toDig && !chunk.getBlockState(copy.set(mutable).move(Direction.DOWN, 2)).isAir()) {
+                    context.topMaterial(posToBiome, chunk, mutable, false).ifPresent(blockStatex -> chunk.setBlockState(mutable.move(Direction.DOWN), blockStatex, false));
+                }
+            }
+        }
     }
 
     @Override

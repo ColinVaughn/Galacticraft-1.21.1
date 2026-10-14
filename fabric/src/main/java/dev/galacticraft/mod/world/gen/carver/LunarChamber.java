@@ -167,56 +167,91 @@ record LunarChamber(double x, double y, double z, double radius, double height,
         int minZ = Math.max(chunk.getPos().getMinBlockZ(), Mth.floor(z - radius));
         int maxZ = Math.min(chunk.getPos().getMaxBlockZ(), Mth.ceil(z + radius));
         for (int bx = minX; bx <= maxX; bx++) for (int bz = minZ; bz <= maxZ; bz++) {
-            double nx = (bx + 0.5 - x) / radius, nz = (bz + 0.5 - z) / radius;
-            double distance = Math.sqrt(nx * nx + nz * nz);
-            if (distance > 0.92) continue;
-            RandomSource random = RandomSource.create(positionSeed(seed, bx, bz));
-            BlockPos floor = floor(chunk, bx, bz, y, height);
-            if (floor == null || skip(nx, (floor.getY() + 0.5 - y) / height, nz)) continue;
-            double across = -Math.sin(heading) * (bx + 0.5 - x) + Math.cos(heading) * (bz + 0.5 - z);
-            double along = Math.cos(heading) * nx + Math.sin(heading) * nz;
-            double localAcross = across / radius - bend(along);
-            boolean lane = Math.abs(localAcross * radius) < 1.8;
-            boolean margin = Math.abs(localAcross) > width(along) - 0.13;
-            Direction facing = Direction.from2DDataValue(random.nextInt(4));
-            if (kind == Kind.COLD_TRAP && random.nextDouble() < 0.85 - Math.abs(along) * 0.65) {
-                chunk.setBlockState(floor.below(), Math.abs(along) < 0.30 && localAcross < 0.13 ? GCBlocks.DENSE_ICE.defaultBlockState()
-                        : GCBlocks.ICE_BEARING_BRECCIA.defaultBlockState(), false);
-                if (!lane && Math.abs(along) < 0.25 && random.nextInt(14) == 0) {
-                    chunk.setBlockState(floor, GCBlocks.DENSE_ICE.defaultBlockState(), false);
+            decorateColumn(chunk, bx, bz);
+        }
+    }
+
+    private void decorateColumn(ChunkAccess chunk, int bx, int bz) {
+        double nx = (bx + 0.5 - x) / radius, nz = (bz + 0.5 - z) / radius;
+        double distance = Math.sqrt(nx * nx + nz * nz);
+        if (distance > 0.92) return;
+        RandomSource random = RandomSource.create(positionSeed(seed, bx, bz));
+        BlockPos floor = floor(chunk, bx, bz, y, height);
+        if (floor == null || skip(nx, (floor.getY() + 0.5 - y) / height, nz)) return;
+        double across = -Math.sin(heading) * (bx + 0.5 - x) + Math.cos(heading) * (bz + 0.5 - z);
+        double along = Math.cos(heading) * nx + Math.sin(heading) * nz;
+        double localAcross = across / radius - bend(along);
+        boolean lane = Math.abs(localAcross * radius) < 1.8;
+        boolean margin = Math.abs(localAcross) > width(along) - 0.13;
+        Direction facing = Direction.from2DDataValue(random.nextInt(4));
+        decorateDeposit(chunk, floor, along, localAcross, lane, margin, random, facing);
+        boolean breakdown = kind == Kind.COLLAPSE && Math.abs(along) < 0.48 && Math.abs(localAcross) > 0.14;
+        if (!lane && (margin || breakdown) && random.nextInt(breakdown ? 8 : 24) == 0) {
+            formation(chunk, floor, kind == Kind.COLD_TRAP ? GCBlocks.LUNAR_FROSTED_BREAKDOWN_RUBBLE
+                    : kind == Kind.COLLAPSE && random.nextBoolean() ? GCBlocks.LUNAR_FALLEN_ROOF_SLAB
+                    : GCBlocks.LUNAR_SCATTERED_FRAGMENTS, facing);
+        }
+        if (kind == Kind.COLLAPSE && !lane && (margin || breakdown) && random.nextInt(13) == 0) {
+            decorateCeiling(chunk, bx, bz, facing);
+        }
+    }
+
+    private void decorateDeposit(ChunkAccess chunk, BlockPos floor, double along, double localAcross,
+                                 boolean lane, boolean margin, RandomSource random, Direction facing) {
+        switch (kind) {
+            case COLD_TRAP -> decorateColdTrap(chunk, floor, along, localAcross, lane, random);
+            case IMPACT_CORE -> decorateImpactCore(chunk, floor, along, localAcross, lane);
+            case COLLAPSE -> {
+                if (margin && along > 0.35 && random.nextInt(4) == 0) {
+                    chunk.setBlockState(floor.below(), GCBlocks.LUNAR_SAPPHIRE_ORE.defaultBlockState(), false);
                 }
-            } else if (kind == Kind.IMPACT_CORE) {
-                if (Math.abs(along) < 0.42) chunk.setBlockState(floor.below(), GCBlocks.MOON_BASALT.defaultBlockState(), false);
-                if (Mth.square(along - 0.06) + Mth.square(localAcross) < 0.17 && localAcross > 0.15) {
-                    chunk.setBlockState(floor.below(), GCBlocks.FALLEN_METEOR.defaultBlockState(), false);
-                    if (!lane) chunk.setBlockState(floor, GCBlocks.FALLEN_METEOR.defaultBlockState(), false);
-                }
-            } else if (kind == Kind.COLLAPSE && margin && along > 0.35 && random.nextInt(4) == 0) {
-                chunk.setBlockState(floor.below(), GCBlocks.LUNAR_SAPPHIRE_ORE.defaultBlockState(), false);
-            } else if (kind == Kind.OLIVINE && Math.abs(along - 0.36) < 0.24 && localAcross > 0.25 && random.nextInt(5) == 0) {
-                chunk.setBlockState(floor.below(), GCBlocks.BUDDING_OLIVINE.defaultBlockState(), false);
-                formation(chunk, floor, GCBlocks.OLIVINE_CLUSTER, facing);
-            } else if (kind == Kind.CHEESE && Math.abs(along + 0.38) < 0.24 && localAcross < -0.08 && random.nextInt(3) == 0) {
-                chunk.setBlockState(floor.below(), random.nextInt(5) == 0
-                        ? GCBlocks.MOON_CHEESE_BLOCK.defaultBlockState() : GCBlocks.MOON_MOSS.defaultBlockState(), false);
-                if (!lane) chunk.setBlockState(floor, GCBlocks.MOON_SHRUBS.defaultBlockState(), false);
-            } else if (kind == Kind.HELION && Math.abs(along - 0.38) < 0.23 && localAcross > 0.24 && random.nextInt(7) == 0) {
-                formation(chunk, floor, random.nextInt(4) == 0 ? GCBlocks.HELIUM_3_VENT : GCBlocks.HELION_NODULES, facing);
             }
-            boolean breakdown = kind == Kind.COLLAPSE && Math.abs(along) < 0.48 && Math.abs(localAcross) > 0.14;
-            if (!lane && (margin || breakdown) && random.nextInt(breakdown ? 8 : 24) == 0) {
-                formation(chunk, floor, kind == Kind.COLD_TRAP ? GCBlocks.LUNAR_FROSTED_BREAKDOWN_RUBBLE
-                        : kind == Kind.COLLAPSE && random.nextBoolean() ? GCBlocks.LUNAR_FALLEN_ROOF_SLAB
-                        : GCBlocks.LUNAR_SCATTERED_FRAGMENTS, facing);
-            }
-            if (kind == Kind.COLLAPSE && !lane && (margin || breakdown) && random.nextInt(13) == 0) {
-                for (int roofY = Mth.floor(y); roofY <= Math.min(chunk.getMaxBuildHeight() - 2, Mth.ceil(y + height)); roofY++) {
-                    BlockPos roof = new BlockPos(bx, roofY, bz);
-                    if (chunk.getBlockState(roof).isAir() && stone(chunk.getBlockState(roof.above()))) {
-                        formation(chunk, roof, GCBlocks.LUNAR_CEILING_BREAKDOWN, facing);
-                        break;
-                    }
+            case OLIVINE -> {
+                if (Math.abs(along - 0.36) < 0.24 && localAcross > 0.25 && random.nextInt(5) == 0) {
+                    chunk.setBlockState(floor.below(), GCBlocks.BUDDING_OLIVINE.defaultBlockState(), false);
+                    formation(chunk, floor, GCBlocks.OLIVINE_CLUSTER, facing);
                 }
+            }
+            case CHEESE -> {
+                if (Math.abs(along + 0.38) < 0.24 && localAcross < -0.08 && random.nextInt(3) == 0) {
+                    chunk.setBlockState(floor.below(), random.nextInt(5) == 0
+                            ? GCBlocks.MOON_CHEESE_BLOCK.defaultBlockState() : GCBlocks.MOON_MOSS.defaultBlockState(), false);
+                    if (!lane) chunk.setBlockState(floor, GCBlocks.MOON_SHRUBS.defaultBlockState(), false);
+                }
+            }
+            case HELION -> {
+                if (Math.abs(along - 0.38) < 0.23 && localAcross > 0.24 && random.nextInt(7) == 0) {
+                    formation(chunk, floor, random.nextInt(4) == 0 ? GCBlocks.HELIUM_3_VENT : GCBlocks.HELION_NODULES, facing);
+                }
+            }
+        }
+    }
+
+    private void decorateColdTrap(ChunkAccess chunk, BlockPos floor, double along, double localAcross,
+                                  boolean lane, RandomSource random) {
+        if (random.nextDouble() < 0.85 - Math.abs(along) * 0.65) {
+            chunk.setBlockState(floor.below(), Math.abs(along) < 0.30 && localAcross < 0.13 ? GCBlocks.DENSE_ICE.defaultBlockState()
+                    : GCBlocks.ICE_BEARING_BRECCIA.defaultBlockState(), false);
+            if (!lane && Math.abs(along) < 0.25 && random.nextInt(14) == 0) {
+                chunk.setBlockState(floor, GCBlocks.DENSE_ICE.defaultBlockState(), false);
+            }
+        }
+    }
+
+    private void decorateImpactCore(ChunkAccess chunk, BlockPos floor, double along, double localAcross, boolean lane) {
+        if (Math.abs(along) < 0.42) chunk.setBlockState(floor.below(), GCBlocks.MOON_BASALT.defaultBlockState(), false);
+        if (Mth.square(along - 0.06) + Mth.square(localAcross) < 0.17 && localAcross > 0.15) {
+            chunk.setBlockState(floor.below(), GCBlocks.FALLEN_METEOR.defaultBlockState(), false);
+            if (!lane) chunk.setBlockState(floor, GCBlocks.FALLEN_METEOR.defaultBlockState(), false);
+        }
+    }
+
+    private void decorateCeiling(ChunkAccess chunk, int bx, int bz, Direction facing) {
+        for (int roofY = Mth.floor(y); roofY <= Math.min(chunk.getMaxBuildHeight() - 2, Mth.ceil(y + height)); roofY++) {
+            BlockPos roof = new BlockPos(bx, roofY, bz);
+            if (chunk.getBlockState(roof).isAir() && stone(chunk.getBlockState(roof.above()))) {
+                formation(chunk, roof, GCBlocks.LUNAR_CEILING_BREAKDOWN, facing);
+                break;
             }
         }
     }

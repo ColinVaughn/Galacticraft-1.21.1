@@ -339,49 +339,60 @@ public class VacuumGlassBakedModel implements BakedModel, FabricBakedModel {
     }
 
     private static void emitCornerPane(QuadEmitter emitter, boolean east, boolean down, boolean north, boolean up) {
+        float outerX = east ? PANE_INSET : 1.0f - PANE_INSET;
+        float innerX = east ? 1.0f - PANE_INSET : PANE_INSET;
+        float edgeX = east ? 1.0f : 0.0f;
+        float edgeZ = north ? 0.0f : 1.0f;
+        float outerZ = north ? 1.0f - PANE_INSET : PANE_INSET;
+        float innerZ = north ? PANE_INSET : 1.0f - PANE_INSET;
+        float bottomY = down ? 0.0f : INNER_FRAME_THICKNESS;
+        float topY = up ? 1.0f : 1.0f - INNER_FRAME_THICKNESS;
+        float bottomV = down ? 0 : 3;
+        float topV = 13 + (up ? 3 : 0);
+
         // A D <- quad order
         // B C
 
         emitter
-                .pos(0, east ? PANE_INSET : 1.0f - PANE_INSET, down ? 0.0f : INNER_FRAME_THICKNESS, north ? 0.0f : 1.0f)
-                .pos(1, east ? 1.0f : 0.0f, down ? 0.0f : INNER_FRAME_THICKNESS, north ? 1.0f - PANE_INSET : PANE_INSET)
-                .pos(2, east ? 1.0f : 0.0f, up ? 1.0f : 1.0f - INNER_FRAME_THICKNESS, north ? 1.0f - PANE_INSET : PANE_INSET)
-                .pos(3, east ? PANE_INSET : 1.0f - PANE_INSET, up ? 1.0f : 1.0f - INNER_FRAME_THICKNESS, north ? 0.0f : 1.0f)
-                .uv(0, 0, down ? 0 : 3)
-                .uv(1, 13, down ? 0 : 3)
-                .uv(2, 13, 13 + (up ? 3 : 0))
-                .uv(3, 0, 13 + (up ? 3 : 0))
+                .pos(0, outerX, bottomY, edgeZ)
+                .pos(1, edgeX, bottomY, outerZ)
+                .pos(2, edgeX, topY, outerZ)
+                .pos(3, outerX, topY, edgeZ)
+                .uv(0, 0, bottomV)
+                .uv(1, 13, bottomV)
+                .uv(2, 13, topV)
+                .uv(3, 0, topV)
                 .emit();
         emitter
-                .pos(0, east ? 1.0f - PANE_INSET : PANE_INSET, down ? 0.0f : INNER_FRAME_THICKNESS, north ? 0.0f : 1.0f)
-                .pos(1, east ? 1.0f : 0.0f, down ? 0.0f : INNER_FRAME_THICKNESS, north ? PANE_INSET : 1.0f - PANE_INSET)
-                .pos(2, east ? 1.0f : 0.0f, up ? 1.0f : 1.0f - INNER_FRAME_THICKNESS, north ? PANE_INSET : 1.0f - PANE_INSET)
-                .pos(3, east ? 1.0f - PANE_INSET : PANE_INSET, up ? 1.0f : 1.0f - INNER_FRAME_THICKNESS, north ? 0.0f : 1.0f)
-                .uv(0, 0, down ? 0 : 3)
-                .uv(1, 8, down ? 0 : 3)
-                .uv(2, 8, 13 + (up ? 3 : 0))
-                .uv(3, 0, 13 + (up ? 3 : 0))
+                .pos(0, innerX, bottomY, edgeZ)
+                .pos(1, edgeX, bottomY, innerZ)
+                .pos(2, edgeX, topY, innerZ)
+                .pos(3, innerX, topY, edgeZ)
+                .uv(0, 0, bottomV)
+                .uv(1, 8, bottomV)
+                .uv(2, 8, topV)
+                .uv(3, 0, topV)
                 .emit();
 
         emitter
-                .pos(3, east ? PANE_INSET : 1.0f - PANE_INSET, down ? 0.0f : INNER_FRAME_THICKNESS, north ? 0.0f : 1.0f)
-                .pos(2, east ? 1.0f : 0.0f, down ? 0.0f : INNER_FRAME_THICKNESS, north ? 1.0f - PANE_INSET : PANE_INSET)
-                .pos(1, east ? 1.0f : 0.0f, up ? 1.0f : 1.0f - INNER_FRAME_THICKNESS, north ? 1.0f - PANE_INSET : PANE_INSET)
-                .pos(0, east ? PANE_INSET : 1.0f - PANE_INSET, up ? 1.0f : 1.0f - INNER_FRAME_THICKNESS, north ? 0.0f : 1.0f)
-                .uv(0, 0, down ? 0 : 3)
-                .uv(1, 13, down ? 0 : 3)
-                .uv(2, 13, 13 + (up ? 3 : 0))
-                .uv(3, 0, 13 + (up ? 3 : 0))
+                .pos(3, outerX, bottomY, edgeZ)
+                .pos(2, edgeX, bottomY, outerZ)
+                .pos(1, edgeX, topY, outerZ)
+                .pos(0, outerX, topY, edgeZ)
+                .uv(0, 0, bottomV)
+                .uv(1, 13, bottomV)
+                .uv(2, 13, topV)
+                .uv(3, 0, topV)
                 .emit();
         emitter
-                .pos(3, east ? 1.0f - PANE_INSET : PANE_INSET, down ? 0.0f : INNER_FRAME_THICKNESS, north ? 0.0f : 1.0f)
-                .pos(2, east ? 1.0f : 0.0f, down ? 0.0f : INNER_FRAME_THICKNESS, north ? PANE_INSET : 1.0f - PANE_INSET)
-                .pos(1, east ? 1.0f : 0.0f, up ? 1.0f : 1.0f - INNER_FRAME_THICKNESS, north ? PANE_INSET : 1.0f - PANE_INSET)
-                .pos(0, east ? 1.0f - PANE_INSET : PANE_INSET, up ? 1.0f : 1.0f - INNER_FRAME_THICKNESS, north ? 0.0f : 1.0f)
-                .uv(0, 0, down ? 0 : 3)
-                .uv(1, 8, down ? 0 : 3)
-                .uv(2, 8, 13 + (up ? 3 : 0))
-                .uv(3, 0, 13 + (up ? 3 : 0))
+                .pos(3, innerX, bottomY, edgeZ)
+                .pos(2, edgeX, bottomY, innerZ)
+                .pos(1, edgeX, topY, innerZ)
+                .pos(0, innerX, topY, edgeZ)
+                .uv(0, 0, bottomV)
+                .uv(1, 8, bottomV)
+                .uv(2, 8, topV)
+                .uv(3, 0, topV)
                 .emit();
     }
 

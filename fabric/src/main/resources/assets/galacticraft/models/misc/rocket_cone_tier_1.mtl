@@ -1,0 +1,9 @@
+newmtl RocketCones
+Kd 1.0 1.0 1.0
+d 1.0
+map_Kd galacticraft:obj/rocket_cones
+
+newmtl RocketCones_paint
+Kd 1 1 1
+d 1
+map_Kd galacticraft:obj/rocket_cones

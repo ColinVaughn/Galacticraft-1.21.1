@@ -31,5 +31,9 @@ public interface GCModel extends AutoCloseable {
         this.render(modelStack, state, consumer, light, overlay, 0xFFFFFFFF);
     }
 
+    default void renderPainted(PoseStack modelStack, @Nullable GCModelState state, VertexConsumer consumer, int light, int overlay, int color) {
+        this.render(modelStack, state, consumer, light, overlay, color);
+    }
+
     void render(PoseStack modelStack, @Nullable GCModelState state, VertexConsumer consumer, int light, int overlay, int color);
 }

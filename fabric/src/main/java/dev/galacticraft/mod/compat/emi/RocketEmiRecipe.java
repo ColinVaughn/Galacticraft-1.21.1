@@ -46,8 +46,7 @@ public class RocketEmiRecipe extends BasicEmiRecipe {
     private static final int PREVIEW_ROCKET_X = ROCKET_X - RECIPE_VIEWER_X;
     private static final int PREVIEW_ROCKET_Y = ROCKET_Y - RECIPE_VIEWER_Y;
 
-    private final int bodyHeight;
-    private final boolean hasBoosters;
+    private final java.util.List<RocketRecipe.RocketSlotData> slots;
     private static final EmiIngredient EMPTY = EmiIngredient.of(Ingredient.EMPTY);
     public static final LazyRocketEntity ROCKET_ENTITY = new LazyRocketEntity(90.0F);
 
@@ -58,14 +57,13 @@ public class RocketEmiRecipe extends BasicEmiRecipe {
             this.inputs.add(EmiIngredient.of(ingredient));
         }
         this.outputs.add(EmiStack.of(recipe.getResultItem(null)));
-        this.bodyHeight = recipe.bodyHeight();
-        this.hasBoosters = !recipe.boosters().isEmpty();
+        this.slots = recipe.slots();
     }
 
     @Override
     public void addWidgets(WidgetHolder widgets) {
         int slot = 0;
-        for (RocketRecipe.RocketSlotData data : RocketRecipe.slotData(this.bodyHeight, this.hasBoosters)) {
+        for (RocketRecipe.RocketSlotData data : this.slots) {
             if (data.mirror()) {
                 widgets.add(new MirroredSlotWidget(this.inputs.get(slot++), data.x() - RECIPE_VIEWER_X - 1, data.y() - RECIPE_VIEWER_Y - 1));
             } else {

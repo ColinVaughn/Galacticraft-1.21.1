@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.galacticraft.api.entity.rocket.render.RocketPartRenderer;
 import dev.galacticraft.api.rocket.LaunchStage;
 import dev.galacticraft.api.rocket.entity.Rocket;
+import dev.galacticraft.api.rocket.part.RocketPartTypes;
 import dev.galacticraft.mod.client.model.GCModel;
 import dev.galacticraft.mod.client.model.GCModelLoader;
 import dev.galacticraft.mod.client.model.GCModelState;
@@ -57,20 +58,36 @@ public record Tier1RocketPartRenderer(ResourceLocation model, Part part) impleme
         draw(GCModelLoader.INSTANCE.getModel(model), animations, state, rocket.getLaunchStage(), thrust, seconds, partialTick,
                 matrices, vertices.getBuffer(GCRenderTypes.obj(GCRenderTypes.OBJ_ATLAS)),
                 () -> vertices.getBuffer(GCRenderTypes.objTranslucent(GCRenderTypes.OBJ_ATLAS)),
-                light, overlay, rocket.getRocketData().color());
+                light, overlay, rocket.getRocketData().tints().color(switch (part) {
+                    case BODY -> RocketPartTypes.BODY;
+                    case CONE -> RocketPartTypes.CONE;
+                    case FINS -> RocketPartTypes.FIN;
+                    case ENGINE -> RocketPartTypes.ENGINE;
+                }).orElse(rocket.getRocketData().color()), rocket.getRocketData().paint().color(switch (part) {
+                    case BODY -> RocketPartTypes.BODY;
+                    case CONE -> RocketPartTypes.CONE;
+                    case FINS -> RocketPartTypes.FIN;
+                    case ENGINE -> RocketPartTypes.ENGINE;
+                }).orElse(null));
     }
 
     public void draw(GCModel model, Tier1RocketAnimations animations, Tier1RocketAnimationState motion, LaunchStage stage, float thrust,
                      double seconds, float partialTick, PoseStack matrices, VertexConsumer consumer,
                      Supplier<VertexConsumer> glassConsumer, int light, int overlay, int color) {
-        model.render(matrices, part.state, consumer, light, overlay, color);
+        draw(model, animations, motion, stage, thrust, seconds, partialTick, matrices, consumer, glassConsumer, light, overlay, color, null);
+    }
+
+    private void draw(GCModel model, Tier1RocketAnimations animations, Tier1RocketAnimationState motion, LaunchStage stage, float thrust,
+                      double seconds, float partialTick, PoseStack matrices, VertexConsumer consumer,
+                      Supplier<VertexConsumer> glassConsumer, int light, int overlay, int color, Integer paint) {
+        drawPart(model, matrices, part.state, consumer, light, overlay, color, paint);
         switch (part) {
             case BODY -> {
                 matrices.pushPose();
                 matrices.translate(-4.4 / 16, (25.5 - 31) / 16, -11.3 / 16);
                 if (animations != null && motion != null)
                     Tier1RocketAnimations.apply(matrices, animations.sample("hatch", "Hatch", motion.hatch(partialTick)), 1);
-                model.render(matrices, HATCH, consumer, light, overlay, color);
+                drawPart(model, matrices, HATCH, consumer, light, overlay, color, paint);
                 // Acquire the glass buffer after opaque draws: switching layers can flush the previous builder.
                 model.render(matrices, WINDOW, glassConsumer.get(), light, overlay, 0xFFFFFFFF);
                 matrices.popPose();
@@ -81,7 +98,7 @@ public record Tier1RocketPartRenderer(ResourceLocation model, Part part) impleme
                     matrices.translate(leg.x, -2.0 / 16, leg.z);
                     if (animations != null && motion != null)
                         Tier1RocketAnimations.apply(matrices, animations.sample("gear", leg.state.getName(), motion.gear(partialTick)), 1);
-                    model.render(matrices, leg.state, consumer, light, overlay, color);
+                    drawPart(model, matrices, leg.state, consumer, light, overlay, color, paint);
                     matrices.popPose();
                 }
             }
@@ -92,7 +109,7 @@ public record Tier1RocketPartRenderer(ResourceLocation model, Part part) impleme
                 if (animations != null && burning)
                     Tier1RocketAnimations.apply(matrices, animations.sample("gimbal", "Nozzle", seconds),
                             stage == LaunchStage.IGNITED ? 0.15F : 1);
-                model.render(matrices, NOZZLE, consumer, light, overlay, color);
+                drawPart(model, matrices, NOZZLE, consumer, light, overlay, color, paint);
                 if (animations != null && burning)
                     Tier1RocketAnimations.apply(matrices, animations.sample("exhaust", "Glow", seconds), 1);
                 model.render(matrices, GLOW, consumer, burning ? LightTexture.FULL_BRIGHT : light, overlay,
@@ -101,5 +118,11 @@ public record Tier1RocketPartRenderer(ResourceLocation model, Part part) impleme
             }
             case CONE -> { }
         }
+    }
+
+    private static void drawPart(GCModel model, PoseStack matrices, GCModelState state, VertexConsumer consumer,
+                                 int light, int overlay, int color, Integer paint) {
+        if (paint == null) model.render(matrices, state, consumer, light, overlay, color);
+        else model.renderPainted(matrices, state, consumer, light, overlay, paint);
     }
 }

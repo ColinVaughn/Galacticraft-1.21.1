@@ -47,4 +47,26 @@ public final class CustomFluidPush {
         }
         return flow;
     }
+
+    public static final class Accumulator {
+        private double height;
+        private boolean present;
+        private Vec3 flow = Vec3.ZERO;
+        private int samples;
+
+        public void add(double depth, Vec3 sampledFlow, boolean pushedByFluid) {
+            this.present = true;
+            this.height = Math.max(depth, this.height);
+            if (pushedByFluid) {
+                // Attenuation uses the running maximum depth, as in vanilla fluid scanning.
+                this.flow = this.flow.add(this.height < 0.4D ? sampledFlow.scale(this.height) : sampledFlow);
+                this.samples++;
+            }
+        }
+
+        public double height() { return this.height; }
+        public boolean isPresent() { return this.present; }
+        public Vec3 flow() { return this.flow; }
+        public int samples() { return this.samples; }
+    }
 }

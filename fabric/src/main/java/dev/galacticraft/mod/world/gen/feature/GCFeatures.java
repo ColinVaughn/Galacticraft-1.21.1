@@ -32,6 +32,7 @@ import net.minecraft.world.level.levelgen.feature.configurations.BlockStateConfi
 
 /** Registry of Galacticraft's custom worldgen {@link Feature} types. */
 public class GCFeatures {
+    public static final Feature<NoneFeatureConfiguration> VAPOR_SPOUT = new VaporSpoutFeature();
     public static final Feature<BlockStateConfiguration> MARS_BOULDER = new PlanetBoulderFeature(GCBlockTags.MARS_CARVER_REPLACEABLES);
     public static final Feature<BlockStateConfiguration> MOON_BOULDER = new PlanetBoulderFeature(GCBlockTags.MOON_CRATER_CARVER_REPLACEABLES);
     public static final Feature<NoneFeatureConfiguration> VOLCANO = new VolcanoFeature(NoneFeatureConfiguration.CODEC);
@@ -44,6 +45,7 @@ public class GCFeatures {
     public static final Feature<NoneFeatureConfiguration> MOON_BURROWER_DEN = new LunarBurrowerDenFeature(NoneFeatureConfiguration.CODEC);
 
     public static void register() {
+        Registry.register(BuiltInRegistries.FEATURE, Constant.id("vapor_spout"), VAPOR_SPOUT);
         Registry.register(BuiltInRegistries.FEATURE, Constant.id("moon_burrower_den"), MOON_BURROWER_DEN);
         Registry.register(BuiltInRegistries.FEATURE, Constant.id("moon_cave_decorations"), MOON_CAVE_DECORATIONS);
         Registry.register(BuiltInRegistries.FEATURE, Constant.id("mars_boulder"), MARS_BOULDER);

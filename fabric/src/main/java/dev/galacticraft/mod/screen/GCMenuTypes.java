@@ -39,6 +39,8 @@ import net.minecraft.world.item.crafting.*;
 
 public class GCMenuTypes {
     public static final MenuType<CoalGeneratorMenu> COAL_GENERATOR = SynchronizedMenuType.create((type, id, inventory, pos) -> new CoalGeneratorMenu(id, inventory, pos));
+    public static final MenuType<ShortRangeTelepadMenu> SHORT_RANGE_TELEPAD = SynchronizedMenuType.create((type, id, inventory, pos) -> new ShortRangeTelepadMenu(id, inventory, pos));
+    public static final MenuType<GeothermalGeneratorMenu> GEOTHERMAL_GENERATOR = SynchronizedMenuType.create((type, id, inventory, pos) -> new GeothermalGeneratorMenu(id, inventory, pos));
     public static final MenuType<SolarPanelMenu<BasicSolarPanelBlockEntity>> BASIC_SOLAR_PANEL = SynchronizedMenuType.create(SolarPanelMenu::new);
     public static final MenuType<SolarPanelMenu<AdvancedSolarPanelBlockEntity>> ADVANCED_SOLAR_PANEL = SynchronizedMenuType.create(SolarPanelMenu::new);
 
@@ -49,6 +51,8 @@ public class GCMenuTypes {
     public static final MenuType<RecipeMachineMenu<SingleRecipeInput, SmeltingRecipe, ElectricFurnaceBlockEntity>> ELECTRIC_FURNACE = SynchronizedMenuType.createSimple(RecipeMachineMenu::new);
     public static final MenuType<RecipeMachineMenu<SingleRecipeInput, BlastingRecipe, ElectricArcFurnaceBlockEntity>> ELECTRIC_ARC_FURNACE = SynchronizedMenuType.createSimple(RecipeMachineMenu::new);
 
+    public static final MenuType<GasProcessingMenu<GasLiquefierBlockEntity>> GAS_LIQUEFIER = SynchronizedMenuType.create(GasProcessingMenu::new);
+    public static final MenuType<GasProcessingMenu<MethaneSynthesizerBlockEntity>> METHANE_SYNTHESIZER = SynchronizedMenuType.create(GasProcessingMenu::new);
     public static final MenuType<MachineMenu<RefineryBlockEntity>> REFINERY = SynchronizedMenuType.create(MachineMenu::new, 84);
 
     public static final MenuType<OxygenCollectorMenu> OXYGEN_COLLECTOR = SynchronizedMenuType.create((type, id, inventory, pos) -> new OxygenCollectorMenu(id, inventory, pos));
@@ -78,6 +82,7 @@ public class GCMenuTypes {
 
     public static final MenuType<AirlockControllerMenu> AIRLOCK_CONTROLLER_MENU = new MenuType<>(AirlockControllerMenu::new, FeatureFlags.VANILLA_SET);
     public static final MenuType<RocketWorkbenchMenu> ROCKET_WORKBENCH = MenuRegistry.ofExtended((id, inventory, buf) -> new RocketWorkbenchMenu(id, inventory, RocketWorkbenchMenu.OpeningData.CODEC.decode(buf)));
+    public static final MenuType<RocketPaintMenu> ROCKET_PAINT = MenuRegistry.ofExtended((id, inventory, buf) -> new RocketPaintMenu(id, inventory, RocketWorkbenchMenu.OpeningData.CODEC.decode(buf)));
     public static final MenuType<RocketMenu> ROCKET = MenuRegistry.ofExtended((id, inventory, buf) -> new RocketMenu(id, inventory, ByteBufCodecs.INT.decode(buf)));
     public static final MenuType<BuggyMenu> BUGGY = MenuRegistry.ofExtended((id, inventory, buf) -> new BuggyMenu(id, inventory, BuggyMenu.OpeningData.STREAM_CODEC.decode(buf)));
     public static final MenuType<LaunchPadMenu> LAUNCH_PAD = MenuRegistry.ofExtended((id, inventory, buf) -> new LaunchPadMenu(id, inventory, BlockPos.STREAM_CODEC.decode(buf)));
@@ -92,6 +97,8 @@ public class GCMenuTypes {
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.PET_INVENTORY_MENU), PET_INV_GC);
 
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.COAL_GENERATOR_MENU), COAL_GENERATOR);
+        Registry.register(BuiltInRegistries.MENU, Constant.id("geothermal_generator_menu"), GEOTHERMAL_GENERATOR);
+        Registry.register(BuiltInRegistries.MENU, Constant.id("short_range_telepad_menu"), SHORT_RANGE_TELEPAD);
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.BASIC_SOLAR_PANEL_MENU), BASIC_SOLAR_PANEL);
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.ADVANCED_SOLAR_PANEL_MENU), ADVANCED_SOLAR_PANEL);
 
@@ -100,6 +107,8 @@ public class GCMenuTypes {
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.ELECTRIC_COMPRESSOR_MENU), ELECTRIC_COMPRESSOR);
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.ELECTRIC_FURNACE_MENU), ELECTRIC_FURNACE);
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.ELECTRIC_ARC_FURNACE_MENU), ELECTRIC_ARC_FURNACE);
+        Registry.register(BuiltInRegistries.MENU, Constant.id("gas_liquefier_menu"), GAS_LIQUEFIER);
+        Registry.register(BuiltInRegistries.MENU, Constant.id("methane_synthesizer_menu"), METHANE_SYNTHESIZER);
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.REFINERY_MENU), REFINERY);
 
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.OXYGEN_COLLECTOR_MENU), OXYGEN_COLLECTOR);
@@ -124,6 +133,7 @@ public class GCMenuTypes {
 
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.AIR_LOCK_CONTROLLER_MENU), AIRLOCK_CONTROLLER_MENU);
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.ROCKET_WORKBENCH_MENU), ROCKET_WORKBENCH);
+        Registry.register(BuiltInRegistries.MENU, Constant.id("rocket_paint"), ROCKET_PAINT);
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.ROCKET), ROCKET);
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.BUGGY), BUGGY);
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.LAUNCH_PAD), LAUNCH_PAD);

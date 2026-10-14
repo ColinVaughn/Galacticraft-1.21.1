@@ -1,0 +1,6 @@
+{
+  "galacticraft:type": "galacticraft:obj",
+  "model": "galacticraft:models/misc/rocket_cone_tier_3.obj",
+  "mtl": "galacticraft:models/misc/rocket_cone_tier_3.mtl",
+  "paint_texture": "galacticraft:obj/rocket_cones_paint"
+}

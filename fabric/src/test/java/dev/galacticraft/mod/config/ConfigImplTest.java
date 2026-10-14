@@ -107,6 +107,7 @@ class ConfigImplTest {
             ConfigImpl config = new ConfigImpl(pristine);
             assertEquals(RocketFlightLogic.DEFAULT_FUEL_TANK_CAPACITY_BUCKETS, config.rocketFuelTankCapacity());
             assertEquals(RocketFlightLogic.DEFAULT_BURN_TICKS_PER_BUCKET, config.rocketBurnTicksPerBucket());
+            assertTrue(config.gc4RocketFuelMode());
             assertEquals(RefineryFuelLogic.DEFAULT_OIL_TO_FUEL_RATIO, config.refineryOilToFuelRatio());
         } finally {
             pristine.delete();
@@ -128,6 +129,7 @@ class ConfigImplTest {
         ConfigImpl config = new ConfigImpl(CONFIG_FILE);
         assertEquals(40, config.rocketFuelTankCapacity());
         assertEquals(150, config.rocketBurnTicksPerBucket());
+        assertTrue(config.gc4RocketFuelMode(), "configs without the new option use the enabled default");
         assertEquals(2.5, config.refineryOilToFuelRatio());
     }
 
@@ -143,6 +145,19 @@ class ConfigImplTest {
         assertEquals(64, config.rocketFuelTankCapacity());
         assertEquals(200, config.rocketBurnTicksPerBucket());
         assertEquals(3.0, config.refineryOilToFuelRatio());
+    }
+
+    @Test
+    void gc4RocketFuelModeLoadsAndSurvivesSaveAndReload() throws IOException {
+        Path file = this.tempDir.resolve("gc4-fuel.json");
+        Files.writeString(file, "{\"gc4_rocket_fuel_mode\": true}");
+        ConfigImpl config = new ConfigImpl(file.toFile());
+        assertTrue(config.gc4RocketFuelMode());
+        config.setGc4RocketFuelMode(false);
+        config.save();
+        config.setGc4RocketFuelMode(true);
+        config.load();
+        assertEquals(false, config.gc4RocketFuelMode());
     }
 
     @Test

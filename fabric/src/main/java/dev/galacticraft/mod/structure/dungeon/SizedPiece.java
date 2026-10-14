@@ -74,4 +74,22 @@ public abstract class SizedPiece extends DirectionalPiece {
     public int getSizeZ() {
         return sizeZ;
     }
+
+    protected boolean isEntrance(int x, int y, int z) {
+        return isEntrance(x, y, z, 3);
+    }
+
+    protected boolean isEntrance(int x, int y, int z, int height) {
+        if (y <= 0 || y >= height) return false;
+        if (getDirection().getAxis() == Direction.Axis.Z) {
+            int start = (this.boundingBox.maxX() - this.boundingBox.minX()) / 2 - 1;
+            int end = (this.boundingBox.maxX() - this.boundingBox.minX()) / 2 + 1;
+            return x > start && x <= end && (getDirection() == Direction.SOUTH && z == 0
+                    || getDirection() == Direction.NORTH && z == this.sizeZ);
+        }
+        int start = (this.boundingBox.maxZ() - this.boundingBox.minZ()) / 2 - 1;
+        int end = (this.boundingBox.maxZ() - this.boundingBox.minZ()) / 2 + 1;
+        return z > start && z <= end && (getDirection() == Direction.EAST && x == 0
+                || getDirection() == Direction.WEST && x == this.sizeX);
+    }
 }

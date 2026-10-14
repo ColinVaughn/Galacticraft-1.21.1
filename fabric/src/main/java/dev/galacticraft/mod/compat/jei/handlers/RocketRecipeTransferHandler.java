@@ -86,7 +86,7 @@ public class RocketRecipeTransferHandler implements IRecipeTransferHandler<Rocke
                 this.getContainerClass(),
                 this.getMenuType().orElse(null),
                 this.getRecipeType(),
-                0, recipeSize, // Ingredient wells
+                menu.ingredientSlots().getFirst().index, recipeSize, // Ingredient wells
                 menu.firstPlayerSlot(), 36 // Player inventory + hotbar slots
         );
         IRecipeTransferHandler<RocketWorkbenchMenu, WorkbenchRecipe> handler = this.handlerHelper.createUnregisteredRecipeTransferHandler(info);

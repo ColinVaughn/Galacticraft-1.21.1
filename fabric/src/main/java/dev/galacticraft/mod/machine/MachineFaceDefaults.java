@@ -33,6 +33,8 @@ import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
 import dev.galacticraft.machinelib.api.transfer.ResourceType;
 import dev.galacticraft.machinelib.api.util.BlockFace;
 import dev.galacticraft.mod.content.block.entity.machine.TerraformerBlockEntity;
+import dev.galacticraft.mod.content.block.entity.machine.GeothermalGeneratorBlockEntity;
+import dev.galacticraft.mod.content.block.entity.machine.ShortRangeTelepadBlockEntity;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -176,6 +178,20 @@ public final class MachineFaceDefaults {
      */
     public static void apply(MachineBlockEntity machine) {
         IOConfig config = machine.getIOConfig();
+
+        if (machine instanceof ShortRangeTelepadBlockEntity) {
+            if (isUnconfigured(config)) {
+                config.get(BlockFace.FRONT).setOption(ResourceType.ENERGY, ResourceFlow.INPUT);
+                config.get(BlockFace.TOP).setOption(ResourceType.ENERGY, ResourceFlow.INPUT);
+            }
+            return;
+        }
+
+        if (machine instanceof GeothermalGeneratorBlockEntity) {
+            // GC4's output is clockwise from the front, matching the original east-face texture.
+            if (isUnconfigured(config)) config.get(BlockFace.RIGHT).setOption(ResourceType.ENERGY, ResourceFlow.OUTPUT);
+            return;
+        }
 
         if (machine instanceof TerraformerBlockEntity) {
             if (isUnconfigured(config) || isOldTerraformerDefault(config)) {

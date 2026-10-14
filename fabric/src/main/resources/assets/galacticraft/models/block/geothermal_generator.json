@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "galacticraft:block/gc4/machine",
+    "down": "galacticraft:block/gc4/machine",
+    "up": "galacticraft:block/gc4/geothermal_vent",
+    "north": "galacticraft:block/gc4/geothermal_inactive",
+    "east": "galacticraft:block/gc4/machine_output",
+    "south": "galacticraft:block/gc4/geothermal_inactive",
+    "west": "galacticraft:block/gc4/machine_side"
+  }
+}

@@ -27,6 +27,7 @@ import dev.galacticraft.api.rocket.RocketData;
 import dev.galacticraft.api.rocket.part.RocketPart;
 import dev.galacticraft.impl.internal.accessor.AdvancementRewardsAccessor;
 import dev.galacticraft.mod.content.GCRocketParts;
+import dev.galacticraft.mod.content.item.GCItems;
 import dev.galacticraft.mod.machine.workbench.WorkbenchPages;
 import dev.galacticraft.mod.recipe.WorkbenchRecipe;
 import net.minecraft.advancements.AdvancementHolder;
@@ -89,11 +90,30 @@ public interface ServerResearchAccessor extends ResearchAccessor {
             }
         }
 
+        galacticraft$backfillStockSchematics(player, granted);
+
         if (!granted.isEmpty()) {
             ((ServerResearchAccessor) player).galacticraft$unlockRocketPartRecipes(granted.toArray(new ResourceLocation[0]));
         }
 
         return granted;
+    }
+
+    private static void galacticraft$backfillStockSchematics(ServerPlayer player, List<ResourceLocation> granted) {
+        // Stock tier pages no longer have recipes; retain saved page unlocks and older part research.
+        if (player.isCreative()) return;
+        ResearchAccessor research = (ResearchAccessor) player;
+        for (Item schematic : List.of(GCItems.TIER_2_ROCKET_SCHEMATIC, GCItems.TIER_3_ROCKET_SCHEMATIC)) {
+            ResourceLocation unlock = WorkbenchPages.unlockId(BuiltInRegistries.ITEM.getKey(schematic));
+            List<ResourceLocation> parts = WorkbenchPages.rocketPartsUnlockedBy(schematic).stream().map(GCRocketParts::recipeId).toList();
+            if (research.galacticraft$isUnlocked(unlock)) {
+                for (ResourceLocation part : parts) {
+                    if (!research.galacticraft$isUnlocked(part) && !granted.contains(part)) granted.add(part);
+                }
+            } else if (parts.stream().allMatch(part -> granted.contains(part) || research.galacticraft$isUnlocked(part))) {
+                granted.add(unlock);
+            }
+        }
     }
 
     /**

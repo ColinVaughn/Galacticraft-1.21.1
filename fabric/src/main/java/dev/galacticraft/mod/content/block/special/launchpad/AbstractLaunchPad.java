@@ -174,42 +174,49 @@ public abstract class AbstractLaunchPad extends BaseEntityBlock {
                 validConnections++;
             }
         }
-        // now looks to find where the center block is and if it is part of a valid 3x3 grid
+        // Preserve the center, edge, then corner search order when more than one grid could form.
         for (byte c = validConnections; c >= 2; c--) {
-            if (c == 4) {
-                if (isValid3x3(level, blockPos)) {
-                    updateMultiBlock(level, blockPos);
-                    return;
-                }
-            } else if (c == 3) {
-                for (Direction primaryDir : CARDINAL) {
-                    if (level.getBlockState(blockPos.relative(primaryDir)).is(this) && level.getBlockState(blockPos.relative(primaryDir.getOpposite())).is(this)) {
-                        for (Direction secondaryDir : CARDINAL) {
-                            if (secondaryDir.getAxis() != primaryDir.getAxis() && isValidSingleLaunchPad(level.getBlockState(blockPos.relative(secondaryDir)))) {
-                                if (isValid3x3(level, blockPos.relative(secondaryDir))) {
-                                    updateMultiBlock(level, blockPos.relative(secondaryDir));
-                                    return;
-                                }
-                            }
-                        }
-                    }
-                }
-            } else if (c == 2) {
-                for (Direction primaryDir : CARDINAL) {
-                    if (level.getBlockState(blockPos.relative(primaryDir)).is(this)) {
-                        Direction[] secondaryDirs = primaryDir.getAxis() == Direction.Axis.Z ? new Direction[]{Direction.EAST, Direction.WEST} : new Direction[]{Direction.NORTH, Direction.SOUTH};
-                        for (Direction secondaryDir : secondaryDirs) {
-                            if (isValidSingleLaunchPad(level.getBlockState(blockPos.relative(secondaryDir).relative(primaryDir)))) {
-                                if (isValid3x3(level, blockPos.relative(secondaryDir).relative(primaryDir))) {
-                                    updateMultiBlock(level, blockPos.relative(secondaryDir).relative(primaryDir));
-                                    return;
-                                }
-                            }
-                        }
-                    }
+            BlockPos center = switch (c) {
+                case 4 -> isValid3x3(level, blockPos) ? blockPos : null;
+                case 3 -> findEdgeCenter(level, blockPos);
+                case 2 -> findCornerCenter(level, blockPos);
+                default -> null;
+            };
+            if (center != null) {
+                updateMultiBlock(level, center);
+                return;
+            }
+        }
+    }
+
+    @Nullable
+    private BlockPos findEdgeCenter(Level level, BlockPos blockPos) {
+        for (Direction primaryDir : CARDINAL) {
+            if (!level.getBlockState(blockPos.relative(primaryDir)).is(this)
+                    || !level.getBlockState(blockPos.relative(primaryDir.getOpposite())).is(this)) continue;
+            for (Direction secondaryDir : CARDINAL) {
+                if (secondaryDir.getAxis() != primaryDir.getAxis()
+                        && isValidSingleLaunchPad(level.getBlockState(blockPos.relative(secondaryDir)))) {
+                    BlockPos center = blockPos.relative(secondaryDir);
+                    if (isValid3x3(level, center)) return center;
                 }
             }
         }
+        return null;
+    }
+
+    @Nullable
+    private BlockPos findCornerCenter(Level level, BlockPos blockPos) {
+        for (Direction primaryDir : CARDINAL) {
+            if (!level.getBlockState(blockPos.relative(primaryDir)).is(this)) continue;
+            Direction[] secondaryDirs = primaryDir.getAxis() == Direction.Axis.Z
+                    ? new Direction[]{Direction.EAST, Direction.WEST} : new Direction[]{Direction.NORTH, Direction.SOUTH};
+            for (Direction secondaryDir : secondaryDirs) {
+                BlockPos center = blockPos.relative(secondaryDir).relative(primaryDir);
+                if (isValidSingleLaunchPad(level.getBlockState(center)) && isValid3x3(level, center)) return center;
+            }
+        }
+        return null;
     }
 
     public Part getPartForOffset(int x, int z) {

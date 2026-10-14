@@ -59,6 +59,20 @@ public class LunarBurrowerDenFeature extends Feature<NoneFeatureConfiguration> {
         if (floor == null) return false;
         Direction forward = Direction.Plane.HORIZONTAL.getRandomDirection(context.random());
         Direction right = forward.getClockWise();
+        if (!hasSupportedFloor(level, floor, forward, right)) return false;
+        int[][] sites = {{-3, 2}, {-3, 3}, {-3, 0}, {-3, -1}, {3, 1}, {3, -2}};
+        Block[] blocks = {GCBlocks.BURROWER_EGG_CLUSTER, GCBlocks.BURROWER_BROKEN_EGGSHELL,
+                GCBlocks.BURROWER_DEN_SCRAPS, GCBlocks.BURROWER_EXCAVATED_TAILINGS,
+                GCBlocks.BURROWER_EGG_CLUSTER, GCBlocks.BURROWER_EXCAVATED_TAILINGS};
+        BlockPos cacheSite = floor.relative(right, 3).relative(forward, 4);
+        if (!hasDecorationSpace(level, floor, forward, right, sites, cacheSite)) return false;
+        decorateDen(context, floor, forward, right, sites, blocks, cacheSite);
+        markApproach(level, floor, forward, right);
+        spawnBurrower(level, floor, forward);
+        return true;
+    }
+
+    private static boolean hasSupportedFloor(WorldGenLevel level, BlockPos floor, Direction forward, Direction right) {
         int supported = 0;
         for (int side = -5; side <= 5; side++) for (int depth = -4; depth <= 5; depth++) {
             BlockPos pos = floor.relative(right, side).relative(forward, depth);
@@ -71,21 +85,25 @@ public class LunarBurrowerDenFeature extends Feature<NoneFeatureConfiguration> {
             if (LunarCavePlacement.ground(level, pos.below())) supported++;
         }
         if (supported < 85) return false;
-        int[][] sites = {{-3, 2}, {-3, 3}, {-3, 0}, {-3, -1}, {3, 1}, {3, -2}};
-        Block[] blocks = {GCBlocks.BURROWER_EGG_CLUSTER, GCBlocks.BURROWER_BROKEN_EGGSHELL,
-                GCBlocks.BURROWER_DEN_SCRAPS, GCBlocks.BURROWER_EXCAVATED_TAILINGS,
-                GCBlocks.BURROWER_EGG_CLUSTER, GCBlocks.BURROWER_EXCAVATED_TAILINGS};
+        return true;
+    }
+
+    private static boolean hasDecorationSpace(WorldGenLevel level, BlockPos floor, Direction forward, Direction right, int[][] sites, BlockPos cacheSite) {
         // Require every piece to fit before placing any part of the den.
         for (int[] site : sites) {
             BlockPos pos = floor.relative(right, site[0]).relative(forward, site[1]);
             if (!floorSpace(level, pos) || !LunarCavePlacement.ground(level, pos.below())) return false;
         }
-        BlockPos cacheSite = floor.relative(right, 3).relative(forward, 4);
         if (!floorSpace(level, cacheSite) || !LunarCavePlacement.ground(level, cacheSite.below())) return false;
         for (int side : new int[]{-2, 2}) for (int depth = -3; depth <= 3; depth++) {
             BlockPos bank = floor.relative(right, side).relative(forward, depth);
             if (!floorSpace(level, bank) || !LunarCavePlacement.ground(level, bank.below())) return false;
         }
+        return true;
+    }
+
+    private static void decorateDen(FeaturePlaceContext<NoneFeatureConfiguration> context, BlockPos floor, Direction forward, Direction right, int[][] sites, Block[] blocks, BlockPos cacheSite) {
+        WorldGenLevel level = context.level();
         for (int side = -5; side <= 5; side++) for (int depth = -4; depth <= 5; depth++) {
             if (Math.abs(side) > 1 && Math.abs(side) < 4) continue;
             BlockPos pos = floor.relative(right, side).relative(forward, depth);
@@ -113,6 +131,9 @@ public class LunarBurrowerDenFeature extends Feature<NoneFeatureConfiguration> {
             instrument.set(DataComponents.CUSTOM_NAME, Component.literal("Salvaged den survey instrument"));
             cache.setItem(26, instrument);
         }
+    }
+
+    private static void markApproach(WorldGenLevel level, BlockPos floor, Direction forward, Direction right) {
         var routes = LunarCavePlacement.routes(level, floor.relative(forward, -4));
         BlockPos approach = routes.keySet().stream().max(java.util.Comparator.comparingDouble(pos -> pos.distSqr(floor))).orElse(floor);
         var trail = LunarCavePlacement.path(routes, approach);
@@ -124,6 +145,9 @@ public class LunarBurrowerDenFeature extends Feature<NoneFeatureConfiguration> {
                 LunarCavePlacement.place(level, shell, GCBlocks.BURROWER_BROKEN_EGGSHELL, forward);
             }
         }
+    }
+
+    private static void spawnBurrower(WorldGenLevel level, BlockPos floor, Direction forward) {
         if (level.getDifficulty() != Difficulty.PEACEFUL) {
             LunarBurrowerEntity worm = GCEntityTypes.LUNAR_BURROWER.create(level.getLevel());
             if (worm != null) {
@@ -135,7 +159,6 @@ public class LunarBurrowerDenFeature extends Feature<NoneFeatureConfiguration> {
                 level.addFreshEntity(worm);
             }
         }
-        return true;
     }
 
     private static boolean floorSpace(WorldGenLevel level, BlockPos pos) {

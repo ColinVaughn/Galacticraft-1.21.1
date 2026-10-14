@@ -35,16 +35,15 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * The workbench is a flip-book of schematic pages, as it was in legacy Galacticraft: page 0 is the
- * tier-1 rocket and needs no schematic, every other build page has to be unlocked by consuming its
- * schematic, and the "add new schematic" page is always the last one.
+ * Modular assembly is always available; vehicle pages require their schematics, and the
+ * add-schematic page is always last.
  */
 class WorkbenchPagesTest {
-    private static final ResourceLocation TIER_1 = ResourceLocation.parse("galacticraft:rocket/rocket");
-    private static final ResourceLocation TIER_2 = ResourceLocation.parse("galacticraft:rocket/rocket_tier_2");
+    private static final ResourceLocation ROCKET = ResourceLocation.parse("galacticraft:rocket/modular");
+    private static final ResourceLocation CARGO = ResourceLocation.parse("galacticraft:cargo_rocket");
     private static final ResourceLocation BUGGY = ResourceLocation.parse("galacticraft:buggy");
 
-    private static final ResourceLocation TIER_2_SCHEMATIC = ResourceLocation.parse("galacticraft:tier_2_rocket_schematic");
+    private static final ResourceLocation CARGO_SCHEMATIC = ResourceLocation.parse("galacticraft:cargo_rocket_schematic");
     private static final ResourceLocation BUGGY_SCHEMATIC = ResourceLocation.parse("galacticraft:moon_buggy_schematic");
 
     /**
@@ -54,8 +53,8 @@ class WorkbenchPagesTest {
     @Test
     void unlockIdNamespacesTheSchematicItemId() {
         assertEquals(
-                ResourceLocation.parse("galacticraft:schematic/tier_2_rocket_schematic"),
-                WorkbenchPages.unlockId(TIER_2_SCHEMATIC)
+                ResourceLocation.parse("galacticraft:schematic/cargo_rocket_schematic"),
+                WorkbenchPages.unlockId(CARGO_SCHEMATIC)
         );
     }
 
@@ -69,31 +68,31 @@ class WorkbenchPagesTest {
 
     @Test
     void aPageWithNoSchematicIsAlwaysVisible() {
-        List<WorkbenchPage> pages = WorkbenchPages.order(List.of(tierOne()), Set.of()::contains);
+        List<WorkbenchPage> pages = WorkbenchPages.order(List.of(rocket()), Set.of()::contains);
 
-        assertEquals(List.of(TIER_1, WorkbenchPages.ADD_SCHEMATIC_ID), ids(pages));
+        assertEquals(List.of(ROCKET, WorkbenchPages.ADD_SCHEMATIC_ID), ids(pages));
     }
 
     @Test
     void aPageIsHiddenUntilItsSchematicIsUnlocked() {
-        List<WorkbenchPage> candidates = List.of(tierOne(), tierTwo());
+        List<WorkbenchPage> candidates = List.of(rocket(), cargo());
 
-        assertEquals(List.of(TIER_1, WorkbenchPages.ADD_SCHEMATIC_ID), ids(WorkbenchPages.order(candidates, Set.of()::contains)));
+        assertEquals(List.of(ROCKET, WorkbenchPages.ADD_SCHEMATIC_ID), ids(WorkbenchPages.order(candidates, Set.of()::contains)));
         assertEquals(
-                List.of(TIER_1, TIER_2, WorkbenchPages.ADD_SCHEMATIC_ID),
-                ids(WorkbenchPages.order(candidates, Set.of(WorkbenchPages.unlockId(TIER_2_SCHEMATIC))::contains))
+                List.of(ROCKET, CARGO, WorkbenchPages.ADD_SCHEMATIC_ID),
+                ids(WorkbenchPages.order(candidates, Set.of(WorkbenchPages.unlockId(CARGO_SCHEMATIC))::contains))
         );
     }
 
     @Test
     void pagesAreOrderedBySortOrderThenId() {
-        List<WorkbenchPage> candidates = List.of(buggy(), tierTwo(), tierOne());
+        List<WorkbenchPage> candidates = List.of(buggy(), cargo(), rocket());
         Set<ResourceLocation> unlocked = Set.of(
-                WorkbenchPages.unlockId(TIER_2_SCHEMATIC),
+                WorkbenchPages.unlockId(CARGO_SCHEMATIC),
                 WorkbenchPages.unlockId(BUGGY_SCHEMATIC)
         );
 
-        assertEquals(List.of(TIER_1, BUGGY, TIER_2, WorkbenchPages.ADD_SCHEMATIC_ID), ids(WorkbenchPages.order(candidates, unlocked::contains)));
+        assertEquals(List.of(ROCKET, BUGGY, CARGO, WorkbenchPages.ADD_SCHEMATIC_ID), ids(WorkbenchPages.order(candidates, unlocked::contains)));
     }
 
     /**
@@ -104,7 +103,7 @@ class WorkbenchPagesTest {
     void theAddSchematicPageIsAlwaysLastAndAlwaysPresent() {
         assertEquals(List.of(WorkbenchPages.ADD_SCHEMATIC_ID), ids(WorkbenchPages.order(List.of(), Set.of()::contains)));
 
-        List<WorkbenchPage> pages = WorkbenchPages.order(List.of(tierOne(), tierTwo()), Set.of(WorkbenchPages.unlockId(TIER_2_SCHEMATIC))::contains);
+        List<WorkbenchPage> pages = WorkbenchPages.order(List.of(rocket(), cargo()), Set.of(WorkbenchPages.unlockId(CARGO_SCHEMATIC))::contains);
         assertSame(WorkbenchPages.ADD_SCHEMATIC, pages.getLast());
         assertTrue(pages.getLast().schematic().isEmpty());
     }
@@ -113,12 +112,12 @@ class WorkbenchPagesTest {
         return pages.stream().map(WorkbenchPage::id).toList();
     }
 
-    private static WorkbenchPage tierOne() {
-        return new WorkbenchPage(TIER_1, 0, Optional.empty());
+    private static WorkbenchPage rocket() {
+        return new WorkbenchPage(ROCKET, 0, Optional.empty());
     }
 
-    private static WorkbenchPage tierTwo() {
-        return new WorkbenchPage(TIER_2, 10, Optional.of(TIER_2_SCHEMATIC));
+    private static WorkbenchPage cargo() {
+        return new WorkbenchPage(CARGO, 40, Optional.of(CARGO_SCHEMATIC));
     }
 
     private static WorkbenchPage buggy() {

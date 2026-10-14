@@ -90,13 +90,16 @@ public final class VehiclePersistenceTestSuite implements GalacticraftGameTest {
         } else if (!restored.getVehicleInventory().getItem(26).is(Items.DIAMOND)
                 || restored.getVehicleInventory().getItem(26).getCount() != 11) {
             context.fail("Cargo rocket inventory contents did not persist");
+        } else if (Math.abs(restored.getCargoLoad() - 11.0F / 64 / 27) > 0.00001F
+                || Math.abs(restored.getBbHeight() - (4.5F + 1.5F * restored.getCargoLoad())) > 0.00001F) {
+            context.fail("Cargo fairing did not rebuild its load and collision height on reload");
         } else {
             context.succeed();
         }
     }
 
     @GameTest(template = EMPTY_STRUCTURE)
-    public void cargoRocketUsesLegacySizeAndPadPosition(GameTestHelper context) {
+    public void cargoRocketFitsItsEmptyFairingAndKeepsPadPosition(GameTestHelper context) {
         CargoRocketEntity rocket = GCEntityTypes.CARGO_ROCKET.create(context.getLevel());
         if (rocket == null) {
             context.fail("Cargo rocket entity type returned null");
@@ -105,8 +108,9 @@ public final class VehiclePersistenceTestSuite implements GalacticraftGameTest {
 
         BlockPos padPos = new BlockPos(2, 3, 4);
         rocket.placeOnPad(new TestFuelDock(padPos));
-        if (Math.abs(rocket.getBbWidth() - 0.98F) > 0.0001F || Math.abs(rocket.getBbHeight() - 2.0F) > 0.0001F) {
-            context.fail("Cargo rocket did not use the legacy collision dimensions");
+        if (Math.abs(rocket.getBbWidth() - CargoRocketEntity.WIDTH) > 0.0001F
+                || Math.abs(rocket.getBbHeight() - CargoRocketEntity.EMPTY_HEIGHT) > 0.0001F) {
+            context.fail("Cargo rocket collision dimensions do not fit its empty fairing");
         } else if (Math.abs(rocket.getX() - 2.5D) > 0.0001D
                 || Math.abs(rocket.getY() - 3.35D) > 0.0001D
                 || Math.abs(rocket.getZ() - 4.5D) > 0.0001D) {
@@ -114,6 +118,34 @@ public final class VehiclePersistenceTestSuite implements GalacticraftGameTest {
         } else {
             context.succeed();
         }
+    }
+
+    @GameTest(template = EMPTY_STRUCTURE)
+    public void cargoFairingTracksAutomatedTransfersAndFullHoldReload(GameTestHelper context) {
+        TestCargoRocket rocket = new TestCargoRocket(context.getLevel());
+        rocket.setPos(context.absoluteVec(new net.minecraft.world.phys.Vec3(2, 1, 2)));
+        var hold = rocket.getVehicleInventory();
+        for (int slot = 0; slot < 27; slot++) {
+            dev.galacticraft.mod.storage.ContainerTransfer.insert(hold, 0, 27, new ItemStack(Items.IRON_INGOT, 64), 64);
+        }
+        context.assertTrue(rocket.getCargoLoad() == 1 && rocket.getBbHeight() == 6,
+                "Automatic loading did not fully extend the fairing and collision height");
+        CompoundTag saved = new CompoundTag();
+        rocket.writeData(saved);
+        TestCargoRocket restored = new TestCargoRocket(context.getLevel());
+        restored.readData(saved);
+        context.assertTrue(restored.getCargoLoad() == 1 && restored.getBbHeight() == 6,
+                "A full fairing shrank after reloading the rocket");
+        var target = new net.minecraft.world.SimpleContainer(27);
+        int moved = dev.galacticraft.mod.storage.ContainerTransfer.move(hold, 0, 27, target, 0, 27, 27 * 64);
+        context.assertTrue(moved == 27 * 64 && rocket.getCargoLoad() == 0 && rocket.getBbHeight() == 4.5F,
+                "Automatic unloading did not retract the fairing");
+        hold.setItem(0, new ItemStack(Items.DIAMOND_SWORD));
+        context.assertTrue(Math.abs(rocket.getCargoLoad() - 1.0F / 27) < 0.00001F,
+                "Non-stackable cargo was not counted as a full slot");
+        hold.clearContent();
+        context.assertTrue(rocket.getCargoLoad() == 0, "Clearing the hold did not retract the fairing");
+        context.succeed();
     }
 
     private static final class TestBuggy extends Buggy {

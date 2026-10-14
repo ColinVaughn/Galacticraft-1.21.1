@@ -39,6 +39,8 @@ public class GCBlockEntityTypes {
     public static final GCRegistry<BlockEntityType<?>> BLOCK_ENTITIES = new GCRegistry<>(BuiltInRegistries.BLOCK_ENTITY_TYPE);
     // POWER GENERATION
     public static final BlockEntityType<CoalGeneratorBlockEntity> COAL_GENERATOR = register(Constant.Block.COAL_GENERATOR, CoalGeneratorBlockEntity::new, GCBlocks.COAL_GENERATOR);
+    public static final BlockEntityType<ShortRangeTelepadBlockEntity> SHORT_RANGE_TELEPAD = register(Constant.Block.SHORT_RANGE_TELEPAD, ShortRangeTelepadBlockEntity::new, GCBlocks.SHORT_RANGE_TELEPAD);
+    public static final BlockEntityType<GeothermalGeneratorBlockEntity> GEOTHERMAL_GENERATOR = register(Constant.Block.GEOTHERMAL_GENERATOR, GeothermalGeneratorBlockEntity::new, GCBlocks.GEOTHERMAL_GENERATOR);
     public static final BlockEntityType<BasicSolarPanelBlockEntity> BASIC_SOLAR_PANEL = register(Constant.Block.BASIC_SOLAR_PANEL, BasicSolarPanelBlockEntity::new, GCBlocks.BASIC_SOLAR_PANEL);
     public static final BlockEntityType<AdvancedSolarPanelBlockEntity> ADVANCED_SOLAR_PANEL = register(Constant.Block.ADVANCED_SOLAR_PANEL, AdvancedSolarPanelBlockEntity::new, GCBlocks.ADVANCED_SOLAR_PANEL);
 
@@ -54,6 +56,8 @@ public class GCBlockEntityTypes {
     public static final BlockEntityType<ElectricCompressorBlockEntity> ELECTRIC_COMPRESSOR = register(Constant.Block.ELECTRIC_COMPRESSOR, ElectricCompressorBlockEntity::new, GCBlocks.ELECTRIC_COMPRESSOR);
     public static final BlockEntityType<ElectricFurnaceBlockEntity> ELECTRIC_FURNACE = register(Constant.Block.ELECTRIC_FURNACE, ElectricFurnaceBlockEntity::new, GCBlocks.ELECTRIC_FURNACE);
     public static final BlockEntityType<ElectricArcFurnaceBlockEntity> ELECTRIC_ARC_FURNACE = register(Constant.Block.ELECTRIC_ARC_FURNACE, ElectricArcFurnaceBlockEntity::new, GCBlocks.ELECTRIC_ARC_FURNACE);
+    public static final BlockEntityType<GasLiquefierBlockEntity> GAS_LIQUEFIER = register(Constant.Block.GAS_LIQUEFIER, GasLiquefierBlockEntity::new, GCBlocks.GAS_LIQUEFIER);
+    public static final BlockEntityType<MethaneSynthesizerBlockEntity> METHANE_SYNTHESIZER = register(Constant.Block.METHANE_SYNTHESIZIER, MethaneSynthesizerBlockEntity::new, GCBlocks.METHANE_SYNTHESIZER);
     public static final BlockEntityType<RefineryBlockEntity> REFINERY = register(Constant.Block.REFINERY, RefineryBlockEntity::new, GCBlocks.REFINERY);
     public static final BlockEntityType<FoodCannerBlockEntity> FOOD_CANNER = register(Constant.Block.FOOD_CANNER, FoodCannerBlockEntity::new, GCBlocks.FOOD_CANNER);
 

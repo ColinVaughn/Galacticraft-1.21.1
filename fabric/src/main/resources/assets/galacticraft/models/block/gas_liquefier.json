@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "galacticraft:block/gc4/advanced/machine",
+    "down": "galacticraft:block/gc4/advanced/machine_input",
+    "up": "galacticraft:block/gc4/advanced/machine",
+    "north": "galacticraft:block/gc4/gas_liquefier",
+    "east": "galacticraft:block/gc4/machine_oxygen_input_warning",
+    "south": "galacticraft:block/gc4/machine_side_warning",
+    "west": "galacticraft:block/gc4/machine_side_warning"
+  }
+}

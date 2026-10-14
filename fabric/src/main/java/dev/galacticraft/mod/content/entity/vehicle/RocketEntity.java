@@ -117,6 +117,7 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
     private static final EntityDataAccessor<Float> THRUST = SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<RocketData> ROCKET_DATA = SynchedEntityData.defineId(RocketEntity.class, GCEntityDataSerializers.ROCKET_DATA);
     private static final EntityDataAccessor<Long> FUEL = SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.LONG);
+    private static final EntityDataAccessor<Long> FUEL_CAPACITY = SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.LONG);
     private static final EntityDataAccessor<Boolean> CREATIVE = SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> MANUAL_LANDING = SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.BOOLEAN);
 
@@ -141,9 +142,8 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
      * would be dropped from the next save and the rocket would be orphaned for good.
      */
     private @Nullable BlockPos linkedPadPos = null;
-    // Read once, when the rocket is built: resizing a tank that already holds fuel would either
-    // spill it or invent it, so rockets already in a save keep the capacity they were built with.
-    private final SimpleFluidTank tank = new SimpleFluidTank(FluidUtil.bucketsToDroplets(Galacticraft.CONFIG.rocketFuelTankCapacity()), () -> {
+    private boolean gc4FuelMode = Galacticraft.CONFIG.gc4RocketFuelMode();
+    private SimpleFluidTank tank = new SimpleFluidTank(initialFuelTankCapacity(), () -> {
         this.entityData.set(FUEL, getTank().getAmount());
     });
 
@@ -176,6 +176,7 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
 
     public RocketEntity(EntityType<?> entityType, Level level) {
         super(entityType, level);
+        this.entityData.set(FUEL_CAPACITY, this.tank.getCapacity());
     }
 
     public Tier1RocketAnimationState getTier1AnimationState() { return tier1AnimationState; }
@@ -448,7 +449,7 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
 
     @Override
     public long getFuelTankCapacity() {
-        return this.tank.getCapacity();
+        return this.entityData.get(FUEL_CAPACITY);
     }
 
     public float getScaledFuelLevel(float scale) {
@@ -604,6 +605,7 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
         builder.define(TIME_AS_STATE, 0);
         builder.define(ROCKET_DATA, RocketPrefabs.TIER_1);
         builder.define(FUEL, 0L);
+        builder.define(FUEL_CAPACITY, FluidUtil.bucketsToDroplets(RocketFlightLogic.DEFAULT_FUEL_TANK_CAPACITY_BUCKETS));
         builder.define(CREATIVE, false);
         builder.define(MANUAL_LANDING, false);
     }
@@ -861,122 +863,16 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
         else this.timeSinceLaunch = 0;
 
         if (isOnFire()) {
-            for (int i = 0; i < 4; i++) {
-                level().explode(this,
-                        this.position().x + (level().random.nextDouble() - 0.5 * 4),
-                        this.position().y + (level().random.nextDouble() * 3),
-                        this.position().z + (level().random.nextDouble() - 0.5 * 4),
-                        10.0F,
-                        Level.ExplosionInteraction.TNT);
-            }
-            this.remove(RemovalReason.KILLED);
+            explodeBurningRocket();
             return;
         }
 
         Entity passenger = getFirstPassenger();
 
         if (getLaunchStage() == LaunchStage.IGNITED) {
-            timeBeforeLaunch--;
-
-            if (isTankEmpty() && !debugMode) {
-                this.setLaunchStage(LaunchStage.IDLE);
-                if (passenger instanceof ServerPlayer player) {
-                    player.sendSystemMessage(Component.translatable(Translations.Ui.ROCKET_NO_FUEL), false);
-                }
-                return;
-            }
-
-            if (!this.isCreative() && RocketFlightLogic.BURNS_FUEL_DURING_COUNTDOWN) {
-                this.getTank().extract(fuelBurnPerTick());
-            }
-
-            if (getTimeAsState() >= getPreLaunchWait()) {
-                this.setLaunchStage(LaunchStage.LAUNCHED);
-                this.setThrust(Mth.SQRT_OF_TWO / 2.0F);
-
-                resetCrashSystem();
-
-                if (passenger instanceof ServerPlayer player) {
-                    player.awardStat(GCStats.LAUNCH_ROCKET);
-                }
-
-                BlockPos dockPos = this.getLinkedPad();
-                if (dockPos != BlockPos.ZERO) {
-                    boolean keepPad = this.linkedPad instanceof LaunchPadBlockEntity pad && pad.keepOnLaunch();
-                    if (passenger instanceof ServerPlayer player) {
-                        GCServerPlayer gcPlayer = GCServerPlayer.get(player);
-                        gcPlayer.setRocketData(this.getRocketData());
-                        gcPlayer.setLaunchpadStack(keepPad ? ItemStack.EMPTY : new ItemStack(GCBlocks.ROCKET_LAUNCH_PAD, ROCKET_LAUNCH_PAD_BLOCKS));
-                    }
-
-                    this.linkedPad.setDockedEntity(null);
-
-                    if (!keepPad && level().getBlockState(dockPos).getBlock() == GCBlocks.ROCKET_LAUNCH_PAD
-                            && level().getBlockState(dockPos).getValue(AbstractLaunchPad.PART) != AbstractLaunchPad.Part.NONE) {
-                        level().destroyBlock(dockPos, false);
-                    }
-                    this.setPad(null);
-                }
-            }
-
+            if (tickIgnition(passenger)) return;
         } else if (getLaunchStage() == LaunchStage.LAUNCHED) {
-            if (!this.isCreative() && !debugMode && (isTankEmpty() || !this.getTank().getResource().is(GCFluidTags.FUEL))) {
-                this.setLaunchStage(LaunchStage.FAILED);
-            } else {
-                if (!this.isCreative()) {
-                    this.getTank().extract(fuelBurnPerTick());
-                }
-
-                if (isLanding()) {
-                    this.landingTicks = Math.min(this.landingTicks + 1, RocketFlightLogic.LANDING_DEPLOY_TICKS);
-                    this.tickLanding();
-                } else {
-                    this.setThrust(this.getThrust() + 0.005F);
-                    this.tickInAir();
-                }
-            }
-
-            if (!isLanding() && getLaunchStage() == LaunchStage.LAUNCHED && this.position().y() >= Constant.ESCAPE_HEIGHT) {
-                if (this.landAtController()) return;
-                if (this.getPassengers().isEmpty()) {
-                    this.remove(RemovalReason.DISCARDED);
-                    return;
-                }
-
-                for (Entity entity : getPassengers()) {
-                    if (entity instanceof ServerPlayer serverPlayer) {
-                        // The rocket menu is backed by this entity, so removing the rocket below
-                        // stops it being valid and the server's own stillValid sweep fires a
-                        // container-close a moment later - which would tear down the celestial map
-                        // we are about to open. Close it here instead, so the close reaches the
-                        // client ahead of the map packet, and so anything held on the cursor is
-                        // returned before the cargo transfer reads the hold.
-                        if (serverPlayer.containerMenu != serverPlayer.inventoryMenu) {
-                            serverPlayer.closeContainer();
-                        }
-
-                        GCServerPlayer gcPlayer = GCServerPlayer.get(serverPlayer);
-                        gcPlayer.setRocketStacks(this.collectCargoForTransfer());
-                        gcPlayer.setFuel(this.tank.getAmount());
-
-                        var rocket = new ItemStack(GCItems.ROCKET);
-                        RocketData d = this.getRocketData();
-                        rocket.applyComponents(d.asPatch());
-                        if (this.isCreative()) {
-                            rocket.set(GCDataComponents.CREATIVE, true);
-                        }
-                        gcPlayer.finishReturnInventory(rocket);
-
-                        serverPlayer.galacticraft$openCelestialScreen(d);
-                        NetworkManager.sendToPlayer(serverPlayer, new OpenCelestialScreenPayload(this.getRocketData(), this.level().galacticraft$getCelestialBody()));
-
-                        remove(RemovalReason.UNLOADED_WITH_PLAYER);
-                        break;
-                    }
-                }
-                return;
-            }
-
+            if (tickLaunched()) return;
         } else if (!onGround()) {
             this.setThrust(this.getThrust() - 0.05F);
             this.tickInAir();
@@ -988,31 +884,163 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
         checkCrashAfterMove(preMoveDelta);
 
         if (getLaunchStage() == LaunchStage.FAILED) {
-            setRot(
-                    (this.getYRot() + level().random.nextFloat() - 0.5F * 8.0F) % 360.0F,
-                    (this.getXRot() + level().random.nextFloat() - 0.5F * 8.0F) % 360.0F
-            );
-
-            ServerLevel serverLevel = (ServerLevel) this.level();
-            for (int i = 0; i < 4; i++) {
-                serverLevel.sendParticles(
-                        ParticleTypes.FLAME,
-                        this.getX() + (level().random.nextDouble() - 0.5) * 0.12F,
-                        this.getY() + 2,
-                        this.getZ() + (level().random.nextDouble() - 0.5),
-                        0,
-                        level().random.nextDouble() - 0.5,
-                        1,
-                        level().random.nextDouble() - 0.5,
-                        0.12000000596046448D
-                );
-            }
+            tickFailedFlight();
         }
 
         if (getLaunchStage().ordinal() >= LaunchStage.LAUNCHED.ordinal()) {
             if (!getPassengers().isEmpty() && getPassengers().get(0) instanceof ServerPlayer player) {
                 GCTriggers.LAUNCH_ROCKET.trigger(player);
             }
+        }
+    }
+
+    private void explodeBurningRocket() {
+        for (int i = 0; i < 4; i++) {
+            level().explode(this,
+                    this.position().x + (level().random.nextDouble() - 0.5 * 4),
+                    this.position().y + (level().random.nextDouble() * 3),
+                    this.position().z + (level().random.nextDouble() - 0.5 * 4),
+                    10.0F,
+                    Level.ExplosionInteraction.TNT);
+        }
+        this.remove(RemovalReason.KILLED);
+    }
+
+    private boolean tickIgnition(Entity passenger) {
+        timeBeforeLaunch--;
+
+        if (isTankEmpty() && !debugMode) {
+            this.setLaunchStage(LaunchStage.IDLE);
+            if (passenger instanceof ServerPlayer player) {
+                player.sendSystemMessage(Component.translatable(Translations.Ui.ROCKET_NO_FUEL), false);
+            }
+            return true;
+        }
+
+        if (!this.isCreative() && RocketFlightLogic.BURNS_FUEL_DURING_COUNTDOWN) {
+            this.getTank().extract(fuelBurnPerTick());
+        }
+
+        if (getTimeAsState() >= getPreLaunchWait()) {
+            this.setLaunchStage(LaunchStage.LAUNCHED);
+            this.setThrust(Mth.SQRT_OF_TWO / 2.0F);
+
+            resetCrashSystem();
+
+            if (passenger instanceof ServerPlayer player) {
+                player.awardStat(GCStats.LAUNCH_ROCKET);
+            }
+
+            releaseLaunchPad(passenger);
+        }
+
+        return false;
+    }
+
+    private void releaseLaunchPad(Entity passenger) {
+        BlockPos dockPos = this.getLinkedPad();
+        if (dockPos != BlockPos.ZERO) {
+            boolean keepPad = this.linkedPad instanceof LaunchPadBlockEntity pad && pad.keepOnLaunch();
+            if (passenger instanceof ServerPlayer player) {
+                GCServerPlayer gcPlayer = GCServerPlayer.get(player);
+                gcPlayer.setRocketData(this.getRocketData());
+                gcPlayer.setLaunchpadStack(keepPad ? ItemStack.EMPTY : new ItemStack(GCBlocks.ROCKET_LAUNCH_PAD, ROCKET_LAUNCH_PAD_BLOCKS));
+            }
+
+            this.linkedPad.setDockedEntity(null);
+
+            if (!keepPad && level().getBlockState(dockPos).getBlock() == GCBlocks.ROCKET_LAUNCH_PAD
+                    && level().getBlockState(dockPos).getValue(AbstractLaunchPad.PART) != AbstractLaunchPad.Part.NONE) {
+                level().destroyBlock(dockPos, false);
+            }
+            this.setPad(null);
+        }
+    }
+
+    private boolean tickLaunched() {
+        if (!this.isCreative() && !debugMode && (isTankEmpty() || !this.getTank().getResource().is(GCFluidTags.FUEL))) {
+            this.setLaunchStage(LaunchStage.FAILED);
+        } else {
+            if (!this.isCreative()) {
+                this.getTank().extract(fuelBurnPerTick());
+            }
+
+            if (isLanding()) {
+                this.landingTicks = Math.min(this.landingTicks + 1, RocketFlightLogic.LANDING_DEPLOY_TICKS);
+                this.tickLanding();
+            } else {
+                this.setThrust(this.getThrust() + 0.005F);
+                this.tickInAir();
+            }
+        }
+
+        if (!isLanding() && getLaunchStage() == LaunchStage.LAUNCHED && this.position().y() >= Constant.ESCAPE_HEIGHT) {
+            if (this.landAtController()) return true;
+            if (this.getPassengers().isEmpty()) {
+                this.remove(RemovalReason.DISCARDED);
+                return true;
+            }
+
+            for (Entity entity : getPassengers()) {
+                if (entity instanceof ServerPlayer serverPlayer) {
+                    openCelestialScreen(serverPlayer);
+                    break;
+                }
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+    private void openCelestialScreen(ServerPlayer serverPlayer) {
+        // The rocket menu is backed by this entity, so removing the rocket below
+        // stops it being valid and the server's own stillValid sweep fires a
+        // container-close a moment later - which would tear down the celestial map
+        // we are about to open. Close it here instead, so the close reaches the
+        // client ahead of the map packet, and so anything held on the cursor is
+        // returned before the cargo transfer reads the hold.
+        if (serverPlayer.containerMenu != serverPlayer.inventoryMenu) {
+            serverPlayer.closeContainer();
+        }
+
+        GCServerPlayer gcPlayer = GCServerPlayer.get(serverPlayer);
+        gcPlayer.setRocketStacks(this.collectCargoForTransfer());
+        gcPlayer.setFuel(this.tank.getAmount());
+
+        var rocket = new ItemStack(GCItems.ROCKET);
+        RocketData d = this.getRocketData();
+        rocket.applyComponents(d.asPatch());
+        if (this.isCreative()) {
+            rocket.set(GCDataComponents.CREATIVE, true);
+        }
+        gcPlayer.finishReturnInventory(rocket);
+
+        serverPlayer.galacticraft$openCelestialScreen(d);
+        NetworkManager.sendToPlayer(serverPlayer, new OpenCelestialScreenPayload(this.getRocketData(), this.level().galacticraft$getCelestialBody()));
+
+        remove(RemovalReason.UNLOADED_WITH_PLAYER);
+    }
+
+    private void tickFailedFlight() {
+        setRot(
+                (this.getYRot() + level().random.nextFloat() - 0.5F * 8.0F) % 360.0F,
+                (this.getXRot() + level().random.nextFloat() - 0.5F * 8.0F) % 360.0F
+        );
+
+        ServerLevel serverLevel = (ServerLevel) this.level();
+        for (int i = 0; i < 4; i++) {
+            serverLevel.sendParticles(
+                    ParticleTypes.FLAME,
+                    this.getX() + (level().random.nextDouble() - 0.5) * 0.12F,
+                    this.getY() + 2,
+                    this.getZ() + (level().random.nextDouble() - 0.5),
+                    0,
+                    level().random.nextDouble() - 0.5,
+                    1,
+                    level().random.nextDouble() - 0.5,
+                    0.12000000596046448D
+            );
         }
     }
 
@@ -1126,6 +1154,8 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
 
     @Override
     protected void readAdditionalSaveData(CompoundTag tag) {
+        // Pre-mode saves retain the configurable balance; changing the setting never spills fuel.
+        this.gc4FuelMode = tag.getBoolean("Gc4FuelMode");
         // Registry-aware ops are required, not optional: the part codecs are RegistryFileCodecs, and
         // without a registry they cannot turn a saved id such as "galacticraft:tier_1" back into a
         // holder. That failure sinks the whole record, and the fallback below would quietly hand
@@ -1141,7 +1171,11 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
         if (tag.contains("Thrust")) this.setThrust(tag.getFloat("Thrust"));
         if (tag.contains("ZRot")) this.setZRot(tag.getFloat("ZRot"));
         if (tag.contains("InitialYRot")) this.setInitialYRot(tag.getFloat("InitialYRot"));
-        if (tag.contains("Fuel")) this.setFuel(tag.getLong("Fuel"));
+        long savedFuel = tag.getLong("Fuel");
+        long savedCapacity = tag.contains("FuelCapacity") ? tag.getLong("FuelCapacity")
+                : FluidUtil.bucketsToDroplets(Galacticraft.CONFIG.rocketFuelTankCapacity());
+        resizeFuelTank(Math.max(savedCapacity, savedFuel));
+        if (tag.contains("Fuel")) this.setFuel(savedFuel);
         if (tag.contains("Creative")) this.setCreative(tag.getBoolean("Creative"));
         this.entityData.set(MANUAL_LANDING, getLaunchStage() == LaunchStage.LAUNCHED && tag.getBoolean("ManualLanding"));
         this.landingTicks = Math.clamp(tag.getInt("LandingTicks"), 0, RocketFlightLogic.LANDING_DEPLOY_TICKS);
@@ -1172,6 +1206,8 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
         tag.putFloat("ZRot", this.getZRot());
         tag.putFloat("InitialYRot", this.getInitialYRot());
         tag.putLong("Fuel", this.getFuel());
+        tag.putLong("FuelCapacity", this.getFuelTankCapacity());
+        tag.putBoolean("Gc4FuelMode", this.gc4FuelMode);
         tag.putInt("ControllerDestination", this.controllerDestination);
         tag.putBoolean("Creative", this.isCreative());
         tag.putBoolean("ManualLanding", isLanding());
@@ -1195,10 +1231,32 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
     }
 
     /** Droplets of fuel the engines burn on a single tick of powered flight. */
-    private static long fuelBurnPerTick() {
-        int burnTicksPerBucket = Galacticraft.CONFIG.rocketBurnTicksPerBucket();
+    private long fuelBurnPerTick() {
+        int tier = fuelEngineTier();
+        int burnTicksPerBucket = this.gc4FuelMode && tier > 0
+                ? RocketFlightLogic.gc4BurnTicksPerBucket(tier) : Galacticraft.CONFIG.rocketBurnTicksPerBucket();
         if (burnTicksPerBucket <= 0) return FluidUtil.bucketsToDroplets(1);
         return FluidUtil.bucketsToDroplets(1) / burnTicksPerBucket;
+    }
+
+    private static long initialFuelTankCapacity() {
+        return FluidUtil.bucketsToDroplets(Galacticraft.CONFIG.gc4RocketFuelMode() ? 1 : Galacticraft.CONFIG.rocketFuelTankCapacity());
+    }
+
+    private int fuelEngineTier() {
+        ResourceKey<?> engine = this.getRocketData().engine().map(EitherHolder::key).orElse(null);
+        if (GCRocketParts.TIER_1_ENGINE.equals(engine)) return 1;
+        if (GCRocketParts.TIER_2_ENGINE.equals(engine)) return 2;
+        if (GCRocketParts.TIER_3_ENGINE.equals(engine)) return 3;
+        return 0;
+    }
+
+    private void resizeFuelTank(long capacity) {
+        capacity = Math.max(Math.max(1, capacity), this.tank.getAmount());
+        SimpleFluidTank previous = this.tank;
+        this.tank = new SimpleFluidTank(capacity, () -> this.entityData.set(FUEL, getTank().getAmount()));
+        if (!previous.isEmpty()) this.tank.set(previous.getResource(), previous.getComponents(), previous.getAmount());
+        this.entityData.set(FUEL_CAPACITY, capacity);
     }
 
     @Override public @Nullable Holder<RocketCone<?, ?>> cone() { return maybeGet(getRocketData().cone()); }
@@ -1214,14 +1272,37 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
 
     public void setData(RocketData data) {
         this.entityData.set(ROCKET_DATA, data);
+        if (this.tank.isEmpty() && this.gc4FuelMode) {
+            int tier = fuelEngineTier();
+            long capacity = tier > 0
+                    ? FluidUtil.bucketsToDroplets(1) * RocketFlightLogic.gc4FuelCapacityMilliBuckets(tier) / 1000
+                    : FluidUtil.bucketsToDroplets(Galacticraft.CONFIG.rocketFuelTankCapacity());
+            resizeFuelTank(capacity);
+        }
+    }
+
+    @Override
+    public void onSyncedDataUpdated(EntityDataAccessor<?> accessor) {
+        super.onSyncedDataUpdated(accessor);
+        if (ROCKET_DATA.equals(accessor)) this.refreshDimensions();
+    }
+
+    @Override
+    public EntityDimensions getDimensions(Pose pose) {
+        if (this.entityData == null) return super.getDimensions(pose);
+        RocketData data = this.getRocketData();
+        ResourceKey<?> cone = data.cone().map(EitherHolder::key).orElse(null);
+        ResourceKey<?> fins = data.fin().map(EitherHolder::key).orElse(null);
+        float height = GCRocketParts.TIER_2_CONE.equals(cone) ? 91 / 16F
+                : GCRocketParts.TIER_3_CONE.equals(cone) ? 78.4F / 16F : 5.25F;
+        float width = GCRocketParts.TIER_3_FIN.equals(fins) ? 44.8F / 16F
+                : GCRocketParts.TIER_2_FIN.equals(fins) ? 42.8F / 16F : 2.5F;
+        return EntityDimensions.scalable(width, height).withEyeHeight(2.525F);
     }
 
     @Override
     public void inputTick(float leftImpulse, float forwardImpulse, boolean up, boolean down, boolean left, boolean right,
                           boolean jumping, boolean shiftKeyDown, boolean invertControls) {
-        float turnFactor = 2.0F;
-        float angle = 180.0F;
-
         boolean risingEdge = jumping && !this.lastJumping;
         this.lastJumping = jumping;
 
@@ -1239,54 +1320,66 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
 
         // Launch confirmation is server-authoritative and only happens on press-down.
         if (!this.level().isClientSide() && stage.ordinal() < LaunchStage.IGNITED.ordinal()) {
-            if (isTankEmpty() && !debugMode) {
-                cancelPreLaunch();
-                if (risingEdge && this.getFirstPassenger() instanceof ServerPlayer player) {
-                    player.sendSystemMessage(Component.translatable(Translations.Ui.ROCKET_NO_FUEL), true);
-                }
-            } else if (!this.getPassengers().isEmpty() && this.getFirstPassenger() instanceof ServerPlayer player) {
-                if (risingEdge) {
-                    switch (this.launchConfirmState) {
-                        case IDLE -> {
-                            this.timeBeforeLaunch = getPreLaunchWait();
-                            this.setLaunchStage(LaunchStage.WARNING);
-                            this.launchConfirmState = LaunchConfirmState.WAITING_SECOND_PRESS;
-
-                            player.sendSystemMessage(
-                                    Component.translatable(Translations.Chat.ROCKET_WARNING),
-                                    true
-                            );
-                        }
-
-                        case WAITING_SECOND_PRESS -> {
-                            this.ignite(this.controllerRoute());
-                        }
-                    }
-                }
-            }
+            handleLaunchConfirmation(risingEdge);
         }
 
         // Re-read stage in case it changed above.
         stage = this.getLaunchStage();
 
         if (stage.ordinal() >= LaunchStage.LAUNCHED.ordinal()) {
-            if (invertControls ? down : up) {
-                this.setXRot(Mth.clamp(this.getXRot() - 0.5F * turnFactor, -angle, angle));
-            } else if (invertControls ? up : down) {
-                this.setXRot(Mth.clamp(this.getXRot() + 0.5F * turnFactor, -angle, angle));
-            }
+            steerFromInput(up, down, left, right, jumping, shiftKeyDown, invertControls);
+        }
+    }
 
-            if (invertControls ? left : right) {
-                this.setYRot(this.getYRot() - turnFactor);
-            } else if (invertControls ? right : left) {
-                this.setYRot(this.getYRot() + turnFactor);
+    private void handleLaunchConfirmation(boolean risingEdge) {
+        if (isTankEmpty() && !debugMode) {
+            cancelPreLaunch();
+            if (risingEdge && this.getFirstPassenger() instanceof ServerPlayer player) {
+                player.sendSystemMessage(Component.translatable(Translations.Ui.ROCKET_NO_FUEL), true);
             }
+        } else if (!this.getPassengers().isEmpty() && this.getFirstPassenger() instanceof ServerPlayer player) {
+            if (risingEdge) {
+                switch (this.launchConfirmState) {
+                    case IDLE -> {
+                        this.timeBeforeLaunch = getPreLaunchWait();
+                        this.setLaunchStage(LaunchStage.WARNING);
+                        this.launchConfirmState = LaunchConfirmState.WAITING_SECOND_PRESS;
 
-            if (invertControls ? shiftKeyDown && !left : jumping && !right) {
-                this.setZRot(this.getZRot() - turnFactor);
-            } else if (invertControls ? jumping && !right : shiftKeyDown && !left) {
-                this.setZRot(this.getZRot() + turnFactor);
+                        player.sendSystemMessage(
+                                Component.translatable(Translations.Chat.ROCKET_WARNING),
+                                true
+                        );
+                    }
+
+                    case WAITING_SECOND_PRESS -> {
+                        this.ignite(this.controllerRoute());
+                    }
+                }
             }
+        }
+    }
+
+    private void steerFromInput(boolean up, boolean down, boolean left, boolean right,
+                                boolean jumping, boolean shiftKeyDown, boolean invertControls) {
+        float turnFactor = 2.0F;
+        float angle = 180.0F;
+
+        if (invertControls ? down : up) {
+            this.setXRot(Mth.clamp(this.getXRot() - 0.5F * turnFactor, -angle, angle));
+        } else if (invertControls ? up : down) {
+            this.setXRot(Mth.clamp(this.getXRot() + 0.5F * turnFactor, -angle, angle));
+        }
+
+        if (invertControls ? left : right) {
+            this.setYRot(this.getYRot() - turnFactor);
+        } else if (invertControls ? right : left) {
+            this.setYRot(this.getYRot() + turnFactor);
+        }
+
+        if (invertControls ? shiftKeyDown && !left : jumping && !right) {
+            this.setZRot(this.getZRot() - turnFactor);
+        } else if (invertControls ? jumping && !right : shiftKeyDown && !left) {
+            this.setZRot(this.getZRot() + turnFactor);
         }
     }
 

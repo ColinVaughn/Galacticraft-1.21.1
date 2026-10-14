@@ -92,8 +92,7 @@ public class GCConfiguredFeature {
                 new LakeFeature.Configuration(BlockStateProvider.simple(GCBlocks.CRUDE_OIL), BlockStateProvider.simple(Blocks.STONE))));
         context.register(SULFURIC_ACID_LAKE, new ConfiguredFeature<>(Feature.LAKE,
                 new LakeFeature.Configuration(BlockStateProvider.simple(GCBlocks.SULFURIC_ACID), BlockStateProvider.simple(GCBlocks.HARD_VENUS_ROCK))));
-        context.register(VENUS_VAPOR_SPOUT, new ConfiguredFeature<>(Feature.SIMPLE_BLOCK,
-                new SimpleBlockConfiguration(BlockStateProvider.simple(GCBlocks.VAPOR_SPOUT))));
+        context.register(VENUS_VAPOR_SPOUT, new ConfiguredFeature<>(GCFeatures.VAPOR_SPOUT, NoneFeatureConfiguration.INSTANCE));
 
         // Mars
         context.register(MARS_BOULDER, new ConfiguredFeature<>(GCFeatures.MARS_BOULDER,

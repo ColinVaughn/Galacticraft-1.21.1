@@ -86,7 +86,9 @@ public class DefaultRocketCategory implements DisplayCategory<DefaultRocketDispl
 
         final int n = input.size();
         int i = 0;
-        for (RocketRecipe.RocketSlotData data : RocketRecipe.slotData(recipeDisplay.bodyHeight, recipeDisplay.hasBoosters)) {
+        for (RocketRecipe.RocketSlotData data : recipeDisplay.modular
+                ? dev.galacticraft.mod.recipe.ModularRocketRecipe.SLOTS
+                : RocketRecipe.slotData(recipeDisplay.bodyHeight, recipeDisplay.hasBoosters)) {
             Slot inputSlot = Widgets.createSlot(new Point(startPoint.x + data.x(), startPoint.y + data.y())).markInput();
             if (i < n && !input.get(i).isEmpty()) {
                 if (data.mirror()) {

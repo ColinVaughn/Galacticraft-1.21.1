@@ -106,6 +106,33 @@ public class RocketWorkbenchBlockEntity extends BlockEntity implements ExtendedM
         }
     };
 
+    public final SimpleContainer refitInput = new SimpleContainer(1) {
+        @Override public boolean canPlaceItem(int slot, ItemStack stack) {
+            return stack.is(dev.galacticraft.mod.content.item.GCItems.ROCKET);
+        }
+        @Override public int getMaxStackSize() { return 1; }
+    };
+
+    public int paintRevision;
+    public final SimpleContainer paintInput = new SimpleContainer(1) {
+        @Override public boolean canPlaceItem(int slot, ItemStack stack) {
+            return dev.galacticraft.mod.screen.RocketPaintMenu.canPaint(stack);
+        }
+        @Override public int getMaxStackSize() { return 1; }
+    };
+
+    public ExtendedMenuProvider paintMenu(ResourceLocation returnPage) {
+        return new ExtendedMenuProvider() {
+            @Override public Component getDisplayName() { return Component.translatable("gui.galacticraft.rocket_paint.title"); }
+            @Override public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
+                return new dev.galacticraft.mod.screen.RocketPaintMenu(id, RocketWorkbenchBlockEntity.this, inventory, returnPage);
+            }
+            @Override public void saveExtraData(net.minecraft.network.FriendlyByteBuf buf) {
+                RocketWorkbenchMenu.OpeningData.CODEC.encode(buf, new RocketWorkbenchMenu.OpeningData(getBlockPos(), java.util.Optional.ofNullable(returnPage)));
+            }
+        };
+    }
+
     private static boolean isExplosive(ItemStack stack) {
         return stack.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof TntBlock;
     }
@@ -118,6 +145,11 @@ public class RocketWorkbenchBlockEntity extends BlockEntity implements ExtendedM
         this.ingredients.addListener(this);
         this.chests.addListener(sender -> this.setChanged());
         this.schematic.addListener(sender -> this.setChanged());
+        this.paintInput.addListener(sender -> { this.paintRevision++; this.setChanged(); });
+        this.refitInput.addListener(sender -> {
+            if (this.level != null && !this.level.isClientSide && !this.refitInput.isEmpty()) this.output.clearContent();
+            this.setChanged();
+        });
     }
 
     @Override
@@ -129,6 +161,8 @@ public class RocketWorkbenchBlockEntity extends BlockEntity implements ExtendedM
         tag.put("Inventory", this.ingredients.toTag(registryLookup));
         tag.put("Chests", this.chests.createTag(registryLookup));
         tag.put("Schematic", this.schematic.createTag(registryLookup));
+        tag.put("PaintInput", this.paintInput.createTag(registryLookup));
+        tag.put("RefitInput", this.refitInput.createTag(registryLookup));
     }
 
     @Override
@@ -142,6 +176,9 @@ public class RocketWorkbenchBlockEntity extends BlockEntity implements ExtendedM
         this.ingredients.readTag(tag.getCompound("Inventory"), registryLookup);
         this.chests.fromTag(tag.getList("Chests", Tag.TAG_COMPOUND), registryLookup);
         this.schematic.fromTag(tag.getList("Schematic", Tag.TAG_COMPOUND), registryLookup);
+        this.paintInput.fromTag(tag.getList("PaintInput", Tag.TAG_COMPOUND), registryLookup);
+        this.refitInput.fromTag(tag.getList("RefitInput", Tag.TAG_COMPOUND), registryLookup);
+        if (!this.refitInput.isEmpty()) this.output.clearContent();
     }
 
     public void resizeInventory(int newSize) {

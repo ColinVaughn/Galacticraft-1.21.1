@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 
+import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -53,6 +54,87 @@ version = buildString {
             append("unknown")
         }
     }
+}
+
+
+// A running dev client must not load classes from directories a later build can replace.
+allprojects {
+    tasks.withType<JavaExec>().configureEach {
+        doFirst {
+            val buildRoots = rootProject.allprojects.map { it.layout.buildDirectory.get().asFile.toPath().toAbsolutePath().normalize() }
+            val snapshot = rootProject.file(".gradle/run-classpaths/${project.name}/$name/${java.util.UUID.randomUUID()}")
+            val replacements = linkedMapOf<String, String>()
+            fun mutable(file: File) = buildRoots.any { file.toPath().toAbsolutePath().normalize().startsWith(it) }
+            fun freeze(file: File): File {
+                replacements[file.absolutePath]?.let { return File(it) }
+                val target = snapshot.resolve("${replacements.size}/${file.name}")
+                if (file.isDirectory) project.copy { from(file); into(target) }
+                else { target.parentFile.mkdirs(); file.copyTo(target) }
+                replacements[file.absolutePath] = target.absolutePath
+                return target
+            }
+            val runtime = classpath.files.map { if (it.exists() && mutable(it)) freeze(it) else it }
+            val metadata = rootProject.allprojects.flatMap { module ->
+                val loom = module.file(".gradle/loom-cache").listFiles().orEmpty().filter {
+                    it.isFile && it.extension in listOf("cfg", "txt", "xml")
+                }
+                val architectury = module.file(".gradle/architectury").listFiles().orEmpty().filter {
+                    it.isFile && it.name in listOf(".main_class", ".transforms", ".properties")
+                }
+                loom + architectury
+            }
+            val properties = metadata.filter { it.name == ".properties" }.associateWith { file ->
+                java.util.Properties().apply { file.inputStream().use { load(it) } }
+            }
+            properties.values.forEach { values ->
+                values.values.forEach { value ->
+                    val file = File(value.toString())
+                    if (file.isFile && mutable(file)) freeze(file)
+                }
+            }
+            metadata.forEach { freeze(it) }
+            fun rewrite(value: String) = replacements.entries.sortedByDescending { it.key.length }.fold(value) { result, (from, to) ->
+                result.replace(from, to).replace(from.replace('\\', '/'), to.replace('\\', '/'))
+            }
+            metadata.forEach { file ->
+                val target = File(replacements.getValue(file.absolutePath))
+                val values = properties[file]
+                if (values == null) target.writeText(rewrite(file.readText()))
+                else {
+                    values.replaceAll { _, value -> rewrite(value.toString()) }
+                    target.outputStream().use { values.store(it, "Isolated dev runtime") }
+                }
+            }
+            setClasspath(project.files(runtime))
+            // Loom constructs its classpath argument file lazily from the classpath above.
+            jvmArguments.set(jvmArguments.getOrElse(emptyList()).map { rewrite(it) })
+            setJvmArgs(jvmArgs.orEmpty().map { rewrite(it.toString()) })
+            setSystemProperties(systemProperties.mapValues { rewrite(it.value.toString()) })
+            val argumentProviders = jvmArgumentProviders.toList()
+            jvmArgumentProviders.clear()
+            argumentProviders.forEach { provider ->
+                jvmArgumentProviders.add(org.gradle.process.CommandLineArgumentProvider { provider.asArguments().map { rewrite(it) } })
+            }
+            logger.lifecycle("$path: isolated dev runtime in $snapshot")
+        }
+    }
+}
+
+val runtimeIsolationClasses = layout.buildDirectory.dir("runtime-isolation-probe")
+val compileRuntimeIsolationProbe = tasks.register<JavaCompile>("compileRuntimeIsolationProbe") {
+    source("tools/RuntimeClasspathIsolationProbe.java")
+    sourceCompatibility = "21"
+    targetCompatibility = "21"
+    classpath = files()
+    destinationDirectory.set(runtimeIsolationClasses)
+    options.release.set(21)
+}
+tasks.register<JavaExec>("verifyRuntimeClasspathIsolation") {
+    group = "verification"
+    dependsOn(compileRuntimeIsolationProbe)
+    classpath = files(runtimeIsolationClasses)
+    mainClass.set("RuntimeClasspathIsolationProbe")
+    args(runtimeIsolationClasses.get().asFile.absolutePath)
 }
 
 allprojects {

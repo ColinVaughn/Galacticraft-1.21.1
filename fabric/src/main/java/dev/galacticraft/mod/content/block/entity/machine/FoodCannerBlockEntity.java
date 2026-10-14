@@ -155,25 +155,17 @@ public class FoodCannerBlockEntity extends MachineBlockEntity {
             return MachineStatuses.NOT_ENOUGH_ENERGY;
         }
         this.incrementProgress();
+        MachineStatus preparation = this.prepareCan();
+        if (preparation != null) return preparation;
+        if (this.transferringCan || this.getProgress() == TRANSFER_OUTPUT) {
+            return this.tickCanTransfer();
+        }
+        return this.tickFoodTransfer();
+    }
+
+    private @Nullable MachineStatus prepareCan() {
         if (this.storageSlotEmpty()) {
-            this.ejectCan = false;
-            if (this.inputSlotEmpty()) {
-                this.reset(0);
-                return GCMachineStatuses.MISSING_EMPTY_CAN;
-            } else if (this.getProgress() < START_ROW_1) {
-                this.transferringCan = true;
-                return GCMachineStatuses.TRANSFERRING_CAN;
-            } else if (this.getProgress() == START_ROW_1) {
-                if (this.itemStorage().slot(INPUT_SLOT).extractOne() != null) {
-                    this.itemStorage().slot(STORAGE_SLOT).insert(CANNED_FOOD, 1);
-                }
-                this.transferringCan = false;
-            } else {
-                this.transferringCan = false;
-                this.transferringFood = false;
-                this.reset(0);
-                return GCMachineStatuses.MISSING_EMPTY_CAN;
-            }
+            return this.loadCan();
         } else if (this.ejectCan) {
             this.ejectCan = false;
             if (!this.transferringCan && !this.transferringFood) {
@@ -203,36 +195,62 @@ public class FoodCannerBlockEntity extends MachineBlockEntity {
                 return GCMachineStatuses.TRANSFERRING_CAN;
             }
         }
+        return null;
+    }
 
-        if (this.transferringCan || this.getProgress() == TRANSFER_OUTPUT) {
-            if (this.getProgress() == TRANSFER_OUTPUT) {
-                if (!this.transferFood()) {
-                    this.transferringCan = false;
-                    this.reset(START_ROW_1);
-                    return GCMachineStatuses.NO_FOOD;
-                } else if (!this.outputSlotEmpty()) {
-                    this.transferringCan = false;
-                    this.reset(0);
-                    return MachineStatuses.OUTPUT_FULL;
-                }
-                this.transferringCan = true;
-            } else if (this.getProgress() == MAX_PROGRESS) {
-                this.transferringCan = false;
-                this.reset(0);
-                ItemStack itemStack = this.currentCan();
-                if (ItemStack.isSameItemSameComponents(itemStack, CANNED_FOOD.getDefaultInstance())) {
-                    itemStack = EMPTY_CAN.getDefaultInstance();
-                }
-                if (!this.itemStorage().slot(OUTPUT_SLOT).canInsert(itemStack.getItem(), itemStack.getComponentsPatch(), 1)) {
-                    return MachineStatuses.OUTPUT_FULL;
-                }
-                this.itemStorage().slot(STORAGE_SLOT).extractOne();
-                this.itemStorage().slot(OUTPUT_SLOT).insert(itemStack.getItem(), itemStack.getComponentsPatch(), 1);
-            }
-
+    private @Nullable MachineStatus loadCan() {
+        this.ejectCan = false;
+        if (this.inputSlotEmpty()) {
+            this.reset(0);
+            return GCMachineStatuses.MISSING_EMPTY_CAN;
+        } else if (this.getProgress() < START_ROW_1) {
+            this.transferringCan = true;
             return GCMachineStatuses.TRANSFERRING_CAN;
+        } else if (this.getProgress() == START_ROW_1) {
+            if (this.itemStorage().slot(INPUT_SLOT).extractOne() != null) {
+                this.itemStorage().slot(STORAGE_SLOT).insert(CANNED_FOOD, 1);
+            }
+            this.transferringCan = false;
+        } else {
+            this.transferringCan = false;
+            this.transferringFood = false;
+            this.reset(0);
+            return GCMachineStatuses.MISSING_EMPTY_CAN;
         }
 
+        return null;
+    }
+
+    private @NotNull MachineStatus tickCanTransfer() {
+        if (this.getProgress() == TRANSFER_OUTPUT) {
+            if (!this.transferFood()) {
+                this.transferringCan = false;
+                this.reset(START_ROW_1);
+                return GCMachineStatuses.NO_FOOD;
+            } else if (!this.outputSlotEmpty()) {
+                this.transferringCan = false;
+                this.reset(0);
+                return MachineStatuses.OUTPUT_FULL;
+            }
+            this.transferringCan = true;
+        } else if (this.getProgress() == MAX_PROGRESS) {
+            this.transferringCan = false;
+            this.reset(0);
+            ItemStack itemStack = this.currentCan();
+            if (ItemStack.isSameItemSameComponents(itemStack, CANNED_FOOD.getDefaultInstance())) {
+                itemStack = EMPTY_CAN.getDefaultInstance();
+            }
+            if (!this.itemStorage().slot(OUTPUT_SLOT).canInsert(itemStack.getItem(), itemStack.getComponentsPatch(), 1)) {
+                return MachineStatuses.OUTPUT_FULL;
+            }
+            this.itemStorage().slot(STORAGE_SLOT).extractOne();
+            this.itemStorage().slot(OUTPUT_SLOT).insert(itemStack.getItem(), itemStack.getComponentsPatch(), 1);
+        }
+
+        return GCMachineStatuses.TRANSFERRING_CAN;
+    }
+
+    private @NotNull MachineStatus tickFoodTransfer() {
         boolean[] nonEmptyRows = new boolean[4];
         boolean empty = true;
         for (int row = 0; row < 4; row++) {
@@ -254,32 +272,36 @@ public class FoodCannerBlockEntity extends MachineBlockEntity {
                     this.setRowConsumed(row, true);
                     return GCMachineStatuses.CANNING;
                 } else {
-                    switch (row) {
-                        case 0:
-                            this.setProgress(START_ROW_2);
-                            break;
-                        case 1:
-                            if (this.getFirstRowConsumed()) {
-                                this.setProgress(SKIP_ROW_2);
-                            } else {
-                                this.setProgress(START_ROW_4);
-                            }
-                            break;
-                        case 2:
-                            if (this.getFourthRowConsumed()) {
-                                this.setProgress(SKIP_ROW_3);
-                            } else if (this.getFirstRowConsumed() || this.getSecondRowConsumed()) {
-                                this.setProgress(FINAL_PROGRESS);
-                            }
-                            break;
-                        case 3:
-                            this.setProgress(START_ROW_3);
-                    }
+                    this.skipEmptyRow(row);
                 }
             }
         }
 
         return GCMachineStatuses.CANNING;
+    }
+
+    private void skipEmptyRow(int row) {
+        switch (row) {
+            case 0:
+                this.setProgress(START_ROW_2);
+                break;
+            case 1:
+                if (this.getFirstRowConsumed()) {
+                    this.setProgress(SKIP_ROW_2);
+                } else {
+                    this.setProgress(START_ROW_4);
+                }
+                break;
+            case 2:
+                if (this.getFourthRowConsumed()) {
+                    this.setProgress(SKIP_ROW_3);
+                } else if (this.getFirstRowConsumed() || this.getSecondRowConsumed()) {
+                    this.setProgress(FINAL_PROGRESS);
+                }
+                break;
+            case 3:
+                this.setProgress(START_ROW_3);
+        }
     }
 
     @Override

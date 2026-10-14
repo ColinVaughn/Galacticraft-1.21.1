@@ -36,6 +36,9 @@ jobs:
       - name: Initialize build environment
         run: ./gradlew
 
+      - name: Verify dev runtime isolation
+        run: ./gradlew verifyRuntimeClasspathIsolation
+
       - name: Spotless check
         run: ./gradlew spotlessCheck
 

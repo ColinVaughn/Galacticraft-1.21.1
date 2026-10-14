@@ -32,6 +32,9 @@ import dev.galacticraft.api.item.Schematic;
 import dev.galacticraft.api.rocket.RocketData;
 import dev.galacticraft.api.rocket.RocketPrefabs;
 import dev.galacticraft.api.rocket.part.RocketPart;
+import dev.galacticraft.api.rocket.part.RocketPartTypes;
+import dev.galacticraft.mod.content.item.RocketModuleItem;
+import dev.galacticraft.mod.machine.workbench.RocketRefit;
 import dev.galacticraft.api.rocket.part.RocketUpgrade;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.content.GCRocketParts;
@@ -49,6 +52,7 @@ import dev.galacticraft.mod.machine.workbench.WorkbenchPageDisplay;
 import dev.galacticraft.mod.machine.workbench.WorkbenchPages;
 import dev.galacticraft.mod.machine.workbench.WorkbenchSlot;
 import dev.galacticraft.mod.recipe.RocketRecipe;
+import dev.galacticraft.mod.recipe.ModularRocketRecipe;
 import dev.galacticraft.mod.recipe.WorkbenchRecipe;
 import dev.galacticraft.mod.tag.GCItemTags;
 import dev.galacticraft.mod.world.inventory.RocketResultSlot;
@@ -69,6 +73,7 @@ import net.minecraft.world.ContainerListener;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.BlockItem;
@@ -99,6 +104,7 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
     public static final int BUTTON_BACK = 0;
     public static final int BUTTON_NEXT = 1;
     public static final int BUTTON_UNLOCK = 2;
+    public static final int BUTTON_PAINT = 3;
 
     public final RocketWorkbenchBlockEntity workbench;
     public final Inventory playerInventory;
@@ -151,6 +157,7 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
         }
         this.addSlots();
         this.returnIncompatibleIngredients();
+        this.workbench.refitInput.addListener(this);
         this.onItemChanged();
     }
 
@@ -223,7 +230,24 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
         return index >= 0 && index < this.pages.size() ? this.pages.get(index) : null;
     }
 
+    public boolean isRefitting() { return this.recipe != null && this.recipe.value() instanceof ModularRocketRecipe && !this.workbench.refitInput.isEmpty(); }
+
+    public ItemStack refitRocket() { return this.workbench.refitInput.getItem(0); }
+
+    public Slot refitInputSlot() {
+        return this.slots.stream().filter(slot -> slot.container == this.workbench.refitInput).findFirst().orElse(null);
+    }
+
+    private boolean canInsertRocket(ItemStack stack) {
+        return stack.is(GCItems.ROCKET) && this.workbench.ingredients.isEmpty() && this.workbench.chests.isEmpty()
+                && (!stack.getOrDefault(GCDataComponents.CREATIVE, false) || this.playerInventory.player.isCreative());
+    }
+
     protected void addSlots() {
+        // Synchronize the authoritative input before its derived part slots.
+        if (this.recipe != null && this.recipe.value() instanceof ModularRocketRecipe) {
+            this.addSlot(new FilteredSlot(this.workbench.refitInput, 0, REFIT_INPUT_X, REFIT_INPUT_Y, this::canInsertRocket));
+        }
         if (this.recipe != null) {
             this.addIngredientSlots(this.recipe.value());
         } else {
@@ -236,7 +260,9 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
         for (int chest = 0; chest < chests.size() && chest < RocketWorkbenchBlockEntity.CHEST_SLOTS; ++chest) {
             final int index = chest;
             this.addSlot(new FilteredSlot(this.workbench.chests, index, chests.get(chest).x(), chests.get(chest).y(),
-                    stack -> this.workbench.chests.canPlaceItem(index, stack)).withBackground(Constant.SlotSprite.CHEST));
+                    stack -> !this.isRefitting() && this.workbench.chests.canPlaceItem(index, stack)) {
+                @Override public boolean mayPickup(Player player) { return !isRefitting(); }
+            }.withBackground(Constant.SlotSprite.CHEST));
         }
 
         if (this.display.resultSlot() != null) {
@@ -266,7 +292,7 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
             if (slot.container != this.workbench.ingredients) continue;
 
             ItemStack stack = slot.getItem();
-            if (!stack.isEmpty() && !slot.mayPlace(stack)) {
+            if (!this.isRefitting() && !stack.isEmpty() && !slot.mayPlace(stack)) {
                 slot.set(ItemStack.EMPTY);
                 if (!this.playerInventory.add(stack)) {
                     this.playerInventory.player.drop(stack, false);
@@ -278,7 +304,7 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
     private void addIngredientSlots(WorkbenchRecipe recipe) {
         List<WorkbenchSlot> slots = recipe.ingredientSlots();
         List<RocketRecipe.RocketSlotData> rocketSlots = recipe instanceof RocketRecipe rocket
-                ? RocketRecipe.slotData(rocket.bodyHeight(), !rocket.boosters().isEmpty())
+                ? rocket.slots()
                 : List.of();
 
         List<Slot> body = new ArrayList<>();
@@ -288,7 +314,9 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
         for (int index = 0; index < slots.size(); index++) {
             WorkbenchSlot data = slots.get(index);
             Predicate<ItemStack> filter = data.ingredient()::test;
-            FilteredSlot slot = data.mirrored()
+            FilteredSlot slot = recipe instanceof ModularRocketRecipe
+                    ? new RefitPartSlot(index, data.x(), data.y(), filter, rocketSlots.get(index).partType())
+                    : data.mirrored()
                     ? new MirroredFilteredSlot(this.workbench.ingredients, index, data.x(), data.y(), filter)
                     : new FilteredSlot(this.workbench.ingredients, index, data.x(), data.y(), filter);
             if (data.background() != null) slot.withBackground(data.background());
@@ -317,8 +345,16 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
             case BUTTON_BACK -> this.flip(player, -1);
             case BUTTON_NEXT -> this.flip(player, 1);
             case BUTTON_UNLOCK -> this.unlockSchematic(player);
+            case BUTTON_PAINT -> this.openPaint(player);
             default -> false;
         };
+    }
+
+    private boolean openPaint(Player player) {
+        if (!display.rocketPreview() || !stillValid(player) || !(player instanceof ServerPlayer serverPlayer)) return false;
+        serverPlayer.doCloseContainer();
+        dev.architectury.registry.menu.MenuRegistry.openExtendedMenu(serverPlayer, workbench.paintMenu(page.id()));
+        return true;
     }
 
     private boolean flip(Player player, int direction) {
@@ -366,6 +402,8 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
     /** Reopening keeps the client's slot list in step with the server's; legacy reopened too. */
     private void openPage(Player player, ResourceLocation pageId) {
         if (player instanceof ServerPlayer serverPlayer && serverPlayer.connection != null) {
+            // Keep the client screen open until its replacement arrives, so the mouse stays released.
+            serverPlayer.doCloseContainer();
             dev.architectury.registry.menu.MenuRegistry.openExtendedMenu(serverPlayer, this.workbench.menuOn(pageId));
         }
     }
@@ -373,6 +411,7 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
     @Override
     public void removed(Player player) {
         super.removed(player);
+        this.workbench.refitInput.removeListener(this);
 
         // Remove client-side listeners via RocketWorkbenchScreen
         if (this.workbench.getLevel() instanceof ServerLevel) {
@@ -396,7 +435,7 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
 
     /** @return whether {@code recipe} is the build page this menu currently has open. */
     public boolean isCurrentRecipe(WorkbenchRecipe recipe) {
-        return this.recipe != null && this.recipe.value() == recipe;
+        return !this.isRefitting() && this.recipe != null && this.recipe.value() == recipe;
     }
 
     /**
@@ -404,7 +443,7 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
      * recipe, and must not stray into the upgrade wells beside them.
      */
     public List<Slot> ingredientSlots() {
-        return this.slots.stream().filter(slot -> slot.container == this.workbench.ingredients).toList();
+        return this.isRefitting() ? List.of() : this.slots.stream().filter(slot -> slot.container == this.workbench.ingredients).toList();
     }
 
     /** @return the slot the crafted item appears in, or null on a page that crafts nothing. */
@@ -419,6 +458,9 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
 
     @Override
     public @NotNull ItemStack quickMoveStack(Player player, int index) {
+        if (index < 0 || index >= this.slots.size()) return ItemStack.EMPTY;
+        if (this.isRefitting()) return this.quickMoveRefit(player, index);
+        if (this.canQuickMoveRocketToRefit(index)) return this.quickMoveRocketToRefit(this.slots.get(index));
         ItemStack out = ItemStack.EMPTY;
         Slot slot = this.slots.get(index);
         ItemStack stack = slot.getItem();
@@ -451,6 +493,190 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
         return out;
     }
 
+    private boolean canQuickMoveRocketToRefit(int index) {
+        return index >= this.firstPlayerSlot() && this.refitInputSlot() != null && this.canInsertRocket(this.slots.get(index).getItem());
+    }
+
+    private ItemStack quickMoveRocketToRefit(Slot source) {
+        ItemStack result = source.getItem().copy();
+        int input = this.refitInputSlot().index;
+        if (!this.moveItemStackTo(source.getItem(), input, input + 1, false)) return ItemStack.EMPTY;
+        source.setChanged();
+        return result;
+    }
+
+    @Override
+    public void clicked(int index, int button, ClickType click, Player player) {
+        if (!this.isRefitting() || index < 0 || index >= this.slots.size()) {
+            super.clicked(index, button, click, player);
+            return;
+        }
+        Slot slot = this.slots.get(index);
+        if (slot != this.resultSlot() && !(slot instanceof RefitPartSlot)) {
+            super.clicked(index, button, click, player);
+            return;
+        }
+        this.resetQuickCraft();
+        if (!this.canOperateRefit(player)) return;
+        if (slot instanceof RefitPartSlot part) this.clickRefitPart(part, button, click, player);
+        else {
+            if (slot.getItem().isEmpty()) return;
+            this.clickRefitResult(slot, button, click, player);
+        }
+        this.broadcastChanges();
+    }
+
+    private boolean canOperateRefit(Player player) {
+        return !player.level().isClientSide && player.containerMenu == this && this.stillValid(player) && !player.isSpectator();
+    }
+
+    private static boolean isPickupButton(int button) { return button == 0 || button == 1; }
+
+    private static boolean isSwapButton(int button) { return button >= 0 && button < 9 || button == 40; }
+
+    private void clickRefitResult(Slot result, int button, ClickType click, Player player) {
+        switch (click) {
+            case QUICK_MOVE -> this.quickMoveRefit(player, result.index);
+            case PICKUP -> {
+                if (isPickupButton(button) && this.getCarried().isEmpty()) {
+                    ItemStack taken = result.remove(1);
+                    this.setCarried(taken);
+                    result.onTake(player, taken);
+                }
+            }
+            case SWAP -> {
+                if (isSwapButton(button) && player.getInventory().getItem(button).isEmpty()) {
+                    ItemStack taken = result.remove(1);
+                    player.getInventory().setItem(button, taken);
+                    result.onTake(player, taken);
+                }
+            }
+            case THROW -> {
+                if (this.getCarried().isEmpty()) {
+                    ItemStack taken = result.remove(1);
+                    player.drop(taken, true);
+                    result.onTake(player, taken);
+                }
+            }
+            case CLONE -> {
+                if (player.isCreative()) super.clicked(result.index, button, click, player);
+            }
+            default -> { }
+        }
+    }
+
+    private void clickRefitPart(RefitPartSlot part, int button, ClickType click, Player player) {
+        switch (click) {
+            case QUICK_MOVE -> this.quickMoveRefit(player, part.index);
+            case PICKUP -> {
+                if (isPickupButton(button)) {
+                    ItemStack old = this.exchangePart(player, part, this.getCarried());
+                    if (old != null) this.setCarried(old);
+                }
+            }
+            case SWAP -> {
+                if (isSwapButton(button)) {
+                    ItemStack old = this.exchangePart(player, part, player.getInventory().getItem(button));
+                    if (old != null) player.getInventory().setItem(button, old);
+                }
+            }
+            case THROW -> {
+                if (this.getCarried().isEmpty()) {
+                    ItemStack old = this.exchangePart(player, part, ItemStack.EMPTY);
+                    if (old != null && !old.isEmpty()) player.drop(old, true);
+                }
+            }
+            case CLONE -> {
+                if (player.isCreative()) super.clicked(part.index, button, click, player);
+            }
+            default -> { }
+        }
+    }
+
+    private boolean mayChangePart(Player player, RefitPartSlot slot, ItemStack incoming) {
+        if (player.containerMenu != this || !this.stillValid(player) || player.isSpectator()
+                || this.refitRocket().getOrDefault(GCDataComponents.CREATIVE, false) && !player.isCreative()) return false;
+        RocketData data = RocketRefit.data(this.refitRocket());
+        if (RocketRefit.hasPart(data, slot.type) && RocketRefit.module(data, slot.type).isEmpty()) return false;
+        if (incoming.isEmpty()) return true;
+        if (!(incoming.getItem() instanceof RocketModuleItem module) || module.type() != slot.type || incoming.getCount() != 1 || RocketRefit.module(module.rocketData(), slot.type).isEmpty()) return false;
+        ResourceKey<?> key = RocketRefit.key(module.rocketData(), slot.type).orElse(null);
+        if (key == null || !((ResearchAccessor) player).galacticraft$isUnlocked(GCRocketParts.recipeId(key))) {
+            player.displayClientMessage(Component.translatable("gui.galacticraft.rocket_refit.research", slot.type.name), true);
+            return false;
+        }
+        return true;
+    }
+
+    private @Nullable ItemStack exchangePart(Player player, RefitPartSlot slot, ItemStack incoming) {
+        if (!this.mayChangePart(player, slot, incoming)) return null;
+        RocketData data = RocketRefit.data(this.refitRocket());
+        ItemStack old = RocketRefit.module(data, slot.type);
+        ItemStack updated = this.refitRocket().copy();
+        updated.set(GCDataComponents.ROCKET_DATA, RocketRefit.replace(data, slot.type, incoming));
+        this.workbench.refitInput.setItem(0, updated);
+        return old;
+    }
+
+    private boolean hasInventorySpace(Player player) {
+        for (int i = 0; i < 36; i++) if (player.getInventory().getItem(i).isEmpty()) return true;
+        return false;
+    }
+
+    private ItemStack quickMoveRefit(Player player, int index) {
+        if (!this.canOperateRefit(player)) return ItemStack.EMPTY;
+        Slot slot = this.slots.get(index);
+        if (slot instanceof RefitPartSlot part) {
+            if (part.getItem().isEmpty() || !this.hasInventorySpace(player)) return ItemStack.EMPTY;
+            ItemStack old = this.exchangePart(player, part, ItemStack.EMPTY);
+            if (old == null) return ItemStack.EMPTY;
+            player.getInventory().add(old.copy());
+            return old;
+        }
+        if (slot == this.resultSlot()) {
+            ItemStack result = slot.getItem().copy();
+            if (result.isEmpty() || !this.hasInventorySpace(player)) return ItemStack.EMPTY;
+            ItemStack taken = slot.remove(1);
+            player.getInventory().add(taken);
+            slot.onTake(player, result);
+            return result;
+        }
+        if (slot.container == this.workbench.refitInput) {
+            if (!this.hasInventorySpace(player)) return ItemStack.EMPTY;
+            ItemStack result = slot.remove(1);
+            player.getInventory().add(result.copy());
+            slot.onTake(player, result);
+            return result;
+        }
+        return index >= this.firstPlayerSlot() ? this.quickMoveRefitModule(player, slot) : ItemStack.EMPTY;
+    }
+
+    private ItemStack quickMoveRefitModule(Player player, Slot slot) {
+        if (!(slot.getItem().getItem() instanceof RocketModuleItem module)) return ItemStack.EMPTY;
+        RefitPartSlot part = this.slots.stream().filter(candidate -> candidate instanceof RefitPartSlot refit && refit.type == module.type())
+                .map(candidate -> (RefitPartSlot) candidate).findFirst().orElse(null);
+        if (part == null || !part.getItem().isEmpty() && !this.hasInventorySpace(player)) return ItemStack.EMPTY;
+        ItemStack incoming = slot.getItem().copy();
+        ItemStack old = this.exchangePart(player, part, incoming);
+        if (old == null) return ItemStack.EMPTY;
+        slot.set(ItemStack.EMPTY);
+        if (!old.isEmpty()) player.getInventory().add(old);
+        return incoming;
+    }
+
+    private class RefitPartSlot extends FilteredSlot {
+        private final RocketPartTypes type;
+        private RefitPartSlot(int index, int x, int y, Predicate<ItemStack> filter, RocketPartTypes type) {
+            super(workbench.ingredients, index, x, y, filter);
+            this.type = type;
+        }
+        @Override public ItemStack getItem() { return isRefitting() ? RocketRefit.module(RocketRefit.data(refitRocket()), type) : super.getItem(); }
+        @Override public void set(ItemStack stack) { if (!isRefitting()) super.set(stack); }
+        @Override public ItemStack remove(int amount) { return isRefitting() ? ItemStack.EMPTY : super.remove(amount); }
+        @Override public boolean mayPlace(ItemStack stack) { return !isRefitting() && super.mayPlace(stack); }
+        @Override public boolean mayPickup(Player player) { return !isRefitting(); }
+    }
+
     private RocketData withWorkbenchUpgrade(RocketData base) {
         ItemStack upgradeStack = this.workbench.chests.getItem(0);
 
@@ -478,7 +704,7 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
                 base.engine(),
                 upgrade,
                 upgradeData,
-                base.color()
+                base.color(), base.paint(), base.tints()
         );
     }
 
@@ -493,6 +719,10 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
     }
 
     public RocketData previewRocket() {
+        if (this.isRefitting()) return RocketRefit.data(this.refitRocket());
+        if (this.recipe != null && this.recipe.value() instanceof ModularRocketRecipe modular) {
+            return this.withWorkbenchUpgrade(modular.previewData(this.workbench.ingredients.asInput()));
+        }
         RocketData data = this.recipe != null
                 ? this.recipe.value().getResultItem(this.registries()).getOrDefault(GCDataComponents.ROCKET_DATA, RocketPrefabs.TIER_1)
                 : RocketPrefabs.TIER_1;
@@ -504,7 +734,7 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
                 this.engineComplete ? data.engine() : Optional.empty(),
                 data.upgrade(),
                 data.upgradeData(),
-                data.color()
+                data.color(), data.paint(), data.tints()
         );
         return this.withWorkbenchUpgrade(withParts);
     }
@@ -521,6 +751,11 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
 
     @Override
     public void onItemChanged() {
+        if (this.isRefitting()) {
+            this.missingResearch = List.of();
+            if (this.workbench.getLevel() instanceof ServerLevel) this.workbench.output.clearContent();
+            return;
+        }
         boolean matches = this.recipe != null && this.recipe.value().matches(this.workbench.ingredients.asInput(), this.workbench.getLevel());
 
         // Worked out on both sides: an empty result slot otherwise gives the player no clue that
@@ -556,12 +791,12 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
      */
     private @Nullable RocketData resultRocketData() {
         if (this.recipe == null) return null;
-        return this.recipe.value().getResultItem(this.registries()).get(GCDataComponents.ROCKET_DATA);
+        return this.recipe.value().assemble(this.workbench.ingredients.asInput(), this.registries()).get(GCDataComponents.ROCKET_DATA);
     }
 
     /** Applies the page's upgrade wells to the crafted item: rocket cargo, or a buggy's storage. */
     private ItemStack buildResult() {
-        ItemStack result = this.recipe.value().getResultItem(this.registries()).copy();
+        ItemStack result = this.recipe.value().assemble(this.workbench.ingredients.asInput(), this.registries());
 
         if (result.has(GCDataComponents.ROCKET_DATA)) {
             result.set(GCDataComponents.ROCKET_DATA, this.withWorkbenchUpgrade(result.get(GCDataComponents.ROCKET_DATA)));

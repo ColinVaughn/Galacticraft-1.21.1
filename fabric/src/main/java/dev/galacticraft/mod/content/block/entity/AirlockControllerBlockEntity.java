@@ -172,53 +172,43 @@ public class AirlockControllerBlockEntity extends BlockEntity implements MenuPro
         int x = (this.lastProtocol.maxX + this.lastProtocol.minX) / 2;
         int y = (this.lastProtocol.maxY + this.lastProtocol.minY) / 2;
         int z = (this.lastProtocol.maxZ + this.lastProtocol.minZ) / 2;
-
-        BlockPos pos = new BlockPos(x, y, z);
-        if (this.level.getBlockState(pos).isAir()) {
-            this.level.playSound(null, pos, GCSounds.AIRLOCK_CLOSE, SoundSource.BLOCKS, 1.0F, 1.0F);
+        BlockPos center = new BlockPos(x, y, z);
+        if (this.level.getBlockState(center).isAir()) {
+            this.level.playSound(null, center, GCSounds.AIRLOCK_CLOSE, SoundSource.BLOCKS, 1.0F, 1.0F);
         }
-
         if (this.horizontalModeEnabled) {
             if (this.protocol.minY == this.protocol.maxY && this.protocol.minX != this.protocol.maxX && this.protocol.minZ != this.protocol.maxZ) {
                 for (x = this.protocol.minX + 1; x <= this.protocol.maxX - 1; x++) {
                     for (z = this.protocol.minZ + 1; z <= this.protocol.maxZ - 1; z++) {
-                        pos = new BlockPos(x, y, z);
-                        if (this.level.getBlockState(pos).isAir()) {
-                            // A floor/ceiling hatch seals with a flat pane, not an upright one.
-                            this.level.setBlock(pos, GCBlocks.AIR_LOCK_SEAL.defaultBlockState().setValue(FACING, Direction.UP), Block.UPDATE_ALL);
-                        }
+                        this.placeSeal(new BlockPos(x, y, z), Direction.UP);
                     }
                 }
             }
         } else {
-            boolean facingNorth = (this.lastProtocol.maxX - this.lastProtocol.minX) == 0;
-            if (this.protocol.minX != this.protocol.maxX) {
-                for (x = this.protocol.minX + 1; x <= this.protocol.maxX - 1; x++) {
-                    for (y = this.protocol.minY + 1; y <= this.protocol.maxY - 1; y++) {
-                        pos = new BlockPos(x, y, z);
-                        if (this.level.getBlockState(pos).isAir()) {
-                            if (facingNorth) {
-                                this.level.setBlock(pos, GCBlocks.AIR_LOCK_SEAL.defaultBlockState().setValue(FACING, Direction.EAST), Block.UPDATE_ALL);
-                            } else {
-                                this.level.setBlock(pos, GCBlocks.AIR_LOCK_SEAL.defaultBlockState().setValue(FACING, Direction.NORTH), Block.UPDATE_ALL);
-                            }
-                        }
-                    }
-                }
-            } else if (this.protocol.minZ != this.protocol.maxZ) {
-                for (z = this.protocol.minZ + 1; z <= this.protocol.maxZ - 1; z++) {
-                    for (y = this.protocol.minY + 1; y <= this.protocol.maxY - 1; y++) {
-                        pos = new BlockPos(x, y, z);
-                        if (this.level.getBlockState(pos).isAir()) {
-                            if (facingNorth) {
-                                this.level.setBlock(pos, GCBlocks.AIR_LOCK_SEAL.defaultBlockState().setValue(FACING, Direction.EAST), Block.UPDATE_ALL);
-                            } else {
-                                this.level.setBlock(pos, GCBlocks.AIR_LOCK_SEAL.defaultBlockState().setValue(FACING, Direction.NORTH), Block.UPDATE_ALL);
-                            }
-                        }
-                    }
+            this.sealVerticalAirLock(x, z);
+        }
+    }
+
+    private void sealVerticalAirLock(int x, int z) {
+        Direction facing = this.lastProtocol.maxX == this.lastProtocol.minX ? Direction.EAST : Direction.NORTH;
+        if (this.protocol.minX != this.protocol.maxX) {
+            for (x = this.protocol.minX + 1; x <= this.protocol.maxX - 1; x++) {
+                for (int y = this.protocol.minY + 1; y <= this.protocol.maxY - 1; y++) {
+                    this.placeSeal(new BlockPos(x, y, z), facing);
                 }
             }
+        } else if (this.protocol.minZ != this.protocol.maxZ) {
+            for (z = this.protocol.minZ + 1; z <= this.protocol.maxZ - 1; z++) {
+                for (int y = this.protocol.minY + 1; y <= this.protocol.maxY - 1; y++) {
+                    this.placeSeal(new BlockPos(x, y, z), facing);
+                }
+            }
+        }
+    }
+
+    private void placeSeal(BlockPos pos, Direction facing) {
+        if (this.level.getBlockState(pos).isAir()) {
+            this.level.setBlock(pos, GCBlocks.AIR_LOCK_SEAL.defaultBlockState().setValue(FACING, facing), Block.UPDATE_ALL);
         }
     }
 

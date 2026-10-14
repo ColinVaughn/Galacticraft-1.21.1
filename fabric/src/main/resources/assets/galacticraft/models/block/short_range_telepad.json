@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:builtin/entity",
+  "textures": {
+    "particle": "galacticraft:block/gc4/telepad_short"
+  }
+}

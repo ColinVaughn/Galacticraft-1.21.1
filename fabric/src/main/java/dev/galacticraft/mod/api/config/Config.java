@@ -169,6 +169,9 @@ public interface Config {
      */
     int rocketFuelTankCapacity();
 
+    /** Use GC4-sized tanks and approximate GC4 fuel costs for the built-in rocket engines. */
+    default boolean gc4RocketFuelMode() { return true; }
+
     /**
      * Ticks of powered flight one bucket of fuel provides. Raising this makes every launch cost
      * proportionally less fuel; at the default of 50 an Earth launch burns roughly 32 buckets.

@@ -68,49 +68,37 @@ public class RoomTreasure extends SizedPiece {
         for (int x = 0; x <= this.sizeX; x++) {
             for (int y = 0; y <= this.sizeY; y++) {
                 for (int z = 0; z <= this.sizeZ; z++) {
-                    if (x == 0 || x == this.sizeX || y == 0 || y == this.sizeY || z == 0 || z == this.sizeZ) {
-                        boolean placeBlock = true;
-                        if (getDirection().getAxis() == Direction.Axis.Z) {
-                            int start = (this.boundingBox.maxX() - this.boundingBox.minX()) / 2 - 1;
-                            int end = (this.boundingBox.maxX() - this.boundingBox.minX()) / 2 + 1;
-                            if (x > start && x <= end && y < 3 && y > 0) {
-                                if (getDirection() == Direction.SOUTH && z == 0) {
-                                    placeBlock = false;
-                                } else if (getDirection() == Direction.NORTH && z == this.sizeZ) {
-                                    placeBlock = false;
-                                }
-                            }
-                        } else {
-                            int start = (this.boundingBox.maxZ() - this.boundingBox.minZ()) / 2 - 1;
-                            int end = (this.boundingBox.maxZ() - this.boundingBox.minZ()) / 2 + 1;
-                            if (z > start && z <= end && y < 3 && y > 0) {
-                                if (getDirection() == Direction.EAST && x == 0) {
-                                    placeBlock = false;
-                                } else if (getDirection() == Direction.WEST && x == this.sizeX) {
-                                    placeBlock = false;
-                                }
-                            }
-                        }
-                        if (placeBlock) {
-                            this.placeBlock(worldIn, this.configuration.getBrickBlock(), x, y, z, chunkBox);
-                        } else {
-                            this.placeBlock(worldIn, Blocks.AIR.defaultBlockState(), x, y, z, chunkBox);
-                        }
-                    } else if ((x == 1 && z == 1) || (x == 1 && z == this.sizeZ - 1) || (x == this.sizeX - 1 && z == 1) || (x == this.sizeX - 1 && z == this.sizeZ - 1)) {
-                        this.placeBlock(worldIn, Blocks.GLOWSTONE.defaultBlockState(), x, y, z, chunkBox);
-                    } else if (x == this.sizeX / 2 && y == 1 && z == this.sizeZ / 2) {
-                        BlockPos blockpos = new BlockPos(this.getWorldX(x, z), this.getWorldY(y), this.getWorldZ(x, z));
-                        if (chunkBox.isInside(blockpos)) {
-                            int tier = this.configuration.getChestTier();
-                            worldIn.setBlock(blockpos, treasureChestFor(tier).defaultBlockState().setValue(ChestBlock.FACING, this.getDirection().getOpposite()), 2);
-                            if (worldIn.getBlockEntity(blockpos) instanceof ChestBlockEntity treasureChest) {
-                                treasureChest.setLootTable(GCLootTables.dungeonChest(tier), random.nextLong());
-                            }
-                        }
-                    } else {
-                        this.placeBlock(worldIn, Blocks.AIR.defaultBlockState(), x, y, z, chunkBox);
-                    }
+                    placeRoomBlock(worldIn, random, chunkBox, x, y, z);
                 }
+            }
+        }
+    }
+
+    private void placeRoomBlock(WorldGenLevel worldIn, RandomSource random, BoundingBox chunkBox, int x, int y, int z) {
+        if (x == 0 || x == this.sizeX || y == 0 || y == this.sizeY || z == 0 || z == this.sizeZ) {
+            boolean placeBlock = !isEntrance(x, y, z);
+            if (placeBlock) {
+                this.placeBlock(worldIn, this.configuration.getBrickBlock(), x, y, z, chunkBox);
+            } else {
+                this.placeBlock(worldIn, Blocks.AIR.defaultBlockState(), x, y, z, chunkBox);
+            }
+        } else if ((x == 1 && z == 1) || (x == 1 && z == this.sizeZ - 1) || (x == this.sizeX - 1 && z == 1) || (x == this.sizeX - 1 && z == this.sizeZ - 1)) {
+            this.placeBlock(worldIn, Blocks.GLOWSTONE.defaultBlockState(), x, y, z, chunkBox);
+        } else if (x == this.sizeX / 2 && y == 1 && z == this.sizeZ / 2) {
+            placeTreasureChest(worldIn, random, chunkBox, x, y, z);
+        } else {
+            this.placeBlock(worldIn, Blocks.AIR.defaultBlockState(), x, y, z, chunkBox);
+        }
+    }
+
+
+    private void placeTreasureChest(WorldGenLevel worldIn, RandomSource random, BoundingBox chunkBox, int x, int y, int z) {
+        BlockPos blockpos = new BlockPos(this.getWorldX(x, z), this.getWorldY(y), this.getWorldZ(x, z));
+        if (chunkBox.isInside(blockpos)) {
+            int tier = this.configuration.getChestTier();
+            worldIn.setBlock(blockpos, treasureChestFor(tier).defaultBlockState().setValue(ChestBlock.FACING, this.getDirection().getOpposite()), 2);
+            if (worldIn.getBlockEntity(blockpos) instanceof ChestBlockEntity treasureChest) {
+                treasureChest.setLootTable(GCLootTables.dungeonChest(tier), random.nextLong());
             }
         }
     }

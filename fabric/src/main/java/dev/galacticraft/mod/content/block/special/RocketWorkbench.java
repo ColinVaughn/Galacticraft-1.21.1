@@ -118,6 +118,8 @@ public class RocketWorkbench extends BaseEntityBlock {
                 Containers.dropContents(level, pos, workbench.ingredients);
                 Containers.dropContents(level, pos, workbench.chests);
                 Containers.dropContents(level, pos, workbench.schematic);
+                Containers.dropContents(level, pos, workbench.paintInput);
+                Containers.dropContents(level, pos, workbench.refitInput);
             }
             super.onRemove(state, level, pos, newState, moved);
         }

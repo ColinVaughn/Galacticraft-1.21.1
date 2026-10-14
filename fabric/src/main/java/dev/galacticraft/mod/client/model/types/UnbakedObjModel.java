@@ -51,8 +51,14 @@ public class UnbakedObjModel implements GCUnbakedModel {
     private final ResourceLocation model;
     private final ResourceLocation material;
     private final Optional<ResourceLocation> atlas;
+    private final Optional<ResourceLocation> paintTexture;
 
     public UnbakedObjModel(ResourceLocation model, ResourceLocation material, Optional<ResourceLocation> atlas) {
+        this(model, material, atlas, Optional.empty());
+    }
+
+    public UnbakedObjModel(ResourceLocation model, ResourceLocation material, Optional<ResourceLocation> atlas, Optional<ResourceLocation> paintTexture) {
+        this.paintTexture = paintTexture;
         this.model = model;
         this.material = material;
         this.atlas = atlas;
@@ -71,7 +77,8 @@ public class UnbakedObjModel implements GCUnbakedModel {
             List<BakedMaterial> bakedMaterials = new ArrayList<>();
             for (Mtl material : materials) {
                 if (material.getMapKdOptions() != null && material.getMapKdOptions().getFileName() != null)
-                    bakedMaterials.add(new BakedMaterial(material, spriteGetter.apply(new Material(atlas.orElse(GCRenderTypes.OBJ_ATLAS), ResourceLocation.parse(material.getMapKdOptions().getFileName())))));
+                    bakedMaterials.add(new BakedMaterial(material, spriteGetter.apply(new Material(atlas.orElse(GCRenderTypes.OBJ_ATLAS), ResourceLocation.parse(material.getMapKdOptions().getFileName()))),
+                            material.getName().endsWith("_paint") ? paintTexture.map(texture -> spriteGetter.apply(new Material(atlas.orElse(GCRenderTypes.OBJ_ATLAS), texture))).orElse(null) : null));
             }
 
             return new ObjModel(obj, bakedMaterials);
@@ -87,7 +94,8 @@ public class UnbakedObjModel implements GCUnbakedModel {
             List<BakedMaterial> bakedMaterials = new ArrayList<>();
             for (Mtl material : materials) {
                 if (material.getMapKdOptions() != null && material.getMapKdOptions().getFileName() != null)
-                    bakedMaterials.add(new BakedMaterial(material, spriteGetter.apply(new Material(atlas.orElse(GCRenderTypes.OBJ_ATLAS), ResourceLocation.parse(material.getMapKdOptions().getFileName())))));
+                    bakedMaterials.add(new BakedMaterial(material, spriteGetter.apply(new Material(atlas.orElse(GCRenderTypes.OBJ_ATLAS), ResourceLocation.parse(material.getMapKdOptions().getFileName()))),
+                            material.getName().endsWith("_paint") ? paintTexture.map(texture -> spriteGetter.apply(new Material(atlas.orElse(GCRenderTypes.OBJ_ATLAS), texture))).orElse(null) : null));
             }
 
             Renderer renderer = RendererAccess.INSTANCE.getRenderer();
@@ -134,7 +142,8 @@ public class UnbakedObjModel implements GCUnbakedModel {
         }
     }
 
-    public record BakedMaterial(Mtl material, TextureAtlasSprite sprite) {
+    public record BakedMaterial(Mtl material, TextureAtlasSprite sprite, TextureAtlasSprite paintSprite) {
+        public BakedMaterial(Mtl material, TextureAtlasSprite sprite) { this(material, sprite, null); }
     }
 
     public static class ObjType implements GCModelType {
@@ -142,7 +151,8 @@ public class UnbakedObjModel implements GCUnbakedModel {
         public static final MapCodec<UnbakedObjModel> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
                 ResourceLocation.CODEC.fieldOf("model").forGetter(o -> o.model),
                 ResourceLocation.CODEC.fieldOf("mtl").forGetter(o -> o.material),
-                ResourceLocation.CODEC.optionalFieldOf("atlas").forGetter(o -> o.atlas)
+                ResourceLocation.CODEC.optionalFieldOf("atlas").forGetter(o -> o.atlas),
+                ResourceLocation.CODEC.optionalFieldOf("paint_texture").forGetter(o -> o.paintTexture)
         ).apply(instance, UnbakedObjModel::new));
 
         @Override

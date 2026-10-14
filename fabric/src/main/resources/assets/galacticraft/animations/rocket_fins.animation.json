@@ -1,0 +1,67 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"animation.rocket_tier1.gear": {
+			"loop": "hold_on_last_frame",
+			"animation_length": 1,
+			"bones": {
+				"LegEast": {
+					"rotation": {
+						"0.0": [
+							0,
+							0,
+							0
+						],
+						"1.0": [
+							0,
+							0,
+							135
+						]
+					}
+				},
+				"LegWest": {
+					"rotation": {
+						"0.0": [
+							0,
+							0,
+							0
+						],
+						"1.0": [
+							0,
+							0,
+							-135
+						]
+					}
+				},
+				"LegSouth": {
+					"rotation": {
+						"0.0": [
+							0,
+							0,
+							0
+						],
+						"1.0": [
+							135,
+							0,
+							0
+						]
+					}
+				},
+				"LegNorth": {
+					"rotation": {
+						"0.0": [
+							0,
+							0,
+							0
+						],
+						"1.0": [
+							-135,
+							0,
+							0
+						]
+					}
+				}
+			}
+		}
+	}
+}

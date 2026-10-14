@@ -162,7 +162,7 @@ public class GCEntityTypes {
     public static final EntityType<RocketEntity> ROCKET = ENTITIES.register(Entity.ROCKET, velocityUpdates(EntityType.Builder.of(RocketEntity::new, MobCategory.MISC)
             .clientTrackingRange(32)
             .updateInterval(2), false)
-            .sized(2.3F, 5.25F)
+            .sized(2.5F, 5.25F)
             .eyeHeight(2.525F)
             .build(Constant.id(Entity.ROCKET).toString())); //PLAYER VALUES
     public static final EntityType<LanderEntity> LANDER = ENTITIES.register(Entity.LANDER, EntityType.Builder.<LanderEntity>of(LanderEntity::new, MobCategory.MISC)
@@ -187,7 +187,7 @@ public class GCEntityTypes {
     public static final EntityType<CargoRocketEntity> CARGO_ROCKET = ENTITIES.register(Entity.CARGO_ROCKET, velocityUpdates(EntityType.Builder.of(CargoRocketEntity::new, MobCategory.MISC)
             .clientTrackingRange(150)
             .updateInterval(5), true)
-            .sized(0.98F, 2.0F)
+            .sized(CargoRocketEntity.WIDTH, CargoRocketEntity.EMPTY_HEIGHT)
             .fireImmune()
             .build(Constant.id(Entity.CARGO_ROCKET).toString()));
     public static final EntityType<ParachestEntity> PARACHEST = ENTITIES.register(Entity.PARACHEST, EntityType.Builder.<ParachestEntity>of(ParachestEntity::new, MobCategory.MISC)

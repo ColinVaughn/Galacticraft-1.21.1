@@ -58,6 +58,22 @@ loom {
                 runDir("build/burrower-client-test")
                 property("galacticraft.burrower.client-test", "true")
             }
+            if (project.hasProperty("rocketClientTest")) {
+                runDir("build/rocket-client-test")
+                property("galacticraft.rocket.client-test", "true")
+            }
+            if (project.hasProperty("cargoClientTest")) {
+                runDir("build/cargo-client-test")
+                property("galacticraft.cargo.client-test", "true")
+            }
+            if (project.hasProperty("geothermalClientTest")) {
+                runDir("build/geothermal-client-test")
+                property("galacticraft.geothermal.client-test", "true")
+            }
+            if (project.hasProperty("telepadClientTest")) {
+                runDir("build/telepad-client-test")
+                property("galacticraft.telepad.client-test", "true")
+            }
             if (project.hasProperty("burrowerVisualTest")) {
                 runDir("build/burrower-visual-test")
                 property("galacticraft.burrower.visual-test", "true")

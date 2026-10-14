@@ -1,0 +1,6 @@
+{
+  "galacticraft:type": "galacticraft:obj",
+  "model": "galacticraft:models/misc/rocket_body_tier_2.obj",
+  "mtl": "galacticraft:models/misc/rocket_body_tier_2.mtl",
+  "paint_texture": "galacticraft:obj/rocket_bodies_paint"
+}

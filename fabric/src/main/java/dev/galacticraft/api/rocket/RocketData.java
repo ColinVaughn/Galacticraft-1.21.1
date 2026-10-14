@@ -53,8 +53,28 @@ public record RocketData(
         Optional<EitherHolder<RocketEngine<?, ?>>> engine,
         Optional<EitherHolder<RocketUpgrade<?, ?>>> upgrade,
         Optional<RocketUpgradeData> upgradeData,
-        int color
+        int color,
+        RocketPaint paint,
+        RocketPaint tints
 ) {
+    /** Per-part textured tints let a replacement keep its finish on a legacy tinted rocket. */
+    public RocketData(Optional<EitherHolder<RocketCone<?, ?>>> cone, Optional<EitherHolder<RocketBody<?, ?>>> body,
+                      Optional<EitherHolder<RocketFin<?, ?>>> fin, Optional<EitherHolder<RocketBooster<?, ?>>> booster,
+                      Optional<EitherHolder<RocketEngine<?, ?>>> engine, Optional<EitherHolder<RocketUpgrade<?, ?>>> upgrade,
+                      Optional<RocketUpgradeData> upgradeData, int color, RocketPaint paint) {
+        this(cone, body, fin, booster, engine, upgrade, upgradeData, color, paint, RocketPaint.NONE);
+    }
+    public RocketData(Optional<EitherHolder<RocketCone<?, ?>>> cone, Optional<EitherHolder<RocketBody<?, ?>>> body,
+                      Optional<EitherHolder<RocketFin<?, ?>>> fin, Optional<EitherHolder<RocketBooster<?, ?>>> booster,
+                      Optional<EitherHolder<RocketEngine<?, ?>>> engine, Optional<EitherHolder<RocketUpgrade<?, ?>>> upgrade,
+                      Optional<RocketUpgradeData> upgradeData, int color) {
+        this(cone, body, fin, booster, engine, upgrade, upgradeData, color, RocketPaint.NONE);
+    }
+
+    public RocketData withPaint(RocketPaint paint) {
+        return new RocketData(cone, body, fin, booster, engine, upgrade, upgradeData, color, paint, tints);
+    }
+
     public RocketData(
             @Nullable EitherHolder<RocketCone<?, ?>> cone,
             @Nullable EitherHolder<RocketBody<?, ?>> body,
@@ -85,7 +105,9 @@ public record RocketData(
             RocketEngine.EITHER_CODEC.optionalFieldOf("engine").forGetter(RocketData::engine),
             RocketUpgrade.EITHER_CODEC.optionalFieldOf("upgrade").forGetter(RocketData::upgrade),
             RocketUpgradeData.DIRECT_CODEC.optionalFieldOf("upgrade_data").forGetter(RocketData::upgradeData),
-            Codec.INT.optionalFieldOf("color", 0xFFFFFFFF).forGetter(RocketData::color)
+            Codec.INT.optionalFieldOf("color", 0xFFFFFFFF).forGetter(RocketData::color),
+            RocketPaint.CODEC.optionalFieldOf("paint", RocketPaint.NONE).forGetter(RocketData::paint),
+            RocketPaint.CODEC.optionalFieldOf("tints", RocketPaint.NONE).forGetter(RocketData::tints)
     ).apply(instance, RocketData::new));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, RocketData> STREAM_CODEC =

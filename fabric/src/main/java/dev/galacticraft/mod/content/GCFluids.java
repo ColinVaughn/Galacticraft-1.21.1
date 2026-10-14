@@ -43,6 +43,10 @@ public class GCFluids {
     public static final FlowingFluid FLOWING_SULFURIC_ACID = new SulfuricAcidFluid.Flowing();
 
     public static final Fluid LIQUID_OXYGEN = new OxygenFluid();
+    public static final Fluid LIQUID_NITROGEN = new OxygenFluid();
+    public static final Fluid LIQUID_ARGON = new OxygenFluid();
+    public static final Fluid ARGON = dev.galacticraft.api.gas.Gases.ARGON;
+    public static final Fluid ATMOSPHERIC_GASES = dev.galacticraft.api.gas.GasFluid.create(net.minecraft.network.chat.Component.translatable("fluid.galacticraft.atmospheric_gases"), Constant.id("gas/nitrogen"), "Air");
 
     public static void register() {
         register(Constant.Fluid.HELIUM_3_STILL, HELIUM_3);
@@ -54,9 +58,14 @@ public class GCFluids {
         register(Constant.Fluid.SULFURIC_ACID_STILL, SULFURIC_ACID);
         register(Constant.Fluid.SULFURIC_ACID_FLOWING, FLOWING_SULFURIC_ACID);
         register(Constant.Fluid.LIQUID_OXYGEN, LIQUID_OXYGEN);
+        register("liquid_nitrogen", LIQUID_NITROGEN);
+        register("liquid_argon", LIQUID_ARGON);
+        register("atmospheric_gases", ATMOSPHERIC_GASES);
     }
 
     public static void registerFluidVariantAttributes() {
+        FluidVariantAttributes.register(LIQUID_NITROGEN, new GCFluidAttribute(Component.translatable("fluid.galacticraft.liquid_nitrogen"), 500, false));
+        FluidVariantAttributes.register(LIQUID_ARGON, new GCFluidAttribute(Component.translatable("fluid.galacticraft.liquid_argon"), 500, false));
         FluidVariantAttributes.register(HELIUM_3, new GCFluidAttribute(Component.translatable(GCBlocks.HELIUM_3.getDescriptionId()), 2000, false));
         FluidVariantAttributes.register(CRUDE_OIL, new GCFluidAttribute(
                 Component.translatable(GCBlocks.CRUDE_OIL.getDescriptionId())

@@ -42,6 +42,25 @@ public final class FabricEnergyLookupProviders {
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     public static void register() {
+        EnergyStorage.SIDED.registerForBlocks((level, pos, state, blockEntity, direction) -> {
+            var pad = dev.galacticraft.mod.content.block.special.telepad.TelepadFrameBlock.energyInput(level, pos, state, direction);
+            if (pad == null) return null;
+            var storage = ExposedEnergyStorage.create(pad.energyStorage(), pad.energyStorage().externalInsertionRate(), 0);
+            // A cached frame capability must keep respecting the master's current configuration.
+            return new EnergyStorage() {
+                @Override public boolean supportsInsertion() {
+                    return pad.hasTopEnergyInput() && dev.galacticraft.mod.content.block.special.telepad.TelepadFrameBlock
+                            .energyInput(level, pos, level.getBlockState(pos), direction) == pad;
+                }
+                @Override public long insert(long amount, net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext transaction) {
+                    return supportsInsertion() ? storage.insert(amount, transaction) : 0;
+                }
+                @Override public boolean supportsExtraction() { return false; }
+                @Override public long extract(long amount, net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext transaction) { return 0; }
+                @Override public long getAmount() { return storage.getAmount(); }
+                @Override public long getCapacity() { return storage.getCapacity(); }
+            };
+        }, GCBlocks.TELEPAD_FRAME);
         EnergyStorage.SIDED.registerForBlockEntities((blockEntity, direction) -> {
             if (direction == null || !((Wire) blockEntity).canConnect(direction)) return null;
             return ((Wire) blockEntity).getInsertable();

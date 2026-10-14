@@ -205,13 +205,29 @@ public class LunarBurrowerEntity extends Monster {
             return InteractionResult.sidedSuccess(level().isClientSide);
         }
         if (!isOwnedBy(player)) return InteractionResult.PASS;
+        return this.interactWithOwnedBurrower(player, stack, food);
+    }
+
+    private InteractionResult interactWithOwnedBurrower(Player player, ItemStack stack, boolean food) {
         if (food && (getGrowthAge() < BurrowerGrowth.MAX_AGE || getHealth() < getMaxHealth())) {
             if (!level().isClientSide) {
                 stack.consume(1, player);
                 heal(6);
                 setGrowthAge(growthAge + 1200);
             }
-        } else if (!isBaby() && stack.is(Items.SADDLE) && !isSaddled()) {
+            return InteractionResult.sidedSuccess(level().isClientSide);
+        }
+        if (this.interactWithEquipment(player, stack) || this.interactWithCommands(player, stack)) {
+            return InteractionResult.sidedSuccess(level().isClientSide);
+        }
+        if (!isBaby() && isSaddled() && !isVehicle()) {
+            if (!level().isClientSide) { entityData.set(SITTING, false); player.startRiding(this); }
+        } else return InteractionResult.PASS;
+        return InteractionResult.sidedSuccess(level().isClientSide);
+    }
+
+    private boolean interactWithEquipment(Player player, ItemStack stack) {
+        if (!isBaby() && stack.is(Items.SADDLE) && !isSaddled()) {
             if (!level().isClientSide) { entityData.set(SADDLED, true); stack.consume(1, player); playSound(SoundEvents.HORSE_SADDLE); }
         } else if (!isBaby() && stack.is(Items.CHEST) && !hasChest()) {
             if (!level().isClientSide) { entityData.set(CHESTED, true); stack.consume(1, player); playSound(SoundEvents.DONKEY_CHEST); }
@@ -220,17 +236,20 @@ public class LunarBurrowerEntity extends Monster {
                 if (hasChest()) { dropCargo(); spawnAtLocation(Items.CHEST); entityData.set(CHESTED, false); }
                 else if (isSaddled()) { spawnAtLocation(Items.SADDLE); entityData.set(SADDLED, false); }
             }
-        } else if (player.isShiftKeyDown() && stack.is(Items.STICK)) {
+        } else return false;
+        return true;
+    }
+
+    private boolean interactWithCommands(Player player, ItemStack stack) {
+        if (player.isShiftKeyDown() && stack.is(Items.STICK)) {
             if (!level().isClientSide) { entityData.set(SITTING, !isSitting()); navigation.stop(); }
         } else if (player.isShiftKeyDown() && hasChest()) {
             if (!level().isClientSide) player.openMenu(new SimpleMenuProvider((id, inventory, who) ->
                     ChestMenu.threeRows(id, inventory, cargo), Component.translatable("entity.galacticraft.lunar_burrower.cargo")));
         } else if (player.isShiftKeyDown() && stack.isEmpty()) {
             if (!level().isClientSide) { entityData.set(SITTING, !isSitting()); navigation.stop(); }
-        } else if (!isBaby() && isSaddled() && !isVehicle()) {
-            if (!level().isClientSide) { entityData.set(SITTING, false); player.startRiding(this); }
-        } else return InteractionResult.PASS;
-        return InteractionResult.sidedSuccess(level().isClientSide);
+        } else return false;
+        return true;
     }
     @Override public void handleEntityEvent(byte event) {
         if (event == 7) for (int i = 0; i < 7; i++) level().addParticle(ParticleTypes.HEART,
@@ -415,33 +434,39 @@ public class LunarBurrowerEntity extends Monster {
         int age = getStateTicks();
         BurrowerState state = getBurrowerState();
         if (state == BurrowerState.EAT) { tickEat(age); return; }
-        if (state == BurrowerState.BITE) {
-            if (age >= 12 && !biteApplied) {
-                biteApplied = true;
-                LivingEntity target = attackVictim;
-                if (eligible(target) && distanceToSqr(target) <= 12.25 && isInFront(target) && getSensing().hasLineOfSight(target)) {
-                    super.doHurtTarget(target);
-                    playSound(SoundEvents.RAVAGER_ATTACK, 0.7F, 0.7F);
-                }
-            }
-            if (age >= state.clipTicks) { attackCooldown = 50; begin(BurrowerState.CHASE); }
-            return;
-        }
-        if (state == BurrowerState.BURP) {
-            if (age == 15) {
-                playSound(SoundEvents.PLAYER_BURP, 1.1F, 0.6F);
-                Vec3 mouth = position().add(getLookAngle().multiply(0.9, 0, 0.9)).add(0, 0.65, 0);
-                ((ServerLevel)level()).sendParticles(ParticleTypes.CLOUD, mouth.x, mouth.y, mouth.z, 3, 0.12, 0.1, 0.12, 0.02);
-            }
-            if (age >= state.clipTicks) begin(BurrowerState.IDLE);
-            return;
-        }
+        if (state == BurrowerState.BITE) { tickBite(age, state); return; }
+        if (state == BurrowerState.BURP) { tickBurp(age, state); return; }
         if (state == BurrowerState.DIG) { tickDig(age); return; }
         if (state == BurrowerState.DANCE) {
             if (getTarget() == null && age < state.clipTicks * 3) return;
             danceCooldown = 2400;
             begin(BurrowerState.IDLE);
         }
+        tickTerritorialBehavior(age, state);
+    }
+
+    private void tickBite(int age, BurrowerState state) {
+        if (age >= 12 && !biteApplied) {
+            biteApplied = true;
+            LivingEntity target = attackVictim;
+            if (eligible(target) && distanceToSqr(target) <= 12.25 && isInFront(target) && getSensing().hasLineOfSight(target)) {
+                super.doHurtTarget(target);
+                playSound(SoundEvents.RAVAGER_ATTACK, 0.7F, 0.7F);
+            }
+        }
+        if (age >= state.clipTicks) { attackCooldown = 50; begin(BurrowerState.CHASE); }
+    }
+
+    private void tickBurp(int age, BurrowerState state) {
+        if (age == 15) {
+            playSound(SoundEvents.PLAYER_BURP, 1.1F, 0.6F);
+            Vec3 mouth = position().add(getLookAngle().multiply(0.9, 0, 0.9)).add(0, 0.65, 0);
+            ((ServerLevel)level()).sendParticles(ParticleTypes.CLOUD, mouth.x, mouth.y, mouth.z, 3, 0.12, 0.1, 0.12, 0.02);
+        }
+        if (age >= state.clipTicks) begin(BurrowerState.IDLE);
+    }
+
+    private void tickTerritorialBehavior(int age, BurrowerState state) {
         LivingEntity target = getTarget();
         if (!eligible(target) || target.level() != level()
                 || target.distanceToSqr(Vec3.atCenterOf(home)) > 196 || (angerTicks == 0 && state == BurrowerState.CHASE)) {
@@ -460,6 +485,10 @@ public class LunarBurrowerEntity extends Monster {
             moveToward(target.position(), 1.0);
             return;
         }
+        tickPatrol(state);
+    }
+
+    private void tickPatrol(BurrowerState state) {
         Player nearby = level().getEntitiesOfClass(Player.class, getBoundingBox().inflate(9), LunarBurrowerEntity::eligible)
                 .stream().filter(p -> p.distanceToSqr(Vec3.atCenterOf(home)) < 144 && getSensing().hasLineOfSight(p))
                 .min(Comparator.comparingDouble(this::distanceToSqr)).orElse(null);

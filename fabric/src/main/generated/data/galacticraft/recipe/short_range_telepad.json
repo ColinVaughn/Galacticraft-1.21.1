@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "W": {
+      "item": "galacticraft:beam_core"
+    },
+    "X": {
+      "tag": "c:plates/titanium"
+    },
+    "Y": {
+      "item": "minecraft:redstone"
+    },
+    "Z": {
+      "item": "minecraft:ender_pearl"
+    }
+  },
+  "pattern": [
+    "XWX",
+    "ZYZ",
+    "XXX"
+  ],
+  "result": {
+    "count": 1,
+    "id": "galacticraft:short_range_telepad"
+  }
+}

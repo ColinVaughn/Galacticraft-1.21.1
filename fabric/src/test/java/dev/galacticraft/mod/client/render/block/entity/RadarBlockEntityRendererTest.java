@@ -1,7 +1,6 @@
 package dev.galacticraft.mod.client.render.block.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
 import net.minecraft.core.Direction;
 import org.joml.Vector3f;
 import org.junit.jupiter.api.Test;

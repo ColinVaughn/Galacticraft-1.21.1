@@ -25,6 +25,9 @@ package dev.galacticraft.mod.machine.workbench;
 
 import dev.galacticraft.api.accessor.ResearchAccessor;
 import dev.galacticraft.mod.Constant;
+import dev.galacticraft.mod.content.GCRocketParts;
+import dev.galacticraft.mod.content.item.GCItems;
+import net.minecraft.resources.ResourceKey;
 import dev.galacticraft.mod.recipe.GCRecipes;
 import dev.galacticraft.mod.recipe.WorkbenchRecipe;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -49,6 +52,8 @@ import java.util.function.Predicate;
  * without a dedicated sync packet.
  */
 public final class WorkbenchPages {
+    public static final ResourceLocation ROCKET_ID = Constant.id("rocket/modular");
+
     /** The terminal "add new schematic" page, which is the only way to unlock any of the others. */
     public static final ResourceLocation ADD_SCHEMATIC_ID = Constant.id("add_schematic");
     public static final WorkbenchPage ADD_SCHEMATIC = new WorkbenchPage(ADD_SCHEMATIC_ID, Integer.MAX_VALUE, Optional.empty());
@@ -103,8 +108,18 @@ public final class WorkbenchPages {
         return null;
     }
 
-    /** The recipe whose page {@code schematicItem} unlocks, or null if no page claims it. */
+    /** Tier schematics unlock module research and return to the common rocket assembly page. */
+    public static List<ResourceKey<?>> rocketPartsUnlockedBy(Item schematicItem) {
+        if (schematicItem == GCItems.TIER_2_ROCKET_SCHEMATIC)
+            return List.of(GCRocketParts.TIER_2_CONE, GCRocketParts.TIER_2_BODY, GCRocketParts.TIER_2_FIN, GCRocketParts.TIER_2_ENGINE);
+        if (schematicItem == GCItems.TIER_3_ROCKET_SCHEMATIC)
+            return List.of(GCRocketParts.TIER_3_CONE, GCRocketParts.TIER_3_BODY, GCRocketParts.TIER_3_FIN, GCRocketParts.TIER_3_ENGINE);
+        return List.of();
+    }
+
+    /** The assembly page reached by a schematic, or null if no page or module research uses it. */
     public static @Nullable RecipeHolder<? extends WorkbenchRecipe> pageUnlockedBy(Level level, Item schematicItem) {
+        if (!rocketPartsUnlockedBy(schematicItem).isEmpty()) return recipe(level, ROCKET_ID);
         for (RecipeHolder<? extends WorkbenchRecipe> holder : recipes(level)) {
             if (holder.value().schematic().filter(item -> item == schematicItem).isPresent()) return holder;
         }

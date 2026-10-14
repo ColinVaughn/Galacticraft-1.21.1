@@ -21,6 +21,7 @@ import dev.galacticraft.mod.network.c2s.LaunchControllerSettingsPayload;
 import dev.galacticraft.mod.screen.LaunchControllerMenu;
 import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.AfterBatch;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -34,6 +35,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.BlockHitResult;
 
 import static dev.galacticraft.mod.content.block.entity.machine.LaunchControllerBlockEntity.*;
 
@@ -55,6 +57,26 @@ public class LaunchControllerTestSuite implements GalacticraftGameTest {
             if (level.getBlockEntity(controller.getBlockPos()) == controller) level.removeBlock(controller.getBlockPos(), false);
         }
         CONTROLLERS.clear();
+    }
+
+    @GameTest(batch = BATCH, template = EMPTY_STRUCTURE)
+    public void unpoweredControllerOpensItsMenuWithoutAPad(GameTestHelper context) {
+        ServerLevel level = context.getLevel();
+        BlockPos pos = context.absolutePos(new BlockPos(2, 1, 2));
+        level.setBlockAndUpdate(pos, GCBlocks.LAUNCH_CONTROLLER.defaultBlockState());
+        LaunchControllerBlockEntity controller = (LaunchControllerBlockEntity) level.getBlockEntity(pos);
+        CONTROLLERS.add(controller);
+        ServerPlayer player = context.makeMockServerPlayerInLevel();
+        player.moveTo(pos.getCenter());
+        context.assertTrue(controller.getConnectedPad() == null && controller.energyStorage().getAmount() == 0,
+                "Controller should start without a pad or power");
+        var result = level.getBlockState(pos).useWithoutItem(level, player,
+                new BlockHitResult(pos.getCenter(), Direction.UP, pos, false));
+        context.assertTrue(result.consumesAction() && player.containerMenu instanceof LaunchControllerMenu,
+                "Right-clicking an unpowered Launch Controller did not open its menu");
+        context.assertTrue(controller.canEdit(player), "First interaction did not claim the controller");
+        player.closeContainer();
+        context.succeed();
     }
 
     @GameTest(batch = BATCH, template = EMPTY_STRUCTURE)
@@ -183,7 +205,9 @@ public class LaunchControllerTestSuite implements GalacticraftGameTest {
         source.configure(frequency, destination, 0, ENABLED | KEEP_PAD);
         target.configure(destination, frequency, 0, ENABLED | KEEP_PAD);
         CargoRocketEntity rocket = cargo(level, source.getConnectedPad());
-        rocket.getVehicleInventory().setItem(26, new ItemStack(Items.DIAMOND, 7));
+        for (int slot = 0; slot < 27; slot++) {
+            rocket.getVehicleInventory().setItem(slot, new ItemStack(Items.DIAMOND, 64));
+        }
         context.assertTrue(rocket.ignite(), "Cargo could not ignite");
         rocket.setPos(rocket.getX(), rocket.getY() + 301, rocket.getZ());
         rocket.tick();
@@ -193,7 +217,9 @@ public class LaunchControllerTestSuite implements GalacticraftGameTest {
         context.assertTrue(arrived != rocket && !arrived.isRemoved() && rocket.isRemoved()
                 && arrived.level() == nether && arrived.getLandingPad() == pad
                 && arrived.getFlightState() == CargoRocketEntity.FlightState.IDLE, "Dock points at a removed or flying rocket");
-        context.assertTrue(arrived.getVehicleInventory().getItem(26).getCount() == 7, "Cross-dimension cargo was lost");
+        context.assertTrue(arrived.getVehicleInventory().getItem(26).getCount() == 64
+                && arrived.getCargoLoad() == 1 && arrived.getBbHeight() == 6,
+                "Cross-dimension cargo or full fairing size was lost");
         long energyAtArrival = target.energyStorage().getAmount();
         // Also cross vanilla's 300-tick cutoff for a dimension with no players in it.
         context.runAfterDelay(350, () -> context.succeedWhen(() -> {
@@ -248,7 +274,7 @@ public class LaunchControllerTestSuite implements GalacticraftGameTest {
     }
 
     private static LaunchControllerBlockEntity controller(ServerLevel level, BlockPos center) {
-        for (BlockPos pos : BlockPos.betweenClosed(center.offset(-1, 0, -1), center.offset(1, 5, 1))) {
+        for (BlockPos pos : BlockPos.betweenClosed(center.offset(-1, 0, -1), center.offset(1, 7, 1))) {
             level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
         }
         for (int x = -1; x <= 1; x++) {

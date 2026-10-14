@@ -87,6 +87,12 @@ public final class GCMachineStatuses {
     public static final MachineStatus NO_FOOD = MachineStatus.create(Translations.MachineStatus.NO_FOOD, ChatFormatting.RED, MachineStatus.Type.MISSING_ITEMS);
     public static final MachineStatus MISSING_EMPTY_CAN = MachineStatus.create(Translations.MachineStatus.MISSING_EMPTY_CAN, ChatFormatting.RED, MachineStatus.Type.MISSING_ITEMS);
 
+    public static final MachineStatus LIQUEFYING = MachineStatus.create("ui.galacticraft.machine.status.liquefying", ChatFormatting.GREEN, MachineStatus.Type.WORKING);
+    public static final MachineStatus SYNTHESIZING = MachineStatus.create("ui.galacticraft.machine.status.synthesizing", ChatFormatting.GREEN, MachineStatus.Type.WORKING);
+    public static final MachineStatus MISSING_GAS = MachineStatus.create("ui.galacticraft.machine.status.missing_gas", ChatFormatting.RED, MachineStatus.Type.MISSING_RESOURCE);
+    public static final MachineStatus MISSING_CARBON = MachineStatus.create("ui.galacticraft.machine.status.missing_carbon", ChatFormatting.RED, MachineStatus.Type.MISSING_RESOURCE);
+    public static final MachineStatus INVALID_SPOUT = MachineStatus.create("ui.galacticraft.machine.status.invalid_spout", ChatFormatting.RED, MachineStatus.Type.MISSING_RESOURCE);
+
     public static void register() {
     }
 }

@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "galacticraft:block/gas_liquefier",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "galacticraft:block/gas_liquefier"
+    },
+    "facing=south": {
+      "model": "galacticraft:block/gas_liquefier",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "galacticraft:block/gas_liquefier",
+      "y": 270
+    }
+  }
+}

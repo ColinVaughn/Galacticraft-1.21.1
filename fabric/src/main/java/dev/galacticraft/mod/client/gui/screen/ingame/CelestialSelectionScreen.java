@@ -441,22 +441,7 @@ public class CelestialSelectionScreen extends CelestialScreen {
 
         // Top yellow button e.g. Sol
         if (x >= xPos && x <= xPos + 93 && y >= yPos && y <= yPos + 12 && this.selectedParent != null) {
-            if (this.selectedBody == null) {
-                this.preSelectZoom = this.zoom;
-                this.preSelectPosition = this.position;
-            }
-
-            EnumSelection selectionCountOld = this.selectionState;
-            if (this.isSelected()) {
-                this.unselectCelestialBody();
-            }
-            if (selectionCountOld == EnumSelection.ZOOMED) {
-                this.selectionState = EnumSelection.SELECTED;
-            }
-
-            this.selectedBody = this.selectedParent;
-            this.ticksSinceSelectionF = 0;
-            this.selectionState = EnumSelection.values()[this.selectionState.ordinal() + 1];
+            selectParentFromList();
             if (this.isZoomed() && !planetZoomedMoon) {
                 this.ticksSinceMenuOpenF = 0;
             }
@@ -468,54 +453,64 @@ public class CelestialSelectionScreen extends CelestialScreen {
         // First blue button - normally the Selected Body (but it's the parent planet if this is a moon)
         if (x >= xPos && x <= xPos + 93 && y >= yPos && y <= yPos + 12) {
             if (planetZoomedMoon) {
-                if (this.selectedBody == null) {
-                    this.preSelectZoom = this.zoom;
-                    this.preSelectPosition = this.position;
-                }
-
-                EnumSelection selectionCountOld = this.selectionState;
-                if (this.isSelected()) {
-                    this.unselectCelestialBody();
-                }
-                if (selectionCountOld == EnumSelection.ZOOMED) {
-                    this.selectionState = EnumSelection.SELECTED;
-                }
-
-                this.selectedBody = this.selectedParent;
-                this.ticksSinceSelectionF = 0;
-                this.selectionState = EnumSelection.values()[this.selectionState.ordinal() + 1];
+                selectParentFromList();
             }
             clickHandled = true;
         }
 
         if (!clickHandled) {
-            List<CelestialBody<?, ?>> children = this.getChildren(this.isZoomed() && !(this.isPlanet(this.selectedParent)) ? this.selectedBody : this.selectedParent);
+            clickHandled = handleChildListClick(x, y);
+        }
+        return clickHandled;
+    }
 
-            yPos = LHS + 50;
-            for (CelestialBody<?, ?> child : children) {
-                clickHandled = this.testClicked(child, child.equals(this.selectedBody) ? 5 : 0, yPos, x, y, false);
-                yPos += 14;
+    private void selectParentFromList() {
+        if (this.selectedBody == null) {
+            this.preSelectZoom = this.zoom;
+            this.preSelectPosition = this.position;
+        }
 
-                if (!clickHandled && !this.isZoomed() && child.equals(this.selectedBody)) {
-                    List<CelestialBody<?, ?>> grandchildren = this.getChildren(child);
-                    int gOffset = 0;
-                    for (CelestialBody<?, ?> grandchild : grandchildren) {
-                        if (gOffset + 14 > this.animateGrandchildren) {
-                            break;
-                        }
-                        clickHandled = this.testClicked(grandchild, 10, yPos, x, y, true);
-                        yPos += 14;
-                        gOffset += 14;
-                        if (clickHandled) {
-                            break;
-                        }
+        EnumSelection selectionCountOld = this.selectionState;
+        if (this.isSelected()) {
+            this.unselectCelestialBody();
+        }
+        if (selectionCountOld == EnumSelection.ZOOMED) {
+            this.selectionState = EnumSelection.SELECTED;
+        }
+
+        this.selectedBody = this.selectedParent;
+        this.ticksSinceSelectionF = 0;
+        this.selectionState = EnumSelection.values()[this.selectionState.ordinal() + 1];
+    }
+
+    private boolean handleChildListClick(double x, double y) {
+        boolean clickHandled = false;
+        List<CelestialBody<?, ?>> children = this.getChildren(this.isZoomed() && !(this.isPlanet(this.selectedParent)) ? this.selectedBody : this.selectedParent);
+
+        int yPos = LHS + 50;
+        for (CelestialBody<?, ?> child : children) {
+            clickHandled = this.testClicked(child, child.equals(this.selectedBody) ? 5 : 0, yPos, x, y, false);
+            yPos += 14;
+
+            if (!clickHandled && !this.isZoomed() && child.equals(this.selectedBody)) {
+                List<CelestialBody<?, ?>> grandchildren = this.getChildren(child);
+                int gOffset = 0;
+                for (CelestialBody<?, ?> grandchild : grandchildren) {
+                    if (gOffset + 14 > this.animateGrandchildren) {
+                        break;
                     }
-                    yPos += this.animateGrandchildren - gOffset;
+                    clickHandled = this.testClicked(grandchild, 10, yPos, x, y, true);
+                    yPos += 14;
+                    gOffset += 14;
+                    if (clickHandled) {
+                        break;
+                    }
                 }
+                yPos += this.animateGrandchildren - gOffset;
+            }
 
-                if (clickHandled) {
-                    break;
-                }
+            if (clickHandled) {
+                break;
             }
         }
         return clickHandled;
@@ -583,157 +578,175 @@ public class CelestialSelectionScreen extends CelestialScreen {
 
     public void drawButtons(GuiGraphics gui, int mouseX, int mouseY) {
         boolean handledSliderPos = false;
-        Component text;
-
         try (Graphics graphics = Graphics.managed(gui, this.font)) {
-            try (Graphics.TextureColor texture = graphics.textureColor(CELESTIAL_SELECTION)) {
-                // Catalog:
-                texture.blit(LHS, LHS, 74, 11, CATALOG_U, CATALOG_V, CATALOG_WIDTH, CATALOG_HEIGHT, BLUE);
-                texture.drawCenteredText(Component.translatable(Translations.CelestialSelection.CATALOG), LHS + 40, LHS + 1, WHITE);
-
-                // Catalog wedge:
-                texture.blit(LHS + 4, LHS, 83, 12, CATALOG_BACKING_U, CATALOG_BACKING_V, CATALOG_BACKING_WIDTH, CATALOG_BACKING_HEIGHT, BLUE);
-
-                int scale = (int) Math.min(95, this.ticksSinceMenuOpenF * 12.0F);
-                boolean planetZoomedNotMoon = this.isZoomed() && !(this.isGrandchildBody(this.selectedParent));
-
-                // Parent frame:
-                texture.blit(LHS - 95 + scale, LHS + 12, 95, 41, PARENT_LABEL_U, PARENT_LABEL_V, PARENT_LABEL_WIDTH, PARENT_LABEL_HEIGHT, BLUE);
-                texture.drawText(planetZoomedNotMoon ? this.selectedBody.name() : this.parentName(), LHS + 9 - 95 + scale, LHS + 34, WHITE, false);
-
-                // Grandparent frame:
-                texture.blit(LHS + 2 - 95 + scale, LHS + 14, 93, 17, GRANDPARENT_LABEL_U, GRANDPARENT_LABEL_V, GRANDPARENT_LABEL_WIDTH, GRANDPARENT_LABEL_HEIGHT, YELLOW);
-                if (this.isZoomed() && this.isStar(this.selectedBody)) {
-                    text = this.grandparentName();
-                } else {
-                    text = planetZoomedNotMoon ? this.parentName() : this.grandparentName();
-                }
-                texture.drawText(text, LHS + 7 - 95 + scale, LHS + 16, GREY3, false);
-
-                List<CelestialBody<?, ?>> children = this.getChildren(this.isZoomed() ? this.selectedBody : this.getFocusedSystem());
-                this.drawChildButtons(texture, children, 0, 0, true);
-
-                if (this.mapMode) {
-                    texture.blit(RHS - 74, LHS, 74, 11, TOP_RIGHT_ACTION_BUTTON_U + TOP_RIGHT_ACTION_BUTTON_WIDTH, TOP_RIGHT_ACTION_BUTTON_V, -TOP_RIGHT_ACTION_BUTTON_WIDTH, TOP_RIGHT_ACTION_BUTTON_HEIGHT, RED);
-                    texture.drawCenteredText(Component.translatable(Translations.CelestialSelection.EXIT), RHS - 40, LHS + 1, WHITE, false);
-                }
-            }
-
-
+            this.drawCatalog(graphics);
             if (this.selectedBody != null) {
-                // Right-hand bar (basic selectionState info)
-
-                if (this.isSatellite(this.selectedBody)) {
-                    this.drawSpaceStationDetails(graphics);
-                } else {
-                    try (Graphics.TextureColor texture = graphics.textureColor(CELESTIAL_SELECTION)) {
-                        texture.blit(RHS - SIDE_PANEL_WIDTH, LHS, SIDE_PANEL_WIDTH, SIDE_PANEL_HEIGHT, SIDE_PANEL_U, SIDE_PANEL_V, BLUE);
-                    }
-                }
-
-                this.drawSpaceStationCreationPrompt(gui, graphics, mouseX, mouseY);
-
+                this.drawSelectedBodyDetails(gui, graphics, mouseX, mouseY);
                 try (Graphics.TextureColor texture = graphics.textureColor(CELESTIAL_SELECTION)) {
-                    // Top bar title:
-                    int color = BLUE;
-                    if (this.isSatellite(this.selectedBody)) {
-                        if (this.selectedStationOwner.isEmpty() || !this.selectedStationOwner.equalsIgnoreCase(this.minecraft.player.getName().getString())) {
-                            color = RED;
-                        } else {
-                            color = GREEN;
-                        }
-                    }
-                    texture.blit(this.width / 2 - 47, LHS, 94, 11, TOPBAR_U, TOPBAR_V, TOPBAR_WIDTH, TOPBAR_HEIGHT, color);
-
-                    if (this.selectedBody.type() instanceof Tiered tiered && tiered.accessWeight(this.selectedBody.config()) >= 0 && !this.isSatellite(this.selectedBody)) {
-                        boolean canReach;
-                        if (this.data != null && !this.data.canTravel(this.manager, this.fromBody, this.selectedBody)) {
-                            canReach = false;
-                            color = RED;
-                        } else {
-                            canReach = true;
-                            color = GREEN;
-                        }
-                        texture.blit(this.width / 2 - 30, LHS + 11, 30, 11, TOPBAR_U, TOPBAR_V, 30, TOPBAR_HEIGHT, color);
-                        texture.blit(this.width / 2, LHS + 11, 30, 11, TOPBAR_U + TOPBAR_WIDTH - 30, TOPBAR_V, 30, TOPBAR_HEIGHT, color);
-                        text = Component.translatable(Translations.CelestialSelection.TIER, tiered.accessWeight(this.selectedBody.config()) == -1 ? "?" : tiered.accessWeight(this.selectedBody.config()));
-                        texture.drawCenteredText(text, this.width / 2, LHS + 13, canReach ? GREY4 : RED3, false);
-                    }
-
-                    text = this.selectedBody.name();
-                    if (this.isSatellite(this.selectedBody)) {
-                        text = Component.translatable(Translations.CelestialSelection.RENAME);
-                    }
-
-                    texture.drawCenteredText(text, this.width / 2, LHS + 2, WHITE, false);
-
-                    if (!this.mapMode) {
-                        if (this.data != null && !this.data.canTravel(this.manager, this.fromBody, this.selectedBody) || !(this.selectedBody.type() instanceof Landable) || this.isSatellite(this.selectedBody) && !((Satellite) this.selectedBody.type()).ownershipData(this.selectedBody.config()).canAccess(this.minecraft.player)) {
-                            color = RED;
-                        } else {
-                            color = GREEN;
-                        }
-
-                        texture.blit(RHS - 74, LHS, 74, 11, TOP_RIGHT_ACTION_BUTTON_U + TOP_RIGHT_ACTION_BUTTON_WIDTH, TOP_RIGHT_ACTION_BUTTON_V, -TOP_RIGHT_ACTION_BUTTON_WIDTH, TOP_RIGHT_ACTION_BUTTON_HEIGHT, color);
-                        text = Component.translatable(Translations.CelestialSelection.LAUNCH);
-                        texture.drawCenteredText(text, RHS - 40, LHS + 2, WHITE, false);
-                    }
-
-                    if (this.selectionState == EnumSelection.SELECTED && !this.isSatellite(this.selectedBody)) {
-                        handledSliderPos = true;
-
-                        int sliderPos = this.zoomTooltipPos;
-                        if (this.zoomTooltipPos != 38) {
-                            sliderPos = Math.min((int) this.ticksSinceSelectionF * 2, 38);
-                            this.zoomTooltipPos = sliderPos;
-                        }
-
-                        texture.blit(RHS - 182, this.height - this.borderSize - this.borderEdgeSize - sliderPos, 83, 38, ZOOM_INFO_TAB_U + ZOOM_INFO_TAB_WIDTH, ZOOM_INFO_TAB_V, -ZOOM_INFO_TAB_WIDTH, ZOOM_INFO_TAB_HEIGHT, BLUE);
-
-                        boolean flag0 = !this.getVisibleSatellitesForCelestialBody(this.selectedBody).isEmpty();
-                        boolean flag1 = this.isPlanet(this.selectedBody) && !this.getChildren(this.selectedBody).isEmpty();
-                        if (flag0 && flag1) {
-                            texture.drawSplitText(Component.translatable(Translations.CelestialSelection.CLICK_AGAIN_MOONS_AND_SATELLITES), RHS - 182 + 41, this.height - this.borderSize - this.borderEdgeSize + 2 - sliderPos, 79, GREY5);
-                        } else if (!flag0 && flag1) {
-                            texture.drawSplitText(Component.translatable(Translations.CelestialSelection.CLICK_AGAIN_MOONS), RHS - 182 + 41, this.height - this.borderSize - this.borderEdgeSize + 6 - sliderPos, 79, GREY5);
-                        } else if (flag0) {
-                            texture.drawSplitText(Component.translatable(Translations.CelestialSelection.CLICK_AGAIN_SATELLITES), RHS - 182 + 41, this.height - this.borderSize - this.borderEdgeSize + 6 - sliderPos, 79, GREY5);
-                        } else {
-                            texture.drawSplitText(Component.translatable(Translations.CelestialSelection.CLICK_AGAIN), RHS - 182 + 41, this.height - this.borderSize - this.borderEdgeSize + 11 - sliderPos, 79, GREY5);
-                        }
-                    }
+                    this.drawSelectionTitle(texture);
+                    this.drawLaunchButton(texture);
+                    handledSliderPos = this.drawZoomTooltip(texture);
                 }
-
                 if (this.isSatellite(this.selectedBody) && renamingSpaceStation) {
-                    try (Graphics.TextureColor texture = graphics.textureColor(CELESTIAL_SELECTION_1, 512, 512)) {
-                        texture.blit(this.width / 2 - 90, this.height / 2 - 38, 179, 67, 159, 0, 179, 67, BLUE);
-                        texture.blit(this.width / 2 - 90 + 4, this.height / 2 - 38 + 2, 171, 10, 159, 92, 171, 10, BLUE);
-                        texture.blit(this.width / 2 - 90 + 8, this.height / 2 - 38 + 18, 161, 13, 159, 67, 161, 13, BLUE);
-                        texture.blit(this.width / 2 - 90 + 17, this.height / 2 - 38 + 59, 72, 12, 159 + 72, 80, -72, 12, BLUE);
-                        texture.blit(this.width / 2, this.height / 2 - 38 + 59, 72, 12, 159, 80, 72, 12, BLUE);
-                        texture.drawCenteredText(Component.translatable(Translations.CelestialSelection.ASSIGN_NAME), this.width / 2, this.height / 2 - 35, WHITE);
-                        texture.drawCenteredText(Component.translatable(Translations.CelestialSelection.APPLY), this.width / 2 - 36, this.height / 2 + 23, WHITE);
-                        texture.drawCenteredText(Component.translatable(Translations.CelestialSelection.CANCEL), this.width / 2 + 36, this.height / 2 + 23, WHITE);
-
-                        if (this.renamingString == null) {
-                            CelestialBody<SatelliteConfig, SatelliteType> selectedSatellite = (CelestialBody<SatelliteConfig, SatelliteType>) this.selectedBody;
-                            String playerName = this.minecraft.player.getName().getString();
-                            this.renamingString = selectedSatellite.type().getCustomName(selectedSatellite.config());
-                        }
-
-                        text = Component.literal(this.renamingString);
-                        Component underscore = text.copy().append("_");
-                        if ((int) (this.ticksSinceMenuOpenF / 10) % 2 == 0) {
-                            text = underscore;
-                        }
-                        texture.drawText(text, this.width / 2 - this.font.width(underscore) / 2, this.height / 2 - 17, WHITE, false);
-                    }
+                    this.drawStationRenameDialog(graphics);
                 }
             }
+            if (!handledSliderPos) this.zoomTooltipPos = 0;
+        }
+    }
 
-            if (!handledSliderPos) {
-                this.zoomTooltipPos = 0;
+    private void drawCatalog(Graphics graphics) {
+        Component text;
+        try (Graphics.TextureColor texture = graphics.textureColor(CELESTIAL_SELECTION)) {
+            // Catalog:
+            texture.blit(LHS, LHS, 74, 11, CATALOG_U, CATALOG_V, CATALOG_WIDTH, CATALOG_HEIGHT, BLUE);
+            texture.drawCenteredText(Component.translatable(Translations.CelestialSelection.CATALOG), LHS + 40, LHS + 1, WHITE);
+
+            // Catalog wedge:
+            texture.blit(LHS + 4, LHS, 83, 12, CATALOG_BACKING_U, CATALOG_BACKING_V, CATALOG_BACKING_WIDTH, CATALOG_BACKING_HEIGHT, BLUE);
+
+            int scale = (int) Math.min(95, this.ticksSinceMenuOpenF * 12.0F);
+            boolean planetZoomedNotMoon = this.isZoomed() && !(this.isGrandchildBody(this.selectedParent));
+
+            // Parent frame:
+            texture.blit(LHS - 95 + scale, LHS + 12, 95, 41, PARENT_LABEL_U, PARENT_LABEL_V, PARENT_LABEL_WIDTH, PARENT_LABEL_HEIGHT, BLUE);
+            texture.drawText(planetZoomedNotMoon ? this.selectedBody.name() : this.parentName(), LHS + 9 - 95 + scale, LHS + 34, WHITE, false);
+
+            // Grandparent frame:
+            texture.blit(LHS + 2 - 95 + scale, LHS + 14, 93, 17, GRANDPARENT_LABEL_U, GRANDPARENT_LABEL_V, GRANDPARENT_LABEL_WIDTH, GRANDPARENT_LABEL_HEIGHT, YELLOW);
+            if (this.isZoomed() && this.isStar(this.selectedBody)) {
+                text = this.grandparentName();
+            } else {
+                text = planetZoomedNotMoon ? this.parentName() : this.grandparentName();
             }
+            texture.drawText(text, LHS + 7 - 95 + scale, LHS + 16, GREY3, false);
+
+            List<CelestialBody<?, ?>> children = this.getChildren(this.isZoomed() ? this.selectedBody : this.getFocusedSystem());
+            this.drawChildButtons(texture, children, 0, 0, true);
+
+            if (this.mapMode) {
+                texture.blit(RHS - 74, LHS, 74, 11, TOP_RIGHT_ACTION_BUTTON_U + TOP_RIGHT_ACTION_BUTTON_WIDTH, TOP_RIGHT_ACTION_BUTTON_V, -TOP_RIGHT_ACTION_BUTTON_WIDTH, TOP_RIGHT_ACTION_BUTTON_HEIGHT, RED);
+                texture.drawCenteredText(Component.translatable(Translations.CelestialSelection.EXIT), RHS - 40, LHS + 1, WHITE, false);
+            }
+        }
+    }
+
+    private void drawSelectedBodyDetails(GuiGraphics gui, Graphics graphics, int mouseX, int mouseY) {
+        // Right-hand bar (basic selectionState info)
+
+        if (this.isSatellite(this.selectedBody)) {
+            this.drawSpaceStationDetails(graphics);
+        } else {
+            try (Graphics.TextureColor texture = graphics.textureColor(CELESTIAL_SELECTION)) {
+                texture.blit(RHS - SIDE_PANEL_WIDTH, LHS, SIDE_PANEL_WIDTH, SIDE_PANEL_HEIGHT, SIDE_PANEL_U, SIDE_PANEL_V, BLUE);
+            }
+        }
+
+        this.drawSpaceStationCreationPrompt(gui, graphics, mouseX, mouseY);
+    }
+
+    private void drawSelectionTitle(Graphics.TextureColor texture) {
+        Component text;
+        // Top bar title:
+        int color = BLUE;
+        if (this.isSatellite(this.selectedBody)) {
+            if (this.selectedStationOwner.isEmpty() || !this.selectedStationOwner.equalsIgnoreCase(this.minecraft.player.getName().getString())) {
+                color = RED;
+            } else {
+                color = GREEN;
+            }
+        }
+        texture.blit(this.width / 2 - 47, LHS, 94, 11, TOPBAR_U, TOPBAR_V, TOPBAR_WIDTH, TOPBAR_HEIGHT, color);
+
+        if (this.selectedBody.type() instanceof Tiered tiered && tiered.accessWeight(this.selectedBody.config()) >= 0 && !this.isSatellite(this.selectedBody)) {
+            boolean canReach;
+            if (this.data != null && !this.data.canTravel(this.manager, this.fromBody, this.selectedBody)) {
+                canReach = false;
+                color = RED;
+            } else {
+                canReach = true;
+                color = GREEN;
+            }
+            texture.blit(this.width / 2 - 30, LHS + 11, 30, 11, TOPBAR_U, TOPBAR_V, 30, TOPBAR_HEIGHT, color);
+            texture.blit(this.width / 2, LHS + 11, 30, 11, TOPBAR_U + TOPBAR_WIDTH - 30, TOPBAR_V, 30, TOPBAR_HEIGHT, color);
+            text = Component.translatable(Translations.CelestialSelection.TIER, tiered.accessWeight(this.selectedBody.config()) == -1 ? "?" : tiered.accessWeight(this.selectedBody.config()));
+            texture.drawCenteredText(text, this.width / 2, LHS + 13, canReach ? GREY4 : RED3, false);
+        }
+
+        text = this.selectedBody.name();
+        if (this.isSatellite(this.selectedBody)) {
+            text = Component.translatable(Translations.CelestialSelection.RENAME);
+        }
+
+        texture.drawCenteredText(text, this.width / 2, LHS + 2, WHITE, false);
+    }
+
+    private void drawLaunchButton(Graphics.TextureColor texture) {
+        Component text;
+        int color;
+        if (!this.mapMode) {
+            if (this.data != null && !this.data.canTravel(this.manager, this.fromBody, this.selectedBody) || !(this.selectedBody.type() instanceof Landable) || this.isSatellite(this.selectedBody) && !((Satellite) this.selectedBody.type()).ownershipData(this.selectedBody.config()).canAccess(this.minecraft.player)) {
+                color = RED;
+            } else {
+                color = GREEN;
+            }
+
+            texture.blit(RHS - 74, LHS, 74, 11, TOP_RIGHT_ACTION_BUTTON_U + TOP_RIGHT_ACTION_BUTTON_WIDTH, TOP_RIGHT_ACTION_BUTTON_V, -TOP_RIGHT_ACTION_BUTTON_WIDTH, TOP_RIGHT_ACTION_BUTTON_HEIGHT, color);
+            text = Component.translatable(Translations.CelestialSelection.LAUNCH);
+            texture.drawCenteredText(text, RHS - 40, LHS + 2, WHITE, false);
+        }
+    }
+
+    private boolean drawZoomTooltip(Graphics.TextureColor texture) {
+        if (this.selectionState != EnumSelection.SELECTED || this.isSatellite(this.selectedBody)) return false;
+
+        int sliderPos = this.zoomTooltipPos;
+        if (this.zoomTooltipPos != 38) {
+            sliderPos = Math.min((int) this.ticksSinceSelectionF * 2, 38);
+            this.zoomTooltipPos = sliderPos;
+        }
+
+        texture.blit(RHS - 182, this.height - this.borderSize - this.borderEdgeSize - sliderPos, 83, 38, ZOOM_INFO_TAB_U + ZOOM_INFO_TAB_WIDTH, ZOOM_INFO_TAB_V, -ZOOM_INFO_TAB_WIDTH, ZOOM_INFO_TAB_HEIGHT, BLUE);
+
+        boolean flag0 = !this.getVisibleSatellitesForCelestialBody(this.selectedBody).isEmpty();
+        boolean flag1 = this.isPlanet(this.selectedBody) && !this.getChildren(this.selectedBody).isEmpty();
+        if (flag0 && flag1) {
+            texture.drawSplitText(Component.translatable(Translations.CelestialSelection.CLICK_AGAIN_MOONS_AND_SATELLITES), RHS - 182 + 41, this.height - this.borderSize - this.borderEdgeSize + 2 - sliderPos, 79, GREY5);
+        } else if (!flag0 && flag1) {
+            texture.drawSplitText(Component.translatable(Translations.CelestialSelection.CLICK_AGAIN_MOONS), RHS - 182 + 41, this.height - this.borderSize - this.borderEdgeSize + 6 - sliderPos, 79, GREY5);
+        } else if (flag0) {
+            texture.drawSplitText(Component.translatable(Translations.CelestialSelection.CLICK_AGAIN_SATELLITES), RHS - 182 + 41, this.height - this.borderSize - this.borderEdgeSize + 6 - sliderPos, 79, GREY5);
+        } else {
+            texture.drawSplitText(Component.translatable(Translations.CelestialSelection.CLICK_AGAIN), RHS - 182 + 41, this.height - this.borderSize - this.borderEdgeSize + 11 - sliderPos, 79, GREY5);
+        }
+
+        return true;
+    }
+
+    private void drawStationRenameDialog(Graphics graphics) {
+        Component text;
+        try (Graphics.TextureColor texture = graphics.textureColor(CELESTIAL_SELECTION_1, 512, 512)) {
+            texture.blit(this.width / 2 - 90, this.height / 2 - 38, 179, 67, 159, 0, 179, 67, BLUE);
+            texture.blit(this.width / 2 - 90 + 4, this.height / 2 - 38 + 2, 171, 10, 159, 92, 171, 10, BLUE);
+            texture.blit(this.width / 2 - 90 + 8, this.height / 2 - 38 + 18, 161, 13, 159, 67, 161, 13, BLUE);
+            texture.blit(this.width / 2 - 90 + 17, this.height / 2 - 38 + 59, 72, 12, 159 + 72, 80, -72, 12, BLUE);
+            texture.blit(this.width / 2, this.height / 2 - 38 + 59, 72, 12, 159, 80, 72, 12, BLUE);
+            texture.drawCenteredText(Component.translatable(Translations.CelestialSelection.ASSIGN_NAME), this.width / 2, this.height / 2 - 35, WHITE);
+            texture.drawCenteredText(Component.translatable(Translations.CelestialSelection.APPLY), this.width / 2 - 36, this.height / 2 + 23, WHITE);
+            texture.drawCenteredText(Component.translatable(Translations.CelestialSelection.CANCEL), this.width / 2 + 36, this.height / 2 + 23, WHITE);
+
+            if (this.renamingString == null) {
+                CelestialBody<SatelliteConfig, SatelliteType> selectedSatellite = (CelestialBody<SatelliteConfig, SatelliteType>) this.selectedBody;
+                String playerName = this.minecraft.player.getName().getString();
+                this.renamingString = selectedSatellite.type().getCustomName(selectedSatellite.config());
+            }
+
+            text = Component.literal(this.renamingString);
+            Component underscore = text.copy().append("_");
+            if ((int) (this.ticksSinceMenuOpenF / 10) % 2 == 0) {
+                text = underscore;
+            }
+            texture.drawText(text, this.width / 2 - this.font.width(underscore) / 2, this.height / 2 - 17, WHITE, false);
         }
     }
 

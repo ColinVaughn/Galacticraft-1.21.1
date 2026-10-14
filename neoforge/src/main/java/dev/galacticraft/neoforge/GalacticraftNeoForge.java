@@ -373,6 +373,22 @@ public final class GalacticraftNeoForge {
 
     /** Registers Galacticraft's non-MachineLib storages through native NeoForge capabilities. */
     private void registerCapabilities(RegisterCapabilitiesEvent event) {
+        event.registerBlock(Capabilities.EnergyStorage.BLOCK, (level, pos, state, blockEntity, direction) -> {
+            var pad = dev.galacticraft.mod.content.block.special.telepad.TelepadFrameBlock.energyInput(level, pos, state, direction);
+            if (pad == null) return null;
+            var storage = new ExposedEnergyStorageNeoForge(pad.energyStorage(), pad.energyStorage().externalInsertionRate(), 0);
+            return new net.neoforged.neoforge.energy.IEnergyStorage() {
+                @Override public boolean canReceive() {
+                    return pad.hasTopEnergyInput() && dev.galacticraft.mod.content.block.special.telepad.TelepadFrameBlock
+                            .energyInput(level, pos, level.getBlockState(pos), direction) == pad;
+                }
+                @Override public int receiveEnergy(int amount, boolean simulate) { return canReceive() ? storage.receiveEnergy(amount, simulate) : 0; }
+                @Override public boolean canExtract() { return false; }
+                @Override public int extractEnergy(int amount, boolean simulate) { return 0; }
+                @Override public int getEnergyStored() { return storage.getEnergyStored(); }
+                @Override public int getMaxEnergyStored() { return storage.getMaxEnergyStored(); }
+            };
+        }, GCBlocks.TELEPAD_FRAME);
         event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, GCBlockEntityTypes.WIRE_T1,
                 (wire, direction) -> direction == null || wire.canConnect(direction) ? wire.getInsertable() : null);
         event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, GCBlockEntityTypes.WIRE_T2,

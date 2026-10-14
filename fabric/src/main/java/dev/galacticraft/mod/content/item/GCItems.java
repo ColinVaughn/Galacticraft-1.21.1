@@ -24,6 +24,8 @@ package dev.galacticraft.mod.content.item;
 
 import dev.galacticraft.api.component.GCDataComponents;
 import dev.galacticraft.api.rocket.RocketPrefabs;
+import dev.galacticraft.api.rocket.RocketData;
+import dev.galacticraft.api.rocket.part.RocketPartTypes;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.Galacticraft;
 import dev.galacticraft.mod.content.*;
@@ -290,6 +292,25 @@ public class GCItems {
     public static final Item ROCKET_ENGINE = registerGeneric(Constant.Item.ROCKET_ENGINE);
     public static final Item HEAVY_ROCKET_ENGINE = registerGeneric(Constant.Item.HEAVY_ROCKET_ENGINE);
     public static final Item ROCKET_BOOSTER = registerGeneric(Constant.Item.ROCKET_BOOSTER);
+    public static final List<RocketModuleItem> ROCKET_MODULES = registerRocketModules();
+
+    private static List<RocketModuleItem> registerRocketModules() {
+        List<RocketModuleItem> modules = new ArrayList<>();
+        var prefabs = List.of(RocketPrefabs.TIER_1, RocketPrefabs.TIER_2, RocketPrefabs.TIER_3);
+        for (var type : List.of(RocketPartTypes.CONE, RocketPartTypes.BODY, RocketPartTypes.FIN, RocketPartTypes.ENGINE)) {
+            for (int tier = 1; tier <= 3; tier++) {
+                var prefab = prefabs.get(tier - 1);
+                var data = new RocketData(type == RocketPartTypes.CONE ? prefab.cone() : java.util.Optional.empty(),
+                        type == RocketPartTypes.BODY ? prefab.body() : java.util.Optional.empty(),
+                        type == RocketPartTypes.FIN ? prefab.fin() : java.util.Optional.empty(), java.util.Optional.empty(),
+                        type == RocketPartTypes.ENGINE ? prefab.engine() : java.util.Optional.empty(),
+                        java.util.Optional.empty(), java.util.Optional.empty(), 0xFFFFFFFF);
+                String name = type == RocketPartTypes.FIN ? "fins" : type.name().toLowerCase(java.util.Locale.ROOT);
+                modules.add(ITEMS.register("tier_" + tier + "_rocket_" + name, new RocketModuleItem(type, tier, data)));
+            }
+        }
+        return List.copyOf(modules);
+    }
 
     // BUGGY PARTS
     public static final Item BUGGY_WHEEL = registerGeneric(Constant.Item.BUGGY_WHEEL);

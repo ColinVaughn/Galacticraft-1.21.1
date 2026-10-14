@@ -69,6 +69,9 @@ import dev.galacticraft.mod.network.c2s.OpenGcInventoryPayload;
 import dev.galacticraft.mod.network.c2s.OpenRocketPayload;
 import dev.galacticraft.mod.particle.GCParticleTypes;
 import dev.galacticraft.mod.screen.GCMenuTypes;
+import dev.galacticraft.mod.screen.GasProcessingMenu;
+import dev.galacticraft.mod.content.block.entity.machine.GasLiquefierBlockEntity;
+import dev.galacticraft.mod.content.block.entity.machine.MethaneSynthesizerBlockEntity;
 import dev.galacticraft.mod.screen.GCPlayerInventoryMenu;
 import dev.galacticraft.mod.screen.RocketMenu;
 import dev.galacticraft.mod.util.TextureUtils;
@@ -131,8 +134,12 @@ public class GalacticraftClient implements ClientModInitializer {
         MenuRegistry.registerScreenFactory(GCMenuTypes.BASIC_SOLAR_PANEL, BasicSolarPanelScreen::new);
         MenuRegistry.registerScreenFactory(GCMenuTypes.ADVANCED_SOLAR_PANEL, AdvancedSolarPanelScreen::new);
         MenuRegistry.registerScreenFactory(GCMenuTypes.COAL_GENERATOR, CoalGeneratorScreen::new);
+        MenuRegistry.registerScreenFactory(GCMenuTypes.SHORT_RANGE_TELEPAD, ShortRangeTelepadScreen::new);
+        MenuRegistry.registerScreenFactory(GCMenuTypes.GEOTHERMAL_GENERATOR, GeothermalGeneratorScreen::new);
         MenuRegistry.registerScreenFactory(GCMenuTypes.CIRCUIT_FABRICATOR, CircuitFabricatorScreen::new);
         MenuRegistry.registerScreenFactory(GCMenuTypes.REFINERY, RefineryScreen::new);
+        MenuRegistry.<GasProcessingMenu<GasLiquefierBlockEntity>, GasProcessingScreen<GasLiquefierBlockEntity>>registerScreenFactory(GCMenuTypes.GAS_LIQUEFIER, (menu, inventory, title) -> new GasProcessingScreen<>(menu, inventory, title));
+        MenuRegistry.<GasProcessingMenu<MethaneSynthesizerBlockEntity>, GasProcessingScreen<MethaneSynthesizerBlockEntity>>registerScreenFactory(GCMenuTypes.METHANE_SYNTHESIZER, (menu, inventory, title) -> new GasProcessingScreen<>(menu, inventory, title));
         MenuRegistry.registerScreenFactory(GCMenuTypes.ELECTRIC_FURNACE, ElectricFurnaceScreen::new);
         MenuRegistry.registerScreenFactory(GCMenuTypes.ELECTRIC_ARC_FURNACE, ElectricArcFurnaceScreen::new);
         MenuRegistry.registerScreenFactory(GCMenuTypes.COMPRESSOR, CompressorScreen::new);
@@ -157,6 +164,7 @@ public class GalacticraftClient implements ClientModInitializer {
         MenuRegistry.registerScreenFactory(GCMenuTypes.DECONSTRUCTOR, DeconstructorScreen::new);
         MenuRegistry.registerScreenFactory(GCMenuTypes.AIRLOCK_CONTROLLER_MENU, AirlockControllerScreen::new);
         MenuRegistry.registerScreenFactory(GCMenuTypes.ROCKET_WORKBENCH, RocketWorkbenchScreen::new);
+        MenuRegistry.registerScreenFactory(GCMenuTypes.ROCKET_PAINT, RocketPaintScreen::new);
         MenuRegistry.registerScreenFactory(GCMenuTypes.ROCKET, RocketInventoryScreen::new);
         MenuRegistry.registerScreenFactory(GCMenuTypes.BUGGY, BuggyScreen::new);
         MenuRegistry.registerScreenFactory(GCMenuTypes.LAUNCH_PAD, LaunchPadScreen::new);
@@ -252,6 +260,7 @@ public class GalacticraftClient implements ClientModInitializer {
         ParticleFactoryRegistry.getInstance().register(GCParticleTypes.LAUNCH_FLAME, LaunchFlameParticle.Provider::new);
         ParticleFactoryRegistry.getInstance().register(GCParticleTypes.LAUNCH_FLAME_LAUNCHED, LaunchFlameParticle.LaunchedProvider::new);
         ParticleFactoryRegistry.getInstance().register(GCParticleTypes.ACID_VAPOR_PARTICLE, AcidVaporParticle.Provider::new);
+        ParticleFactoryRegistry.getInstance().register(GCParticleTypes.ACID_EXHAUST, AcidExhaustParticle.Provider::new);
         ParticleFactoryRegistry.getInstance().register(GCParticleTypes.SPLASH_VENUS, SplashParticle.Provider::new);
 
         FluidRenderHandlerRegistry.INSTANCE.get(Fluids.WATER); // Workaround for classloading order bug
@@ -320,7 +329,11 @@ public class GalacticraftClient implements ClientModInitializer {
         });
 
         BuiltinItemRendererRegistry.INSTANCE.register(GCItems.ROCKET, new RocketItemRenderer()::render);
+        for (var module : GCItems.ROCKET_MODULES) {
+            BuiltinItemRendererRegistry.INSTANCE.register(module, new RocketItemRenderer()::render);
+        }
         BuiltinItemRendererRegistry.INSTANCE.register(GCItems.ASTRO_MINER, new AstroMinerItemRenderer()::render);
+        BuiltinItemRendererRegistry.INSTANCE.register(GCBlocks.SHORT_RANGE_TELEPAD.asItem(), new dev.galacticraft.mod.client.render.item.ShortRangeTelepadItemRenderer()::render);
         BuiltinItemRendererRegistry.INSTANCE.register(GCItems.CARGO_ROCKET, new CargoRocketItemRenderer()::render);
         BuiltinItemRendererRegistry.INSTANCE.register(GCItems.BUGGY, new BuggyItemRenderer()::render);
         for (Item flag : GCItems.FLAGS.colorMap().values()) {

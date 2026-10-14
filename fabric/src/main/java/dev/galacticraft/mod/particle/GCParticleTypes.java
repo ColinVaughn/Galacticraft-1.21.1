@@ -48,6 +48,7 @@ public class GCParticleTypes {
     public static final ParticleType<EntityParticleOption> LAUNCH_FLAME = PARTICLES.register(Particle.LAUNCH_FLAME, FabricParticleTypes.complex(false, EntityParticleOption::codec, EntityParticleOption::streamCodec));
     public static final ParticleType<EntityParticleOption> LAUNCH_FLAME_LAUNCHED = PARTICLES.register(Particle.LAUNCH_FLAME_LAUNCHED, FabricParticleTypes.complex(false, EntityParticleOption::codec, EntityParticleOption::streamCodec));
     public static final ParticleType<ScaleParticleType> ACID_VAPOR_PARTICLE = PARTICLES.register(Particle.ACID_VAPOR_PARTICLE, FabricParticleTypes.complex(false, ScaleParticleType::codec, ScaleParticleType::streamCodec));
+    public static final ParticleType<ScaleParticleType> ACID_EXHAUST = PARTICLES.register("acid_exhaust", FabricParticleTypes.complex(false, ScaleParticleType::codec, ScaleParticleType::streamCodec));
 
     public static void register() {
     }

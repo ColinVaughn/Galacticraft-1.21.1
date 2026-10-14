@@ -89,6 +89,9 @@ import dev.galacticraft.mod.network.c2s.OpenGcInventoryPayload;
 import dev.galacticraft.mod.network.c2s.OpenRocketPayload;
 import dev.galacticraft.mod.particle.GCParticleTypes;
 import dev.galacticraft.mod.screen.GCMenuTypes;
+import dev.galacticraft.mod.screen.GasProcessingMenu;
+import dev.galacticraft.mod.content.block.entity.machine.GasLiquefierBlockEntity;
+import dev.galacticraft.mod.content.block.entity.machine.MethaneSynthesizerBlockEntity;
 import dev.galacticraft.mod.screen.GCPlayerInventoryMenu;
 import dev.galacticraft.mod.screen.RocketMenu;
 import dev.galacticraft.mod.client.util.ColorUtil;
@@ -177,6 +180,8 @@ public final class GCNeoForgeClient {
             }
         };
         event.registerItem(extension, GCItems.ROCKET, GCItems.ASTRO_MINER, GCItems.CARGO_ROCKET, GCItems.BUGGY, GCBlocks.PARACHEST.asItem());
+        event.registerItem(extension, GCBlocks.SHORT_RANGE_TELEPAD.asItem());
+        event.registerItem(extension, GCItems.ROCKET_MODULES.toArray(net.minecraft.world.item.Item[]::new));
         event.registerItem(extension, GCItems.FLAGS.colorMap().values().toArray(net.minecraft.world.item.Item[]::new));
     }
 
@@ -349,8 +354,12 @@ public final class GCNeoForgeClient {
         event.register(GCMenuTypes.BASIC_SOLAR_PANEL, BasicSolarPanelScreen::new);
         event.register(GCMenuTypes.ADVANCED_SOLAR_PANEL, AdvancedSolarPanelScreen::new);
         event.register(GCMenuTypes.COAL_GENERATOR, CoalGeneratorScreen::new);
+        event.register(GCMenuTypes.SHORT_RANGE_TELEPAD, ShortRangeTelepadScreen::new);
+        event.register(GCMenuTypes.GEOTHERMAL_GENERATOR, GeothermalGeneratorScreen::new);
         event.register(GCMenuTypes.CIRCUIT_FABRICATOR, CircuitFabricatorScreen::new);
         event.register(GCMenuTypes.REFINERY, RefineryScreen::new);
+        event.<GasProcessingMenu<GasLiquefierBlockEntity>, GasProcessingScreen<GasLiquefierBlockEntity>>register(GCMenuTypes.GAS_LIQUEFIER, (menu, inventory, title) -> new GasProcessingScreen<>(menu, inventory, title));
+        event.<GasProcessingMenu<MethaneSynthesizerBlockEntity>, GasProcessingScreen<MethaneSynthesizerBlockEntity>>register(GCMenuTypes.METHANE_SYNTHESIZER, (menu, inventory, title) -> new GasProcessingScreen<>(menu, inventory, title));
         event.register(GCMenuTypes.ELECTRIC_FURNACE, ElectricFurnaceScreen::new);
         event.register(GCMenuTypes.ELECTRIC_ARC_FURNACE, ElectricArcFurnaceScreen::new);
         event.register(GCMenuTypes.COMPRESSOR, CompressorScreen::new);
@@ -368,12 +377,14 @@ public final class GCNeoForgeClient {
         event.register(GCMenuTypes.OXYGEN_SEALER, OxygenSealerScreen::new);
         event.register(GCMenuTypes.FUEL_LOADER, FuelLoaderScreen::new);
         event.register(GCMenuTypes.CARGO_LOADER, CargoLoaderScreen::new);
+        event.register(GCMenuTypes.LAUNCH_CONTROLLER, LaunchControllerScreen::new);
         event.register(GCMenuTypes.CARGO_UNLOADER, CargoUnloaderScreen::new);
         event.register(GCMenuTypes.FLUID_TANK, FluidTankScreen::new);
         event.register(GCMenuTypes.PAINTER, PainterScreen::new);
         event.register(GCMenuTypes.DECONSTRUCTOR, DeconstructorScreen::new);
         event.register(GCMenuTypes.AIRLOCK_CONTROLLER_MENU, AirlockControllerScreen::new);
         event.register(GCMenuTypes.ROCKET_WORKBENCH, RocketWorkbenchScreen::new);
+        event.register(GCMenuTypes.ROCKET_PAINT, RocketPaintScreen::new);
         event.register(GCMenuTypes.ROCKET, RocketInventoryScreen::new);
         event.register(GCMenuTypes.BUGGY, BuggyScreen::new);
         event.register(GCMenuTypes.LAUNCH_PAD, LaunchPadScreen::new);
@@ -422,6 +433,7 @@ public final class GCNeoForgeClient {
         event.registerBlockEntityRenderer(GCBlockEntityTypes.ADVANCED_SOLAR_PANEL, SolarPanelBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(GCBlockEntityTypes.GLASS_FLUID_PIPE, FluidPipeBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(GCBlockEntityTypes.OXYGEN_BUBBLE_DISTRIBUTOR, GCNeoBubbleDistributorRenderer::new);
+        event.registerBlockEntityRenderer(GCBlockEntityTypes.SHORT_RANGE_TELEPAD, dev.galacticraft.mod.client.render.block.entity.ShortRangeTelepadRenderer::new);
         BlockEntityRenderers.register(GCBlockEntityTypes.ENERGY_STORAGE_MODULE, ResourceStorageBlockRenderer::new);
         BlockEntityRenderers.register(GCBlockEntityTypes.OXYGEN_STORAGE_MODULE, ResourceStorageBlockRenderer::new);
         BlockEntityRenderers.register(GCBlockEntityTypes.ENERGY_STORAGE_CLUSTER, ResourceStorageBlockRenderer::new);
@@ -469,6 +481,7 @@ public final class GCNeoForgeClient {
         event.registerSpriteSet(GCParticleTypes.LAUNCH_FLAME, LaunchFlameParticle.Provider::new);
         event.registerSpriteSet(GCParticleTypes.LAUNCH_FLAME_LAUNCHED, LaunchFlameParticle.LaunchedProvider::new);
         event.registerSpriteSet(GCParticleTypes.ACID_VAPOR_PARTICLE, AcidVaporParticle.Provider::new);
+        event.registerSpriteSet(GCParticleTypes.ACID_EXHAUST, AcidExhaustParticle.Provider::new);
         event.registerSpriteSet(GCParticleTypes.SPLASH_VENUS, SplashParticle.Provider::new);
     }
 

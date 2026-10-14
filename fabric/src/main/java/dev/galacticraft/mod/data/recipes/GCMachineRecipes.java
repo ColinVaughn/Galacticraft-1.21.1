@@ -50,7 +50,24 @@ public class GCMachineRecipes extends FabricRecipeProvider {
 
     @Override
     public void buildRecipes(RecipeOutput output) {
+        GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.SHORT_RANGE_TELEPAD)
+                .define('X', GCItemTags.TITANIUM_PLATES).define('W', GCItems.BEAM_CORE)
+                .define('Y', net.minecraft.world.item.Items.REDSTONE).define('Z', net.minecraft.world.item.Items.ENDER_PEARL)
+                .pattern("XWX").pattern("ZYZ").pattern("XXX")
+                .unlockedBy(getHasName(GCItems.BEAM_CORE), has(GCItems.BEAM_CORE)).emiDefaultRecipe(true).save(output);
+
         // Machine Blocks
+        GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.GEOTHERMAL_GENERATOR)
+                .define('X', GCItemTags.BRONZE_PLATES)
+                .define('V', GCItems.ATMOSPHERIC_VALVE)
+                .define('W', GCBlocks.ALUMINUM_WIRE)
+                .define('G', GCBlocks.COAL_GENERATOR)
+                .define('Y', GCItemTags.LEAD_INGOTS)
+                .pattern("XVX").pattern("WGW").pattern("XYX")
+                .unlockedBy(getHasName(GCItems.LEAD_INGOT), has(GCItemTags.LEAD_INGOTS))
+                .emiDefaultRecipe(true)
+                .save(output);
+
         GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.ADVANCED_SOLAR_PANEL)
                 .define('S', GCItems.COMPRESSED_STEEL)
                 .define('F', GCItems.FULL_SOLAR_PANEL)
@@ -317,6 +334,23 @@ public class GCMachineRecipes extends FabricRecipeProvider {
                 .unlockedBy(getHasName(GCItems.LARGE_OXYGEN_TANK), has(GCItems.LARGE_OXYGEN_TANK))
                 .emiDefaultRecipe(true)
                 .save(output);
+
+        GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.GAS_LIQUEFIER)
+                .define('T', GCItems.LARGE_OXYGEN_TANK).define('S', GCItems.MEDIUM_OXYGEN_TANK)
+                .define('V', GCItems.OXYGEN_VENT).define('F', GCBlocks.GLASS_FLUID_PIPE)
+                .define('W', GCItems.FLUID_MANIPULATOR).define('X', GCItems.COMPRESSED_BRONZE)
+                .define('P', GCBlocks.OXYGEN_COMPRESSOR).define('O', GCBlocks.OXYGEN_COMPRESSOR)
+                .pattern("TVS").pattern("FWS").pattern("PXO")
+                .unlockedBy(getHasName(GCItems.ADVANCED_WAFER), has(GCItems.ADVANCED_WAFER))
+                .emiDefaultRecipe(true).save(output);
+        GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.METHANE_SYNTHESIZER)
+                .define('T', GCItems.LARGE_OXYGEN_TANK).define('V', GCItems.OXYGEN_VENT)
+                .define('F', GCBlocks.GLASS_FLUID_PIPE).define('W', GCItems.FLUID_MANIPULATOR)
+                .define('C', GCBlocks.ELECTRIC_COMPRESSOR).define('X', GCItems.COMPRESSED_BRONZE)
+                .define('O', GCBlocks.OXYGEN_COMPRESSOR)
+                .pattern("TVT").pattern("FWF").pattern("CXO")
+                .unlockedBy(getHasName(GCItems.ADVANCED_WAFER), has(GCItems.ADVANCED_WAFER))
+                .emiDefaultRecipe(true).save(output);
 
         GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.REFINERY)
                 .define('S', GCItems.COMPRESSED_STEEL)

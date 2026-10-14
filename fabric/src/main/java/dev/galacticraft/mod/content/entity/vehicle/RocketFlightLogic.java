@@ -48,6 +48,23 @@ public final class RocketFlightLogic {
      */
     public static final int DEFAULT_BURN_TICKS_PER_BUCKET = 50;
 
+    /** GC4 tanks: Tier 1 holds 1000 mB; Tiers 2 and 3 hold 1500 mB. */
+    public static int gc4FuelCapacityMilliBuckets(int engineTier) {
+        return engineTier >= 2 ? 1500 : 1000;
+    }
+
+    /**
+     * GC4's faster higher-tier rockets cost roughly 0.40/0.28/0.21 buckets per Earth launch.
+     * These efficiencies approximate those costs with this port's slower, gravity-based ascent.
+     */
+    public static int gc4BurnTicksPerBucket(int engineTier) {
+        return switch (engineTier) {
+            case 2 -> 5600;
+            case 3 -> 7000;
+            default -> 4000;
+        };
+    }
+
     /** Ticks the rocket sits on the pad between ignition and lift-off. */
     static final int PRE_LAUNCH_WAIT_TICKS = 400;
 

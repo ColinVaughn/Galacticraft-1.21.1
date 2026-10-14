@@ -62,6 +62,8 @@ public class GCPackets {
         registerC2S(EjectCanPayload.TYPE, EjectCanPayload.STREAM_CODEC);
         registerC2S(CompressionModePayload.TYPE, CompressionModePayload.STREAM_CODEC);
         registerC2S(LaunchPadRoutePayload.TYPE, LaunchPadRoutePayload.STREAM_CODEC);
+        registerC2S(TelepadAddressPayload.TYPE, TelepadAddressPayload.STREAM_CODEC);
+        registerC2S(RocketPaintPayload.TYPE, RocketPaintPayload.STREAM_CODEC);
         registerC2S(LaunchControllerSettingsPayload.TYPE, LaunchControllerSettingsPayload.STREAM_CODEC);
         registerC2S(OpenGcInventoryPayload.TYPE, OpenGcInventoryPayload.STREAM_CODEC);
         registerC2S(OpenPetInventoryPayload.TYPE, OpenPetInventoryPayload.STREAM_CODEC);

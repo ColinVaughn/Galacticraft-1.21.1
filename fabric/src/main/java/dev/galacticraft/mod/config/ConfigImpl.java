@@ -134,6 +134,7 @@ public class ConfigImpl implements Config {
     private double bossHealthMultiplier = 1.0;
     private int rocketFuelTankCapacity = RocketFlightLogic.DEFAULT_FUEL_TANK_CAPACITY_BUCKETS;
     private int rocketBurnTicksPerBucket = RocketFlightLogic.DEFAULT_BURN_TICKS_PER_BUCKET;
+    private boolean gc4RocketFuelMode = true;
     private double refineryOilToFuelRatio = RefineryFuelLogic.DEFAULT_OIL_TO_FUEL_RATIO;
     private boolean hideAlphaWarning = false;
     private boolean enableGcHouston = true;
@@ -739,6 +740,15 @@ public class ConfigImpl implements Config {
 
     public void setRocketFuelTankCapacity(int rocketFuelTankCapacity) {
         this.rocketFuelTankCapacity = rocketFuelTankCapacity;
+    }
+
+    @Override
+    public boolean gc4RocketFuelMode() {
+        return this.gc4RocketFuelMode;
+    }
+
+    public void setGc4RocketFuelMode(boolean enabled) {
+        this.gc4RocketFuelMode = enabled;
     }
 
     @Override
@@ -1403,6 +1413,16 @@ public class ConfigImpl implements Config {
             // --- ROCKET CONFIG ---
 
             ConfigCategory rockets = b.getOrCreateCategory(Component.translatable(Translations.Config.ROCKETS));
+
+            rockets.addEntry(new BooleanToggleBuilder(
+                    Component.translatable(Translations.Config.RESET),
+                    label.apply(Translations.Config.GC4_ROCKET_FUEL_MODE),
+                    config.gc4RocketFuelMode())
+                    .setTooltip(tooltipWithDesc.apply(Translations.Config.GC4_ROCKET_FUEL_MODE, Translations.Config.GC4_ROCKET_FUEL_MODE_DESC))
+                    .setSaveConsumer(config::setGc4RocketFuelMode)
+                    .setDefaultValue(true)
+                    .build()
+            );
 
             rockets.addEntry(new IntFieldBuilder(
                     Component.translatable(Translations.Config.RESET),

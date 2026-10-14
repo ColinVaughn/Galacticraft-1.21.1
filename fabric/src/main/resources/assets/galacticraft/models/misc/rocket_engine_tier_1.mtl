@@ -1,0 +1,9 @@
+newmtl RocketEngines
+Kd 1 1 1
+d 1
+map_Kd galacticraft:obj/rocket_engines
+
+newmtl RocketEngines_paint
+Kd 1 1 1
+d 1
+map_Kd galacticraft:obj/rocket_engines

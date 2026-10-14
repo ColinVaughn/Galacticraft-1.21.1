@@ -61,37 +61,10 @@ public class RoomEmpty extends SizedPiece {
         for (int x = 0; x <= this.sizeX; x++) {
             for (int y = 0; y <= this.sizeY; y++) {
                 for (int z = 0; z <= this.sizeZ; z++) {
-                    if (x == 0 || x == this.sizeX || y == 0 || y == this.sizeY || z == 0 || z == this.sizeZ) {
-                        boolean placeBlock = true;
-                        if (getDirection().getAxis() == Direction.Axis.Z) {
-                            int start = (this.boundingBox.maxX() - this.boundingBox.minX()) / 2 - 1;
-                            int end = (this.boundingBox.maxX() - this.boundingBox.minX()) / 2 + 1;
-                            if (x > start && x <= end && y < this.configuration.getHallwayHeight() && y > 0) {
-                                if (getDirection() == Direction.SOUTH && z == 0) {
-                                    placeBlock = false;
-                                } else if (getDirection() == Direction.NORTH && z == this.sizeZ) {
-                                    placeBlock = false;
-                                }
-                            }
-                        } else {
-                            int start = (this.boundingBox.maxZ() - this.boundingBox.minZ()) / 2 - 1;
-                            int end = (this.boundingBox.maxZ() - this.boundingBox.minZ()) / 2 + 1;
-                            if (z > start && z <= end && y < this.configuration.getHallwayHeight() && y > 0) {
-                                if (getDirection() == Direction.EAST && x == 0) {
-                                    placeBlock = false;
-                                } else if (getDirection() == Direction.WEST && x == this.sizeX) {
-                                    placeBlock = false;
-                                }
-                            }
-                        }
-                        if (placeBlock) {
-                            this.placeBlock(worldIn, this.configuration.getBrickBlock(), x, y, z, boundingBox);
-                        } else {
-                            this.placeBlock(worldIn, Blocks.AIR.defaultBlockState(), x, y, z, boundingBox);
-                        }
-                    } else {
-                        this.placeBlock(worldIn, Blocks.AIR.defaultBlockState(), x, y, z, boundingBox);
-                    }
+                    boolean boundary = x == 0 || x == this.sizeX || y == 0 || y == this.sizeY || z == 0 || z == this.sizeZ;
+                    var state = boundary && !isEntrance(x, y, z, this.configuration.getHallwayHeight())
+                            ? this.configuration.getBrickBlock() : Blocks.AIR.defaultBlockState();
+                    this.placeBlock(worldIn, state, x, y, z, boundingBox);
                 }
             }
         }

@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "E": {
+      "item": "galacticraft:heavy_rocket_engine"
+    },
+    "P": {
+      "item": "galacticraft:heavy_plating_t3"
+    }
+  },
+  "pattern": [
+    " P ",
+    "PEP",
+    " P "
+  ],
+  "result": {
+    "count": 1,
+    "id": "galacticraft:tier_3_rocket_engine"
+  }
+}

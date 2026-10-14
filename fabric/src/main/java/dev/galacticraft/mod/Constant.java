@@ -907,6 +907,8 @@ public interface Constant {
         int PAGE_WIDTH = 176;
 
         int ROCKET_PAGE_HEIGHT = 249;
+        int REFIT_INPUT_X = 8;
+        int REFIT_INPUT_Y = 140;
         int ROCKET_INVENTORY_Y = 167;
         int ROCKET_HOTBAR_Y = 225;
 

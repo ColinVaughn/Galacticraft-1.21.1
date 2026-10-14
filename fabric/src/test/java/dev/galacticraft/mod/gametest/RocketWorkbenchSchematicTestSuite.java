@@ -51,8 +51,7 @@ import java.util.List;
  * workbench and the tier-2/3, buggy, cargo rocket and astro miner pages were unreachable.
  */
 public class RocketWorkbenchSchematicTestSuite implements GalacticraftGameTest {
-    private static final ResourceLocation TIER_1_PAGE = Constant.id("rocket/rocket");
-    private static final ResourceLocation TIER_2_PAGE = Constant.id("rocket/rocket_tier_2");
+    private static final ResourceLocation ROCKET_PAGE = WorkbenchPages.ROCKET_ID;
     private static final ResourceLocation BUGGY_PAGE = Constant.id("buggy");
 
     @GameTest(template = EMPTY_STRUCTURE)
@@ -87,12 +86,13 @@ public class RocketWorkbenchSchematicTestSuite implements GalacticraftGameTest {
 
     /** Legacy's {@code S_UNLOCK_NEW_SCHEMATIC}: the schematic is spent, not merely read. */
     @GameTest(template = EMPTY_STRUCTURE)
-    public void unlockingConsumesTheSchematicAndRevealsItsPage(GameTestHelper context) {
+    public void unlockingConsumesTheTierSchematicAndUnlocksModules(GameTestHelper context) {
         Fixture fixture = Fixture.on(context, WorkbenchPages.ADD_SCHEMATIC_ID);
 
-        if (fixture.visiblePageIds().contains(TIER_2_PAGE)) {
+        if (WorkbenchPages.rocketPartsUnlockedBy(GCItems.TIER_2_ROCKET_SCHEMATIC).stream()
+                .anyMatch(part -> ((ResearchAccessor) fixture.player).galacticraft$isUnlocked(dev.galacticraft.mod.content.GCRocketParts.recipeId(part)))) {
             fixture.close();
-            context.fail("The tier-2 page should be hidden before its schematic is unlocked", fixture.pos);
+            context.fail("Tier-2 modules should require their schematic", fixture.pos);
             return;
         }
 
@@ -114,9 +114,10 @@ public class RocketWorkbenchSchematicTestSuite implements GalacticraftGameTest {
             context.fail("Unlocking did not record the tier-2 schematic against the player", fixture.pos);
             return;
         }
-        if (!fixture.visiblePageIds().contains(TIER_2_PAGE)) {
+        if (!WorkbenchPages.rocketPartsUnlockedBy(GCItems.TIER_2_ROCKET_SCHEMATIC).stream()
+                .allMatch(part -> ((ResearchAccessor) fixture.player).galacticraft$isUnlocked(dev.galacticraft.mod.content.GCRocketParts.recipeId(part)))) {
             fixture.close();
-            context.fail("The tier-2 page is still hidden after unlocking its schematic", fixture.pos);
+            context.fail("Tier-2 module research is still locked after spending its schematic", fixture.pos);
             return;
         }
 
@@ -167,17 +168,17 @@ public class RocketWorkbenchSchematicTestSuite implements GalacticraftGameTest {
      * always offered the unlock page last.
      */
     @GameTest(template = EMPTY_STRUCTURE)
-    public void aFreshWorkbenchOffersOnlyTierOneAndTheUnlockPage(GameTestHelper context) {
+    public void aFreshWorkbenchOffersOneRocketPageAndTheUnlockPage(GameTestHelper context) {
         Fixture fixture = Fixture.on(context, null);
 
         List<ResourceLocation> pages = fixture.pageIds();
         ResourceLocation opened = fixture.menu.page().id();
         fixture.close();
 
-        if (!pages.equals(List.of(TIER_1_PAGE, WorkbenchPages.ADD_SCHEMATIC_ID))) {
-            context.fail("A fresh workbench should offer only the tier-1 rocket and the unlock page, got " + pages, fixture.pos);
-        } else if (!opened.equals(TIER_1_PAGE)) {
-            context.fail("The workbench should open on the tier-1 rocket page, got " + opened, fixture.pos);
+        if (!pages.equals(List.of(ROCKET_PAGE, WorkbenchPages.ADD_SCHEMATIC_ID))) {
+            context.fail("A fresh workbench should offer one rocket page and the unlock page, got " + pages, fixture.pos);
+        } else if (!opened.equals(ROCKET_PAGE)) {
+            context.fail("The workbench should open on modular assembly, got " + opened, fixture.pos);
         } else {
             context.succeed();
         }
@@ -212,7 +213,7 @@ public class RocketWorkbenchSchematicTestSuite implements GalacticraftGameTest {
         WorkbenchPage next = fixture.menu.adjacentPage(1);
         if (next == null || !next.id().equals(WorkbenchPages.ADD_SCHEMATIC_ID)) {
             fixture.close();
-            context.fail("Paging forward from tier 1 should reach the unlock page, got " + next, fixture.pos);
+            context.fail("Paging forward from the rocket page should reach the unlock page, got " + next, fixture.pos);
             return;
         }
 
@@ -225,8 +226,8 @@ public class RocketWorkbenchSchematicTestSuite implements GalacticraftGameTest {
 
         if (beyond != null) {
             context.fail("The unlock page is the last page, but paging forward returned " + beyond, fixture.pos);
-        } else if (back == null || !back.id().equals(TIER_1_PAGE)) {
-            context.fail("Paging back from the unlock page should reach tier 1, got " + back, fixture.pos);
+        } else if (back == null || !back.id().equals(ROCKET_PAGE)) {
+            context.fail("Paging back from the unlock page should reach modular assembly, got " + back, fixture.pos);
         } else {
             context.succeed();
         }
@@ -324,8 +325,9 @@ public class RocketWorkbenchSchematicTestSuite implements GalacticraftGameTest {
             return;
         }
         for (int i = 0; i < ingredients.size(); i++) {
-            if (ingredients.get(i).index != i) {
-                context.fail("Ingredient wells must be the first slots; well " + i
+            int offset = fixture.menu.refitInputSlot() == null ? 0 : 1;
+            if (ingredients.get(i).index != i + offset) {
+                context.fail("Ingredient wells must be consecutive after the refit input; well " + i
                         + " is at index " + ingredients.get(i).index, fixture.pos);
                 return;
             }
@@ -340,6 +342,70 @@ public class RocketWorkbenchSchematicTestSuite implements GalacticraftGameTest {
         } else {
             context.succeed();
         }
+    }
+
+    @GameTest(template = EMPTY_STRUCTURE)
+    public void tierThreeSchematicUnlocksModulesWithoutAddingAnotherPage(GameTestHelper context) {
+        Fixture fixture = Fixture.on(context, WorkbenchPages.ADD_SCHEMATIC_ID);
+        fixture.workbench.schematic.setItem(0, new ItemStack(GCItems.TIER_3_ROCKET_SCHEMATIC));
+        context.assertTrue(fixture.menu.clickMenuButton(fixture.player, RocketWorkbenchMenu.BUTTON_UNLOCK), "Tier-3 schematic was rejected");
+        context.assertTrue(fixture.workbench.schematic.isEmpty(), "Tier-3 schematic was not consumed");
+        for (var part : WorkbenchPages.rocketPartsUnlockedBy(GCItems.TIER_3_ROCKET_SCHEMATIC)) {
+            context.assertTrue(((ResearchAccessor) fixture.player).galacticraft$isUnlocked(dev.galacticraft.mod.content.GCRocketParts.recipeId(part)), "Tier-3 module research was not granted");
+        }
+        context.assertTrue(fixture.visiblePageIds().equals(List.of(ROCKET_PAGE, WorkbenchPages.ADD_SCHEMATIC_ID)), "Tier-3 schematic added a duplicate rocket page");
+        context.assertTrue(fixture.player.containerMenu instanceof RocketWorkbenchMenu menu && menu.page().id().equals(ROCKET_PAGE), "Unlock did not open the Rocket page");
+        fixture.close();
+        context.succeed();
+    }
+
+    @GameTest(template = EMPTY_STRUCTURE)
+    public void savedTierPageUnlocksBackfillModuleResearch(GameTestHelper context) {
+        Fixture fixture = Fixture.on(context, null);
+        var research = (dev.galacticraft.api.accessor.ServerResearchAccessor) fixture.player;
+        research.galacticraft$unlockRocketPartRecipes(unlockId(GCItems.TIER_2_ROCKET_SCHEMATIC), unlockId(GCItems.TIER_3_ROCKET_SCHEMATIC));
+        for (var schematic : List.of(GCItems.TIER_2_ROCKET_SCHEMATIC, GCItems.TIER_3_ROCKET_SCHEMATIC)) {
+            for (var part : WorkbenchPages.rocketPartsUnlockedBy(schematic))
+                context.assertTrue(!research.galacticraft$isUnlocked(dev.galacticraft.mod.content.GCRocketParts.recipeId(part)), "Fixture already had module research");
+        }
+        var saved = fixture.player.saveWithoutId(new net.minecraft.nbt.CompoundTag());
+        fixture.player.load(saved);
+        var granted = dev.galacticraft.api.accessor.ServerResearchAccessor.galacticraft$backfillFromAdvancements(fixture.player);
+        for (var schematic : List.of(GCItems.TIER_2_ROCKET_SCHEMATIC, GCItems.TIER_3_ROCKET_SCHEMATIC)) {
+            for (var part : WorkbenchPages.rocketPartsUnlockedBy(schematic)) {
+                var id = dev.galacticraft.mod.content.GCRocketParts.recipeId(part);
+                context.assertTrue(granted.contains(id) && research.galacticraft$isUnlocked(id), "Saved tier unlock did not restore module research");
+            }
+        }
+        context.assertTrue(dev.galacticraft.api.accessor.ServerResearchAccessor.galacticraft$backfillFromAdvancements(fixture.player).isEmpty(), "Migration granted research twice");
+        fixture.close();
+        context.succeed();
+    }
+
+    @GameTest(template = EMPTY_STRUCTURE)
+    public void olderTierPartResearchKeepsDuplicateSchematics(GameTestHelper context) {
+        Fixture fixture = Fixture.on(context, WorkbenchPages.ADD_SCHEMATIC_ID);
+        var research = (dev.galacticraft.api.accessor.ServerResearchAccessor) fixture.player;
+        var ids = WorkbenchPages.rocketPartsUnlockedBy(GCItems.TIER_2_ROCKET_SCHEMATIC).stream()
+                .map(dev.galacticraft.mod.content.GCRocketParts::recipeId).toArray(ResourceLocation[]::new);
+        research.galacticraft$unlockRocketPartRecipes(ids);
+        dev.galacticraft.api.accessor.ServerResearchAccessor.galacticraft$backfillFromAdvancements(fixture.player);
+        fixture.workbench.schematic.setItem(0, new ItemStack(GCItems.TIER_2_ROCKET_SCHEMATIC));
+        context.assertTrue(fixture.menu.clickMenuButton(fixture.player, RocketWorkbenchMenu.BUTTON_UNLOCK), "Known schematic did not open assembly");
+        context.assertTrue(fixture.workbench.schematic.getItem(0).is(GCItems.TIER_2_ROCKET_SCHEMATIC), "Previously researched schematic was consumed again");
+        fixture.close();
+        context.succeed();
+    }
+
+    @GameTest(template = EMPTY_STRUCTURE)
+    public void legacyRocketRecipesAreAbsentAndOldPageRequestsOpenAssembly(GameTestHelper context) {
+        for (var id : List.of("rocket/rocket", "rocket/rocket_tier_2", "rocket/rocket_tier_3")) {
+            context.assertTrue(WorkbenchPages.recipe(context.getLevel(), Constant.id(id)) == null, "Legacy rocket recipe remains loaded");
+            Fixture fixture = Fixture.on(context, Constant.id(id));
+            context.assertTrue(fixture.menu.page().id().equals(ROCKET_PAGE) && fixture.menu.ingredientSlots().size() == 4, "Old page request did not fall back to module assembly");
+            fixture.close();
+        }
+        context.succeed();
     }
 
     private static ResourceLocation unlockId(net.minecraft.world.item.Item schematic) {

@@ -16,13 +16,15 @@ public final class Tier1RocketAnimations {
     private final Map<String, Track> clips = new HashMap<>();
 
     public Tier1RocketAnimations(ResourceManager resources) {
-        try (var reader = resources.getResourceOrThrow(Constant.id("animations/rocket_tier1.animation.json")).openAsReader()) {
-            JsonParser.parseReader(reader).getAsJsonObject().getAsJsonObject("animations").entrySet().forEach(entry -> {
-                var json = entry.getValue().getAsJsonObject();
-                clips.put(entry.getKey(), new Track(BurrowerAnimations.readClip(json), json.get("animation_length").getAsDouble()));
-            });
-        } catch (IOException error) {
-            throw new IllegalStateException("Cannot load tier 1 rocket animations", error);
+        for (String module : new String[]{"bodies", "fins", "engines"}) {
+            try (var reader = resources.getResourceOrThrow(Constant.id("animations/rocket_" + module + ".animation.json")).openAsReader()) {
+                JsonParser.parseReader(reader).getAsJsonObject().getAsJsonObject("animations").entrySet().forEach(entry -> {
+                    var json = entry.getValue().getAsJsonObject();
+                    clips.put(entry.getKey(), new Track(BurrowerAnimations.readClip(json), json.get("animation_length").getAsDouble()));
+                });
+            } catch (IOException error) {
+                throw new IllegalStateException("Cannot load rocket " + module + " animations", error);
+            }
         }
     }
 

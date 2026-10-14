@@ -211,76 +211,49 @@ public abstract class EntityMixin implements EntityAccessor {
         int maxZ = Mth.ceil(bounds.maxZ);
         boolean pushedByFluid = entity.isPushedByFluid();
 
-        double oilHeight = 0.0D;
-        double fuelHeight = 0.0D;
-        double acidHeight = 0.0D;
-        boolean inOil = false;
-        boolean inFuel = false;
-        boolean inAcid = false;
-        Vec3 oilFlow = Vec3.ZERO;
-        Vec3 fuelFlow = Vec3.ZERO;
-        Vec3 acidFlow = Vec3.ZERO;
-        int oilFlowSamples = 0;
-        int fuelFlowSamples = 0;
-        int acidFlowSamples = 0;
+        CustomFluidPush.Accumulator oil = new CustomFluidPush.Accumulator();
+        CustomFluidPush.Accumulator fuel = new CustomFluidPush.Accumulator();
+        CustomFluidPush.Accumulator acid = new CustomFluidPush.Accumulator();
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 
         for (int x = minX; x < maxX; x++) {
             for (int y = minY; y < maxY; y++) {
                 for (int z = minZ; z < maxZ; z++) {
                     pos.set(x, y, z);
-                    FluidState state = this.level.getFluidState(pos);
-                    boolean oil = state.is(GCFluidTags.OIL);
-                    boolean fuel = state.is(GCFluidTags.FUEL);
-                    boolean acid = state.is(GCFluidTags.SULFURIC_ACID);
-                    if (!oil && !fuel && !acid) continue;
-
-                    double surface = y + state.getHeight(this.level, pos);
-                    if (surface < bounds.minY) continue;
-
-                    double depth = surface - bounds.minY;
-                    Vec3 flow = pushedByFluid ? state.getFlow(this.level, pos) : Vec3.ZERO;
-                    if (oil) {
-                        inOil = true;
-                        oilHeight = Math.max(depth, oilHeight);
-                        if (pushedByFluid) {
-                            oilFlow = oilFlow.add(oilHeight < 0.4D ? flow.scale(oilHeight) : flow);
-                            oilFlowSamples++;
-                        }
-                    }
-                    if (fuel) {
-                        inFuel = true;
-                        fuelHeight = Math.max(depth, fuelHeight);
-                        if (pushedByFluid) {
-                            fuelFlow = fuelFlow.add(fuelHeight < 0.4D ? flow.scale(fuelHeight) : flow);
-                            fuelFlowSamples++;
-                        }
-                    }
-                    if (acid) {
-                        inAcid = true;
-                        acidHeight = Math.max(depth, acidHeight);
-                        if (pushedByFluid) {
-                            acidFlow = acidFlow.add(acidHeight < 0.4D ? flow.scale(acidHeight) : flow);
-                            acidFlowSamples++;
-                        }
-                    }
+                    this.galacticraft$sampleCustomFluid(pos, bounds.minY, pushedByFluid, oil, fuel, acid);
                 }
             }
         }
 
         // Match the previous oil-before-fuel short circuit.
-        this.fluidHeight.put(GCFluidTags.OIL, oilHeight);
-        this.galacticraft$applyFluidPush(entity, oilFlow, oilFlowSamples);
-        if (!inOil) {
-            this.fluidHeight.put(GCFluidTags.FUEL, fuelHeight);
-            this.galacticraft$applyFluidPush(entity, fuelFlow, fuelFlowSamples);
+        this.fluidHeight.put(GCFluidTags.OIL, oil.height());
+        this.galacticraft$applyFluidPush(entity, oil.flow(), oil.samples());
+        if (!oil.isPresent()) {
+            this.fluidHeight.put(GCFluidTags.FUEL, fuel.height());
+            this.galacticraft$applyFluidPush(entity, fuel.flow(), fuel.samples());
         }
-        this.fluidHeight.put(GCFluidTags.SULFURIC_ACID, acidHeight);
-        this.galacticraft$applyFluidPush(entity, acidFlow, acidFlowSamples);
+        this.fluidHeight.put(GCFluidTags.SULFURIC_ACID, acid.height());
+        this.galacticraft$applyFluidPush(entity, acid.flow(), acid.samples());
 
-        return (inOil ? GALACTICRAFT_IN_OIL : 0)
-                | (inFuel ? GALACTICRAFT_IN_FUEL : 0)
-                | (inAcid ? GALACTICRAFT_IN_SULFURIC_ACID : 0);
+        return (oil.isPresent() ? GALACTICRAFT_IN_OIL : 0)
+                | (fuel.isPresent() ? GALACTICRAFT_IN_FUEL : 0)
+                | (acid.isPresent() ? GALACTICRAFT_IN_SULFURIC_ACID : 0);
+    }
+
+    @Unique
+    private void galacticraft$sampleCustomFluid(BlockPos pos, double minY, boolean pushedByFluid, CustomFluidPush.Accumulator oilSamples, CustomFluidPush.Accumulator fuelSamples, CustomFluidPush.Accumulator acidSamples) {
+        FluidState state = this.level.getFluidState(pos);
+        boolean oil = state.is(GCFluidTags.OIL);
+        boolean fuel = state.is(GCFluidTags.FUEL);
+        boolean acid = state.is(GCFluidTags.SULFURIC_ACID);
+        if (!oil && !fuel && !acid) return;
+        double surface = pos.getY() + state.getHeight(this.level, pos);
+        if (surface < minY) return;
+        double depth = surface - minY;
+        Vec3 flow = pushedByFluid ? state.getFlow(this.level, pos) : Vec3.ZERO;
+        if (oil) oilSamples.add(depth, flow, pushedByFluid);
+        if (fuel) fuelSamples.add(depth, flow, pushedByFluid);
+        if (acid) acidSamples.add(depth, flow, pushedByFluid);
     }
 
     @Unique

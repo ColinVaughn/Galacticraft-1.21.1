@@ -40,6 +40,7 @@ public class GCRecipes {
     public static final ShapelessCompressingRecipe.Serializer SHAPELESS_COMPRESSING_SERIALIZER = ShapelessCompressingRecipe.Serializer.INSTANCE;
     public static final ShapedCompressingRecipe.Serializer SHAPED_COMPRESSING_SERIALIZER = ShapedCompressingRecipe.Serializer.INSTANCE;
     public static final RocketRecipe.Serializer ROCKET_SERIALIZER = RocketRecipe.Serializer.INSTANCE;
+    public static final ModularRocketRecipe.Serializer MODULAR_ROCKET_SERIALIZER = new ModularRocketRecipe.Serializer();
     public static final SchematicCraftingRecipe.Serializer SCHEMATIC_CRAFTING_SERIALIZER = SchematicCraftingRecipe.Serializer.INSTANCE;
     public static final RecipeSerializer<EmergencyKitRecipe> EMERGENCY_KIT_SERIALIZER = new SimpleCraftingRecipeSerializer<>(EmergencyKitRecipe::new);
 
@@ -53,6 +54,7 @@ public class GCRecipes {
         Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, Constant.id(Constant.Recipe.Serializer.COMPRESSING_SHAPELESS), SHAPELESS_COMPRESSING_SERIALIZER);
         Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, Constant.id(Constant.Recipe.Serializer.COMPRESSING_SHAPED), SHAPED_COMPRESSING_SERIALIZER);
         Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, Constant.id(Constant.Recipe.Serializer.ROCKET), ROCKET_SERIALIZER);
+        Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, Constant.id("modular_rocket"), MODULAR_ROCKET_SERIALIZER);
         Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, Constant.id(Constant.Recipe.Serializer.SCHEMATIC_CRAFTING), SCHEMATIC_CRAFTING_SERIALIZER);
         Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, Constant.id(Constant.Recipe.Serializer.EMERGENCY_KIT), EMERGENCY_KIT_SERIALIZER);
     }

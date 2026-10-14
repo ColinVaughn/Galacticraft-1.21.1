@@ -58,6 +58,8 @@ public class GCParticleTypes {
             Particle.LAUNCH_FLAME_LAUNCHED, complex(EntityParticleOption::codec, EntityParticleOption::streamCodec));
     public static final ParticleType<ScaleParticleType> ACID_VAPOR_PARTICLE = PARTICLES.register(
             Particle.ACID_VAPOR_PARTICLE, complex(ScaleParticleType::codec, ScaleParticleType::streamCodec));
+    public static final ParticleType<ScaleParticleType> ACID_EXHAUST = PARTICLES.register(
+            "acid_exhaust", complex(ScaleParticleType::codec, ScaleParticleType::streamCodec));
 
     private static SimpleParticleType simple(String id) {
         return PARTICLES.register(id, new SimpleParticleType(false));

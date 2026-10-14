@@ -73,6 +73,10 @@ public class RocketItem extends Item {
                 Player player = context.getPlayer();
                 ItemStack held = context.getItemInHand();
                 RocketData data = held.has(GCDataComponents.ROCKET_DATA) ? held.get(GCDataComponents.ROCKET_DATA) : RocketPrefabs.TIER_1;
+                if (!data.isValid()) {
+                    player.displayClientMessage(Component.translatable("gui.galacticraft.rocket_refit.incomplete"), true);
+                    return InteractionResult.FAIL;
+                }
                 rocket.setData(data);
                 rocket.setPad(pad);
                 rocket.setOldPosAndRot();
@@ -106,7 +110,20 @@ public class RocketItem extends Item {
         Style style = TooltipUtil.DEFAULT_STYLE;
         RocketData data = stack.has(GCDataComponents.ROCKET_DATA) ? stack.get(GCDataComponents.ROCKET_DATA) : RocketPrefabs.MISSING;
         List<Component> list = new ArrayList<>();
-        list.add(Component.translatable(Translations.Ui.COLOR).append(": ").withStyle(style).append(Component.literal("#" + Integer.toHexString(data.color())).withColor(data.color())));
+        if (!data.isValid() && stack.has(GCDataComponents.ROCKET_DATA)) {
+            tooltip.add(Component.translatable("gui.galacticraft.rocket_refit.incomplete").withStyle(net.minecraft.ChatFormatting.RED));
+            for (RocketPartTypes type : java.util.List.of(RocketPartTypes.CONE, RocketPartTypes.BODY, RocketPartTypes.FIN, RocketPartTypes.ENGINE)) {
+                if (!dev.galacticraft.mod.machine.workbench.RocketRefit.hasPart(data, type))
+                    tooltip.add(Component.translatable("gui.galacticraft.rocket_refit.missing", type.name).withStyle(net.minecraft.ChatFormatting.GRAY));
+            }
+        }
+        if (data.paint().equals(dev.galacticraft.api.rocket.RocketPaint.NONE))
+            list.add(Component.translatable(Translations.Ui.COLOR).append(": ").withStyle(style)
+                    .append(Component.literal(String.format("#%06X", data.color() & 0xFFFFFF)).withColor(data.color())));
+        for (RocketPartTypes part : RocketPartTypes.values()) {
+            data.paint().color(part).ifPresent(color -> list.add(part.name.copy().append(": ")
+                    .append(Component.literal(String.format("#%06X", color & 0xFFFFFF))).withStyle(style)));
+        }
         if (data.cone().isPresent())
             list.add(RocketPartTypes.CONE.name.copy().append(": ").append(RocketPart.getName(data.cone().get().key())).withStyle(style));
         if (data.body().isPresent())

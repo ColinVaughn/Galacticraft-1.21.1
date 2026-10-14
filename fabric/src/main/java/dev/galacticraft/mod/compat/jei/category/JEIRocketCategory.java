@@ -104,7 +104,7 @@ public class JEIRocketCategory implements IRecipeCategory<WorkbenchRecipe> {
     }
 
     private void setRocketRecipe(IRecipeLayoutBuilder builder, RocketRecipe recipe) {
-        for (RocketRecipe.RocketSlotData data : RocketRecipe.slotData(recipe.bodyHeight(), !recipe.boosters().isEmpty())) {
+        for (RocketRecipe.RocketSlotData data : recipe.slots()) {
             Ingredient ingredient = switch(data.partType()) {
                 case CONE -> recipe.cone();
                 case BODY -> recipe.body();

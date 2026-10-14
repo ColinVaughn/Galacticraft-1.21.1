@@ -27,6 +27,7 @@ import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.architectury.platform.Platform;
 import dev.galacticraft.api.accessor.ResearchAccessor;
+import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.client.util.Graphics;
 import dev.galacticraft.mod.content.GCEntityTypes;
 import dev.galacticraft.mod.content.entity.vehicle.RocketEntity;
@@ -64,7 +65,7 @@ import static dev.galacticraft.mod.Constant.RocketWorkbench.*;
  * rocket pages, the live preview; the Back/Next buttons ask the server to reopen the menu on the
  * neighbouring page, exactly as legacy Galacticraft's schematic GUIs did.
  */
-public class RocketWorkbenchScreen extends AbstractContainerScreen<RocketWorkbenchMenu> implements VariableSizedContainer.Listener {
+public class RocketWorkbenchScreen extends AbstractContainerScreen<RocketWorkbenchMenu> implements VariableSizedContainer.Listener, net.minecraft.world.ContainerListener {
     private static final Component MARKER = Component.literal("!");
 
     private final WorkbenchPageDisplay display;
@@ -72,6 +73,7 @@ public class RocketWorkbenchScreen extends AbstractContainerScreen<RocketWorkben
 
     private Button backButton;
     private Button nextButton;
+    private Button paintButton;
 
     public RocketWorkbenchScreen(RocketWorkbenchMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
@@ -93,6 +95,9 @@ public class RocketWorkbenchScreen extends AbstractContainerScreen<RocketWorkben
     }
 
     @Override
+    public void containerChanged(net.minecraft.world.Container container) { this.onItemChanged(); }
+
+    @Override
     public void onItemChanged() {
         if (this.entity != null) {
             this.entity.setData(this.menu.previewRocket());
@@ -105,22 +110,31 @@ public class RocketWorkbenchScreen extends AbstractContainerScreen<RocketWorkben
         this.imageHeight = this.display.height();
         super.init();
 
+        // Page heights vary, but consecutive navigation clicks must land in the same place.
+        int navigationTop = (this.height - ROCKET_PAGE_HEIGHT) / 2;
         if (Platform.isModLoaded("emi")) {
             this.topPos = Mth.clamp(this.height - this.imageHeight - 23, 2, this.topPos);
+            navigationTop = Mth.clamp(this.height - ROCKET_PAGE_HEIGHT - 23, 2, navigationTop);
         }
 
         this.backButton = this.addRenderableWidget(Button.builder(
                         Component.translatable(Translations.RocketWorkbench.BUTTON_BACK),
                         button -> this.flip(RocketWorkbenchMenu.BUTTON_BACK))
-                .bounds(this.leftPos + FLIP_BUTTON_X, this.topPos + FLIP_BUTTON_Y, FLIP_BUTTON_WIDTH, BUTTON_HEIGHT)
+                .bounds(this.leftPos + FLIP_BUTTON_X, navigationTop + FLIP_BUTTON_Y, FLIP_BUTTON_WIDTH, BUTTON_HEIGHT)
                 .build());
         this.nextButton = this.addRenderableWidget(Button.builder(
                         Component.translatable(Translations.RocketWorkbench.BUTTON_NEXT),
                         button -> this.flip(RocketWorkbenchMenu.BUTTON_NEXT))
-                .bounds(this.leftPos + FLIP_BUTTON_X, this.topPos + FLIP_BUTTON_Y + FLIP_BUTTON_SPACING, FLIP_BUTTON_WIDTH, BUTTON_HEIGHT)
+                .bounds(this.leftPos + FLIP_BUTTON_X, navigationTop + FLIP_BUTTON_Y + FLIP_BUTTON_SPACING, FLIP_BUTTON_WIDTH, BUTTON_HEIGHT)
                 .build());
         this.backButton.active = this.menu.adjacentPage(-1) != null;
         this.nextButton.active = this.menu.adjacentPage(1) != null;
+
+        if (this.display.rocketPreview()) {
+            this.paintButton = this.addRenderableWidget(Button.builder(Component.translatable("gui.galacticraft.rocket_paint.open"),
+                            button -> this.flip(RocketWorkbenchMenu.BUTTON_PAINT))
+                    .bounds(this.leftPos + FLIP_BUTTON_X, navigationTop + FLIP_BUTTON_Y + 2 * FLIP_BUTTON_SPACING, FLIP_BUTTON_WIDTH, BUTTON_HEIGHT).build());
+        }
 
         if (this.menu.page().id().equals(WorkbenchPages.ADD_SCHEMATIC_ID)) {
             this.addRenderableWidget(Button.builder(
@@ -143,6 +157,7 @@ public class RocketWorkbenchScreen extends AbstractContainerScreen<RocketWorkben
         this.menu.workbench.ingredients.addListener(this);
         this.menu.workbench.ingredients.addListener(this.menu);
         this.menu.workbench.chests.addListener(this.menu);
+        this.menu.workbench.refitInput.addListener(this);
     }
 
     @Override
@@ -151,6 +166,7 @@ public class RocketWorkbenchScreen extends AbstractContainerScreen<RocketWorkben
         this.menu.workbench.ingredients.removeListener(this);
         this.menu.workbench.ingredients.removeListener(this.menu);
         this.menu.workbench.chests.removeListener(this.menu);
+        this.menu.workbench.refitInput.removeListener(this);
     }
 
     @Override
@@ -165,7 +181,7 @@ public class RocketWorkbenchScreen extends AbstractContainerScreen<RocketWorkben
                 // all of them ourselves. The legacy page textures already have their wells painted.
                 if (this.display.slotFrames()) {
                     for (Slot slot : this.menu.slots) {
-                        if (slot.container instanceof VariableSizedContainer || slot.container == this.menu.workbench.chests) {
+                        if (slot.container instanceof VariableSizedContainer || slot.container == this.menu.workbench.chests || slot.container == this.menu.workbench.refitInput) {
                             texture.blit(this.leftPos + slot.x - 1, this.topPos + slot.y - 1, SLOT_U, SLOT_V, SLOT_WIDTH, SLOT_HEIGHT);
                         }
                     }
@@ -180,7 +196,14 @@ public class RocketWorkbenchScreen extends AbstractContainerScreen<RocketWorkben
 
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        graphics.drawString(this.font, this.display.title(), 8, 6, 0x404040, false);
+        graphics.drawString(this.font, this.menu.isRefitting() ? Component.translatable("gui.galacticraft.rocket_refit.title") : this.display.title(), 8, 6, 0x404040, false);
+        if (this.menu.page().id().equals(Constant.id("rocket/modular"))) {
+            graphics.drawString(this.font, Component.translatable("gui.galacticraft.rocket_refit.label"), REFIT_INPUT_X, REFIT_INPUT_Y - 12, 0x404040, false);
+            for (var slot : dev.galacticraft.mod.recipe.ModularRocketRecipe.SLOTS) {
+                Component label = Component.translatable("gui.galacticraft.rocket_workbench.module." + slot.partType().name().toLowerCase(java.util.Locale.ROOT));
+                graphics.drawString(this.font, label, slot.x() - 5 - this.font.width(label), slot.y() + 4, 0x404040, false);
+            }
+        }
     }
 
     @Override
@@ -193,6 +216,49 @@ public class RocketWorkbenchScreen extends AbstractContainerScreen<RocketWorkben
         this.renderTooltip(context, mouseX, mouseY);
         this.renderMissingResearchTooltip(context, mouseX, mouseY);
         this.renderSchematicSlotHint(context, mouseX, mouseY);
+        this.renderRefitHints(context, mouseX, mouseY);
+    }
+
+    private void renderRefitHints(GuiGraphics graphics, int mouseX, int mouseY) {
+        if (this.menu.refitInputSlot() == null) return;
+        if (this.isHovering(REFIT_INPUT_X, REFIT_INPUT_Y, 16, 16, mouseX, mouseY) && this.menu.refitRocket().isEmpty()) {
+            graphics.renderComponentTooltip(this.font, List.of(
+                    Component.translatable("gui.galacticraft.rocket_refit.insert"),
+                    Component.translatable("gui.galacticraft.rocket_refit.clear").withStyle(ChatFormatting.GRAY)), mouseX, mouseY);
+        }
+        if (!this.menu.isRefitting()) return;
+        var data = this.menu.previewRocket();
+        this.renderRefitPartHints(graphics, mouseX, mouseY, data);
+        this.renderRefitResultHint(graphics, mouseX, mouseY, data);
+    }
+
+    private void renderRefitPartHints(GuiGraphics graphics, int mouseX, int mouseY, dev.galacticraft.api.rocket.RocketData data) {
+        for (var part : dev.galacticraft.mod.recipe.ModularRocketRecipe.SLOTS) {
+            boolean present = dev.galacticraft.mod.machine.workbench.RocketRefit.hasPart(data, part.partType());
+            boolean unsupported = present && dev.galacticraft.mod.machine.workbench.RocketRefit.module(data, part.partType()).isEmpty();
+            if (unsupported) graphics.drawCenteredString(this.font, MARKER, this.leftPos + part.x() + 8, this.topPos + part.y() + 4, 0xFFFFAA00);
+            if (this.isHovering(part.x(), part.y(), 16, 16, mouseX, mouseY)) {
+                List<Component> lines = new ArrayList<>();
+                ItemStack installed = dev.galacticraft.mod.machine.workbench.RocketRefit.module(data, part.partType());
+                if (!installed.isEmpty()) lines.add(installed.getHoverName());
+                else dev.galacticraft.mod.machine.workbench.RocketRefit.key(data, part.partType()).ifPresent(key -> lines.add(Component.literal(key.location().toString())));
+                lines.add(Component.translatable("gui.galacticraft.rocket_refit."
+                        + (unsupported ? "unsupported" : present ? "remove" : "install")).withStyle(ChatFormatting.GRAY));
+                graphics.renderComponentTooltip(this.font, lines, mouseX, mouseY);
+            }
+        }
+    }
+
+    private void renderRefitResultHint(GuiGraphics graphics, int mouseX, int mouseY, dev.galacticraft.api.rocket.RocketData data) {
+        if (this.isHovering(this.display.resultSlot().x(), this.display.resultSlot().y(), 16, 16, mouseX, mouseY)) {
+            List<Component> lines = new ArrayList<>();
+            lines.add(Component.translatable("gui.galacticraft.rocket_refit." + (data.isValid() ? "take" : "incomplete")));
+            for (var part : dev.galacticraft.mod.recipe.ModularRocketRecipe.SLOTS) {
+                if (!dev.galacticraft.mod.machine.workbench.RocketRefit.hasPart(data, part.partType()))
+                    lines.add(Component.translatable("gui.galacticraft.rocket_refit.missing", part.partType().name).withStyle(ChatFormatting.GRAY));
+            }
+            graphics.renderComponentTooltip(this.font, lines, mouseX, mouseY);
+        }
     }
 
     /**
@@ -257,7 +323,8 @@ public class RocketWorkbenchScreen extends AbstractContainerScreen<RocketWorkben
     /** The flip buttons sit outside the panel, so clicks on them must not count as "outside". */
     @Override
     protected boolean hasClickedOutside(double mouseX, double mouseY, int left, int top, int button) {
-        if (this.backButton != null && (this.backButton.isMouseOver(mouseX, mouseY) || this.nextButton.isMouseOver(mouseX, mouseY))) {
+        if (this.backButton != null && (this.backButton.isMouseOver(mouseX, mouseY) || this.nextButton.isMouseOver(mouseX, mouseY)
+                || this.paintButton != null && this.paintButton.isMouseOver(mouseX, mouseY))) {
             return false;
         }
         return mouseX < (double) left || mouseY < (double) top

@@ -245,6 +245,8 @@ public interface Translations {
         String CANNOT_EAT_WITH_MASK = "config.galacticraft.lifesupport.cannot_eat_with_mask";
 
         String ROCKETS = "config.galacticraft.rockets";
+        String GC4_ROCKET_FUEL_MODE = "config.galacticraft.rockets.gc4_fuel_mode";
+        String GC4_ROCKET_FUEL_MODE_DESC = "config.galacticraft.rockets.gc4_fuel_mode.desc";
         String ROCKET_FUEL_TANK_CAPACITY = "config.galacticraft.rockets.fuel_tank_capacity";
         String ROCKET_FUEL_TANK_CAPACITY_DESC = "config.galacticraft.rockets.fuel_tank_capacity.desc";
         String ROCKET_BURN_TICKS_PER_BUCKET = "config.galacticraft.rockets.burn_ticks_per_bucket";

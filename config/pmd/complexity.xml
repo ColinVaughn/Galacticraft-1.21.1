@@ -7,7 +7,7 @@
 
     <rule ref="category/java/design.xml/CognitiveComplexity">
         <properties>
-            <property name="reportLevel" value="100"/>
+            <property name="reportLevel" value="25"/>
         </properties>
     </rule>
     <rule ref="category/java/design.xml/CyclomaticComplexity">

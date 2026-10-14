@@ -30,6 +30,25 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class RocketFlightLogicTest {
+    @Test
+    void gc4FuelProfilesMatchTierCapacitiesAndApproximateLegacyLaunchCosts() {
+        int required = RocketFlightLogic.poweredFlightTicksToEscape(64, 1200, 1);
+        double[] legacyBuckets = {.40, .28, .21};
+        for (int tier = 1; tier <= 3; tier++) {
+            assertEquals(tier == 1 ? 1000 : 1500, RocketFlightLogic.gc4FuelCapacityMilliBuckets(tier));
+            long burn = 81000 / RocketFlightLogic.gc4BurnTicksPerBucket(tier);
+            assertEquals(legacyBuckets[tier - 1], required * burn / 81000.0, .02,
+                    "tier " + tier + " should approximate the GC4 Earth launch cost");
+            for (double gravity : new double[]{1, .91, .38, .166, .1}) {
+                int outbound = RocketFlightLogic.poweredFlightTicksToEscape(-64, 1200, 1);
+                int homeward = RocketFlightLogic.poweredFlightTicksToEscape(-64, 1200, gravity);
+                long capacity = 81L * RocketFlightLogic.gc4FuelCapacityMilliBuckets(tier);
+                assertTrue((outbound + homeward) * burn < capacity,
+                        "GC4 tier " + tier + " needs a round-trip reserve at gravity " + gravity);
+            }
+        }
+    }
+
     private static final double ESCAPE_HEIGHT = 1200.0;
     private static final double SEA_LEVEL = 64.0;
 

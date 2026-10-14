@@ -335,6 +335,8 @@ public class GCCreativeModeTabs {
                 output.accept(COMPRESSOR);
                 output.accept(ELECTRIC_COMPRESSOR);
                 output.accept(COAL_GENERATOR);
+                output.accept(SHORT_RANGE_TELEPAD);
+                output.accept(GEOTHERMAL_GENERATOR);
                 output.accept(BASIC_SOLAR_PANEL);
                 output.accept(ADVANCED_SOLAR_PANEL);
                 output.accept(ENERGY_STORAGE_MODULE);
@@ -342,6 +344,8 @@ public class GCCreativeModeTabs {
                 output.accept(ELECTRIC_FURNACE);
                 output.accept(ELECTRIC_ARC_FURNACE);
                 output.accept(REFINERY);
+                output.accept(GAS_LIQUEFIER);
+                output.accept(METHANE_SYNTHESIZER);
                 output.accept(FUEL_LOADER);
                 output.accept(CARGO_LOADER);
                 output.accept(LAUNCH_CONTROLLER);
@@ -388,7 +392,12 @@ public class GCCreativeModeTabs {
                 output.accept(FluidCanisterItem.getInfiniteCanister(FLUID_CANISTER, GCFluids.SULFURIC_ACID));
                 output.accept(FluidCanisterItem.getInfiniteCanister(FLUID_CANISTER, Gases.METHANE));
                 output.accept(FluidCanisterItem.getInfiniteCanister(FLUID_CANISTER, GCFluids.LIQUID_OXYGEN));
-                //output.accept(FluidCanisterItem.getFilledCanister(FLUID_CANISTER, GCFluids.LIQUID_NITROGEN)); // Liquid nitrogen not added yet
+                output.accept(FluidCanisterItem.getFilledCanister(FLUID_CANISTER, Gases.HYDROGEN));
+                output.accept(FluidCanisterItem.getFilledCanister(FLUID_CANISTER, Gases.OXYGEN));
+                output.accept(FluidCanisterItem.getFilledCanister(FLUID_CANISTER, Gases.NITROGEN));
+                output.accept(FluidCanisterItem.getFilledCanister(FLUID_CANISTER, GCFluids.ARGON));
+                output.accept(FluidCanisterItem.getFilledCanister(FLUID_CANISTER, GCFluids.LIQUID_NITROGEN));
+                output.accept(FluidCanisterItem.getFilledCanister(FLUID_CANISTER, GCFluids.LIQUID_ARGON));
 
                 output.accept(SMALL_OXYGEN_TANK);
                 output.accept(OxygenTankItem.getFullTank(SMALL_OXYGEN_TANK));
@@ -507,6 +516,7 @@ public class GCCreativeModeTabs {
                 output.accept(ROCKET_ENGINE);
                 output.accept(HEAVY_ROCKET_ENGINE);
                 output.accept(ROCKET_BOOSTER);
+                ROCKET_MODULES.forEach(output::accept);
 
                 // BUGGY PARTS
                 output.accept(BUGGY_WHEEL);

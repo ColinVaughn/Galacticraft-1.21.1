@@ -1,11 +1,4 @@
 {
-  "type": "minecraft:simple_block",
-  "config": {
-    "to_place": {
-      "type": "minecraft:simple_state_provider",
-      "state": {
-        "Name": "galacticraft:vapor_spout"
-      }
-    }
-  }
+  "type": "galacticraft:vapor_spout",
+  "config": {}
 }

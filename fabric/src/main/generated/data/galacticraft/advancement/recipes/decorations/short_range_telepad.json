@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_beam_core": {
+      "conditions": {
+        "items": [
+          {
+            "items": "galacticraft:beam_core"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "galacticraft:short_range_telepad"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_beam_core"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "galacticraft:short_range_telepad"
+    ]
+  }
+}

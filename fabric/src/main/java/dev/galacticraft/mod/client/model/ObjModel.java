@@ -52,23 +52,41 @@ public class ObjModel implements GCModel {
 
     @Override
     public void render(PoseStack modelStack, @Nullable GCModelState state, VertexConsumer consumer, int light, int overlay, int color) {
+        render(modelStack, state, consumer, light, overlay, color, false);
+    }
+
+    @Override
+    public void renderPainted(PoseStack modelStack, @Nullable GCModelState state, VertexConsumer consumer, int light, int overlay, int color) {
+        render(modelStack, state, consumer, light, overlay, color, true);
+    }
+
+    private void render(PoseStack modelStack, @Nullable GCModelState state, VertexConsumer consumer, int light, int overlay, int color, boolean painted) {
         if (state == null) {
             for (int index = 0; index < obj.getNumFaces(); index++) {
                 ObjFace face = obj.getFace(index);
-                renderFace(face, consumer, modelStack, light, overlay, color);
+                renderFace(face, consumer, modelStack, light, overlay, color, painted);
             }
         } else {
             ObjGroup group = obj.getGroup(state.getName());
             for (int index = 0; index < group.getNumFaces(); index++) {
                 ObjFace face = group.getFace(index);
-                renderFace(face, consumer, modelStack, light, overlay, color);
+                renderFace(face, consumer, modelStack, light, overlay, color, painted);
             }
         }
     }
 
     protected void renderFace(ObjFace face, VertexConsumer consumer, PoseStack matrices, int light, int overlay, int color) {
+        renderFace(face, consumer, matrices, light, overlay, color, false);
+    }
+
+    private void renderFace(ObjFace face, VertexConsumer consumer, PoseStack matrices, int light, int overlay, int color, boolean painted) {
         UnbakedObjModel.BakedMaterial material = faceMaterials.get(face);
-        consumer = (material != null ? material.sprite() : GCModelLoader.INSTANCE.getDefaultSprite()).wrap(consumer);
+        var sprite = material != null ? material.sprite() : GCModelLoader.INSTANCE.getDefaultSprite();
+        if (painted) {
+            if (material != null && material.paintSprite() != null) sprite = material.paintSprite();
+            else color = 0xFFFFFFFF;
+        }
+        consumer = sprite.wrap(consumer);
         PoseStack.Pose last = matrices.last();
         for (int vtx = 0; vtx < face.getNumVertices(); vtx++) {
             FloatTuple pos = obj.getVertex(face.getVertexIndex(vtx));

@@ -46,6 +46,7 @@ public final class GCNeoItemRenderer extends BlockEntityWithoutLevelRenderer {
     private final RocketItemRenderer rocket = new RocketItemRenderer();
     private final AstroMinerItemRenderer astroMiner = new AstroMinerItemRenderer();
     private final CargoRocketItemRenderer cargoRocket = new CargoRocketItemRenderer();
+    private final dev.galacticraft.mod.client.render.item.ShortRangeTelepadItemRenderer telepad = new dev.galacticraft.mod.client.render.item.ShortRangeTelepadItemRenderer();
     private final BuggyItemRenderer buggy = new BuggyItemRenderer();
     private final FlagItemRenderer flag = new FlagItemRenderer();
 
@@ -55,8 +56,9 @@ public final class GCNeoItemRenderer extends BlockEntityWithoutLevelRenderer {
 
     @Override
     public void renderByItem(ItemStack stack, ItemDisplayContext context, PoseStack poses, MultiBufferSource buffers, int light, int overlay) {
-        if (stack.is(GCItems.ROCKET)) rocket.render(stack, context, poses, buffers, light, overlay);
+        if (stack.is(GCItems.ROCKET) || stack.getItem() instanceof dev.galacticraft.mod.content.item.RocketModuleItem) rocket.render(stack, context, poses, buffers, light, overlay);
         else if (stack.is(GCItems.ASTRO_MINER)) astroMiner.render(stack, context, poses, buffers, light, overlay);
+        else if (stack.is(GCBlocks.SHORT_RANGE_TELEPAD.asItem())) telepad.render(stack, context, poses, buffers, light, overlay);
         else if (stack.is(GCItems.CARGO_ROCKET)) cargoRocket.render(stack, context, poses, buffers, light, overlay);
         else if (stack.is(GCItems.BUGGY)) buggy.render(stack, context, poses, buffers, light, overlay);
         else if (stack.is(GCBlocks.PARACHEST.asItem())) Minecraft.getInstance().getBlockRenderer().renderSingleBlock(

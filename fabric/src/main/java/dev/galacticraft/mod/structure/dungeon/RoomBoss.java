@@ -38,6 +38,7 @@ import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
@@ -87,48 +88,7 @@ public class RoomBoss extends SizedPiece {
         for (int x = 0; x <= this.sizeX; x++) {
             for (int y = 0; y <= this.sizeY; y++) {
                 for (int z = 0; z <= this.sizeZ; z++) {
-                    if (x == 0 || x == this.sizeX || y == 0 || y == this.sizeY || z == 0 || z == this.sizeZ) {
-                        boolean placeBlock = true;
-                        if (getDirection().getAxis() == Direction.Axis.Z) {
-                            int start = (this.boundingBox.maxX() - this.boundingBox.minX()) / 2 - 1;
-                            int end = (this.boundingBox.maxX() - this.boundingBox.minX()) / 2 + 1;
-                            if (x > start && x <= end && y < 3 && y > 0) {
-                                if (getDirection() == Direction.SOUTH && z == 0) {
-                                    placeBlock = false;
-                                } else if (getDirection() == Direction.NORTH && z == this.sizeZ) {
-                                    placeBlock = false;
-                                }
-                            }
-                        } else {
-                            int start = (this.boundingBox.maxZ() - this.boundingBox.minZ()) / 2 - 1;
-                            int end = (this.boundingBox.maxZ() - this.boundingBox.minZ()) / 2 + 1;
-                            if (z > start && z <= end && y < 3 && y > 0) {
-                                if (getDirection() == Direction.EAST && x == 0) {
-                                    placeBlock = false;
-                                } else if (getDirection() == Direction.WEST && x == this.sizeX) {
-                                    placeBlock = false;
-                                }
-                            }
-                        }
-                        if (placeBlock) {
-                            this.placeBlock(worldIn, this.configuration.getBrickBlock(), x, y, z, chunkBox);
-                        } else {
-                            this.placeBlock(worldIn, Blocks.AIR.defaultBlockState(), x, y, z, chunkBox);
-                        }
-                    } else if ((x == 1 && z == 1) || (x == 1 && z == this.sizeZ - 1) || (x == this.sizeX - 1 && z == 1) || (x == this.sizeX - 1 && z == this.sizeZ - 1)) {
-                        this.placeBlock(worldIn, Blocks.LAVA.defaultBlockState(), x, y, z, chunkBox);
-                    } else if (y % 3 == 0 && y >= 2 && ((x == 1 || x == this.sizeX - 1 || z == 1 || z == this.sizeZ - 1) || (x == 2 && z == 2) || (x == 2 && z == this.sizeZ - 2) || (x == this.sizeX - 2 && z == 2) || (x == this.sizeX - 2 && z == this.sizeZ - 2))) {
-                        // Horizontal bars
-                        this.placeBlock(worldIn, Blocks.IRON_BARS.defaultBlockState(), x, y, z, chunkBox);
-                    } else if ((x == 1 && z == 2) || (x == 2 && z == 1) ||
-                            (x == 1 && z == this.sizeZ - 2) || (x == 2 && z == this.sizeZ - 1) ||
-                            (x == this.sizeX - 1 && z == 2) || (x == this.sizeX - 2 && z == 1) ||
-                            (x == this.sizeX - 1 && z == this.sizeZ - 2) || (x == this.sizeX - 2 && z == this.sizeZ - 1)) {
-                        // Vertical bars
-                        this.placeBlock(worldIn, Blocks.IRON_BARS.defaultBlockState(), x, y, z, chunkBox);
-                    } else {
-                        this.placeBlock(worldIn, Blocks.AIR.defaultBlockState(), x, y, z, chunkBox);
-                    }
+                    this.placeBlock(worldIn, roomBlockState(x, y, z), x, y, z, chunkBox);
                 }
             }
         }
@@ -147,6 +107,29 @@ public class RoomBoss extends SizedPiece {
                 spawner.setChestPos(this.chestPos);
             }
         }
+    }
+
+    private BlockState roomBlockState(int x, int y, int z) {
+        if (x == 0 || x == this.sizeX || y == 0 || y == this.sizeY || z == 0 || z == this.sizeZ) {
+            return isEntrance(x, y, z) ? Blocks.AIR.defaultBlockState() : this.configuration.getBrickBlock();
+        }
+        if ((x == 1 || x == this.sizeX - 1) && (z == 1 || z == this.sizeZ - 1)) {
+            return Blocks.LAVA.defaultBlockState();
+        }
+        if (hasHorizontalBars(x, y, z) || hasVerticalBars(x, z)) {
+            return Blocks.IRON_BARS.defaultBlockState();
+        }
+        return Blocks.AIR.defaultBlockState();
+    }
+
+    private boolean hasHorizontalBars(int x, int y, int z) {
+        return y % 3 == 0 && y >= 2 && (x == 1 || x == this.sizeX - 1 || z == 1 || z == this.sizeZ - 1
+                || (x == 2 || x == this.sizeX - 2) && (z == 2 || z == this.sizeZ - 2));
+    }
+
+    private boolean hasVerticalBars(int x, int z) {
+        return (x == 1 || x == this.sizeX - 1) && (z == 2 || z == this.sizeZ - 2)
+                || (x == 2 || x == this.sizeX - 2) && (z == 1 || z == this.sizeZ - 1);
     }
 
     @Override

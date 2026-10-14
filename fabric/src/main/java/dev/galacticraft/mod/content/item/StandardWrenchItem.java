@@ -84,73 +84,7 @@ public class StandardWrenchItem extends Item {
         Block block = state.getBlock();
 
         if (!world.isClientSide && player != null) {
-            boolean handled = false;
-
-            if (block.getStateDefinition().getProperty("facing") instanceof EnumProperty property) {
-                if (block instanceof ChestBlock && state.getValue(ChestBlock.TYPE) != ChestType.SINGLE) {
-                    BlockPos otherPos = pos.relative(ChestBlock.getConnectedDirection(state));
-                    BlockState otherState = world.getBlockState(otherPos);
-                    Direction facing = state.getValue(ChestBlock.FACING).getOpposite();
-                    world.setBlock(otherPos, state.setValue(ChestBlock.FACING, facing), Block.UPDATE_ALL);
-                    world.setBlock(pos, otherState.setValue(ChestBlock.FACING, facing), Block.UPDATE_ALL);
-                    handled = true;
-                } else if (block instanceof BedBlock) {
-                    BlockPos otherPos = pos.relative(BedBlock.getConnectedDirection(state));
-                    BlockState otherState = world.getBlockState(otherPos);
-                    Direction facing = state.getValue(BedBlock.FACING).getOpposite();
-                    world.setBlock(otherPos, state.setValue(BedBlock.FACING, facing), Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
-                    world.setBlock(pos, otherState.setValue(BedBlock.FACING, facing), Block.UPDATE_ALL);
-                    handled = true;
-                } else if (block instanceof CryogenicChamberBlock || block instanceof CryogenicChamberPart) {
-                    int offset = (block instanceof CryogenicChamberPart && state.getValue(CryogenicChamberPart.TOP)) ? -2 :
-                            (block instanceof CryogenicChamberPart) ? -1 : 0;
-                    for (int i = 0; i < 3; i++) {
-                        BlockPos partPos = pos.above(i + offset);
-                        BlockState newState = cycle(world.getBlockState(partPos), property, player.isShiftKeyDown());
-                        world.setBlock(partPos, newState, Block.UPDATE_ALL);
-                    }
-                    handled = true;
-                } else {
-                    Collection<?> possibleValues = property.getPossibleValues();
-                    if (possibleValues.stream().allMatch(Direction.class::isInstance)) {
-                        Collection<Direction> sortedValues = ((Collection<Direction>) possibleValues).stream()
-                                .sorted(Comparator.comparingInt(Direction::get2DDataValue))
-                                .filter(dir -> state.setValue(property, dir).canSurvive(world, pos))
-                                .collect(Collectors.toList());
-
-                        BlockState newState = cycle(state, property, sortedValues, player.isShiftKeyDown());
-                        world.setBlock(pos, newState, Block.UPDATE_ALL);
-                        handled = true;
-                    }
-                }
-            } else if (block.getStateDefinition().getProperty("axis") instanceof EnumProperty property) {
-                BlockState newState = cycle(state, property, player.isShiftKeyDown());
-                world.setBlock(pos, newState, Block.UPDATE_ALL);
-                handled = true;
-            } else if (block.getStateDefinition().getProperty("rotation") instanceof IntegerProperty property) {
-                BlockState newState = cycle(state, property, player.isShiftKeyDown());
-                world.setBlock(pos, newState, Block.UPDATE_ALL);
-                handled = true;
-            } else if (block instanceof BaseRailBlock && block.getStateDefinition().getProperty("shape") instanceof EnumProperty property) {
-                Collection<?> possibleValues = property.getPossibleValues();
-                if (possibleValues.stream().allMatch(RailShape.class::isInstance)) {
-                    Collection<RailShape> sortedValues = ((Collection<RailShape>) possibleValues).stream()
-                            .filter(shape -> !BaseRailBlock.shouldBeRemoved(pos, world, shape))
-                            .collect(Collectors.toList());
-
-                    BlockState newState = cycle(state, property, sortedValues, player.isShiftKeyDown());
-                    world.setBlock(pos, newState, Block.UPDATE_ALL);
-                    handled = true;
-                }
-            } else if (FlagBlock.getBaseBlockEntity(world, pos) instanceof FlagBlockEntity flag) {
-                int rotation = player.isShiftKeyDown() ? -1 : 1;
-                float yaw = flag.getYaw();
-                yaw = (Math.round(yaw / 22.5) + rotation) * 22.5f;
-                flag.setYaw(yaw % 360);
-                handled = true;
-            }
-
-            if (handled) {
+            if (rotateBlock(world, pos, state, block, player)) {
                 context.getItemInHand().hurtAndBreak(1, player,
                         context.getHand() == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND);
                 return InteractionResult.SUCCESS;
@@ -159,6 +93,86 @@ public class StandardWrenchItem extends Item {
 
         // Fallback
         return super.useOn(context);
+    }
+
+    private boolean rotateBlock(Level world, BlockPos pos, BlockState state, Block block, Player player) {
+        if (block.getStateDefinition().getProperty("facing") instanceof EnumProperty property) {
+            return rotateFacingBlock(world, pos, state, block, player, property);
+        } else if (block.getStateDefinition().getProperty("axis") instanceof EnumProperty property) {
+            BlockState newState = cycle(state, property, player.isShiftKeyDown());
+            world.setBlock(pos, newState, Block.UPDATE_ALL);
+            return true;
+        } else if (block.getStateDefinition().getProperty("rotation") instanceof IntegerProperty property) {
+            BlockState newState = cycle(state, property, player.isShiftKeyDown());
+            world.setBlock(pos, newState, Block.UPDATE_ALL);
+            return true;
+        } else if (block instanceof BaseRailBlock && block.getStateDefinition().getProperty("shape") instanceof EnumProperty property) {
+            return rotateRail(world, pos, state, player, property);
+        } else if (FlagBlock.getBaseBlockEntity(world, pos) instanceof FlagBlockEntity flag) {
+            int rotation = player.isShiftKeyDown() ? -1 : 1;
+            float yaw = flag.getYaw();
+            yaw = (Math.round(yaw / 22.5) + rotation) * 22.5f;
+            flag.setYaw(yaw % 360);
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean rotateFacingBlock(Level world, BlockPos pos, BlockState state, Block block, Player player, EnumProperty property) {
+        if (block instanceof ChestBlock && state.getValue(ChestBlock.TYPE) != ChestType.SINGLE) {
+            BlockPos otherPos = pos.relative(ChestBlock.getConnectedDirection(state));
+            BlockState otherState = world.getBlockState(otherPos);
+            Direction facing = state.getValue(ChestBlock.FACING).getOpposite();
+            world.setBlock(otherPos, state.setValue(ChestBlock.FACING, facing), Block.UPDATE_ALL);
+            world.setBlock(pos, otherState.setValue(ChestBlock.FACING, facing), Block.UPDATE_ALL);
+            return true;
+        } else if (block instanceof BedBlock) {
+            BlockPos otherPos = pos.relative(BedBlock.getConnectedDirection(state));
+            BlockState otherState = world.getBlockState(otherPos);
+            Direction facing = state.getValue(BedBlock.FACING).getOpposite();
+            world.setBlock(otherPos, state.setValue(BedBlock.FACING, facing), Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
+            world.setBlock(pos, otherState.setValue(BedBlock.FACING, facing), Block.UPDATE_ALL);
+            return true;
+        } else if (block instanceof CryogenicChamberBlock || block instanceof CryogenicChamberPart) {
+            int offset = (block instanceof CryogenicChamberPart && state.getValue(CryogenicChamberPart.TOP)) ? -2 :
+                    (block instanceof CryogenicChamberPart) ? -1 : 0;
+            for (int i = 0; i < 3; i++) {
+                BlockPos partPos = pos.above(i + offset);
+                BlockState newState = cycle(world.getBlockState(partPos), property, player.isShiftKeyDown());
+                world.setBlock(partPos, newState, Block.UPDATE_ALL);
+            }
+            return true;
+        } else {
+            Collection<?> possibleValues = property.getPossibleValues();
+            if (possibleValues.stream().allMatch(Direction.class::isInstance)) {
+                Collection<Direction> sortedValues = ((Collection<Direction>) possibleValues).stream()
+                        .sorted(Comparator.comparingInt(Direction::get2DDataValue))
+                        .filter(dir -> state.setValue(property, dir).canSurvive(world, pos))
+                        .collect(Collectors.toList());
+
+                BlockState newState = cycle(state, property, sortedValues, player.isShiftKeyDown());
+                world.setBlock(pos, newState, Block.UPDATE_ALL);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean rotateRail(Level world, BlockPos pos, BlockState state, Player player, EnumProperty property) {
+        Collection<?> possibleValues = property.getPossibleValues();
+        if (possibleValues.stream().allMatch(RailShape.class::isInstance)) {
+            Collection<RailShape> sortedValues = ((Collection<RailShape>) possibleValues).stream()
+                    .filter(shape -> !BaseRailBlock.shouldBeRemoved(pos, world, shape))
+                    .collect(Collectors.toList());
+
+            BlockState newState = cycle(state, property, sortedValues, player.isShiftKeyDown());
+            world.setBlock(pos, newState, Block.UPDATE_ALL);
+            return true;
+        }
+
+        return false;
     }
 
     @Override

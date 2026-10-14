@@ -23,15 +23,9 @@
 package dev.galacticraft.mod.client.render.item;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import dev.galacticraft.mod.Constant;
-import dev.galacticraft.mod.client.model.GCModel;
-import dev.galacticraft.mod.client.model.GCModelLoader;
-import dev.galacticraft.mod.client.model.GCRenderTypes;
+import dev.galacticraft.mod.client.render.entity.CargoRocketRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
@@ -41,47 +35,33 @@ import net.minecraft.world.item.ItemStack;
  * {@code minecraft:builtin/entity}.
  */
 public class CargoRocketItemRenderer {
-    public static final ResourceLocation MODEL = Constant.id("models/misc/cargo_rocket.json");
-
-    // Geometry center of cargo_rocket.obj (the model already sits at ~1 unit = 1 block).
-    private static final float CENTER_X = 0.0F;
-    private static final float CENTER_Y = 3.42F;
-    private static final float CENTER_Z = 0.0F;
-
-    private GCModel model;
-
     public void render(ItemStack stack, ItemDisplayContext mode, PoseStack matrices, MultiBufferSource vertexConsumers, int light, int overlay) {
-        if (this.model == null) {
-            this.model = GCModelLoader.INSTANCE.getModel(MODEL);
-        }
-        VertexConsumer consumer = vertexConsumers.getBuffer(GCRenderTypes.obj(GCRenderTypes.OBJ_ATLAS));
         matrices.pushPose();
 
         switch (mode) {
             case GUI -> {
                 matrices.translate(0.5F, 0.5F, 0.5F);
-                matrices.scale(0.13F, 0.13F, 0.13F);
+                matrices.scale(0.2F, 0.2F, 0.2F);
                 matrices.mulPose(Axis.XP.rotationDegrees(15.0F));
-                matrices.mulPose(Axis.YP.rotationDegrees(180.0F));
+                matrices.mulPose(Axis.YP.rotationDegrees(155.0F));
             }
             case FIXED -> {
                 matrices.translate(0.5F, 0.5F, 0.5F);
-                matrices.scale(0.12F, 0.12F, 0.12F);
+                matrices.scale(0.2F, 0.2F, 0.2F);
                 matrices.mulPose(Axis.YP.rotationDegrees(180.0F));
             }
             case GROUND -> {
-                matrices.translate(0.5F, 0.25F, 0.5F);
-                matrices.scale(0.09F, 0.09F, 0.09F);
+                matrices.translate(0.5F, 0.35F, 0.5F);
+                matrices.scale(0.15F, 0.15F, 0.15F);
             }
             default -> {
                 matrices.translate(0.5F, 0.5F, 0.5F);
-                matrices.scale(0.1F, 0.1F, 0.1F);
+                matrices.scale(0.18F, 0.18F, 0.18F);
             }
         }
 
-        // Centre the model vertically on the origin so framing rotates about its middle.
-        matrices.translate(-CENTER_X, -CENTER_Y, -CENTER_Z);
-        this.model.render(matrices, null, consumer, light, OverlayTexture.NO_OVERLAY);
+        matrices.translate(0, -2.25F, 0);
+        CargoRocketRenderer.draw(matrices, vertexConsumers, light, overlay, 0);
 
         matrices.popPose();
     }

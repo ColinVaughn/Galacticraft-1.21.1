@@ -33,6 +33,7 @@ public class RocketResultSlot extends Slot {
     private final RocketWorkbenchMenu menu;
     private final Player player;
     private int removeCount;
+    private boolean refitTaken;
 
     public RocketResultSlot(RocketWorkbenchMenu menu, Container container, int slot, int x, int y) {
         super(container, slot, x, y);
@@ -41,12 +42,27 @@ public class RocketResultSlot extends Slot {
     }
 
     @Override
+    public ItemStack getItem() {
+        if (this.menu.isRefitting()) return dev.galacticraft.mod.machine.workbench.RocketRefit.data(this.menu.refitRocket()).isValid()
+                ? this.menu.refitRocket().copy() : ItemStack.EMPTY;
+        return super.getItem();
+    }
+
+    @Override
+    public void set(ItemStack stack) { if (!this.menu.isRefitting()) super.set(stack); }
+
+    @Override
     public boolean mayPlace(ItemStack stack) {
         return false;
     }
 
     @Override
     public @NotNull ItemStack remove(int amount) {
+        if (this.menu.isRefitting()) {
+            if (amount <= 0 || this.getItem().isEmpty()) return ItemStack.EMPTY;
+            this.refitTaken = true;
+            return this.menu.workbench.refitInput.removeItem(0, 1);
+        }
         if (this.hasItem()) {
             this.removeCount += Math.min(amount, this.getItem().getCount());
         }
@@ -77,6 +93,10 @@ public class RocketResultSlot extends Slot {
     @Override
     public void onTake(Player player, ItemStack stack) {
         super.onTake(player, stack);
+        if (this.refitTaken) {
+            this.refitTaken = false;
+            return;
+        }
         this.checkTakeAchievements(stack);
         this.menu.workbench.ingredients.clearContent();
         this.menu.workbench.chests.clearContent();

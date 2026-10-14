@@ -56,6 +56,8 @@ public final class GCNeoForgeFluidTypes {
             .density(1141)
             .temperature(90)
             .viscosity(500));
+    private static final FluidType LIQUID_NITROGEN = new FluidType(FluidType.Properties.create().descriptionId("fluid.galacticraft.liquid_nitrogen").density(808).temperature(77).viscosity(500));
+    private static final FluidType LIQUID_ARGON = new FluidType(FluidType.Properties.create().descriptionId("fluid.galacticraft.liquid_argon").density(1395).temperature(87).viscosity(500));
     private static final FluidType GAS = new FluidType(FluidType.Properties.create()
             .descriptionId("fluid_type.galacticraft.gas")
             .density(-100)
@@ -87,6 +89,8 @@ public final class GCNeoForgeFluidTypes {
             helper.register(Constant.id("fuel"), FUEL);
             helper.register(Constant.id("sulfuric_acid"), SULFURIC_ACID);
             helper.register(Constant.id("liquid_oxygen"), LIQUID_OXYGEN);
+            helper.register(Constant.id("liquid_nitrogen"), LIQUID_NITROGEN);
+            helper.register(Constant.id("liquid_argon"), LIQUID_ARGON);
             helper.register(Constant.id("gas"), GAS);
         });
     }
@@ -105,6 +109,8 @@ public final class GCNeoForgeFluidTypes {
         if (fluid == GCFluids.LIQUID_OXYGEN) {
             return LIQUID_OXYGEN;
         }
+        if (fluid == GCFluids.LIQUID_NITROGEN) return LIQUID_NITROGEN;
+        if (fluid == GCFluids.LIQUID_ARGON) return LIQUID_ARGON;
         if (fluid instanceof GasFluid) {
             return GAS;
         }
@@ -122,7 +128,7 @@ public final class GCNeoForgeFluidTypes {
         ResourceLocation oxygen = Constant.Fluid.fluidId(Constant.Fluid.OXYGEN_STILL);
         // Gases have no world-rendered fluid sprites, but inventory integrations such as REI
         // still require every non-empty FluidType to provide non-null atlas texture locations.
-        event.registerFluidType(textures(oxygen, oxygen), LIQUID_OXYGEN, GAS);
+        event.registerFluidType(textures(oxygen, oxygen), LIQUID_OXYGEN, LIQUID_NITROGEN, LIQUID_ARGON, GAS);
     }
 
     private static IClientFluidTypeExtensions textures(ResourceLocation still, ResourceLocation flowing) {

@@ -77,6 +77,31 @@ class RocketTierReachabilityTest {
         }
     }
 
+    @Test
+    void mixedModulesReachOnlyDestinationsAllowedByTheirWeakestPart() {
+        Map<String, Integer> destinations = bodyAccessWeights();
+        for (int combination = 0; combination < 81; combination++) {
+            int encoded = combination;
+            int[] tiers = new int[4];
+            int minimumTier = 3;
+            for (int i = 0; i < tiers.length; i++) {
+                tiers[i] = encoded % 3 + 1;
+                encoded /= 3;
+                minimumTier = Math.min(minimumTier, tiers[i]);
+            }
+            for (String destination : List.of("moon", "mars", "venus", "mercury", "asteroid")) {
+                int weight = destinations.get(destination);
+                Result merged = Result.PASS;
+                for (int i = 0; i < PART_FOLDERS.size(); i++) {
+                    Path part = DATA.resolve(PART_FOLDERS.get(i)).resolve("tier_" + tiers[i] + ".json");
+                    merged = merged.merge(partResult(accessWeight(part), weight));
+                }
+                assertEquals(weight <= minimumTier ? Result.ALLOW : Result.BLOCK, merged,
+                        "Mixed combination " + java.util.Arrays.toString(tiers) + " travelling to " + destination);
+            }
+        }
+    }
+
     /**
      * Boosters are optional and BLOCK beats ALLOW, so a booster whose weight is below its rocket's
      * tier would downgrade the whole rocket. Every tier therefore needs a booster of its own.

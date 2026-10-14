@@ -139,60 +139,7 @@ public class SealerManager {
 
             // Flood fill to find all blocks this sealer is trying to seal
             SpaceToSeal spaceToSeal = new SpaceToSeal(sealer);
-            // Draining the queue means every direction ran into a boundary; only the volume budget
-            // running out leaves the space genuinely open.
-            boolean withinBudget = true;
-            while (!spaceToSeal.floodFillQueue.isEmpty()) {
-                BlockPos pos = spaceToSeal.floodFillQueue.pollFirst();
-                if (spaceToSeal.blocksToSeal.contains(pos)) continue;
-                nextObservedBlocks.add(pos);
-                BlockState blockState = this.level.getBlockState(pos);
-                if (this.isFullySealedBlock(blockState, pos)) continue;
-
-                spaceToSeal.blocksToSeal.add(pos);
-                for (Direction direction : Direction.values()) {
-                    BlockPos adjacent = pos.relative(direction);
-                    nextObservedBlocks.add(adjacent);
-                    BlockState adjacentState = this.level.getBlockState(adjacent);
-                    if (!this.isSealedBetween(pos, blockState, adjacent, adjacentState, direction)) {
-                        if (!spaceToSeal.routeParents.containsKey(adjacent)) {
-                            spaceToSeal.routeParents.put(adjacent, pos);
-                            spaceToSeal.floodFillQueue.add(adjacent);
-                        }
-                    }
-                }
-
-                boolean willAlreadySeal = false;
-                for (Iterator<SpaceToSeal> iterator = spacesToSeal.iterator(); iterator.hasNext();) {
-                    SpaceToSeal otherSpace = iterator.next();
-                    if (spaceToSeal == otherSpace) continue;
-                    if (!otherSpace.blocksToSeal.contains(pos)) continue;
-                    // We have encountered a block that another sealer is trying to seal,
-                    // so both sealers must be within the same space, so we combine them.
-                    spaceToSeal.sealers.addAll(otherSpace.sealers);
-                    spaceToSeal.blocksToSeal.addAll(otherSpace.blocksToSeal);
-                    spaceToSeal.floodFillQueue.addAll(otherSpace.floodFillQueue);
-                    otherSpace.routeParents.forEach((routePos, parent) -> {
-                        if (!spaceToSeal.routeParents.containsKey(routePos)) {
-                            spaceToSeal.routeParents.put(routePos, parent);
-                        }
-                    });
-                    willAlreadySeal = otherSpace.willSealSucceed();
-                    iterator.remove();
-                    break;
-                }
-                // If we just combined with a space that was already filled,
-                // we must be in the same space, so we don't need to continue flood fill
-                if (willAlreadySeal) break;
-
-                // If the space has become too large to fill, stop performing flood fill
-                if (spaceToSeal.blocksToSeal.size() > spaceToSeal.sealers.size() * MAX_SEALER_VOLUME) {
-                    withinBudget = false;
-                    spaceToSeal.leakEnd = pos;
-                    break;
-                }
-            }
-            spaceToSeal.enclosed = withinBudget;
+            this.floodFillSpace(spaceToSeal, spacesToSeal, nextObservedBlocks);
             spacesToSeal.add(spaceToSeal);
         }
 
@@ -207,6 +154,81 @@ public class SealerManager {
         for (OxygenSealerBlockEntity sealer : this.sealers.values()) {
             sealer.setSealed(sealedSealers.contains(sealer));
         }
+        this.updateBreathability(nextSealedBlocks);
+
+        this.sealedBlocks.clear();
+        this.sealedBlocks.addAll(nextSealedBlocks);
+        this.observedBlocks.clear();
+        this.observedBlocks.addAll(nextObservedBlocks);
+        this.hasUnsealedActiveSealers = sealedSealers.size() < activeSealers.size();
+        this.syncLeakTraces(spacesToSeal);
+    }
+
+    private void floodFillSpace(SpaceToSeal spaceToSeal, Set<SpaceToSeal> spacesToSeal, Set<BlockPos> nextObservedBlocks) {
+        // Draining the queue means every direction ran into a boundary; only the volume budget
+        // running out leaves the space genuinely open.
+        boolean withinBudget = true;
+        while (!spaceToSeal.floodFillQueue.isEmpty()) {
+            BlockPos pos = spaceToSeal.floodFillQueue.pollFirst();
+            if (spaceToSeal.blocksToSeal.contains(pos)) continue;
+            nextObservedBlocks.add(pos);
+            BlockState blockState = this.level.getBlockState(pos);
+            if (this.isFullySealedBlock(blockState, pos)) continue;
+
+            spaceToSeal.blocksToSeal.add(pos);
+            this.enqueueUnsealedNeighbors(spaceToSeal, pos, blockState, nextObservedBlocks);
+
+            // If we just combined with a space that was already filled,
+            // we must be in the same space, so we don't need to continue flood fill
+            if (this.mergeIntersectingSpace(spaceToSeal, pos, spacesToSeal)) break;
+
+            // If the space has become too large to fill, stop performing flood fill
+            if (spaceToSeal.blocksToSeal.size() > spaceToSeal.sealers.size() * MAX_SEALER_VOLUME) {
+                withinBudget = false;
+                spaceToSeal.leakEnd = pos;
+                break;
+            }
+        }
+        spaceToSeal.enclosed = withinBudget;
+    }
+
+    private void enqueueUnsealedNeighbors(SpaceToSeal spaceToSeal, BlockPos pos, BlockState blockState, Set<BlockPos> nextObservedBlocks) {
+        for (Direction direction : Direction.values()) {
+            BlockPos adjacent = pos.relative(direction);
+            nextObservedBlocks.add(adjacent);
+            BlockState adjacentState = this.level.getBlockState(adjacent);
+            if (!this.isSealedBetween(pos, blockState, adjacent, adjacentState, direction)) {
+                if (!spaceToSeal.routeParents.containsKey(adjacent)) {
+                    spaceToSeal.routeParents.put(adjacent, pos);
+                    spaceToSeal.floodFillQueue.add(adjacent);
+                }
+            }
+        }
+    }
+
+    private boolean mergeIntersectingSpace(SpaceToSeal spaceToSeal, BlockPos pos, Set<SpaceToSeal> spacesToSeal) {
+        for (Iterator<SpaceToSeal> iterator = spacesToSeal.iterator(); iterator.hasNext();) {
+            SpaceToSeal otherSpace = iterator.next();
+            if (spaceToSeal == otherSpace) continue;
+            if (!otherSpace.blocksToSeal.contains(pos)) continue;
+            // We have encountered a block that another sealer is trying to seal,
+            // so both sealers must be within the same space, so we combine them.
+            spaceToSeal.sealers.addAll(otherSpace.sealers);
+            spaceToSeal.blocksToSeal.addAll(otherSpace.blocksToSeal);
+            spaceToSeal.floodFillQueue.addAll(otherSpace.floodFillQueue);
+            otherSpace.routeParents.forEach((routePos, parent) -> {
+                if (!spaceToSeal.routeParents.containsKey(routePos)) {
+                    spaceToSeal.routeParents.put(routePos, parent);
+                }
+            });
+            boolean willAlreadySeal = otherSpace.willSealSucceed();
+            iterator.remove();
+            return willAlreadySeal;
+        }
+        return false;
+    }
+
+    private void updateBreathability(Set<BlockPos> nextSealedBlocks) {
         this.changingBreathability = true;
         try {
             for (BlockPos pos : this.sealedBlocks) {
@@ -218,13 +240,6 @@ public class SealerManager {
         } finally {
             this.changingBreathability = false;
         }
-
-        this.sealedBlocks.clear();
-        this.sealedBlocks.addAll(nextSealedBlocks);
-        this.observedBlocks.clear();
-        this.observedBlocks.addAll(nextObservedBlocks);
-        this.hasUnsealedActiveSealers = sealedSealers.size() < activeSealers.size();
-        this.syncLeakTraces(spacesToSeal);
     }
 
     private void syncLeakTraces(Set<SpaceToSeal> spaces) {

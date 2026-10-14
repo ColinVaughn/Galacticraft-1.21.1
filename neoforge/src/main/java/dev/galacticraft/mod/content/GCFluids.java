@@ -44,6 +44,10 @@ public final class GCFluids {
     public static final FlowingFluid SULFURIC_ACID = new SulfuricAcidFluid.Still();
     public static final FlowingFluid FLOWING_SULFURIC_ACID = new SulfuricAcidFluid.Flowing();
     public static final Fluid LIQUID_OXYGEN = new OxygenFluid();
+    public static final Fluid LIQUID_NITROGEN = new OxygenFluid();
+    public static final Fluid LIQUID_ARGON = new OxygenFluid();
+    public static final Fluid ARGON = dev.galacticraft.api.gas.Gases.ARGON;
+    public static final Fluid ATMOSPHERIC_GASES = dev.galacticraft.api.gas.GasFluid.create(net.minecraft.network.chat.Component.translatable("fluid.galacticraft.atmospheric_gases"), Constant.id("gas/nitrogen"), "Air");
 
     private GCFluids() {
     }
@@ -58,6 +62,9 @@ public final class GCFluids {
         register(Constant.Fluid.SULFURIC_ACID_STILL, SULFURIC_ACID);
         register(Constant.Fluid.SULFURIC_ACID_FLOWING, FLOWING_SULFURIC_ACID);
         register(Constant.Fluid.LIQUID_OXYGEN, LIQUID_OXYGEN);
+        register("liquid_nitrogen", LIQUID_NITROGEN);
+        register("liquid_argon", LIQUID_ARGON);
+        register("atmospheric_gases", ATMOSPHERIC_GASES);
     }
 
     public static void registerFluidVariantAttributes() {

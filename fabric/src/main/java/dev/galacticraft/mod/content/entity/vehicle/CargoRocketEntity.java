@@ -43,6 +43,9 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -58,8 +61,10 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -79,6 +84,12 @@ public class CargoRocketEntity extends GCVehicle
         implements ContainerListener, ContainerVehicle, ExtendedMenuProvider, Dockable {
     public static final int INVENTORY_SIZE = 27;
     public static final int TANK_CAPACITY = 2;
+    public static final float WIDTH = 2.75F;
+    public static final float EMPTY_HEIGHT = 4.5F;
+    public static final float FAIRING_EXTENSION = 1.5F;
+
+    private static final EntityDataAccessor<Float> CARGO_LOAD =
+            SynchedEntityData.defineId(CargoRocketEntity.class, EntityDataSerializers.FLOAT);
 
     private static final int TRAVEL_HEIGHT = 300;
     private static final double MAX_ASCENT_SPEED = 1.2D;
@@ -99,6 +110,8 @@ public class CargoRocketEntity extends GCVehicle
     private @Nullable BlockPos linkedPadPos;
     private @Nullable FuelDock linkedPad;
     private String lastFailure = "";
+    private float fairingLoad;
+    private float previousFairingLoad;
 
     public CargoRocketEntity(EntityType<?> entityType, Level level) {
         super(entityType, level);
@@ -122,9 +135,43 @@ public class CargoRocketEntity extends GCVehicle
     }
 
     @Override
-    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
+        builder.define(CARGO_LOAD, 0.0F);
         this.createInventory();
+    }
+
+    @Override
+    public void onSyncedDataUpdated(EntityDataAccessor<?> accessor) {
+        super.onSyncedDataUpdated(accessor);
+        if (CARGO_LOAD.equals(accessor)) this.refreshDimensions();
+    }
+
+    @Override
+    public EntityDimensions getDimensions(Pose pose) {
+        float load = this.entityData == null ? 0.0F : this.getCargoLoad();
+        return EntityDimensions.scalable(WIDTH, EMPTY_HEIGHT + FAIRING_EXTENSION * load);
+    }
+
+    public float getCargoLoad() {
+        return this.entityData.get(CARGO_LOAD);
+    }
+
+    public float getFairingLoad(float partialTick) {
+        return Mth.lerp(partialTick, this.previousFairingLoad, this.fairingLoad);
+    }
+
+    public static float calculateCargoLoad(Container cargo) {
+        if (cargo.getContainerSize() == 0) return 0.0F;
+        double filledSlots = 0;
+        for (int slot = 0; slot < cargo.getContainerSize(); slot++) {
+            ItemStack stack = cargo.getItem(slot);
+            if (!stack.isEmpty()) {
+                int capacity = Math.max(1, Math.min(cargo.getMaxStackSize(), stack.getMaxStackSize()));
+                filledSlots += Math.min(1.0D, (double) stack.getCount() / capacity);
+            }
+        }
+        return (float) (filledSlots / cargo.getContainerSize());
     }
 
     @Override
@@ -146,6 +193,7 @@ public class CargoRocketEntity extends GCVehicle
         this.tank.readNbt(nbt, this.registryAccess());
         this.createInventory();
         ContainerVehicle.loadInventory(nbt, this.inventory, this.registryAccess());
+        this.containerChanged(this.inventory);
     }
 
     @Override
@@ -235,7 +283,12 @@ public class CargoRocketEntity extends GCVehicle
     @Override
     public void tick() {
         super.tick();
-        if (this.level().isClientSide || !(this.level() instanceof ServerLevel level)) return;
+        if (this.level().isClientSide) {
+            this.previousFairingLoad = this.fairingLoad;
+            this.fairingLoad = Mth.lerp(0.2F, this.fairingLoad, this.getCargoLoad());
+            return;
+        }
+        if (!(this.level() instanceof ServerLevel level)) return;
 
         FuelDock pad = this.getLandingPad();
         if (this.flightState == FlightState.IDLE && pad != null) {
@@ -356,6 +409,9 @@ public class CargoRocketEntity extends GCVehicle
 
     @Override
     public void containerChanged(Container sender) {
+        if (!this.level().isClientSide) {
+            this.entityData.set(CARGO_LOAD, calculateCargoLoad(this.inventory));
+        }
     }
 
     @Override

@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "F": {
+      "item": "galacticraft:rocket_fin"
+    },
+    "P": {
+      "item": "galacticraft:heavy_plating"
+    }
+  },
+  "pattern": [
+    " F ",
+    "FPF",
+    " F "
+  ],
+  "result": {
+    "count": 1,
+    "id": "galacticraft:tier_1_rocket_fins"
+  }
+}

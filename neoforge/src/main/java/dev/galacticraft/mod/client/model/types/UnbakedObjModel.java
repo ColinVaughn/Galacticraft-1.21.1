@@ -50,8 +50,14 @@ public final class UnbakedObjModel implements GCUnbakedModel {
     private final ResourceLocation model;
     private final ResourceLocation material;
     private final Optional<ResourceLocation> atlas;
+    private final Optional<ResourceLocation> paintTexture;
 
     public UnbakedObjModel(ResourceLocation model, ResourceLocation material, Optional<ResourceLocation> atlas) {
+        this(model, material, atlas, Optional.empty());
+    }
+
+    public UnbakedObjModel(ResourceLocation model, ResourceLocation material, Optional<ResourceLocation> atlas, Optional<ResourceLocation> paintTexture) {
+        this.paintTexture = paintTexture;
         this.model = model;
         this.material = material;
         this.atlas = atlas;
@@ -67,7 +73,8 @@ public final class UnbakedObjModel implements GCUnbakedModel {
             for (Mtl mtl : MtlReader.read(resources.getResourceOrThrow(this.material).open())) {
                 if (mtl.getMapKdOptions() != null && mtl.getMapKdOptions().getFileName() != null) {
                     var texture = ResourceLocation.parse(mtl.getMapKdOptions().getFileName());
-                    baked.add(new BakedMaterial(mtl, sprites.apply(new Material(this.atlas.orElse(GCRenderTypes.OBJ_ATLAS), texture))));
+                    baked.add(new BakedMaterial(mtl, sprites.apply(new Material(this.atlas.orElse(GCRenderTypes.OBJ_ATLAS), texture)),
+                            mtl.getName().endsWith("_paint") ? paintTexture.map(paint -> sprites.apply(new Material(this.atlas.orElse(GCRenderTypes.OBJ_ATLAS), paint))).orElse(null) : null));
                 }
             }
             return new ObjModel(obj, baked);
@@ -76,14 +83,17 @@ public final class UnbakedObjModel implements GCUnbakedModel {
         }
     }
 
-    public record BakedMaterial(Mtl material, TextureAtlasSprite sprite) {}
+    public record BakedMaterial(Mtl material, TextureAtlasSprite sprite, TextureAtlasSprite paintSprite) {
+        public BakedMaterial(Mtl material, TextureAtlasSprite sprite) { this(material, sprite, null); }
+    }
 
     public static final class ObjType implements GCModelType {
         public static final ResourceLocation ID = Constant.id("obj");
         public static final MapCodec<UnbakedObjModel> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
                 ResourceLocation.CODEC.fieldOf("model").forGetter(value -> value.model),
                 ResourceLocation.CODEC.fieldOf("mtl").forGetter(value -> value.material),
-                ResourceLocation.CODEC.optionalFieldOf("atlas").forGetter(value -> value.atlas)
+                ResourceLocation.CODEC.optionalFieldOf("atlas").forGetter(value -> value.atlas),
+                ResourceLocation.CODEC.optionalFieldOf("paint_texture").forGetter(value -> value.paintTexture)
         ).apply(instance, UnbakedObjModel::new));
         @Override public MapCodec<? extends GCUnbakedModel> codec() { return CODEC; }
         @Override public ResourceLocation getId() { return ID; }

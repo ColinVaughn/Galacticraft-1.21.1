@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": {
+      "item": "galacticraft:coal_generator"
+    },
+    "V": {
+      "item": "galacticraft:atmospheric_valve"
+    },
+    "W": {
+      "item": "galacticraft:aluminum_wire"
+    },
+    "X": {
+      "tag": "c:plates/bronze"
+    },
+    "Y": {
+      "tag": "c:ingots/lead"
+    }
+  },
+  "pattern": [
+    "XVX",
+    "WGW",
+    "XYX"
+  ],
+  "result": {
+    "count": 1,
+    "id": "galacticraft:geothermal_generator"
+  }
+}

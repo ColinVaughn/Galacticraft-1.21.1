@@ -425,6 +425,19 @@ public class GCModelProvider extends FabricModelProvider {
                 TextureProvider.builder(Constant.MOD_ID).all("block/machine_side").build()
         );
 
+        createGasProcessingMachine(generator, GCBlocks.GAS_LIQUEFIER);
+        createGasProcessingMachine(generator, GCBlocks.METHANE_SYNTHESIZER);
+        ResourceLocation telepad = ModelLocationUtils.getModelLocation(GCBlocks.SHORT_RANGE_TELEPAD);
+        generator.blockStateOutput.accept(MultiVariantGenerator.multiVariant(GCBlocks.SHORT_RANGE_TELEPAD, Variant.variant().with(VariantProperties.MODEL, telepad)));
+        generator.blockStateOutput.accept(MultiVariantGenerator.multiVariant(GCBlocks.TELEPAD_FRAME, Variant.variant().with(VariantProperties.MODEL, telepad)));
+        generator.delegateItemModel(GCBlocks.SHORT_RANGE_TELEPAD, telepad);
+        ResourceLocation geothermal = ModelLocationUtils.getModelLocation(GCBlocks.GEOTHERMAL_GENERATOR);
+        ResourceLocation geothermalActive = ModelLocationUtils.getModelLocation(GCBlocks.GEOTHERMAL_GENERATOR, "_active");
+        generator.blockStateOutput.accept(MultiVariantGenerator.multiVariant(GCBlocks.GEOTHERMAL_GENERATOR)
+                .with(BlockModelGenerators.createBooleanModelDispatch(MachineBlock.ACTIVE, geothermalActive, geothermal))
+                .with(BlockModelGenerators.createHorizontalFacingDispatch()));
+        generator.delegateItemModel(GCBlocks.GEOTHERMAL_GENERATOR, geothermalActive);
+
         //Active blocks
         createFullCubeActiveMachine(generator, GCBlocks.OXYGEN_COLLECTOR);
         createFullCubeActiveMachine(generator, GCBlocks.OXYGEN_BUBBLE_DISTRIBUTOR);
@@ -444,6 +457,14 @@ public class GCModelProvider extends FabricModelProvider {
         generator.createTrivialCube(GCBlocks.AIR_LOCK_FRAME);
         this.createAirLockController(generator);
         this.createParachests(generator);
+    }
+
+    private static void createGasProcessingMachine(BlockModelGenerators generator, Block block) {
+        ResourceLocation model = ModelLocationUtils.getModelLocation(block);
+        generator.blockStateOutput.accept(MultiVariantGenerator.multiVariant(block,
+                Variant.variant().with(VariantProperties.MODEL, model))
+                .with(BlockModelGenerators.createHorizontalFacingDispatch()));
+        generator.delegateItemModel(block, model);
     }
 
     //MODEL 0 IS USED TO GENERATE ITEM MODEL
@@ -890,6 +911,8 @@ public class GCModelProvider extends FabricModelProvider {
         generator.generateFlatItem(GCItems.ROCKET_ENGINE, ModelTemplates.FLAT_ITEM);
         generator.generateFlatItem(GCItems.HEAVY_ROCKET_ENGINE, ModelTemplates.FLAT_ITEM);
         generator.generateFlatItem(GCItems.ROCKET_BOOSTER, ModelTemplates.FLAT_ITEM);
+        var moduleModel = new ModelTemplate(java.util.Optional.of(ResourceLocation.withDefaultNamespace("builtin/entity")), java.util.Optional.empty());
+        GCItems.ROCKET_MODULES.forEach(module -> generator.generateFlatItem(module, moduleModel));
 
         // BUGGY PARTS
         generator.generateFlatItem(GCItems.BUGGY_WHEEL, ModelTemplates.FLAT_ITEM);

@@ -1,0 +1,6 @@
+{
+  "galacticraft:type": "galacticraft:obj",
+  "model": "galacticraft:models/misc/rocket_engine_tier_1.obj",
+  "mtl": "galacticraft:models/misc/rocket_engine_tier_1.mtl",
+  "paint_texture": "galacticraft:obj/rocket_engines_paint"
+}

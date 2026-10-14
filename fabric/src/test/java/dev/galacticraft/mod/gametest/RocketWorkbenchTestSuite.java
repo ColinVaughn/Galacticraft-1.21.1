@@ -46,59 +46,26 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.level.GameType;
 
 import java.util.List;
 
 public class RocketWorkbenchTestSuite implements GalacticraftGameTest {
     @GameTest(template = EMPTY_STRUCTURE)
-    public void mixedTierRocketPartsAreRejected(GameTestHelper context) {
-        BlockPos workbenchPos = new BlockPos(1, 1, 1);
-        context.setBlock(workbenchPos, GCBlocks.ROCKET_WORKBENCH);
-
-        RocketWorkbenchBlockEntity workbench = context.getBlockEntity(workbenchPos);
+    public void legacyLoosePartsCannotReplaceRocketModules(GameTestHelper context) {
+        BlockPos pos = new BlockPos(1, 1, 1);
+        context.setBlock(pos, GCBlocks.ROCKET_WORKBENCH);
+        RocketWorkbenchBlockEntity workbench = context.getBlockEntity(pos);
         ServerPlayer player = context.makeMockServerPlayerInLevel();
-        player.setGameMode(GameType.CREATIVE);
         RocketWorkbenchMenu menu = new RocketWorkbenchMenu(1, workbench, player.getInventory());
-
-        for (int slot = 1; slot <= 8; slot++) {
-            workbench.ingredients.setItem(slot, new ItemStack(GCItems.TIER_1_HEAVY_DUTY_PLATE));
-        }
-        for (int slot = 9; slot <= 12; slot++) {
-            workbench.ingredients.setItem(slot, new ItemStack(GCItems.ROCKET_FIN));
-        }
-        workbench.ingredients.setItem(13, new ItemStack(GCItems.ROCKET_ENGINE));
-        workbench.ingredients.setChanged();
-
-        Slot coneSlot = menu.slots.getFirst();
-        if (coneSlot.mayPlace(new ItemStack(GCItems.HEAVY_NOSE_CONE))) {
-            menu.removed(player);
-            context.fail("Expected the tier-1 assembly to reject a tier-3 heavy nose cone", workbenchPos);
-            return;
-        }
-
-        // Reproduce a legacy/persisted mixed-tier inventory that bypassed slot validation.
-        workbench.ingredients.setItem(0, new ItemStack(GCItems.HEAVY_NOSE_CONE));
-        workbench.ingredients.setChanged();
-        if (!workbench.output.getItem(0).isEmpty()) {
-            menu.removed(player);
-            context.fail("Expected no output for mixed-tier rocket parts", workbenchPos);
-            return;
-        }
-        if (menu.previewRocket().cone().isPresent()) {
-            menu.removed(player);
-            context.fail("Expected the preview to mark the incompatible heavy nose cone as incomplete", workbenchPos);
-            return;
-        }
-
+        fillTierOneModules(workbench);
+        context.assertTrue(!menu.ingredientSlots().getFirst().mayPlace(new ItemStack(GCItems.NOSE_CONE)), "Rocket page accepted a loose nose cone");
         workbench.ingredients.setItem(0, new ItemStack(GCItems.NOSE_CONE));
         workbench.ingredients.setChanged();
+        context.assertTrue(workbench.output.isEmpty() && menu.previewRocket().cone().isEmpty(), "Legacy parts produced a modular rocket");
+        fillTierOneModules(workbench);
+        context.assertTrue(workbench.output.getItem(0).is(GCItems.ROCKET), "Replacing the loose part with a module did not craft");
         menu.removed(player);
-        if (workbench.output.getItem(0).is(GCItems.ROCKET)) {
-            context.succeed();
-        } else {
-            context.fail("Expected replacing the heavy nose cone with a tier-1 nose cone to craft the rocket", workbenchPos);
-        }
+        context.succeed();
     }
 
     @GameTest(template = EMPTY_STRUCTURE)
@@ -107,8 +74,7 @@ public class RocketWorkbenchTestSuite implements GalacticraftGameTest {
         context.setBlock(workbenchPos, GCBlocks.ROCKET_WORKBENCH);
 
         RocketWorkbenchBlockEntity workbench = context.getBlockEntity(workbenchPos);
-        ServerPlayer player = context.makeMockServerPlayerInLevel();
-        player.setGameMode(GameType.SURVIVAL);
+        ServerPlayer player = this.makeSurvivalServerPlayer(context);
         ((ServerResearchAccessor) player).galacticraft$unlockRocketPartRecipes(
                 GCRocketParts.recipeId(GCRocketParts.TIER_1_CONE),
                 GCRocketParts.recipeId(GCRocketParts.TIER_1_BODY),
@@ -117,15 +83,7 @@ public class RocketWorkbenchTestSuite implements GalacticraftGameTest {
         );
 
         RocketWorkbenchMenu menu = new RocketWorkbenchMenu(1, workbench, player.getInventory());
-        workbench.ingredients.setItem(0, new ItemStack(GCItems.NOSE_CONE));
-        for (int slot = 1; slot <= 8; slot++) {
-            workbench.ingredients.setItem(slot, new ItemStack(GCItems.TIER_1_HEAVY_DUTY_PLATE));
-        }
-        for (int slot = 9; slot <= 12; slot++) {
-            workbench.ingredients.setItem(slot, new ItemStack(GCItems.ROCKET_FIN));
-        }
-        workbench.ingredients.setItem(13, new ItemStack(GCItems.ROCKET_ENGINE));
-        workbench.ingredients.setChanged();
+        fillTierOneModules(workbench);
 
         if (!workbench.output.getItem(0).is(GCItems.ROCKET)) {
             context.fail("Expected a tier-1 rocket in the workbench result slot", workbenchPos);
@@ -155,8 +113,7 @@ public class RocketWorkbenchTestSuite implements GalacticraftGameTest {
         context.setBlock(workbenchPos, GCBlocks.ROCKET_WORKBENCH);
 
         RocketWorkbenchBlockEntity workbench = context.getBlockEntity(workbenchPos);
-        ServerPlayer player = context.makeMockServerPlayerInLevel();
-        player.setGameMode(GameType.SURVIVAL);
+        ServerPlayer player = this.makeSurvivalServerPlayer(context);
         ((ServerResearchAccessor) player).galacticraft$unlockRocketPartRecipes(
                 GCRocketParts.recipeId(GCRocketParts.TIER_1_CONE),
                 GCRocketParts.recipeId(GCRocketParts.TIER_1_BODY),
@@ -165,15 +122,7 @@ public class RocketWorkbenchTestSuite implements GalacticraftGameTest {
         );
 
         RocketWorkbenchMenu menu = new RocketWorkbenchMenu(1, workbench, player.getInventory());
-        workbench.ingredients.setItem(0, new ItemStack(GCItems.NOSE_CONE));
-        for (int slot = 1; slot <= 8; slot++) {
-            workbench.ingredients.setItem(slot, new ItemStack(GCItems.TIER_1_HEAVY_DUTY_PLATE));
-        }
-        for (int slot = 9; slot <= 12; slot++) {
-            workbench.ingredients.setItem(slot, new ItemStack(GCItems.ROCKET_FIN));
-        }
-        workbench.ingredients.setItem(13, new ItemStack(GCItems.ROCKET_ENGINE));
-        workbench.ingredients.setChanged();
+        fillTierOneModules(workbench);
         workbench.chests.setItem(0, new ItemStack(Items.CHEST));
         workbench.chests.setChanged();
 
@@ -271,9 +220,9 @@ public class RocketWorkbenchTestSuite implements GalacticraftGameTest {
         context.succeed();
     }
 
-    /** Only the tier-1 rocket may be built without first unlocking a schematic, as in legacy. */
+    /** Modular assembly is visible immediately; selected parts still require their own research. */
     @GameTest(template = EMPTY_STRUCTURE)
-    public void onlyTheTierOneRocketPageNeedsNoSchematic(GameTestHelper context) {
+    public void rocketPageIsTheOnlySchematicFreeAssemblyPage(GameTestHelper context) {
         BlockPos workbenchPos = new BlockPos(1, 1, 1);
 
         List<ResourceLocation> free = new java.util.ArrayList<>();
@@ -283,10 +232,21 @@ public class RocketWorkbenchTestSuite implements GalacticraftGameTest {
             }
         }
 
-        if (free.equals(List.of(Constant.id("rocket/rocket")))) {
+        if (java.util.Set.copyOf(free).equals(java.util.Set.of(WorkbenchPages.ROCKET_ID))) {
             context.succeed();
         } else {
-            context.fail("Expected only the tier-1 rocket page to be schematic-free, got " + free, workbenchPos);
+            context.fail("Expected one schematic-free rocket assembly page, got " + free, workbenchPos);
         }
+    }
+
+    private static void fillTierOneModules(RocketWorkbenchBlockEntity workbench) {
+        var types = List.of(dev.galacticraft.api.rocket.part.RocketPartTypes.CONE, dev.galacticraft.api.rocket.part.RocketPartTypes.BODY,
+                dev.galacticraft.api.rocket.part.RocketPartTypes.FIN, dev.galacticraft.api.rocket.part.RocketPartTypes.ENGINE);
+        for (int slot = 0; slot < types.size(); slot++) {
+            var type = types.get(slot);
+            var module = GCItems.ROCKET_MODULES.stream().filter(item -> item.type() == type && item.tier() == 1).findFirst().orElseThrow();
+            workbench.ingredients.setItem(slot, module.getDefaultInstance());
+        }
+        workbench.ingredients.setChanged();
     }
 }

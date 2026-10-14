@@ -69,6 +69,8 @@ public class GCResourceReloadListener implements SimpleSynchronousResourceReload
         };
 
         FluidRenderHandlerRegistry.INSTANCE.register(GCFluids.LIQUID_OXYGEN, oxygen);
+        FluidRenderHandlerRegistry.INSTANCE.register(GCFluids.LIQUID_NITROGEN, oxygen);
+        FluidRenderHandlerRegistry.INSTANCE.register(GCFluids.LIQUID_ARGON, oxygen);
 
         // Gases are never rendered in the world, but machine tanks still ask for a sprite. Without
         // a handler Fabric hands back nothing and the tank draws empty, so mirror what the NeoForge

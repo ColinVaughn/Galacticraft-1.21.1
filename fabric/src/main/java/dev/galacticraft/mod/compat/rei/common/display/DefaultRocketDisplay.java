@@ -26,6 +26,7 @@ import dev.galacticraft.mod.compat.rei.common.GalacticraftREIServerPlugin;
 import dev.galacticraft.mod.machine.workbench.WorkbenchLayout;
 import dev.galacticraft.mod.machine.workbench.WorkbenchSlot;
 import dev.galacticraft.mod.recipe.RocketRecipe;
+import dev.galacticraft.mod.recipe.ModularRocketRecipe;
 import dev.galacticraft.mod.recipe.SchematicCraftingRecipe;
 import dev.galacticraft.mod.recipe.WorkbenchRecipe;
 import me.shedaniel.rei.api.common.category.CategoryIdentifier;
@@ -50,12 +51,14 @@ public class DefaultRocketDisplay extends BasicDisplay {
                         id,
                         tag.getInt("BodyHeight"),
                         tag.getBoolean("HasBoosters"),
+                        tag.getBoolean("Modular"),
                         findLayout(tag.getString("Layout"))
                 );
             },
             (display, tag) -> {
                 tag.putInt("BodyHeight", display.bodyHeight);
                 tag.putBoolean("HasBoosters", display.hasBoosters);
+                tag.putBoolean("Modular", display.modular);
                 if (display.layout != null) {
                     tag.putString("Layout", display.layout.getSerializedName());
                 }
@@ -64,13 +67,15 @@ public class DefaultRocketDisplay extends BasicDisplay {
 
     public final int bodyHeight;
     public final boolean hasBoosters;
+    public final boolean modular;
     private final @Nullable WorkbenchLayout layout;
 
     protected DefaultRocketDisplay(List<EntryIngredient> inputs, List<EntryIngredient> outputs, Optional<ResourceLocation> location,
-                                   int bodyHeight, boolean hasBoosters, @Nullable WorkbenchLayout layout) {
+                                   int bodyHeight, boolean hasBoosters, boolean modular, @Nullable WorkbenchLayout layout) {
         super(inputs, outputs, location);
         this.bodyHeight = bodyHeight;
         this.hasBoosters = hasBoosters;
+        this.modular = modular;
         this.layout = layout;
     }
 
@@ -83,14 +88,17 @@ public class DefaultRocketDisplay extends BasicDisplay {
                 recipe == null ? Optional.empty() : Optional.of(recipe.id())
         );
         if (recipe == null) {
+            this.modular = false;
             this.bodyHeight = 0;
             this.hasBoosters = false;
             this.layout = null;
         } else if (recipe.value() instanceof RocketRecipe rocketRecipe) {
+            this.modular = rocketRecipe instanceof ModularRocketRecipe;
             this.bodyHeight = rocketRecipe.bodyHeight();
             this.hasBoosters = !rocketRecipe.boosters().isEmpty();
             this.layout = null;
         } else if (recipe.value() instanceof SchematicCraftingRecipe schematicRecipe) {
+            this.modular = false;
             this.bodyHeight = 0;
             this.hasBoosters = false;
             this.layout = schematicRecipe.layout();

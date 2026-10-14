@@ -377,6 +377,9 @@ public class GCBlockLootTableProvider extends FabricBlockLootTableProvider {
         this.dropSelf(GCBlocks.COMPRESSOR);
         this.dropSelf(GCBlocks.ELECTRIC_COMPRESSOR);
         this.dropSelf(GCBlocks.COAL_GENERATOR);
+        this.dropSelf(GCBlocks.SHORT_RANGE_TELEPAD);
+        this.add(GCBlocks.TELEPAD_FRAME, net.minecraft.world.level.storage.loot.LootTable.lootTable());
+        this.dropSelf(GCBlocks.GEOTHERMAL_GENERATOR);
         this.dropSelf(GCBlocks.BASIC_SOLAR_PANEL);
         this.dropSelf(GCBlocks.ADVANCED_SOLAR_PANEL);
         this.dropSelf(GCBlocks.ENERGY_STORAGE_MODULE);
@@ -385,6 +388,8 @@ public class GCBlockLootTableProvider extends FabricBlockLootTableProvider {
         this.dropSelf(GCBlocks.ELECTRIC_FURNACE);
         this.dropSelf(GCBlocks.ELECTRIC_ARC_FURNACE);
         this.dropSelf(GCBlocks.REFINERY);
+        this.dropSelf(GCBlocks.GAS_LIQUEFIER);
+        this.dropSelf(GCBlocks.METHANE_SYNTHESIZER);
         this.dropSelf(GCBlocks.OXYGEN_COLLECTOR);
         this.dropSelf(GCBlocks.OXYGEN_SEALER);
         this.dropSelf(GCBlocks.OXYGEN_BUBBLE_DISTRIBUTOR);

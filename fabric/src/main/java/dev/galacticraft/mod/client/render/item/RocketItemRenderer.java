@@ -29,6 +29,7 @@ import dev.galacticraft.api.component.GCDataComponents;
 import dev.galacticraft.api.entity.rocket.render.RocketPartRendererRegistry;
 import dev.galacticraft.api.entity.rocket.render.RocketModelSlot;
 import dev.galacticraft.api.rocket.RocketData;
+import dev.galacticraft.mod.content.item.RocketModuleItem;
 import dev.galacticraft.api.rocket.RocketPrefabs;
 import dev.galacticraft.mod.client.util.LazyRocketEntity;
 import dev.galacticraft.mod.content.entity.vehicle.RocketEntity;
@@ -50,12 +51,20 @@ public class RocketItemRenderer {
             return; // nothing to render the rocket against
         }
 
-        RocketData data = stack.has(GCDataComponents.ROCKET_DATA) ? stack.get(GCDataComponents.ROCKET_DATA) : RocketPrefabs.MISSING;
+        RocketModuleItem module = stack.getItem() instanceof RocketModuleItem item ? item : null;
+        RocketData data = module != null ? module.rocketData(stack)
+                : stack.has(GCDataComponents.ROCKET_DATA) ? stack.get(GCDataComponents.ROCKET_DATA) : RocketPrefabs.MISSING;
         rocket.setData(data);
         rocket.setOldPosAndRot();
         matrices.pushPose();
 
-        switch (mode) {
+        if (module != null) {
+            matrices.translate(0.5, 0.5, 0.5);
+            matrices.mulPose(Axis.YP.rotationDegrees(45));
+            matrices.mulPose(Axis.XP.rotationDegrees(15));
+            float scale = switch (module.type()) { case ENGINE -> .6F; case FIN -> .3F; default -> .4F; };
+            matrices.scale(scale, scale, scale);
+        } else switch (mode) {
             case ItemDisplayContext.THIRD_PERSON_LEFT_HAND:
                 matrices.mulPose(Axis.XP.rotation(Mth.HALF_PI - 0.2F));
                 matrices.mulPose(Axis.ZN.rotation(Mth.HALF_PI - 0.4F));
@@ -94,7 +103,14 @@ public class RocketItemRenderer {
         }
         RenderSystem.setShaderTexture(0, InventoryMenu.BLOCK_ATLAS);
         // Preserve the item's existing engine-centred display transforms.
-        matrices.translate(0, -RocketModelSlot.ENGINE.y(), 0);
+        double center = module == null ? 7 : switch (module.type()) {
+            case BODY -> 35;
+            case ENGINE -> 8;
+            case FIN -> 14;
+            case CONE -> module.tier() == 2 ? 73 : module.tier() == 3 ? 66.7 : 69.3;
+            default -> 7;
+        };
+        matrices.translate(0, -center / 16, 0);
 
         data.engine().ifPresent(part -> {
             matrices.pushPose();

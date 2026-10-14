@@ -22,13 +22,14 @@
 
 package dev.galacticraft.mod.data.recipes;
 
-import dev.galacticraft.api.rocket.RocketPrefabs;
 import dev.galacticraft.mod.api.data.recipe.GCShapedRecipeBuilder;
-import dev.galacticraft.mod.api.data.recipe.RocketRecipeBuilder;
 import dev.galacticraft.mod.api.data.recipe.SchematicCraftingRecipeBuilder;
 import dev.galacticraft.mod.machine.workbench.WorkbenchLayout;
 import dev.galacticraft.mod.content.GCBlocks;
 import dev.galacticraft.mod.content.item.GCItems;
+import dev.galacticraft.mod.content.item.RocketModuleItem;
+import dev.galacticraft.mod.recipe.ModularRocketRecipe;
+import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.tag.GCItemTags;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider;
@@ -49,6 +50,7 @@ public class GCRocketRecipes extends FabricRecipeProvider {
 
     @Override
     public void buildRecipes(RecipeOutput output) {
+        this.buildRocketModules(output);
         GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.ROCKET_WORKBENCH)
                 .define('S', GCItems.COMPRESSED_STEEL)
                 .define('C', ConventionalItemTags.PLAYER_WORKSTATIONS_CRAFTING_TABLES)
@@ -150,47 +152,26 @@ public class GCRocketRecipes extends FabricRecipeProvider {
                 .emiDefaultRecipe(true)
                 .save(output);
 
-        RocketRecipeBuilder.create(GCItems.ROCKET)
-                .rocketData(RocketPrefabs.TIER_1)
-                .cone(GCItems.NOSE_CONE)
-                .body(GCItems.TIER_1_HEAVY_DUTY_PLATE)
-                .bodyHeight(4)
-                .fins(GCItems.ROCKET_FIN)
-                .engine(GCItems.ROCKET_ENGINE)
-                .unlockedBy(getHasName(GCItems.TIER_1_HEAVY_DUTY_PLATE), has(GCItems.TIER_1_HEAVY_DUTY_PLATE))
-                .save(output);
-
-        // No dedicated "rocket + chest" recipe: the workbench's chest slots are an upgrade applied
-        // on top of whichever tier's recipe matched (RocketWorkbenchMenu#withWorkbenchUpgrade), so
-        // storage works for every tier and records how many chests were installed. A separate
-        // recipe could never match anyway - its storage ingredient made it need a 15th ingredient
-        // slot that the workbench does not have.
-
-        RocketRecipeBuilder.create(GCItems.ROCKET)
-                .rocketData(RocketPrefabs.TIER_2)
-                .cone(GCItems.NOSE_CONE)
-                .body(GCItems.TIER_2_HEAVY_DUTY_PLATE)
-                .bodyHeight(4)
-                .fins(GCItems.ROCKET_FIN)
-                .engine(GCItems.ROCKET_ENGINE)
-                .schematic(GCItems.TIER_2_ROCKET_SCHEMATIC)
-                .sortOrder(20)
-                .unlockedBy(getHasName(GCItems.TIER_2_HEAVY_DUTY_PLATE), has(GCItems.TIER_2_HEAVY_DUTY_PLATE))
-                .save(output, getItemName(GCItems.ROCKET) + "_tier_2");
-
-        RocketRecipeBuilder.create(GCItems.ROCKET)
-                .rocketData(RocketPrefabs.TIER_3)
-                .cone(GCItems.HEAVY_NOSE_CONE)
-                .body(GCItems.TIER_3_HEAVY_DUTY_PLATE)
-                .bodyHeight(4)
-                .fins(GCItems.HEAVY_ROCKET_FIN)
-                .engine(GCItems.HEAVY_ROCKET_ENGINE)
-                .schematic(GCItems.TIER_3_ROCKET_SCHEMATIC)
-                .sortOrder(30)
-                .unlockedBy(getHasName(GCItems.TIER_3_HEAVY_DUTY_PLATE), has(GCItems.TIER_3_HEAVY_DUTY_PLATE))
-                .save(output, getItemName(GCItems.ROCKET) + "_tier_3");
-
         this.buildVehiclePages(output);
+    }
+
+    private void buildRocketModules(RecipeOutput output) {
+        var plates = java.util.List.of(GCItems.TIER_1_HEAVY_DUTY_PLATE, GCItems.TIER_2_HEAVY_DUTY_PLATE, GCItems.TIER_3_HEAVY_DUTY_PLATE);
+        for (RocketModuleItem module : GCItems.ROCKET_MODULES) {
+            var plate = plates.get(module.tier() - 1);
+            var recipe = GCShapedRecipeBuilder.crafting(RecipeCategory.TRANSPORTATION, module).define('P', plate);
+            switch (module.type()) {
+                case BODY -> recipe.pattern("PPP").pattern("P P").pattern("PPP");
+                case CONE -> recipe.define('R', Items.REDSTONE_TORCH).pattern(" R ").pattern(" P ").pattern("PPP");
+                case FIN -> recipe.define('F', module.tier() == 3 ? GCItems.HEAVY_ROCKET_FIN : GCItems.ROCKET_FIN)
+                        .pattern(" F ").pattern("FPF").pattern(" F ");
+                case ENGINE -> recipe.define('E', module.tier() == 3 ? GCItems.HEAVY_ROCKET_ENGINE : GCItems.ROCKET_ENGINE)
+                        .pattern(" P ").pattern("PEP").pattern(" P ");
+                default -> throw new IllegalArgumentException("Unsupported rocket module " + module.type());
+            }
+            recipe.unlockedBy(getHasName(plate), has(plate)).save(output);
+        }
+        output.accept(Constant.id("rocket/modular"), new ModularRocketRecipe(), null);
     }
 
     /**

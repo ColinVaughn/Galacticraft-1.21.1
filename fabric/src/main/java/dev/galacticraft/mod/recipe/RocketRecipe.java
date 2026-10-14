@@ -99,7 +99,7 @@ public class RocketRecipe implements WorkbenchRecipe {
     @Override
     public List<WorkbenchSlot> ingredientSlots() {
         List<Ingredient> ingredients = this.getIngredients();
-        List<RocketSlotData> positions = slotData(this.bodyHeight, !this.boosters.isEmpty());
+        List<RocketSlotData> positions = this.slots();
         List<WorkbenchSlot> slots = new ArrayList<>(positions.size());
         for (int i = 0; i < positions.size() && i < ingredients.size(); i++) {
             RocketSlotData data = positions.get(i);
@@ -234,6 +234,10 @@ public class RocketRecipe implements WorkbenchRecipe {
 
     public int bodyHeight() {
         return this.bodyHeight;
+    }
+
+    public List<RocketSlotData> slots() {
+        return slotData(this.bodyHeight, !this.boosters.isEmpty());
     }
 
     public static List<RocketSlotData> slotData(int bodyHeight, boolean hasBoosters) {
