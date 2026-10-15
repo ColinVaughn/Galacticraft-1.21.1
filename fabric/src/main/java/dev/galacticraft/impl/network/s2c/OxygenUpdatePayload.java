@@ -49,10 +49,16 @@ public record OxygenUpdatePayload(long chunk, OxygenData[] data) implements S2CP
         return TYPE;
     }
 
-    public record OxygenData(byte section, @NotNull BitSet data) {
+    public record OxygenData(int section, @NotNull BitSet data) {
+        public OxygenData {
+            if (section < 0 || section > 255) {
+                throw new IllegalArgumentException("Oxygen section index must fit an unsigned byte: " + section);
+            }
+        }
+
         private static final StreamCodec<ByteBuf, BitSet> BIT_SET_CODEC = ByteBufCodecs.BYTE_ARRAY.map(BitSet::valueOf, BitSet::toByteArray);
         public static final StreamCodec<ByteBuf, OxygenData> CODEC = StreamCodec.composite(
-                ByteBufCodecs.BYTE,
+                ByteBufCodecs.BYTE.map(Byte::toUnsignedInt, Integer::byteValue),
                 d -> d.section,
                 BIT_SET_CODEC,
                 d -> d.data,

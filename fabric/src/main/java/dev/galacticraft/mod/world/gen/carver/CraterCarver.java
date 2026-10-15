@@ -108,7 +108,8 @@ public class CraterCarver extends WorldCarver<CraterCarverConfig> {
         // surface is removed instead of leaving a one-block lid over the crater.
         int surfaceY = chunk.getHeight(Heightmap.Types.WORLD_SURFACE_WG, innerChunkX, innerChunkZ) + 1;
         mutable.set(innerChunkX, surfaceY, innerChunkZ);
-        for (int dug = 0; dug < toDig; dug++) {
+        int blocksToDig = (int) Math.ceil(toDig);
+        for (int dug = 0; dug < blocksToDig; dug++) {
             mutable.move(Direction.DOWN);
             if (!this.canReplaceBlock(config, chunk.getBlockState(mutable))) {
                 break;
@@ -120,7 +121,7 @@ public class CraterCarver extends WorldCarver<CraterCarverConfig> {
                 if (dug == 0) {
                     carvingMask.set(innerChunkX, mutable.getY() + 64, innerChunkZ);
                 }
-                if (!fresh && dug + 1 >= toDig && !chunk.getBlockState(copy.set(mutable).move(Direction.DOWN, 2)).isAir()) {
+                if (!fresh && dug + 1 == blocksToDig && !chunk.getBlockState(copy.set(mutable).move(Direction.DOWN, 2)).isAir()) {
                     context.topMaterial(posToBiome, chunk, mutable, false).ifPresent(blockStatex -> chunk.setBlockState(mutable.move(Direction.DOWN), blockStatex, false));
                 }
             }

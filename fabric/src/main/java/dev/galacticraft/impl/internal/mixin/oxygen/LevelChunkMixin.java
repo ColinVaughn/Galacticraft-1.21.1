@@ -59,7 +59,7 @@ public abstract class LevelChunkMixin extends ChunkAccess implements ChunkOxygen
     @Shadow
     @Final
     Level level;
-    private @Unique short dirtySections = 0b0;
+    private @Unique final BitSet dirtySections = new BitSet();
 
     private LevelChunkMixin(ChunkPos pos, UpgradeData upgradeData, LevelHeightAccessor heightLimitView, Registry<Biome> biome, long inhabitedTime, @Nullable LevelChunkSection[] sectionArrayInitializer, @Nullable BlendingData blendingData) {
         super(pos, upgradeData, heightLimitView, biome, inhabitedTime, sectionArrayInitializer, blendingData);
@@ -76,7 +76,7 @@ public abstract class LevelChunkMixin extends ChunkAccess implements ChunkOxygen
         if (inverted != accessor.galacticraft$isInverted(x, y & 15, z)) {
             if (!this.level.isClientSide) {
                 this.unsaved = true;
-                this.dirtySections |= (short) (0b1 << this.getSectionIndex(y));
+                this.dirtySections.set(this.getSectionIndex(y));
             }
             accessor.galacticraft$setInverted(x, y & 15, z, inverted);
         }
@@ -85,24 +85,14 @@ public abstract class LevelChunkMixin extends ChunkAccess implements ChunkOxygen
     @Override
     public @Nullable OxygenUpdatePayload.OxygenData[] galacticraft$syncOxygenPacketsToClient() {
         assert !this.level.isClientSide;
-        if (this.dirtySections != 0b0) {
-            int count = 0;
-            for (int i = 0; i < this.sections.length; i++) {
-                if ((this.dirtySections & (0b1 << i)) != 0) {
-                    count++;
-                }
-            }
-
-            OxygenUpdatePayload.OxygenData[] data = new OxygenUpdatePayload.OxygenData[count];
-
+        if (!this.dirtySections.isEmpty()) {
+            OxygenUpdatePayload.OxygenData[] data = new OxygenUpdatePayload.OxygenData[this.dirtySections.cardinality()];
             int idx = 0;
-            for (byte i = 0; i < this.sections.length; i++) {
-                if ((this.dirtySections & (0b1 << i)) != 0) {
-                    BitSet data1 = ((ChunkSectionOxygenAccessor) this.sections[i]).galacticraft$getBits();
-                    data[idx++] = new OxygenUpdatePayload.OxygenData(i, data1 == null ? new BitSet(0) : data1);
-                }
+            for (int i = this.dirtySections.nextSetBit(0); i >= 0; i = this.dirtySections.nextSetBit(i + 1)) {
+                BitSet data1 = ((ChunkSectionOxygenAccessor) this.sections[i]).galacticraft$getBits();
+                data[idx++] = new OxygenUpdatePayload.OxygenData(i, data1 == null ? new BitSet(0) : data1);
             }
-            this.dirtySections = 0;
+            this.dirtySections.clear();
             return data;
         }
         return null;

@@ -1,15 +1,26 @@
 name: CodeQL Analysis
 
 on:
-  workflow_run:
-    workflows: [ Build ]
-    types:
-      - completed
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '23 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+concurrency:
+  group: codeql-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   codeql:
     runs-on: ubuntu-24.04
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    timeout-minutes: 60
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -23,23 +34,25 @@ jobs:
           java-version: 21
           distribution: temurin
 
-      - name: Restore Gradle cache
-        uses: actions/cache/restore@v5
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v5
         with:
-          fail-on-cache-miss: true
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-            .gradle
-          key: ${{ runner.os }}-gradle-${{ hashFiles('gradle/gradle-wrapper.properties', 'settings.gradle.kts', 'build.gradle.kts', 'gradle.properties') }}
+          key: ${{ runner.os }}-codeql-gradle-${{ hashFiles('gradle/gradle-wrapper.properties', 'settings.gradle.kts', '**/build.gradle.kts', '**/gradle.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-codeql-gradle-
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
         with:
-          languages: java
-
-      - name: Build
-        run: ./gradlew assemble
+          languages: java-kotlin
+          # Avoid requiring artifacts from the unavailable dependency Maven server.
+          build-mode: none
+          queries: security-extended
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
+        with:
+          category: /language:java-kotlin

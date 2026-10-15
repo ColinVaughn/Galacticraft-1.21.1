@@ -648,7 +648,7 @@ public class AsteroidChunkGenerator extends ChunkGenerator {
         //50:50 chance to include small blocks each chunk
         if (this.rand.nextBoolean()) {
             double density = this.asteroidDensity.getNoise(chunkX * 16, chunkZ * 16) * 0.54;
-            double numOfBlocks = Mth.clamp(this.randFromPoint(chunkX, chunkZ), 0.4, 1) * AsteroidChunkGenerator.MAX_BLOCKS_PER_CHUNK * density + AsteroidChunkGenerator.MIN_BLOCKS_PER_CHUNK;
+            int numOfBlocks = (int) Math.ceil(Mth.clamp(this.randFromPoint(chunkX, chunkZ), 0.4, 1) * AsteroidChunkGenerator.MAX_BLOCKS_PER_CHUNK * density + AsteroidChunkGenerator.MIN_BLOCKS_PER_CHUNK);
             int y0 = this.rand.nextInt(2);
             Block block;
             int yRange = AsteroidChunkGenerator.MAX_ASTEROID_Y - AsteroidChunkGenerator.MIN_ASTEROID_Y;

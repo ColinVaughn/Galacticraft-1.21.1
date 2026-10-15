@@ -23,6 +23,8 @@
 package dev.galacticraft.mod.gametest;
 
 import dev.galacticraft.api.gas.Gases;
+import dev.galacticraft.impl.internal.accessor.ChunkOxygenAccessor;
+import dev.galacticraft.impl.internal.accessor.ChunkOxygenSyncer;
 import dev.galacticraft.machinelib.api.machine.configuration.RedstoneMode;
 import dev.galacticraft.mod.content.GCBlocks;
 import dev.galacticraft.mod.content.block.entity.machine.OxygenSealerBlockEntity;
@@ -77,6 +79,32 @@ public final class OxygenSealerTestSuite implements GalacticraftGameTest {
     private static final int SETTLE_TICKS = 6;
     /** How long {@link #await} keeps looking before giving up, comfortably inside the test timeout. */
     private static final int DEADLINE_TICKS = 100;
+
+    @GameTest(template = EMPTY_STRUCTURE, batch = "galacticraft:oxygen_sync")
+    public void oxygenUpdatesIncludeOnlyChangedSectionsAboveAndAcrossTheOldMaskLimit(GameTestHelper context) {
+        var chunk = context.getLevel().getChunkAt(context.absolutePos(BlockPos.ZERO));
+        var oxygen = (ChunkOxygenAccessor) chunk;
+        var syncer = (ChunkOxygenSyncer) chunk;
+        syncer.galacticraft$syncOxygenPacketsToClient();
+        for (int section : new int[]{16, 23, 15}) {
+            int y = chunk.getMinBuildHeight() + (section << 4);
+            boolean previous = oxygen.galacticraft$isInverted(0, y, 0);
+            try {
+                oxygen.galacticraft$setInverted(0, y, 0, !previous);
+                var updates = syncer.galacticraft$syncOxygenPacketsToClient();
+                context.assertTrue(updates != null && updates.length == 1,
+                        "Expected exactly one oxygen update for section " + section);
+                context.assertTrue(updates[0].section() == section, "Oxygen update has the wrong section index");
+                context.assertTrue(updates[0].data().get(0) == !previous, "Oxygen update lost its changed bit");
+                context.assertTrue(syncer.galacticraft$syncOxygenPacketsToClient() == null,
+                        "Oxygen updates must clear dirty sections after sending");
+            } finally {
+                oxygen.galacticraft$setInverted(0, y, 0, previous);
+                syncer.galacticraft$syncOxygenPacketsToClient();
+            }
+        }
+        context.succeed();
+    }
 
     @BeforeBatch(batch = BATCH)
     public void emptyTheAir(ServerLevel level) {
