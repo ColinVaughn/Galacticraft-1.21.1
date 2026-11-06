@@ -23,20 +23,38 @@
 package dev.galacticraft.mod.client.render.block.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import dev.galacticraft.machinelib.api.machine.MachineStatus;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.client.model.GCModel;
 import dev.galacticraft.mod.client.model.GCModelLoader;
 import dev.galacticraft.mod.client.model.GCRenderTypes;
+import dev.galacticraft.mod.client.render.block.entity.LCD.LCDrenderer;
+import dev.galacticraft.mod.client.render.block.entity.blockLCDdata.BubbleDistributorLCDData;
+import dev.galacticraft.mod.client.render.block.entity.LCD.LCD;
 import dev.galacticraft.mod.content.block.entity.machine.OxygenBubbleDistributorBlockEntity;
+import dev.galacticraft.mod.machine.GCMachineStatuses;
+import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.AABB;
 
 public class BubbleDistributorRenderer implements BlockEntityRenderer<OxygenBubbleDistributorBlockEntity> {
+    private final LCDrenderer DISPLAY = new LCDrenderer();
+    private final BubbleDistributorLCDData LCDData = new BubbleDistributorLCDData(
+            LCD.reserve(
+                    0, 1,
+                    0, 1,
+                    0, 1,
+                    0, 1,
+                    0, 1
+            )
+    );
     public static final ResourceLocation MODEL = Constant.id("models/misc/sphere.json");
     /**
      * Large bubbles stay on screen long after the machine block itself is out of the default 64 block
@@ -59,13 +77,42 @@ public class BubbleDistributorRenderer implements BlockEntityRenderer<OxygenBubb
 
     @Override
     public void render(OxygenBubbleDistributorBlockEntity machine, float tickDelta, PoseStack matrices, MultiBufferSource vertexConsumers, int light, int overlay) {
-        if (machine.isDisabled() || !machine.isBubbleVisible()) {
+        if(machine.isDisabled())
             return;
+
+        //LCD
+        Direction direction = machine.getBlockState().getValue(BlockStateProperties.HORIZONTAL_FACING);
+        light = LevelRenderer.getLightColor(machine.getLevel(), machine.getBlockPos().above());
+
+        MachineStatus machineStatus = machine.getState().getStatus();
+
+        if(GCMachineStatuses.NOT_ENOUGH_OXYGEN.equals(machineStatus)){
+            LCDData.getDynamicData(1).dynamicColors().set(0, BubbleDistributorLCDData.getFadeValue(1));
+            DISPLAY.render(LCDData, 1, direction, matrices, vertexConsumers, light, overlay);
         }
+        else if(GCMachineStatuses.DISTRIBUTING.equals(machineStatus)) {
+            LCDData.getDynamicData(2).dynamicColors().set(0, BubbleDistributorLCDData.getFadeValue(2));
+            DISPLAY.render(LCDData, 2, direction, matrices, vertexConsumers, light, overlay);
+
+            LCDData.getDynamicData(3).dynamicColors().set(0, BubbleDistributorLCDData.getFadeValue(3));
+            DISPLAY.render(LCDData, 3, direction, matrices, vertexConsumers, light, overlay);
+
+            LCDData.getDynamicData(4).dynamicColors().set(0, BubbleDistributorLCDData.getFadeValue(4));
+            DISPLAY.render(LCDData, 4, direction, matrices, vertexConsumers, light, overlay);
+        }
+        else{
+            LCDData.getDynamicData(0).dynamicColors().set(0, BubbleDistributorLCDData.getFadeValue(0));
+            DISPLAY.render(LCDData, 0, direction, matrices, vertexConsumers, light, overlay);
+        }
+
+        //BUBBLE
+        if (!machine.isBubbleVisible())
+            return;
+
         GCModel bubbleModel = GCModelLoader.INSTANCE.getModel(MODEL);
-        if (bubbleModel == GCModelLoader.MISSING_MODEL) {
+        if (bubbleModel == GCModelLoader.MISSING_MODEL)
             return;
-        }
+
         double size = machine.getSize();
 
         matrices.pushPose();

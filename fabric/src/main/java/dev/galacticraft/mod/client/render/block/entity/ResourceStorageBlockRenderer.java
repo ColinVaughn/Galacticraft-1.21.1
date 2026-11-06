@@ -23,24 +23,29 @@
 package dev.galacticraft.mod.client.render.block.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import dev.galacticraft.mod.Constant;
+import dev.galacticraft.mod.client.render.block.entity.LCD.LCDrecords.*;
+import dev.galacticraft.mod.client.render.block.entity.LCD.LCDrenderer;
+import dev.galacticraft.mod.client.render.block.entity.LCD.LCD;
+import dev.galacticraft.mod.client.render.block.entity.blockLCDdata.ResourceStorageBlockLCDData;
 import dev.galacticraft.mod.content.block.entity.machine.ResourceStorageBlockEntity;
 import dev.galacticraft.mod.content.block.machine.ResourceStorageBlock;
 import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import org.joml.Matrix4f;
+
+import static dev.galacticraft.mod.client.render.block.entity.LCD.LCD.SIZE16;
+
 
 public class ResourceStorageBlockRenderer implements BlockEntityRenderer<ResourceStorageBlockEntity> {
-    private static final ResourceLocation WHITE = Constant.id("textures/obj/white.png");
-    private static final float SIZE = 0.0625f;
+    private final LCDrenderer DISPLAY = new LCDrenderer();
+    private final ResourceStorageBlockLCDData LCDData = new ResourceStorageBlockLCDData(
+        LCD.reserve(
+            2, 1
+        )
+    );
 
     public ResourceStorageBlockRenderer(BlockEntityRendererProvider.Context context){
     }
@@ -51,38 +56,13 @@ public class ResourceStorageBlockRenderer implements BlockEntityRenderer<Resourc
         if (amount == 0)
             return;
 
-        final int color = machine.getColor();
-        final int[] rgb = {(color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF};
+        Direction direction = machine.getBlockState().getValue(BlockStateProperties.HORIZONTAL_FACING);
 
-        final Direction direction = machine.getBlockState().getValue(BlockStateProperties.HORIZONTAL_FACING);
-        light = LevelRenderer.getLightColor(machine.getLevel(), machine.getBlockPos().relative(direction));
-        light = LightTexture.pack(Math.max(10, LightTexture.block(light)), Math.max(10, LightTexture.sky(light)));
+        LCDDynamicData dynamicData = LCDData.getDynamicData(0);
+        dynamicData.dynamicVertices().set(0, new Vertex(SIZE16*amount, 0.f, 0.f));
+        dynamicData.dynamicVertices().set(1, new Vertex(SIZE16*amount, -SIZE16, 0.f));
+        dynamicData.dynamicColors().set(0, machine.getColor());
 
-        matrices.pushPose();
-        matrices.translate(0.5, 0.5, 0.5);
-        matrices.mulPose(direction.getRotation());
-        matrices.translate(-0.5, -0.5, -0.5);
-        matrices.translate(0.125, 1.001, 0.0625);
-        final Matrix4f matrix = matrices.last().pose();
-        final VertexConsumer consumer = vertexConsumers.getBuffer(RenderType.entityTranslucent(WHITE));
-
-        final float[][] vertices = {
-                {0, 0, 0},
-                {SIZE * amount, 0, 0},
-                {SIZE * amount, 0, SIZE},
-                {0, 0, SIZE}
-        };
-
-        for (float[] e : vertices) {
-            consumer.addVertex(matrix, e[0], e[1], e[2])
-                    .setColor(rgb[0], rgb[1], rgb[2], 255)
-                    .setLight(light)
-                    .setOverlay(overlay)
-                    .setUv(0.5f, 0.5f)
-                    .setNormal(0.0f, 1.0f, 0.0f);
-
-        }
-
-        matrices.popPose();
+        DISPLAY.render(LCDData, 0, direction, matrices, vertexConsumers, LevelRenderer.getLightColor(machine.getLevel(), machine.getBlockPos().relative(direction)), overlay);
     }
 }

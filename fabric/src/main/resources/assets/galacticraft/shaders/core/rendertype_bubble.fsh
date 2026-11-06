@@ -13,21 +13,21 @@ in float vertexDistance;
 in vec4 vertexColor;
 in vec4 overlayColor;
 in vec2 texCoord0;
-in vec4 normal;
-in vec3 viewDir;
+//in vec4 normal;
+//in vec3 viewDir;
 
 out vec4 fragColor;
 
 void main() {
     // - Rim lighting -
-    vec3 viewAngle = normalize(-viewDir);
+    //vec3 viewAngle = normalize(-viewDir);
 
     // The more orthogonal the camera is to the fragment, the stronger the rim light.
     // abs() so that the back faces get treated the same as the front, giving a rim effect.
-    float rimStrength = 1 - abs(dot(viewAngle, normal.rgb)); // The more orthogonal, the stronger
+    //float rimStrength = 1 - abs(dot(viewAngle, normal.rgb)); // The more orthogonal, the stronger
 
-    float rimFactor = pow(rimStrength, 6); // higher power = sharper rim light
-    vec4 rim = vec4(rimFactor);
+    //float rimFactor = pow(rimStrength, 6); // higher power = sharper rim light
+    //vec4 rim = vec4(rimFactor);
 
     vec4 color = texture(Sampler0, texCoord0);
     if (color.a < 0.1) {
@@ -35,5 +35,5 @@ void main() {
     }
     color *= vertexColor * ColorModulator;
     color.rgb = mix(overlayColor.rgb, color.rgb, overlayColor.a);
-    fragColor = color + rim * linear_fog_fade(vertexDistance, FogStart, FogEnd);
+    fragColor = color /*+ rim */ * linear_fog_fade(vertexDistance, FogStart, FogEnd);
 }

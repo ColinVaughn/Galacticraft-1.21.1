@@ -6,7 +6,7 @@
     "left": "galacticraft:block/oxygen_bubble_distributor_active",
     "particle": "galacticraft:block/oxygen_bubble_distributor_active",
     "right": "galacticraft:block/oxygen_bubble_distributor_active",
-    "top": "galacticraft:block/oxygen_bubble_distributor_active"
+    "top": "galacticraft:block/oxygen_bubble_distributor_top"
   },
   "loader": "machinelib:machine",
   "machinelib:type": "machine"

@@ -37,11 +37,7 @@ import dev.galacticraft.mod.content.block.decoration.FlagBlock;
 import dev.galacticraft.mod.content.block.decoration.IronGratingBlock;
 import dev.galacticraft.mod.content.block.environment.CavernousVines;
 import dev.galacticraft.mod.content.block.environment.MoonTangleBlock;
-import dev.galacticraft.mod.content.block.machine.CoalGeneratorBlock;
-import dev.galacticraft.mod.content.block.machine.FoodCannerBlock;
-import dev.galacticraft.mod.content.block.machine.FuelLoaderBlock;
-import dev.galacticraft.mod.content.block.machine.ResourceStorageBlock;
-import dev.galacticraft.mod.content.block.machine.OxygenCompressorBlock;
+import dev.galacticraft.mod.content.block.machine.*;
 import dev.galacticraft.mod.content.block.special.ParachestBlock;
 import dev.galacticraft.mod.content.block.special.RocketWorkbench;
 import dev.galacticraft.mod.content.block.special.launchpad.AbstractLaunchPad;
@@ -440,15 +436,15 @@ public class GCModelProvider extends FabricModelProvider {
 
         //Active blocks
         createFullCubeActiveMachine(generator, GCBlocks.OXYGEN_COLLECTOR);
-        createFullCubeActiveMachine(generator, GCBlocks.OXYGEN_BUBBLE_DISTRIBUTOR);
         createActiveMachine(generator, GCBlocks.CIRCUIT_FABRICATOR);
         createActiveMachine(generator, GCBlocks.ELECTRIC_COMPRESSOR);
-        createActiveMachine(generator, GCBlocks.OXYGEN_SEALER);
+        createActiveTopMachine(generator, GCBlocks.OXYGEN_SEALER);
 
         //Dedicated generations methods
         createSolarPanel(generator, GCBlocks.BASIC_SOLAR_PANEL);
         createSolarPanel(generator, GCBlocks.ADVANCED_SOLAR_PANEL);
         createFuelLoader(generator, GCBlocks.FUEL_LOADER);
+        createOxygenBubbleGenerator(generator, GCBlocks.OXYGEN_BUBBLE_DISTRIBUTOR);
 
         generator.createTrivialCube(GCBlocks.OXYGEN_DETECTOR);
         generator.createNonTemplateModelBlock(GCBlocks.CRUDE_OIL);
@@ -506,8 +502,37 @@ public class GCModelProvider extends FabricModelProvider {
                 )));
     }
 
-    private static void createFullCubeActiveMachine(BlockModelGenerators generator, Block block) {
+    private static void createActiveTopMachine(BlockModelGenerators generator, Block block) {
+        TextureProvider inactive = TextureProvider.builder(Constant.MOD_ID).sides("block/machine_side").top(TextureMapping.getBlockTexture(block)).build();
+        TextureProvider active = TextureProvider.builder(Constant.MOD_ID).sides("block/machine_side").top(TextureMapping.getBlockTexture(block, "_active")).build();
+        MachineModelGenerator.generateMachineItemModel(generator, block, inactive);
 
+        ResourceLocation[] model_location = new ResourceLocation[] {
+                MachineModelGenerator.generateMachineModel(generator, MachineModelGenerator.getMachineModelLocation(block), inactive),
+                MachineModelGenerator.generateMachineModel(generator, MachineModelGenerator.getMachineModelLocation(block, "_active"), active)
+        };
+
+        generator.blockStateOutput.accept(MultiVariantGenerator.multiVariant(block).with(PropertyDispatch.property(MachineBlock.ACTIVE)
+                .generate(i -> Variant.variant().with(VariantProperties.MODEL, i ? model_location[1] : model_location[0])
+                )));
+    }
+
+    private static void createOxygenBubbleGenerator(BlockModelGenerators generator, Block block) {
+        TextureProvider inactive = TextureProvider.builder(Constant.MOD_ID).all(TextureMapping.getBlockTexture(block)).top(TextureMapping.getBlockTexture(block, "_top")).build();
+        TextureProvider active = TextureProvider.builder(Constant.MOD_ID).all(TextureMapping.getBlockTexture(block, "_active")).top(TextureMapping.getBlockTexture(block, "_top")).build();
+        MachineModelGenerator.generateMachineItemModel(generator, block, inactive);
+
+        ResourceLocation[] model_location = new ResourceLocation[] {
+                MachineModelGenerator.generateMachineModel(generator, MachineModelGenerator.getMachineModelLocation(block), inactive),
+                MachineModelGenerator.generateMachineModel(generator, MachineModelGenerator.getMachineModelLocation(block, "_active"), active)
+        };
+
+        generator.blockStateOutput.accept(MultiVariantGenerator.multiVariant(block).with(PropertyDispatch.property(MachineBlock.ACTIVE)
+                .generate(i -> Variant.variant().with(VariantProperties.MODEL, i ? model_location[1] : model_location[0])
+                )));
+    }
+
+    private static void createFullCubeActiveMachine(BlockModelGenerators generator, Block block) {
         TextureProvider inactive = TextureProvider.all(TextureMapping.getBlockTexture(block));
         TextureProvider active = TextureProvider.all(TextureMapping.getBlockTexture(block, "_active"));
         MachineModelGenerator.generateMachineItemModel(generator, block, inactive);
@@ -536,7 +561,7 @@ public class GCModelProvider extends FabricModelProvider {
     private static void createCompressor(BlockModelGenerators generator, Block block, String[] state) {
         ResourceLocation[] model_location = generateMultiMachineModel(generator, Constant.MOD_ID, block, state);
 
-        generator.blockStateOutput.accept(MultiVariantGenerator.multiVariant(block).with(PropertyDispatch.properties(MachineBlock.ACTIVE, CoalGeneratorBlock.LIT)
+        generator.blockStateOutput.accept(MultiVariantGenerator.multiVariant(block).with(PropertyDispatch.properties(MachineBlock.ACTIVE, CompressorBlock.LIT)
                 .select(false, false, Variant.variant().with(VariantProperties.MODEL, model_location[0]))
                 .select(true, false, Variant.variant().with(VariantProperties.MODEL, model_location[0]))
                 .select(false, true, Variant.variant().with(VariantProperties.MODEL, model_location[1]))
