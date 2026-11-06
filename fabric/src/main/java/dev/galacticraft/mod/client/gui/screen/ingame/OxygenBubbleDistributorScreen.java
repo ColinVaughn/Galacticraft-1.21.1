@@ -57,9 +57,8 @@ public class OxygenBubbleDistributorScreen extends MachineScreen<OxygenBubbleDis
         this.textField = new EditBox(Minecraft.getInstance().font, this.leftPos + TEXT_FIELD_X, this.topPos + TEXT_FIELD_Y, TEXT_FIELD_WIDTH, TEXT_FIELD_HEIGHT, Component.literal(String.valueOf(this.menu.size)));
         this.textField.setResponder((s -> {
             try {
-                if (Byte.parseByte(s) < 1) {
+                if (Integer.parseInt(s) < 1)
                     textField.setValue(String.valueOf(this.menu.targetSize));
-                }
             } catch (NumberFormatException ignore) {
                 textField.setValue(String.valueOf(this.menu.targetSize));
             }
@@ -67,7 +66,7 @@ public class OxygenBubbleDistributorScreen extends MachineScreen<OxygenBubbleDis
 
         this.textField.setFilter((s -> {
             try {
-                return Byte.parseByte(s) >= 1;
+                return Integer.parseInt(s) >= 1;
             } catch (NumberFormatException ignore) {
                 return false;
             }
@@ -135,9 +134,9 @@ public class OxygenBubbleDistributorScreen extends MachineScreen<OxygenBubbleDis
         super.renderForeground(graphics, mouseX, mouseY, delta);
 
         MutableComponent statusText = this.menu.state.getStatusText(this.menu.redstoneMode).copy();
-        if (statusText.getStyle().getColor() == TextColor.fromLegacyFormat(ChatFormatting.GREEN)) {
+        if (statusText.getStyle().getColor() == TextColor.fromLegacyFormat(ChatFormatting.GREEN))
             statusText.withStyle(ChatFormatting.DARK_GREEN);
-        }
+
         graphics.drawString(this.font, statusText, this.leftPos + TEXT_X, this.topPos + STATUS_Y, -1, false);
 
         String currentSize = this.menu.state.isActive() ? FORMAT.format(this.menu.size) : "0";
@@ -174,8 +173,8 @@ public class OxygenBubbleDistributorScreen extends MachineScreen<OxygenBubbleDis
             }
 
             if (DrawableUtil.mouseIn(mouseX, mouseY, this.leftPos + ARROW_X, this.topPos + ARROW_UP_Y, ARROW_VERTICAL_WIDTH, ARROW_VERTICAL_HEIGHT)) {
-                if (this.menu.targetSize != Byte.MAX_VALUE) {
-                    this.menu.targetSize = ((byte) (this.menu.targetSize + 1));
+                if (this.menu.targetSize != Integer.MAX_VALUE) {
+                    this.menu.targetSize = this.menu.targetSize + 1;
                     textField.setValue(String.valueOf(this.menu.targetSize));
                     NetworkManager.sendToServer(new BubbleMaxPayload(this.menu.targetSize));
                     this.playButtonSound();
@@ -185,7 +184,7 @@ public class OxygenBubbleDistributorScreen extends MachineScreen<OxygenBubbleDis
 
             if (DrawableUtil.mouseIn(mouseX, mouseY, this.leftPos + ARROW_X, this.topPos + ARROW_DOWN_Y, ARROW_VERTICAL_WIDTH, ARROW_VERTICAL_HEIGHT)) {
                 if (this.menu.targetSize > 1) {
-                    this.menu.targetSize = (byte) (this.menu.targetSize - 1);
+                    this.menu.targetSize = this.menu.targetSize - 1;
                     textField.setValue(String.valueOf(this.menu.targetSize));
                     NetworkManager.sendToServer(new BubbleMaxPayload(this.menu.targetSize));
                     this.playButtonSound();

@@ -33,6 +33,7 @@ import dev.galacticraft.mod.client.GCKeyBinds;
 import dev.galacticraft.mod.client.network.GCClientPacketReceiver;
 import dev.galacticraft.mod.client.network.CapeClientNet;
 import dev.galacticraft.mod.client.gui.overlay.*;
+import dev.galacticraft.mod.client.render.block.entity.blockLCDdata.BubbleDistributorLCDData;
 import dev.galacticraft.mod.client.render.dimension.duststorm.ClientDustStorms;
 import dev.galacticraft.mod.client.render.dimension.solarflare.ClientSolarFlares;
 import dev.galacticraft.mod.client.render.dimension.AsteroidDimensionEffects;
@@ -104,22 +105,13 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
-import net.neoforged.neoforge.client.event.RegisterClientTooltipComponentFactoriesEvent;
-import net.neoforged.neoforge.client.event.RegisterShadersEvent;
-import net.neoforged.neoforge.client.event.RegisterDimensionSpecialEffectsEvent;
+import net.neoforged.neoforge.client.event.*;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import net.minecraft.client.particle.SplashParticle;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
-import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
-import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.minecraft.client.Minecraft;
 import dev.galacticraft.neoforge.fluid.GCNeoForgeFluidTypes;
@@ -130,7 +122,6 @@ import dev.galacticraft.neoforge.client.GCNeoItemRenderer;
 import dev.galacticraft.neoforge.client.GCNeoBlockOutlineRenderer;
 import dev.galacticraft.neoforge.client.GCNeoDimensionEffects;
 import dev.galacticraft.neoforge.client.model.GCNeoDynamicModels;
-import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 
 /** Native NeoForge client registrations replacing Fabric client entrypoints. */
 public final class GCNeoForgeClient {
@@ -161,6 +152,10 @@ public final class GCNeoForgeClient {
         NeoForge.EVENT_BUS.addListener(FootprintRenderer::renderFootprints);
         NeoForge.EVENT_BUS.addListener(MeteorSkyRenderer::renderStreaks);
         NeoForge.EVENT_BUS.addListener(GCNeoBlockOutlineRenderer::render);
+        NeoForge.EVENT_BUS.addListener((RenderLevelStageEvent event) -> {
+            if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_SKY)
+                BubbleDistributorLCDData.updateFadeValue();
+        });
         CapesClientRole.ensureLoadedAsync();
         CapeRegistry.bootstrap();
         CapesLoader.loadAsync();

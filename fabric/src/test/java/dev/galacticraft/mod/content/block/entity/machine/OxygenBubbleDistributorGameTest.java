@@ -39,13 +39,13 @@ public final class OxygenBubbleDistributorGameTest implements GalacticraftGameTe
             context.getLevel().setDefaultBreathable(false);
             context.setBlock(distributorPos, GCBlocks.OXYGEN_BUBBLE_DISTRIBUTOR);
             OxygenBubbleDistributorBlockEntity distributor = context.getBlockEntity(distributorPos);
-            distributor.distributeOxygenToArea(1, true);
+            distributor.updateBreathableArea(1);
             BlockPos eyePos = context.absolutePos(distributorPos.offset(1, 1, 0));
             context.assertTrue(context.getLevel().isBreathable(eyePos), "the default bubble did not reach a nearby player's eye");
             context.succeed();
         } finally {
             OxygenBubbleDistributorBlockEntity distributor = context.getBlockEntity(distributorPos);
-            if (distributor != null) distributor.distributeOxygenToArea(1, false);
+            if (distributor != null) distributor.updateBreathableArea(0);
             context.setBlock(distributorPos, Blocks.AIR);
             context.getLevel().setDefaultBreathable(levelWasBreathable);
         }

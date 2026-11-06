@@ -34,6 +34,7 @@ import dev.galacticraft.mod.client.gui.overlay.OxygenOverlay;
 import dev.galacticraft.mod.client.gui.overlay.RocketOverlay;
 import dev.galacticraft.mod.client.gui.overlay.SensorGlassesOverlay;
 import dev.galacticraft.mod.client.render.MeteorSkyRenderer;
+import dev.galacticraft.mod.client.render.block.entity.blockLCDdata.BubbleDistributorLCDData;
 import dev.galacticraft.mod.client.render.dimension.meteor.ClientMeteorShowers;
 import dev.galacticraft.mod.client.render.FootprintRenderer;
 import dev.galacticraft.mod.client.render.GCBlockOutlineRenderer;
@@ -74,6 +75,7 @@ public class ClientEventHandler {
         HudRenderCallback.EVENT.register(RocketOverlay::onHudRender);
         HudRenderCallback.EVENT.register(LanderOverlay::onRenderHud);
         HudRenderCallback.EVENT.register(CountdownOverlay::renderCountdown);
+        WorldRenderEvents.START.register(context -> BubbleDistributorLCDData.updateFadeValue());
     }
 
     public static void rocketLaunchSound(Rocket rocket, LaunchStage oldStage) {

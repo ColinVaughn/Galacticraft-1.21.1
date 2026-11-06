@@ -55,7 +55,7 @@ import org.jetbrains.annotations.Nullable;
 public class EnergyStorageClusterBlockEntity extends ResourceStorageBlockEntity {
     public static final int CHARGE_SELF_SLOT = 0;
     public static final int CHARGE_ITEM_SLOT = 1;
-    public static final int COLOR = 0xc62727;
+    public static final int COLOR = 0xFFC62727;
 
     /** Cluster capacity is a fixed multiple of the configured module capacity. */
     public static final int CAPACITY_MULTIPLIER = 8;
