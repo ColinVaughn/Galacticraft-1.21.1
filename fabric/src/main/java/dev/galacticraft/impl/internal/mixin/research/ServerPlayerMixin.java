@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +23,7 @@
 
 package dev.galacticraft.impl.internal.mixin.research;
 
+import dev.galacticraft.api.event.ResearchEvents;
 import dev.galacticraft.api.accessor.ServerResearchAccessor;
 import dev.galacticraft.impl.network.s2c.ResearchUpdatePayload;
 import dev.architectury.networking.NetworkManager;
@@ -38,6 +40,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -58,9 +61,15 @@ public abstract class ServerPlayerMixin implements ServerResearchAccessor {
 
     @Override
     public void galacticraft$unlockRocketPartRecipes(ResourceLocation... ids) {
-        Collections.addAll(this.unlockedRecipes, ids);
+        List<ResourceLocation> gained = new ArrayList<>();
+        for (ResourceLocation id : ids) {
+            if (this.unlockedRecipes.add(id)) gained.add(id);
+        }
 
         NetworkManager.sendToPlayer((ServerPlayer) (Object) this, new ResearchUpdatePayload(true, List.of(ids)));
+        if (!gained.isEmpty()) {
+            ResearchEvents.UNLOCKED.invoker().unlocked((ServerPlayer) (Object) this, List.copyOf(gained));
+        }
     }
 
     @Override

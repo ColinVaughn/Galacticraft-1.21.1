@@ -1,0 +1,1 @@
+Galacticraft for Minecraft 1.21.1 | [Datapack guides](Home) | [Troubleshooting](Testing-and-Troubleshooting)

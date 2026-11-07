@@ -38,12 +38,13 @@ class AirLockProtocol {
     private final BlockEntity head;
     private final int maxLoops;
 
-    public int minX = 6000000;
-    public int maxX = -6000000;
-    public int minY = 6000000;
-    public int maxY = -6000000;
-    public int minZ = 6000000;
-    public int maxZ = -6000000;
+    // Start bounds at the controller; fixed sentinels can miss distant frames and expand the unseal area.
+    public int minX;
+    public int maxX;
+    public int minY;
+    public int maxY;
+    public int minZ;
+    public int maxZ;
 
     public AirLockProtocol(BlockEntity head) {
         this.adjacentAirLocks = new ArrayList<>();
@@ -51,6 +52,14 @@ class AirLockProtocol {
         this.world = head.getLevel();
         this.head = head;
         this.maxLoops = 26;
+        this.resetBoundsToHead();
+    }
+
+    private void resetBoundsToHead() {
+        BlockPos headPos = this.head.getBlockPos();
+        this.minX = this.maxX = headPos.getX();
+        this.minY = this.maxY = headPos.getY();
+        this.minZ = this.maxZ = headPos.getZ();
     }
 
     public boolean isValidFrame(BlockPos pos) {
@@ -111,12 +120,7 @@ class AirLockProtocol {
             return -1;
         }
 
-        this.minX = 6000000;
-        this.maxX = -6000000;
-        this.minY = 6000000;
-        this.maxY = -6000000;
-        this.minZ = 6000000;
-        this.maxZ = -6000000;
+        this.resetBoundsToHead();
 
         this.adjacentAirLocks = new ArrayList<>();
         this.checked.clear();

@@ -5,14 +5,15 @@ import dev.architectury.registry.menu.MenuRegistry;
 import dev.galacticraft.api.component.GCDataComponents;
 import dev.galacticraft.api.rocket.RocketData;
 import dev.galacticraft.api.rocket.RocketPaint;
-import dev.galacticraft.api.rocket.RocketPrefabs;
+import dev.galacticraft.mod.content.rocket.RocketPrefabs;
+import dev.galacticraft.api.rocket.part.RocketPart;
 import dev.galacticraft.api.rocket.part.RocketPartTypes;
 import dev.galacticraft.mod.Constant;
-import dev.galacticraft.mod.content.GCRocketParts;
 import dev.galacticraft.mod.content.block.entity.RocketWorkbenchBlockEntity;
 import dev.galacticraft.mod.content.item.RocketItem;
 import dev.galacticraft.mod.content.item.RocketModuleItem;
-import net.minecraft.resources.ResourceKey;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
@@ -21,20 +22,16 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.EitherHolder;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
 
 public class RocketPaintMenu extends AbstractContainerMenu {
     public static final int WIDTH = 300;
     public static final int INVENTORY_X = (WIDTH - Constant.RocketWorkbench.PAGE_WIDTH) / 2 + 8;
     private static final List<RocketPartTypes> PARTS = List.of(RocketPartTypes.CONE, RocketPartTypes.BODY, RocketPartTypes.FIN, RocketPartTypes.ENGINE);
-    private static final Set<ResourceKey<?>> PAINTABLE = Set.of(
-            GCRocketParts.TIER_1_CONE, GCRocketParts.TIER_2_CONE, GCRocketParts.TIER_3_CONE,
-            GCRocketParts.TIER_1_BODY, GCRocketParts.TIER_2_BODY, GCRocketParts.TIER_3_BODY,
-            GCRocketParts.TIER_1_FIN, GCRocketParts.TIER_2_FIN, GCRocketParts.TIER_3_FIN,
-            GCRocketParts.TIER_1_ENGINE, GCRocketParts.TIER_2_ENGINE, GCRocketParts.TIER_3_ENGINE);
     public final RocketWorkbenchBlockEntity workbench;
     private final ResourceLocation returnPage;
     private int revision;
@@ -48,7 +45,7 @@ public class RocketPaintMenu extends AbstractContainerMenu {
         this.workbench = workbench;
         this.returnPage = returnPage;
         addSlot(new Slot(workbench.paintInput, 0, 22, 34) {
-            @Override public boolean mayPlace(ItemStack stack) { return canPaint(stack); }
+            @Override public boolean mayPlace(ItemStack stack) { return canPaint(stack, inventory.player.registryAccess()); }
             @Override public int getMaxStackSize() { return 1; }
         });
         for (int row = 0; row < 3; row++) for (int column = 0; column < 9; column++)
@@ -69,31 +66,37 @@ public class RocketPaintMenu extends AbstractContainerMenu {
                 : stack.getOrDefault(GCDataComponents.ROCKET_DATA, RocketPrefabs.TIER_1);
     }
 
-    public static boolean canPaint(ItemStack stack) {
+    public static boolean canPaint(ItemStack stack, HolderLookup.Provider access) {
         return !stack.isEmpty() && (stack.getItem() instanceof RocketItem || stack.getItem() instanceof RocketModuleItem)
-                && !parts(stack).isEmpty();
+                && !parts(stack, access).isEmpty();
     }
 
-    public static List<RocketPartTypes> parts(ItemStack stack) {
+    public static List<RocketPartTypes> parts(ItemStack stack, HolderLookup.Provider access) {
         if (stack.isEmpty() || !(stack.getItem() instanceof RocketItem || stack.getItem() instanceof RocketModuleItem)) return List.of();
         RocketData data = data(stack);
         return PARTS.stream().filter(part -> switch (part) {
-            case CONE -> data.cone().filter(holder -> PAINTABLE.contains(holder.key())).isPresent();
-            case BODY -> data.body().filter(holder -> PAINTABLE.contains(holder.key())).isPresent();
-            case FIN -> data.fin().filter(holder -> PAINTABLE.contains(holder.key())).isPresent();
-            case ENGINE -> data.engine().filter(holder -> PAINTABLE.contains(holder.key())).isPresent();
+            case CONE -> paintable(data.cone(), access);
+            case BODY -> paintable(data.body(), access);
+            case FIN -> paintable(data.fin(), access);
+            case ENGINE -> paintable(data.engine(), access);
             default -> false;
         }).toList();
     }
 
+    /** Whether a fitted part opts into painting, see {@link dev.galacticraft.api.rocket.part.RocketPart#isPaintable()}. */
+    private static <T extends RocketPart<?, ?>> boolean paintable(Optional<EitherHolder<T>> part, HolderLookup.Provider access) {
+        return part.flatMap(holder -> holder.unwrap(access)).filter(Holder::isBound)
+                .map(holder -> holder.value().isPaintable()).orElse(false);
+    }
+
     public boolean apply(Player player, int expectedRevision, RocketPaint paint) {
         if (player.level().isClientSide || player.containerMenu != this || !stillValid(player)) return false;
-        if (expectedRevision != revision() || !canPaint(input())) {
+        if (expectedRevision != revision() || !canPaint(input(), player.registryAccess())) {
             broadcastFullState();
             return false;
         }
         RocketData data = data(input());
-        List<RocketPartTypes> parts = parts(input());
+        List<RocketPartTypes> parts = parts(input(), player.registryAccess());
         for (RocketPartTypes part : RocketPartTypes.values()) {
             if (!parts.contains(part) && !paint.color(part).equals(data.paint().color(part))) return false;
         }
@@ -122,7 +125,7 @@ public class RocketPaintMenu extends AbstractContainerMenu {
         ItemStack original = stack.copy();
         if (index == 0) {
             if (!moveItemStackTo(stack, 1, slots.size(), true)) return ItemStack.EMPTY;
-        } else if (canPaint(stack)) {
+        } else if (canPaint(stack, player.registryAccess())) {
             if (!moveItemStackTo(stack, 0, 1, false)) return ItemStack.EMPTY;
         } else if (index < 28) {
             if (!moveItemStackTo(stack, 28, 37, false)) return ItemStack.EMPTY;

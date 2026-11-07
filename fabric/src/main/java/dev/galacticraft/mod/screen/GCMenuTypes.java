@@ -22,6 +22,10 @@
 
 package dev.galacticraft.mod.screen;
 
+import dev.galacticraft.mod.content.block.jupiter.machine.*;
+import dev.galacticraft.mod.screen.jupiter.JupiterMachineMenu;
+import dev.galacticraft.mod.screen.jupiter.StormheartPedestalMenu;
+
 import dev.galacticraft.machinelib.api.menu.MachineMenu;
 import dev.galacticraft.machinelib.api.menu.RecipeMachineMenu;
 import dev.galacticraft.machinelib.api.menu.SynchronizedMenuType;
@@ -92,6 +96,15 @@ public class GCMenuTypes {
     public static final MenuType<RadarMenu> RADAR = SynchronizedMenuType.create((type, id, inventory, pos) -> new RadarMenu(id, inventory, pos));
     public static final MenuType<PowerPortMenu<CannonBlockEntity>> CANNON = SynchronizedMenuType.create(PowerPortMenu::new);
 
+    public static final MenuType<JupiterMachineMenu<AtmosphericCollectorBlockEntity>> ATMOSPHERIC_COLLECTOR = SynchronizedMenuType.createSimple(JupiterMachineMenu::new);
+    public static final MenuType<JupiterMachineMenu<CondensateSeparatorBlockEntity>> CONDENSATE_SEPARATOR = SynchronizedMenuType.createSimple(JupiterMachineMenu::new);
+    public static final MenuType<JupiterMachineMenu<VehicleDockBlockEntity>> VEHICLE_DOCK = SynchronizedMenuType.createSimple(JupiterMachineMenu::new);
+    public static final MenuType<JupiterMachineMenu<SurveyBeaconBlockEntity>> SURVEY_BEACON = SynchronizedMenuType.createSimple(JupiterMachineMenu::new);
+    public static final MenuType<JupiterMachineMenu<StormCapacitorBlockEntity>> STORM_CAPACITOR = SynchronizedMenuType.createSimple(JupiterMachineMenu::new);
+    public static final MenuType<JupiterMachineMenu<LightningGrounderBlockEntity>> LIGHTNING_GROUNDER = SynchronizedMenuType.createSimple(JupiterMachineMenu::new);
+    public static final MenuType<JupiterMachineMenu<PressureStabilizerBlockEntity>> PRESSURE_STABILIZER = SynchronizedMenuType.createSimple(JupiterMachineMenu::new);
+    public static final MenuType<StormheartPedestalMenu> STORMHEART_PEDESTAL = new MenuType<>(StormheartPedestalMenu::new, FeatureFlags.VANILLA_SET);
+
     public static void register() {
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.PLAYER_INVENTORY_MENU), PLAYER_INV_GC);
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.PET_INVENTORY_MENU), PET_INV_GC);
@@ -138,6 +151,15 @@ public class GCMenuTypes {
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.BUGGY), BUGGY);
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.LAUNCH_PAD), LAUNCH_PAD);
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.PARACHEST), PARACHEST);
+
+        Registry.register(BuiltInRegistries.MENU, Constant.id("atmospheric_collector_menu"), ATMOSPHERIC_COLLECTOR);
+        Registry.register(BuiltInRegistries.MENU, Constant.id("condensate_separator_menu"), CONDENSATE_SEPARATOR);
+        Registry.register(BuiltInRegistries.MENU, Constant.id("vehicle_dock_menu"), VEHICLE_DOCK);
+        Registry.register(BuiltInRegistries.MENU, Constant.id("survey_beacon_menu"), SURVEY_BEACON);
+        Registry.register(BuiltInRegistries.MENU, Constant.id("storm_capacitor_menu"), STORM_CAPACITOR);
+        Registry.register(BuiltInRegistries.MENU, Constant.id("lightning_grounder_menu"), LIGHTNING_GROUNDER);
+        Registry.register(BuiltInRegistries.MENU, Constant.id("pressure_stabilizer_menu"), PRESSURE_STABILIZER);
+        Registry.register(BuiltInRegistries.MENU, Constant.id("stormheart_pedestal_menu"), STORMHEART_PEDESTAL);
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.VEHICLE_INVENTORY), VEHICLE_INVENTORY);
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.ASTRO_MINER_BASE_MENU), ASTRO_MINER_BASE);
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.Menu.RADAR_MENU), RADAR);

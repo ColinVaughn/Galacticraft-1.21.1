@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +23,7 @@
 
 package dev.galacticraft.mod.content.rocket.part.type;
 
+import dev.galacticraft.api.rocket.RocketUpgradeData;
 import dev.galacticraft.api.rocket.entity.Rocket;
 import dev.galacticraft.api.rocket.part.type.RocketUpgradeType;
 import dev.galacticraft.api.rocket.recipe.RocketPartRecipe;
@@ -31,14 +33,47 @@ import dev.galacticraft.impl.rocket.travelpredicate.config.ConstantTravelPredica
 import dev.galacticraft.impl.rocket.travelpredicate.type.ConstantTravelPredicateType;
 import dev.galacticraft.mod.content.entity.vehicle.RocketCargoLogic;
 import dev.galacticraft.mod.content.rocket.part.config.StorageUpgradeConfig;
+import dev.galacticraft.mod.content.rocket.part.data.StorageRocketData;
+import dev.galacticraft.mod.tag.GCItemTags;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
+import java.util.Optional;
 
 public class StorageUpgradeType extends RocketUpgradeType<StorageUpgradeConfig> {
     public static final StorageUpgradeType INSTANCE = new StorageUpgradeType();
 
     protected StorageUpgradeType() {
         super(StorageUpgradeConfig.CODEC);
+        RocketUpgradeData.register(StorageRocketData.TYPE_NAME, StorageRocketData.MAP_CODEC);
+    }
+
+    /** Chests go in any slot, as long as the first slot does not already hold another upgrade's item. */
+    @Override
+    public boolean canPlace(@NotNull StorageUpgradeConfig config, int slot, @NotNull ItemStack stack, @NotNull List<ItemStack> slots) {
+        if (!stack.is(GCItemTags.ROCKET_STORAGE_UPGRADE_ITEMS)) return false;
+        return slot == 0 || slots.isEmpty() || slots.get(0).isEmpty() || slots.get(0).is(GCItemTags.ROCKET_STORAGE_UPGRADE_ITEMS);
+    }
+
+    @Override
+    public boolean isInstalledBy(@NotNull StorageUpgradeConfig config, @NotNull List<ItemStack> slots) {
+        return installedChests(slots) > 0;
+    }
+
+    /** The rocket's cargo scales with how many chests are installed. */
+    @Override
+    public @NotNull Optional<RocketUpgradeData> createData(@NotNull StorageUpgradeConfig config, @NotNull List<ItemStack> slots) {
+        return Optional.of(new StorageRocketData(installedChests(slots)));
+    }
+
+    private static int installedChests(List<ItemStack> slots) {
+        int chests = 0;
+        for (ItemStack stack : slots) {
+            if (stack.is(GCItemTags.ROCKET_STORAGE_UPGRADE_ITEMS)) ++chests;
+        }
+        return chests;
     }
 
     /**

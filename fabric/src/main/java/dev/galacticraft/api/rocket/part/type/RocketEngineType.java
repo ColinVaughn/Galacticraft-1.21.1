@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,4 +55,14 @@ public non-sealed abstract class RocketEngineType<C extends RocketEngineConfig> 
      * @return the fuel capacity of this rocket. One bucket is 81,000 units.
      */
     public abstract long getFuelCapacity(@NotNull C config);
+
+    /** Flight handling tier; custom engines can participate without stock registry-key checks. */
+    public int getFlightTier(@NotNull C config) { return 1; }
+
+    /**
+     * Returns the fuel this engine burns per tick of powered flight.
+     *
+     * @return the fuel burned per tick. One bucket is 81,000 units.
+     */
+    public abstract long getFuelUsagePerTick(@NotNull C config);
 }

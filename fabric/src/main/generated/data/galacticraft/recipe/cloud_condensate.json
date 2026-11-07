@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "galacticraft:dense_cloud"
+    },
+    {
+      "item": "galacticraft:dense_cloud"
+    },
+    {
+      "item": "galacticraft:dense_cloud"
+    },
+    {
+      "item": "galacticraft:dense_cloud"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "galacticraft:cloud_condensate"
+  }
+}

@@ -216,7 +216,7 @@ public class VariableSizedContainer implements Container {
 
         @Override
         public int size() {
-            return VariableSizedContainer.this.stacks.size();
+            return VariableSizedContainer.this.targetSize;
         }
     }
 }

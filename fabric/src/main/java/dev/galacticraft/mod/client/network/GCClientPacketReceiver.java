@@ -40,10 +40,14 @@ public class GCClientPacketReceiver {
         register(CapeAssignmentsPacket.TYPE, CapeAssignmentsPacket.STREAM_CODEC);
         register(DustStormSyncPayload.TYPE, DustStormSyncPayload.STREAM_CODEC);
         register(SolarFlareSyncPayload.TYPE, SolarFlareSyncPayload.STREAM_CODEC);
+        register(JupiterPressurePayload.TYPE, JupiterPressurePayload.STREAM_CODEC);
         register(MeteorShowerSyncPayload.TYPE, MeteorShowerSyncPayload.STREAM_CODEC);
         register(ServerStatisticsPayload.TYPE, ServerStatisticsPayload.STREAM_CODEC);
+        register(TeamFlagPayload.TYPE, TeamFlagPayload.STREAM_CODEC);
         register(GlobalStatisticsPayload.TYPE, GlobalStatisticsPayload.STREAM_CODEC);
         register(SensorGlassesLeakPayload.TYPE, SensorGlassesLeakPayload.STREAM_CODEC);
+        register(SpaceflightHandoffPayload.TYPE, SpaceflightHandoffPayload.STREAM_CODEC);
+        register(SpaceflightArrivalPayload.TYPE, SpaceflightArrivalPayload.STREAM_CODEC);
     }
 
     public static <P extends S2CPayload> void register(CustomPacketPayload.Type<P> type,

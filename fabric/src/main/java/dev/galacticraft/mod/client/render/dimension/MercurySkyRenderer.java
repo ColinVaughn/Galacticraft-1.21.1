@@ -139,7 +139,7 @@ public class MercurySkyRenderer {
         }
 
         BufferBuilder buffer;
-        if (!ShaderPackCompat.isActive()) {
+        if (!ShaderPackCompat.isActive() && !SurfaceCelestialRenderer.available()) {
             float[] afloat = new float[4];
             poseStack.pushPose();
             poseStack.mulPose(Axis.YN.rotationDegrees(90.0F));
@@ -220,30 +220,32 @@ public class MercurySkyRenderer {
         poseStack.mulPose(Axis.YN.rotationDegrees(90.0F));
         poseStack.mulPose(Axis.XP.rotationDegrees(-level.getTimeOfDay(partialTicks) * 360.0F));
         Matrix4f last2 = poseStack.last().pose();
-        if (!ShaderPackCompat.isActive()) {
-            // Sun disk.
-            RenderSystem.setShaderColor(0.0F, 0.0F, 0.0F, 1.0F);
-            // Blanking quad hides stars behind the disk.
-            f10 = this.sunSize / 3.5F;
-            buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
-            buffer.addVertex(last2, -f10, 99.9F, -f10)
-                    .addVertex(last2, f10, 99.9F, -f10)
-                    .addVertex(last2, f10, 99.9F, f10)
-                    .addVertex(last2, -f10, 99.9F, f10);
-            BufferUploader.drawWithShader(buffer.buildOrThrow());
+        if (!SurfaceCelestialRenderer.render(context)) {
+            if (!ShaderPackCompat.isActive()) {
+                // Sun disk.
+                RenderSystem.setShaderColor(0.0F, 0.0F, 0.0F, 1.0F);
+                // Blanking quad hides stars behind the disk.
+                f10 = this.sunSize / 3.5F;
+                buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
+                buffer.addVertex(last2, -f10, 99.9F, -f10)
+                        .addVertex(last2, f10, 99.9F, -f10)
+                        .addVertex(last2, f10, 99.9F, f10)
+                        .addVertex(last2, -f10, 99.9F, f10);
+                BufferUploader.drawWithShader(buffer.buildOrThrow());
+            }
+            ShaderPackCompat.renderSun(context.positionMatrix(), level.getTimeOfDay(partialTicks) * 360.0F, last2, sunMatrix -> {
+                RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 0.15F);
+                float radius = this.sunSize;
+                RenderSystem.setShaderTexture(0, Constant.Skybox.SUN_MERCURY);
+                RenderSystem.setShader(GameRenderer::getPositionTexShader);
+                BufferBuilder sunBuffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+                sunBuffer.addVertex(sunMatrix, -radius, 100.0F, -radius).setUv(0.0F, 0.0F)
+                        .addVertex(sunMatrix, radius, 100.0F, -radius).setUv(1.0F, 0.0F)
+                        .addVertex(sunMatrix, radius, 100.0F, radius).setUv(1.0F, 1.0F)
+                        .addVertex(sunMatrix, -radius, 100.0F, radius).setUv(0.0F, 1.0F);
+                BufferUploader.drawWithShader(sunBuffer.buildOrThrow());
+            });
         }
-        ShaderPackCompat.renderSun(context.positionMatrix(), level.getTimeOfDay(partialTicks) * 360.0F, last2, sunMatrix -> {
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 0.15F);
-            float radius = this.sunSize;
-            RenderSystem.setShaderTexture(0, Constant.Skybox.SUN_MERCURY);
-            RenderSystem.setShader(GameRenderer::getPositionTexShader);
-            BufferBuilder sunBuffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-            sunBuffer.addVertex(sunMatrix, -radius, 100.0F, -radius).setUv(0.0F, 0.0F)
-                    .addVertex(sunMatrix, radius, 100.0F, -radius).setUv(1.0F, 0.0F)
-                    .addVertex(sunMatrix, radius, 100.0F, radius).setUv(1.0F, 1.0F)
-                    .addVertex(sunMatrix, -radius, 100.0F, radius).setUv(0.0F, 1.0F);
-            BufferUploader.drawWithShader(sunBuffer.buildOrThrow());
-        });
 
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.disableBlend();

@@ -37,7 +37,7 @@ import java.util.IdentityHashMap;
 import java.util.Set;
 
 public class SpaceSkyRenderer {
-    protected final StarManager starManager = new StarManager();
+    protected static final StarManager starManager = new StarManager();
 
     public void render(GCWorldRenderContext context) {
         PoseStack matrices = new PoseStack();

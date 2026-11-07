@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +25,7 @@ package dev.galacticraft.mod.gametest;
 
 import com.mojang.datafixers.util.Pair;
 import dev.galacticraft.api.rocket.RocketData;
-import dev.galacticraft.api.rocket.RocketPrefabs;
+import dev.galacticraft.mod.content.rocket.RocketPrefabs;
 import dev.galacticraft.mod.content.GCBlocks;
 import dev.galacticraft.mod.content.GCEntityTypes;
 import dev.galacticraft.mod.content.GCRocketParts;
@@ -64,7 +65,7 @@ public final class RocketLaunchPadPersistenceTestSuite implements GalacticraftGa
 
         RocketEntity rocket = dockRocket(context, level, pad, padPos);
 
-        // --- quit: the chunk is written out, then dropped ---
+        // Save the chunk before unloading it.
         CompoundTag rocketTag = new CompoundTag();
         if (!rocket.save(rocketTag)) {
             context.fail("the rocket refused to save at all", PAD_CENTER);
@@ -73,7 +74,7 @@ public final class RocketLaunchPadPersistenceTestSuite implements GalacticraftGa
         CompoundTag padTag = pad.saveWithFullMetadata(level.registryAccess());
         rocket.setRemoved(Entity.RemovalReason.UNLOADED_TO_CHUNK);
 
-        // --- rejoin: block entity and entity are both read back ---
+        // Reload the block entity and rocket.
         pad.loadWithComponents(padTag, level.registryAccess());
         Entity loaded = EntityType.loadEntityRecursive(rocketTag, level, entity -> entity);
         if (!(loaded instanceof RocketEntity reloaded)) {
@@ -118,10 +119,8 @@ public final class RocketLaunchPadPersistenceTestSuite implements GalacticraftGa
     }
 
     /**
-     * The rocket resolves its pad by reading the block entity at the saved position while it is
-     * being deserialized. When the entity comes back before that block entity is reachable - which
-     * is what a chunk still being loaded looks like - the link is simply not made, and the pad is
-     * the only thing left that can repair it. It holds the rocket's UUID for exactly that purpose.
+     * Checks that the pad's saved rocket UUID repairs the dock link when the rocket loads before
+     * its pad block entity is available.
      */
     @GameTest(template = EMPTY_STRUCTURE)
     public void padRelinksARocketThatLoadedWithoutIt(GameTestHelper context) {
@@ -269,11 +268,7 @@ public final class RocketLaunchPadPersistenceTestSuite implements GalacticraftGa
         }
     }
 
-    /**
-     * The cargo hold is sized from the storage upgrade on every access. If that upgrade ever fails
-     * to resolve for a single call - data not synced yet, registry not reachable yet - the hold must
-     * not be destroyed, because nothing puts it back once the upgrade resolves again.
-     */
+    /** Checks that temporarily unresolved storage-upgrade data cannot resize away saved rocket cargo. */
     @GameTest(template = EMPTY_STRUCTURE)
     public void losingTheUpgradeDoesNotDestroyCargoAlreadyLoaded(GameTestHelper context) {
         TestRocket rocket = new TestRocket(context.getLevel());

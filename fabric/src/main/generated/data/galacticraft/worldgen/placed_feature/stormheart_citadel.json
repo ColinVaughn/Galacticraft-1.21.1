@@ -1,0 +1,27 @@
+{
+  "feature": "galacticraft:stormheart_citadel",
+  "placement": [
+    {
+      "type": "minecraft:rarity_filter",
+      "chance": 40
+    },
+    {
+      "type": "minecraft:in_square"
+    },
+    {
+      "type": "minecraft:height_range",
+      "height": {
+        "type": "minecraft:uniform",
+        "max_inclusive": {
+          "absolute": 44
+        },
+        "min_inclusive": {
+          "absolute": 6
+        }
+      }
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

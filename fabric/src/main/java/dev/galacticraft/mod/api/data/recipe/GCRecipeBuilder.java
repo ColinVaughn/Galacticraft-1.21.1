@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +23,9 @@
 
 package dev.galacticraft.mod.api.data.recipe;
 
-import dev.galacticraft.mod.Constant;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.registries.BuiltInRegistries;
 import dev.galacticraft.mod.data.EmiDefaultRecipeProvider;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementRequirements;
@@ -51,6 +54,7 @@ public abstract class GCRecipeBuilder<T extends GCRecipeBuilder<T>> implements R
     @Nullable
     protected String group = "";
     protected boolean emiDefaultRecipe = false;
+    protected DataComponentPatch components = DataComponentPatch.EMPTY;
 
     protected GCRecipeBuilder(String prefix, RecipeCategory category, ItemLike result, int count) {
         this.prefix = prefix;
@@ -71,6 +75,22 @@ public abstract class GCRecipeBuilder<T extends GCRecipeBuilder<T>> implements R
         return (T) this;
     }
 
+    /**
+     * Sets components on the result, for example a {@code galacticraft:rocket_module} carrying a
+     * datapack part ({@code GenericRocketModuleItem.componentsFor}).
+     */
+    public T components(DataComponentPatch components) {
+        this.components = components;
+        return (T) this;
+    }
+
+    /** The result stack, with any components set by {@link #components}. */
+    protected ItemStack resultStack() {
+        ItemStack stack = new ItemStack(this.result, this.count);
+        stack.applyComponents(this.components);
+        return stack;
+    }
+
     public T emiDefaultRecipe(boolean emiDefaultRecipe) {
         this.emiDefaultRecipe = emiDefaultRecipe;
         return (T) this;
@@ -83,12 +103,12 @@ public abstract class GCRecipeBuilder<T extends GCRecipeBuilder<T>> implements R
 
     @Override
     public void save(RecipeOutput output, ResourceLocation id) {
+        ResourceLocation resourceLocation = id.withPrefix(this.prefix);
         Advancement.Builder builder = output.advancement()
-                .addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(id))
-                .rewards(AdvancementRewards.Builder.recipe(id))
+                .addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(resourceLocation))
+                .rewards(AdvancementRewards.Builder.recipe(resourceLocation))
                 .requirements(AdvancementRequirements.Strategy.OR);
         this.criteria.forEach(builder::addCriterion);
-        ResourceLocation resourceLocation = id.withPrefix(this.prefix);
         ResourceLocation resourceLocation2;
         if (this.category != null) {
             resourceLocation2 = id.withPrefix("recipes/" + this.category.getFolderName() + "/");
@@ -104,7 +124,9 @@ public abstract class GCRecipeBuilder<T extends GCRecipeBuilder<T>> implements R
 
     @Override
     public void save(RecipeOutput output, String path) {
-        this.save(output, Constant.id(path));
+        ResourceLocation resultId = BuiltInRegistries.ITEM.getKey(this.result);
+        this.save(output, path.indexOf(':') >= 0 ? ResourceLocation.parse(path)
+                : ResourceLocation.fromNamespaceAndPath(resultId.getNamespace(), path));
     }
 
     public abstract Recipe<?> createRecipe(ResourceLocation id);

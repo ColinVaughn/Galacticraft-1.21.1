@@ -37,6 +37,7 @@ import dev.galacticraft.mod.network.s2c.ResetPerspectivePacket;
 import dev.galacticraft.mod.particle.GCParticleTypes;
 import dev.galacticraft.mod.screen.ParachestMenu;
 import dev.galacticraft.mod.util.FluidUtil;
+import dev.galacticraft.mod.util.LanderAnimationState;
 import dev.galacticraft.mod.storage.SimpleFluidTank;
 import dev.galacticraft.mod.storage.ItemFluidTransfer;
 import dev.architectury.networking.NetworkManager;
@@ -45,6 +46,9 @@ import dev.architectury.registry.menu.MenuRegistry;
 import net.minecraft.core.Holder;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
@@ -69,7 +73,8 @@ import static dev.galacticraft.mod.content.entity.damage.GCDamageTypes.CRASH_LAN
 
 public class LanderEntity extends AbstractLanderEntity implements Container, ScalableFuelLevel, ControllableEntity, HasCustomInventoryScreen, IgnoreShift, ExtendedMenuProvider {
     public static final float NO_PARTICLES = 0.0000001F;
-    protected NonNullList<ItemStack> inventory;
+    protected NonNullList<ItemStack> inventory = NonNullList.withSize(3, ItemStack.EMPTY);
+    private static final EntityDataAccessor<Boolean> DESCENDING = SynchedEntityData.defineId(LanderEntity.class, EntityDataSerializers.BOOLEAN);
     private final SimpleFluidTank tank = new SimpleFluidTank(FluidUtil.bucketsToDroplets(100), () -> {
     });
     private final float turnFactor = 2.0F;
@@ -77,33 +82,51 @@ public class LanderEntity extends AbstractLanderEntity implements Container, Sca
     protected long ticks = 0;
     private double lastDeltaY;
     protected boolean lastOnGround;
+    private final LanderAnimationState animationState = new LanderAnimationState();
 
     public LanderEntity(EntityType<?> entityType, Level level) {
         super(entityType, level);
     }
 
+    public LanderAnimationState getAnimationState() { return this.animationState; }
+
     public LanderEntity(ServerPlayer player) {
         this(GCEntityTypes.LANDER, player.level());
 
         GCServerPlayer gcPlayer = GCServerPlayer.get(player);
-        this.inventory = NonNullList.withSize(gcPlayer.getRocketStacks().size() + 1, ItemStack.EMPTY);
-        this.tank.set(GCFluids.FUEL, gcPlayer.getFuel());
-
-        for (int i = 0; i < gcPlayer.getRocketStacks().size(); i++) {
-            if (!gcPlayer.getRocketStacks().get(i).isEmpty()) {
-                this.inventory.set(i, gcPlayer.getRocketStacks().get(i).copy());
-            } else {
-                this.inventory.get(i).setCount(0);
-            }
-        }
+        loadCargo(gcPlayer.getRocketStacks(), gcPlayer.getFuel());
 
         moveTo(player.getX(), player.getY(), player.getZ(), 0, 0);
+    }
+
+    public boolean hasManualControls() { return true; }
+
+    public void loadCargo(NonNullList<ItemStack> cargo, long fuel) {
+        inventory = NonNullList.withSize(Math.max(3, cargo.size() + 1), ItemStack.EMPTY);
+        for (int i = 0; i < cargo.size(); i++) inventory.set(i, cargo.get(i).copy());
+        tank.set(GCFluids.FUEL, fuel);
+    }
+
+    public long getFuel() { return tank.getAmount(); }
+
+    public void startDescent() {
+        entityData.set(DESCENDING, true);
+        setDeltaMovement(0, hasManualControls() ? -.8 : -.55, 0);
+        lastDeltaY = getDeltaMovement().y;
+        hasImpulse = true;
+    }
+
+    @Override
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DESCENDING, false);
     }
 
     @Override
     protected void readAdditionalSaveData(CompoundTag tag) {
         tank.readNbt(tag, this.registryAccess());
-        this.inventory = NonNullList.withSize(tag.getInt("size"), ItemStack.EMPTY);
+        this.inventory = NonNullList.withSize(Math.max(3, tag.getInt("size")), ItemStack.EMPTY);
+        entityData.set(DESCENDING, tag.getBoolean("Descending"));
         ContainerHelper.loadAllItems(tag, this.inventory, this.registryAccess());
 
         this.lastDeltaY = this.getDeltaMovement().y;
@@ -114,6 +137,7 @@ public class LanderEntity extends AbstractLanderEntity implements Container, Sca
         tank.writeNbt(tag, this.registryAccess());
 
         tag.putInt("size", this.inventory.size());
+        tag.putBoolean("Descending", entityData.get(DESCENDING));
         ContainerHelper.saveAllItems(tag, this.inventory, this.registryAccess());
     }
 
@@ -131,6 +155,10 @@ public class LanderEntity extends AbstractLanderEntity implements Container, Sca
     public void tick() {
         super.tick();
         this.ticks++;
+        if (level().isClientSide)
+            this.animationState.tick(onGround(), !getPassengers().isEmpty(), shouldSpawnParticles());
+        // Automatic pods and airbags are simulated by the server, including every bounce.
+        if (level().isClientSide && !hasManualControls()) return;
 
         if (onGround()) {
             tickOnGround();
@@ -155,16 +183,6 @@ public class LanderEntity extends AbstractLanderEntity implements Container, Sca
 
         if (onGround() && !this.lastOnGround) {
             onGroundHit();
-        }
-
-        if (this.ticks < 40 && this.getY() > 150) {
-            if (this.getPassengers().isEmpty()) {
-                Player player = level.getNearestPlayer(this, 5);
-
-                if (player != null && player.getVehicle() == null) {
-                    player.startRiding(this);
-                }
-            }
         }
 
         if (!level.isClientSide) {
@@ -243,12 +261,16 @@ public class LanderEntity extends AbstractLanderEntity implements Container, Sca
 
                 discard();
             } else {
-                for (Entity entity : this.getPassengers()) {
-                    if (entity instanceof ServerPlayer player) {
-                        player.awardStat(GCStats.SAFE_LANDING);
-                        GCTriggers.SAFE_LANDING.trigger(player);
-                    }
-                }
+                awardSafeLanding();
+            }
+        }
+    }
+
+    protected void awardSafeLanding() {
+        if (!level().isClientSide) for (Entity entity : getPassengers()) {
+            if (entity instanceof ServerPlayer player) {
+                player.awardStat(GCStats.SAFE_LANDING);
+                GCTriggers.SAFE_LANDING.trigger(player);
             }
         }
     }
@@ -275,12 +297,12 @@ public class LanderEntity extends AbstractLanderEntity implements Container, Sca
             return Vec3.ZERO;
         }
 
-        if (this.ticks >= 40 && this.ticks < 45) {
+        if (!entityData.get(DESCENDING) && this.ticks >= 40 && this.ticks < 45) {
             setDeltaMovement(0, -2.5D, 0);
         }
 
         Vec3 delta = getDeltaMovement();
-        return new Vec3(delta.x(), this.ticks < 40 ? 0 : delta.y(), delta.z());
+        return new Vec3(delta.x(), !entityData.get(DESCENDING) && this.ticks < 40 ? 0 : delta.y(), delta.z());
     }
 
     @Override
@@ -405,7 +427,7 @@ public class LanderEntity extends AbstractLanderEntity implements Container, Sca
 
     @Override
     public boolean shouldMove() {
-        if (this.ticks < 40) {
+        if (!entityData.get(DESCENDING) && this.ticks < 40) {
             return false;
         }
 
@@ -414,12 +436,13 @@ public class LanderEntity extends AbstractLanderEntity implements Container, Sca
 
     @Override
     public boolean shouldSpawnParticles() {
-        return this.ticks > 40 && getXRot() != NO_PARTICLES;
+        return !onGround() && (entityData.get(DESCENDING) || this.ticks > 40) && getXRot() != NO_PARTICLES;
     }
 
     @Override
     protected Vec3 getPassengerAttachmentPoint(Entity passenger, EntityDimensions dimensions, float scaleFactor) {
-        return new Vec3(0, 1.5F, 0);
+        // Seats a player's hips on the cabin seat cushion (31 px up in lander.bbmodel).
+        return new Vec3(0, 1.85F, 0);
     }
 
     @Override
@@ -429,7 +452,7 @@ public class LanderEntity extends AbstractLanderEntity implements Container, Sca
 
     @Override
     public void inputTick(float leftImpulse, float forwardImpulse, boolean up, boolean down, boolean left, boolean right, boolean jumping, boolean shiftKeyDown, boolean invertControls) {
-        if (!onGround()) {
+        if (hasManualControls() && !onGround()) {
             if (up)
                 setXRot(Mth.clamp(getXRot() - 0.5F * turnFactor, -angle, angle));
             if (down)

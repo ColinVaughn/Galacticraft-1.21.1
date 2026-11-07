@@ -46,7 +46,7 @@ public class LanderOverlay {
             final int height = scaledresolution.getGuiScaledHeight();
             final double motionY = lander.getDeltaMovement().y();
 
-            if (motionY < -1.5) {
+            if (lander.hasManualControls() && motionY < -Constant.Landing.SAFE_VELOCITY) {
                 final int textWidth = mc.font.width(WARNING_TEXT);
                 final int topY = height / 8 - 16;
                 final float offset = 0.25F * (float) (width - 2 * textWidth + 2);

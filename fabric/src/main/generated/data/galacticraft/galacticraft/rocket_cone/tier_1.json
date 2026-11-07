@@ -1,6 +1,7 @@
 {
   "type": "galacticraft:basic",
   "config": {
+    "paintable": true,
     "predicate": {
       "type": "galacticraft:access_weight",
       "config": {

@@ -113,11 +113,11 @@ public class GCOreRecipeProvider extends FabricRecipeProvider {
             GCCookingRecipeBuilder.smelting(ingredient, RecipeCategory.MISC, result, experience, time * 2)
                     .group(groupName)
                     .unlockedBy(hasName, criterion)
-                    .save(output, smeltingName + itemName);
+                    .save(output, dev.galacticraft.mod.Constant.id(smeltingName + itemName));
             GCCookingRecipeBuilder.blasting(ingredient, RecipeCategory.MISC, result, experience, time)
                     .group(groupName)
                     .unlockedBy(hasName, criterion)
-                    .save(output, blastingName + itemName);
+                    .save(output, dev.galacticraft.mod.Constant.id(blastingName + itemName));
         }
     }
 

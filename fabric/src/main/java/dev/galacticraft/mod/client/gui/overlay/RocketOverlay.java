@@ -30,6 +30,7 @@ import dev.galacticraft.mod.Constant;
 import dev.galacticraft.api.rocket.LaunchStage;
 import dev.galacticraft.mod.client.GCKeyBinds;
 import dev.galacticraft.mod.util.Translations;
+import dev.galacticraft.mod.world.dimension.SpaceTravel;
 import net.minecraft.network.chat.Component;
 import dev.galacticraft.mod.content.entity.vehicle.RocketEntity;
 import net.minecraft.client.DeltaTracker;
@@ -73,21 +74,13 @@ public class RocketOverlay {
 
     public static void onHudRender(GuiGraphics graphics, DeltaTracker delta) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null) return;
+        if (mc.player == null || dev.galacticraft.mod.client.render.dimension.SpaceflightTransition.isActive()) return;
         if (mc.player.getVehicle() instanceof RocketEntity rocketEntity) {
-            if (!mc.options.hideGui && rocketEntity.getLaunchStage() == LaunchStage.LAUNCHED) {
-                Component hint = rocketEntity.isLanding()
-                        ? Component.translatable(Translations.Ui.ROCKET_LANDING, GCKeyBinds.TOGGLE_ROCKET_LANDING.getTranslatedKeyMessage())
-                        : Component.translatable(Translations.Ui.ROCKET_LANDING_HINT, GCKeyBinds.TOGGLE_ROCKET_LANDING.getTranslatedKeyMessage());
-                graphics.drawCenteredString(mc.font, hint, graphics.guiWidth() / 2, graphics.guiHeight() - 64,
-                        rocketEntity.isLanding() ? 0x7AE7D9 : 0xFFFFFF);
-                if (rocketEntity.isLanding()) {
-                    Component thrustHint = Component.translatable(Translations.Ui.ROCKET_LANDING_THRUST,
-                            mc.options.keyJump.getTranslatedKeyMessage(), mc.options.keyShift.getTranslatedKeyMessage(),
-                            Math.round(rocketEntity.getThrust() * 100));
-                    graphics.drawCenteredString(mc.font, thrustHint, graphics.guiWidth() / 2, graphics.guiHeight() - 53, 0x7AE7D9);
-                }
+            if (rocketEntity.isInSpaceflight()) {
+                if (!mc.options.hideGui) renderSpaceflight(graphics, mc, rocketEntity);
+                return;
             }
+            renderLandingHint(graphics, mc, rocketEntity);
             if (playerSkin == null) {
                 playerSkin = mc.getSkinManager().getOrLoad(mc.player.getGameProfile());
             }
@@ -177,4 +170,82 @@ public class RocketOverlay {
             graphics.pose().popPose();
         }
     }
+    private static void renderLandingHint(GuiGraphics graphics, Minecraft mc, RocketEntity rocket) {
+        if (mc.options.hideGui || rocket.getLaunchStage() != LaunchStage.LAUNCHED) return;
+        Component hint = rocket.isLanding()
+                ? Component.translatable(Translations.Ui.ROCKET_LANDING, GCKeyBinds.TOGGLE_ROCKET_LANDING.getTranslatedKeyMessage())
+                : Component.translatable(Translations.Ui.ROCKET_LANDING_HINT, GCKeyBinds.TOGGLE_ROCKET_LANDING.getTranslatedKeyMessage());
+        graphics.drawCenteredString(mc.font, hint, graphics.guiWidth() / 2, graphics.guiHeight() - 64,
+                rocket.isLanding() ? 0x7AE7D9 : 0xFFFFFF);
+        if (rocket.isLanding()) {
+            Component thrustHint = Component.translatable(Translations.Ui.ROCKET_LANDING_THRUST,
+                    mc.options.keyJump.getTranslatedKeyMessage(), mc.options.keyShift.getTranslatedKeyMessage(),
+                    Math.round(rocket.getThrust() * 100));
+            graphics.drawCenteredString(mc.font, thrustHint, graphics.guiWidth() / 2, graphics.guiHeight() - 53, 0x7AE7D9);
+        }
+    }
+
+    private static void renderSpaceflight(GuiGraphics graphics, Minecraft mc, RocketEntity rocket) {
+        final int width = graphics.guiWidth(), height = graphics.guiHeight();
+        final int ink = 0xFFD5E6EB, muted = 0xFF81959D, accent = 0xFF89CFDF;
+        graphics.drawString(mc.font, Component.translatable("ui.galacticraft.space.system"), 16, 16, muted, false);
+        graphics.fill(16, 29, 78, 30, 0x707D9DA8);
+
+        var camera = mc.gameRenderer.getMainCamera();
+        var inverse = new org.joml.Quaternionf(camera.rotation()).conjugate();
+        double focal = height / (2 * Math.tan(Math.toRadians(mc.options.fov().get()) / 2));
+        double closestAngle = -1;
+        SpaceTravel.Destination focus = null;
+        var forward = SpaceTravel.forward(rocket.getXRot(), rocket.getYRot());
+        for (var target : SpaceTravel.destinations(rocket.registryAccess())) {
+            if (target.resolve(rocket.registryAccess()) == null) continue;
+            double alignment = target.center().subtract(camera.getPosition()).normalize().dot(forward);
+            if (alignment > closestAngle) { closestAngle = alignment; focus = target; }
+        }
+        for (var target : SpaceTravel.destinations(rocket.registryAccess())) {
+            var body = target.resolve(rocket.registryAccess());
+            if (body == null) continue;
+            var direction = target.center().subtract(camera.getPosition());
+            var view = direction.toVector3f().rotate(inverse);
+            if (view.z >= -1) continue;
+            int x = (int) (width / 2.0 + focal * view.x / -view.z);
+            int y = (int) (height / 2.0 - focal * view.y / -view.z);
+            int radius = (int) Math.min(68, Math.max(8, focal * target.radius() / -view.z));
+            if (x < 20 || x > width - 20 || y < 44 || y > height - 94) continue;
+            boolean selected = target.equals(focus);
+            int color = selected ? accent : 0x7081959D;
+            graphics.fill(x - radius - 4, y - 3, x - radius - 3, y + 4, color);
+            graphics.fill(x + radius + 3, y - 3, x + radius + 4, y + 4, color);
+        }
+        if (focus != null) {
+            var body = focus.resolve(rocket.registryAccess());
+            if (body != null) {
+                Component name = body.name();
+                Component range = Component.translatable("ui.galacticraft.space.range",
+                        Math.max(0, Math.round(focus.distance(rocket.position(), SpaceTravel.days(rocket.level())))));
+                graphics.drawString(mc.font, name, width - 16 - mc.font.width(name), 16, ink, false);
+                graphics.drawString(mc.font, range, width - 16 - mc.font.width(range), 30, muted, false);
+            }
+        }
+        int fuel = (int) Math.round(100.0 * rocket.getFuel() / Math.max(1, rocket.getFuelTankCapacity()));
+        int panelY = height - 89;
+        graphics.drawString(mc.font, Component.translatable("ui.galacticraft.space.speed",
+                Math.round(rocket.position().subtract(rocket.xo, rocket.yo, rocket.zo).length() * 20)), 16, panelY, ink, false);
+        graphics.drawString(mc.font, Component.translatable("ui.galacticraft.space.fuel", fuel), 16, panelY + 14, muted, false);
+        graphics.fill(16, panelY + 27, 96, panelY + 29, 0x50495E67);
+        graphics.fill(16, panelY + 27, 16 + Math.clamp(fuel, 0, 100) * 80 / 100, panelY + 29,
+                fuel < 15 ? 0xFFDD9068 : accent);
+        graphics.fill(width / 2 - 9, height / 2, width / 2 - 4, height / 2 + 1, 0x8089CFDF);
+        graphics.fill(width / 2 + 4, height / 2, width / 2 + 9, height / 2 + 1, 0x8089CFDF);
+        graphics.drawCenteredString(mc.font, Component.translatable("ui.galacticraft.space.controls",
+                mc.options.keyUp.getTranslatedKeyMessage(), mc.options.keyDown.getTranslatedKeyMessage(),
+                mc.options.keyLeft.getTranslatedKeyMessage(), mc.options.keyRight.getTranslatedKeyMessage(),
+                mc.options.keyJump.getTranslatedKeyMessage(), mc.options.keyShift.getTranslatedKeyMessage()),
+                width / 2, height - 55, muted);
+        if (rocket.isBoostLocked())
+            graphics.drawCenteredString(mc.font, Component.translatable("ui.galacticraft.space.boost_locked",
+                    mc.options.keyJump.getTranslatedKeyMessage(), mc.options.keyShift.getTranslatedKeyMessage()),
+                    width / 2, height - 67, accent);
+    }
+
 }

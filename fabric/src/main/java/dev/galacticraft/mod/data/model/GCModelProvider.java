@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -62,6 +63,7 @@ import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
@@ -167,6 +169,29 @@ public class GCModelProvider extends FabricModelProvider {
         generator.createTrivialCube(GCBlocks.MARS_WEATHERED_BASALT);
         generator.createTrivialCube(GCBlocks.MARS_SEDIMENTARY_ROCK);
         generator.createTrivialCube(GCBlocks.MARS_SUB_SURFACE_ROCK);
+
+        for (Block block : dev.galacticraft.mod.content.block.jupiter.JupiterBlocks.NAMES.keySet()) {
+            if (block == dev.galacticraft.mod.content.block.jupiter.JupiterBlocks.SEALED_HATCH) generator.createOrientableTrapdoor(block);
+            else if (dev.galacticraft.mod.content.block.jupiter.JupiterBlocks.VARIANT_BASES.containsKey(block)) this.createJupiterVariant(generator, block);
+            else if (block instanceof dev.galacticraft.mod.content.block.jupiter.JupiterBlocks.Cluster) {
+                // Hanging clusters are the upright model flipped onto the underside of a cloud.
+                var model = ModelLocationUtils.getModelLocation(block);
+                generator.blockStateOutput.accept(MultiVariantGenerator.multiVariant(block).with(PropertyDispatch
+                        .property(dev.galacticraft.mod.content.block.jupiter.JupiterBlocks.Cluster.HANGING)
+                        .select(false, Variant.variant().with(VariantProperties.MODEL, model))
+                        .select(true, Variant.variant().with(VariantProperties.MODEL, model)
+                                .with(VariantProperties.X_ROT, VariantProperties.Rotation.R180))));
+                generator.delegateItemModel(block, model);
+            } else {
+                generator.blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(block, ModelLocationUtils.getModelLocation(block)));
+                generator.delegateItemModel(block, ModelLocationUtils.getModelLocation(block));
+            }
+        }
+        // Jupiter's cube models and textures are authored in Blockbench.
+        for (Block block : List.of(GCBlocks.DENSE_CLOUD, GCBlocks.PACKED_CLOUD, GCBlocks.AMMONIA_FROST)) {
+            generator.blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(block, ModelLocationUtils.getModelLocation(block)));
+            generator.delegateItemModel(block, ModelLocationUtils.getModelLocation(block));
+        }
 
         // ASTEROID NATURAL
         generator.createTrivialCube(GCBlocks.ASTEROID_ROCK);
@@ -723,6 +748,7 @@ public class GCModelProvider extends FabricModelProvider {
 
     @Override
     public void generateItemModels(ItemModelGenerators generator) {
+        dev.galacticraft.mod.content.item.jupiter.JupiterItems.NAMES.keySet().forEach(item -> generator.generateFlatItem(item, ModelTemplates.FLAT_ITEM));
         // MATERIALS
         generator.generateFlatItem(GCItems.SILICON, ModelTemplates.FLAT_ITEM);
 
@@ -913,6 +939,8 @@ public class GCModelProvider extends FabricModelProvider {
         generator.generateFlatItem(GCItems.ROCKET_BOOSTER, ModelTemplates.FLAT_ITEM);
         var moduleModel = new ModelTemplate(java.util.Optional.of(ResourceLocation.withDefaultNamespace("builtin/entity")), java.util.Optional.empty());
         GCItems.ROCKET_MODULES.forEach(module -> generator.generateFlatItem(module, moduleModel));
+        generator.generateFlatItem(GCItems.ROCKET_MODULE, moduleModel);
+        generator.generateFlatItem(GCItems.ROCKET_SCHEMATIC, GCItems.TIER_2_ROCKET_SCHEMATIC, ModelTemplates.FLAT_ITEM);
 
         // BUGGY PARTS
         generator.generateFlatItem(GCItems.BUGGY_WHEEL, ModelTemplates.FLAT_ITEM);
@@ -952,6 +980,11 @@ public class GCModelProvider extends FabricModelProvider {
         generator.generateFlatItem(GCItems.EVOLVED_EVOKER_SPAWN_EGG, GCModelTemplates.SPAWN_EGG);
         generator.generateFlatItem(GCItems.EVOLVED_VINDICATOR_SPAWN_EGG, GCModelTemplates.SPAWN_EGG);
         generator.generateFlatItem(GCItems.LUNAR_BURROWER_SPAWN_EGG, GCModelTemplates.SPAWN_EGG);
+        generator.generateFlatItem(GCItems.CLOUD_RAY_SPAWN_EGG, GCModelTemplates.SPAWN_EGG);
+        generator.generateFlatItem(GCItems.STATIC_JELLY_SPAWN_EGG, GCModelTemplates.SPAWN_EGG);
+        generator.generateFlatItem(GCItems.SALVAGE_DRONE_SPAWN_EGG, GCModelTemplates.SPAWN_EGG);
+        generator.generateFlatItem(GCItems.STORMHEART_LEVIATHAN_SPAWN_EGG, GCModelTemplates.SPAWN_EGG);
+        generator.generateFlatItem(GCItems.CURIOSITY_ROVER_SPAWN_EGG, GCModelTemplates.SPAWN_EGG);
         generator.generateFlatItem(GCItems.GAZER_SPAWN_EGG, GCModelTemplates.SPAWN_EGG);
         generator.generateFlatItem(GCItems.RUMBLER_SPAWN_EGG, GCModelTemplates.SPAWN_EGG);
         generator.generateFlatItem(GCItems.COMET_CUBE_SPAWN_EGG, GCModelTemplates.SPAWN_EGG);
@@ -1175,5 +1208,28 @@ public class GCModelProvider extends FabricModelProvider {
 
     private static TextureMapping color(ResourceLocation resourceLocation) {
         return new TextureMapping().put(GCTextureSlot.COLOR, resourceLocation);
+    }
+
+    /** Stairs and slabs reuse their full block's Blockbench textures; the full block's own model is never regenerated. */
+    private void createJupiterVariant(BlockModelGenerators generator, Block block) {
+        Block base = dev.galacticraft.mod.content.block.jupiter.JupiterBlocks.VARIANT_BASES.get(block);
+        String name = BuiltInRegistries.BLOCK.getKey(base).getPath();
+        boolean layered = base == GCBlocks.PACKED_CLOUD;
+        TextureMapping textures = new TextureMapping()
+                .put(TextureSlot.TOP, Constant.id("block/" + name + (layered ? "_top" : "")))
+                .put(TextureSlot.SIDE, Constant.id("block/" + name + (layered ? "_side" : "")))
+                .put(TextureSlot.BOTTOM, Constant.id("block/" + name + (layered ? "_bottom" : "")));
+        if (block instanceof StairBlock) {
+            var inner = ModelTemplates.STAIRS_INNER.create(block, textures, generator.modelOutput);
+            var straight = ModelTemplates.STAIRS_STRAIGHT.create(block, textures, generator.modelOutput);
+            var outer = ModelTemplates.STAIRS_OUTER.create(block, textures, generator.modelOutput);
+            generator.blockStateOutput.accept(BlockModelGenerators.createStairs(block, inner, straight, outer));
+            generator.delegateItemModel(block, straight);
+        } else {
+            var bottom = ModelTemplates.SLAB_BOTTOM.create(block, textures, generator.modelOutput);
+            var top = ModelTemplates.SLAB_TOP.create(block, textures, generator.modelOutput);
+            generator.blockStateOutput.accept(BlockModelGenerators.createSlab(block, bottom, top, ModelLocationUtils.getModelLocation(base)));
+            generator.delegateItemModel(block, bottom);
+        }
     }
 }

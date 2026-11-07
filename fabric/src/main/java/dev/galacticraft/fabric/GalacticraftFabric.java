@@ -148,6 +148,9 @@ public final class GalacticraftFabric implements ModInitializer {
         new Galacticraft().onInitialize();
         // After the mod's own initializer, so the entity types being restricted exist.
         registerSpawnPlacements();
+        net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, manager, success) -> {
+            if (success) server.getPlayerList().getPlayers().forEach(dev.galacticraft.mod.machine.workbench.ResearchSources::sync);
+        });
         ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
             @Override
             public ResourceLocation getFabricId() {
@@ -157,6 +160,7 @@ public final class GalacticraftFabric implements ModInitializer {
             @Override
             public void onResourceManagerReload(ResourceManager manager) {
                 OxygenBlockDataManager.INSTANCE.onResourceManagerReload(manager);
+                dev.galacticraft.mod.data.ResearchSourceData.INSTANCE.onResourceManagerReload(manager);
             }
         });
     }

@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -64,6 +65,6 @@ public class CircuitFabricatorRecipeBuilder extends GCRecipeBuilder<CircuitFabri
 
     @Override
     public Recipe<?> createRecipe(ResourceLocation id) {
-        return new FabricationRecipe(this.group, this.ingredient, new ItemStack(this.result, this.count), this.time > 1 ? this.time : 300);
+        return new FabricationRecipe(this.group, this.ingredient, this.resultStack(), this.time > 1 ? this.time : 300);
     }
 }

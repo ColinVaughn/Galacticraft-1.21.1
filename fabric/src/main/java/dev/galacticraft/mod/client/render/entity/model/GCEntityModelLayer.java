@@ -39,7 +39,6 @@ public class GCEntityModelLayer {
     public static final ModelLayerLocation OLI_GRUB = registerModelLayer("oli_grub");
     public static final ModelLayerLocation GREY = registerModelLayer("grey");
     public static final ModelLayerLocation ARCH_GREY = registerModelLayer("arch_grey");
-    public static final ModelLayerLocation LANDER = registerModelLayer("lander");
     public static final ModelLayerLocation PARACHEST = registerModelLayer("parachest");
     public static final ModelLayerLocation MOON_VILLAGER = registerModelLayer("moon_villager");
 
@@ -66,7 +65,6 @@ public class GCEntityModelLayer {
         EntityModelLayerRegistry.registerModelLayer(OLI_GRUB, OliGrubEntityModel::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(GREY, GreyEntityModel::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(ARCH_GREY, ArchGreyEntityModel::createBodyLayer);
-        EntityModelLayerRegistry.registerModelLayer(LANDER, LanderModel::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(PARACHEST, ParachestModel::createParachuteLayer);
         EntityModelLayerRegistry.registerModelLayer(MOON_VILLAGER, MoonVillagerModel::createBodyLayer);
 

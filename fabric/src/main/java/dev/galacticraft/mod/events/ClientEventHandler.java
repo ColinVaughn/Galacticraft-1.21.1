@@ -23,6 +23,11 @@
 
 package dev.galacticraft.mod.events;
 
+import dev.galacticraft.mod.client.render.dimension.SpaceDimensionEffects;
+import dev.galacticraft.mod.client.render.dimension.EmptyWeatherRenderer;
+import dev.galacticraft.mod.client.render.dimension.EmptyCloudRenderer;
+import dev.galacticraft.mod.client.render.dimension.ConfigurableSkyRenderer;
+import dev.galacticraft.api.event.RocketEvents;
 import dev.galacticraft.api.rocket.LaunchStage;
 import dev.galacticraft.api.rocket.entity.Rocket;
 import dev.galacticraft.api.universe.celestialbody.CelestialBody;
@@ -68,6 +73,7 @@ public class ClientEventHandler {
         ClientTickEvents.END_WORLD_TICK.register(ClientEventHandler::tickFootprints);
         MachineStatusEvents.MACHINE_STATUS_CHANGED.register(GCSoundManager::onStatusChanged);
         HudRenderCallback.EVENT.register(OxygenOverlay::onHudRender);
+        HudRenderCallback.EVENT.register(dev.galacticraft.mod.client.gui.overlay.JupiterPressureOverlay::onHudRender);
         HudRenderCallback.EVENT.register(DustStormOverlay::onHudRender);
         HudRenderCallback.EVENT.register(SolarFlareOverlay::onHudRender);
         HudRenderCallback.EVENT.register(SensorGlassesOverlay::onHudRender);
@@ -81,7 +87,7 @@ public class ClientEventHandler {
         if (rocket instanceof RocketEntity rocketEntity) {
             LaunchStage launchStage = rocketEntity.getLaunchStage();
             if (launchStage == LaunchStage.IGNITED || (launchStage == LaunchStage.LAUNCHED && oldStage == LaunchStage.IDLE)) {
-                Minecraft.getInstance().getSoundManager().play(new RocketSound(rocketEntity));
+                RocketSound.play(rocketEntity);
             }
         }
     }
@@ -94,6 +100,10 @@ public class ClientEventHandler {
         Holder<CelestialBody<?, ?>> holder = level.galacticraft$getCelestialBody();
         if (holder != null && holder.value().isSatellite()) {
             DimensionRenderingRegistry.registerSkyRenderer(level.dimension(), context -> SatelliteSkyRenderer.INSTANCE.render(new FabricWorldRenderContext(context)));
+        } else if (SpaceDimensionEffects.ID.equals(level.dimensionType().effectsLocation())) {
+            DimensionRenderingRegistry.registerSkyRenderer(level.dimension(), context -> ConfigurableSkyRenderer.INSTANCE.render(new FabricWorldRenderContext(context)));
+            DimensionRenderingRegistry.registerCloudRenderer(level.dimension(), EmptyCloudRenderer.INSTANCE);
+            DimensionRenderingRegistry.registerWeatherRenderer(level.dimension(), EmptyWeatherRenderer.INSTANCE);
         }
     }
 

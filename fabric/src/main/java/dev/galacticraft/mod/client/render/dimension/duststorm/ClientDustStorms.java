@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +23,7 @@
 
 package dev.galacticraft.mod.client.render.dimension.duststorm;
 
+import dev.galacticraft.api.universe.celestialbody.CelestialBodyTags;
 import dev.galacticraft.mod.network.s2c.DustStormSyncPayload;
 import dev.galacticraft.mod.world.dimension.GCDimensions;
 import dev.galacticraft.mod.world.dimension.duststorm.DustStormCurve;
@@ -59,7 +61,7 @@ public final class ClientDustStorms {
     /** Advances local counters and eases the render intensity; call once per client tick. */
     public static void clientTick() {
         ClientLevel level = Minecraft.getInstance().level;
-        if (level == null || !level.dimension().equals(GCDimensions.MARS)) {
+        if (level == null || !CelestialBodyTags.is(level, CelestialBodyTags.DUST_STORMS)) {
             reset();
             return;
         }

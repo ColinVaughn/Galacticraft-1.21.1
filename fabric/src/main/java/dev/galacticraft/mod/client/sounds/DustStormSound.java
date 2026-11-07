@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,9 +23,10 @@
 
 package dev.galacticraft.mod.client.sounds;
 
+import dev.galacticraft.api.universe.celestialbody.CelestialBodyTags;
 import dev.galacticraft.mod.client.render.dimension.duststorm.ClientDustStorms;
 import dev.galacticraft.mod.content.GCSounds;
-import dev.galacticraft.mod.world.dimension.GCDimensions;
+import dev.galacticraft.mod.world.dimension.duststorm.DustStormExposure;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
@@ -32,11 +34,12 @@ import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.sounds.SoundSource;
 
 /**
- * A looping, listener-relative howling-wind ambience that plays while a Mars dust storm is active.
- * Volume tracks the storm intensity and drops to a muffle when the player is sheltered in a sealed,
- * breathable space. Self-stops when the storm clears or the player leaves Mars.
+ * Listener-relative dust storm loop. Volume follows intensity and {@link DustStormExposure#wind};
+ * stops when the storm clears or the player leaves Mars.
  */
 public class DustStormSound extends AbstractTickableSoundInstance {
+    /** How far the volume moves toward its target each tick, so moving under cover fades the wind rather than cutting it. */
+    private static final float EASING = 0.1F;
     private static DustStormSound active;
 
     private DustStormSound(Minecraft mc) {
@@ -45,7 +48,12 @@ public class DustStormSound extends AbstractTickableSoundInstance {
         this.relative = true;
         this.looping = true;
         this.delay = 0;
-        this.volume = 0.01F; // must be non-zero for the sound to start
+        this.volume = 0.0F;
+    }
+
+    @Override
+    public boolean canStartSilent() {
+        return true;
     }
 
     /** Starts (or keeps alive) the wind loop while a storm is active; call each client tick on Mars. */
@@ -62,7 +70,7 @@ public class DustStormSound extends AbstractTickableSoundInstance {
     public void tick() {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
-        if (player == null || mc.level == null || !mc.level.dimension().equals(GCDimensions.MARS)) {
+        if (player == null || mc.level == null || !CelestialBodyTags.is(mc.level, CelestialBodyTags.DUST_STORMS)) {
             this.stop();
             return;
         }
@@ -71,10 +79,8 @@ public class DustStormSound extends AbstractTickableSoundInstance {
             this.stop();
             return;
         }
-        float target = Math.min(1.0F, 0.35F + intensity * 0.85F);
-        if (mc.level.isBreathable(player.blockPosition().above())) {
-            target *= 0.3F; // muffled inside a sealed base or sealer bubble
-        }
-        this.volume = target;
+        float target = Math.min(1.0F, 0.35F + intensity * 0.85F)
+                * DustStormExposure.wind(mc.level, DustStormExposure.eyeBlock(player));
+        this.volume += (target - this.volume) * EASING;
     }
 }

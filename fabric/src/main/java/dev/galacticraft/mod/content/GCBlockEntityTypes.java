@@ -27,6 +27,10 @@ import dev.galacticraft.mod.content.block.entity.*;
 import dev.galacticraft.mod.content.block.entity.decoration.CannedFoodBlockEntity;
 import dev.galacticraft.mod.content.block.entity.decoration.FlagBlockEntity;
 import dev.galacticraft.mod.content.block.entity.machine.*;
+import dev.galacticraft.mod.content.block.jupiter.JupiterBlocks;
+import dev.galacticraft.mod.content.block.jupiter.encounter.StormRelayBlockEntity;
+import dev.galacticraft.mod.content.block.jupiter.encounter.StormheartPedestalBlockEntity;
+import dev.galacticraft.mod.content.block.jupiter.machine.*;
 import dev.galacticraft.mod.content.block.entity.networked.GlassFluidPipeBlockEntity;
 import dev.galacticraft.mod.content.block.entity.networked.WireBlockEntity;
 import dev.galacticraft.mod.content.block.special.launchpad.LaunchPadBlockEntity;
@@ -102,6 +106,20 @@ public class GCBlockEntityTypes {
 
     public static final BlockEntityType<AirlockControllerBlockEntity> AIRLOCK_CONTROLLER = register(Constant.Block.AIR_LOCK_CONTROLLER, AirlockControllerBlockEntity::new, GCBlocks.AIR_LOCK_CONTROLLER);
     public static final BlockEntityType<RocketWorkbenchBlockEntity> ROCKET_WORKBENCH = register(Constant.Block.ROCKET_WORKBENCH, RocketWorkbenchBlockEntity::new, GCBlocks.ROCKET_WORKBENCH);
+
+    // JUPITER
+    public static final BlockEntityType<AtmosphericCollectorBlockEntity> ATMOSPHERIC_COLLECTOR = register("atmospheric_collector", AtmosphericCollectorBlockEntity::new, JupiterBlocks.ATMOSPHERIC_COLLECTOR);
+    public static final BlockEntityType<CondensateSeparatorBlockEntity> CONDENSATE_SEPARATOR = register("condensate_separator", CondensateSeparatorBlockEntity::new, JupiterBlocks.CONDENSATE_SEPARATOR);
+    public static final BlockEntityType<VehicleDockBlockEntity> VEHICLE_DOCK = register("vehicle_dock", VehicleDockBlockEntity::new, JupiterBlocks.VEHICLE_DOCK);
+    public static final BlockEntityType<SurveyBeaconBlockEntity> SURVEY_BEACON = register("survey_beacon", SurveyBeaconBlockEntity::new, JupiterBlocks.SURVEY_BEACON);
+    public static final BlockEntityType<StormCapacitorBlockEntity> STORM_CAPACITOR = register("storm_capacitor", StormCapacitorBlockEntity::new, JupiterBlocks.STORM_CAPACITOR);
+    public static final BlockEntityType<LightningGrounderBlockEntity> LIGHTNING_GROUNDER = register("lightning_grounder", LightningGrounderBlockEntity::new, JupiterBlocks.LIGHTNING_GROUNDER);
+    public static final BlockEntityType<PressureStabilizerBlockEntity> PRESSURE_STABILIZER = register("pressure_stabilizer", PressureStabilizerBlockEntity::new, JupiterBlocks.PRESSURE_STABILIZER);
+    public static final BlockEntityType<StormRelayBlockEntity> STORM_RELAY = register("storm_relay", StormRelayBlockEntity::new, JupiterBlocks.STORM_RELAY);
+    public static final BlockEntityType<StormheartPedestalBlockEntity> STORMHEART_PEDESTAL = register("stormheart_pedestal", StormheartPedestalBlockEntity::new, JupiterBlocks.STORMHEART_PEDESTAL);
+    /** Every Jupiter block entity drawn by {@code JupiterMachineRenderer}. */
+    public static final java.util.List<BlockEntityType<?>> JUPITER_MACHINES = java.util.List.of(ATMOSPHERIC_COLLECTOR, CONDENSATE_SEPARATOR, VEHICLE_DOCK,
+            SURVEY_BEACON, STORM_CAPACITOR, LIGHTNING_GROUNDER, PRESSURE_STABILIZER, STORM_RELAY, STORMHEART_PEDESTAL);
 
     private static<T extends BlockEntity> BlockEntityType<T> register(String id, BlockEntityType.BlockEntitySupplier<T> supplier, Block... compatibleBlocks) {
         return BLOCK_ENTITIES.register(id, BlockEntityType.Builder.of(supplier, compatibleBlocks).build(null));

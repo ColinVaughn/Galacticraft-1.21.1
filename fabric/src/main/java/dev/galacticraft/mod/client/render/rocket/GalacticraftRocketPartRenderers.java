@@ -23,6 +23,7 @@
 
 package dev.galacticraft.mod.client.render.rocket;
 
+import dev.galacticraft.impl.client.rocket.render.BakedModelItemRocketPartRenderer;
 import dev.galacticraft.api.entity.rocket.render.RocketPartRendererRegistry;
 import dev.galacticraft.impl.client.rocket.render.BakedModelRocketPartRenderer;
 import dev.galacticraft.mod.Constant;

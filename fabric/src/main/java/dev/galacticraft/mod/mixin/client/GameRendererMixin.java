@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +23,11 @@
 
 package dev.galacticraft.mod.mixin.client;
 
+import org.jetbrains.annotations.Nullable;
+import net.minecraft.core.Holder;
+import dev.galacticraft.api.universe.celestialbody.SkyConfig;
+import dev.galacticraft.api.universe.celestialbody.CelestialBody;
+import dev.galacticraft.api.universe.celestialbody.CelestialBodyTags;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -31,6 +37,7 @@ import dev.galacticraft.mod.Galacticraft;
 import dev.galacticraft.mod.client.accessor.GameRendererAccessor;
 import dev.galacticraft.mod.client.render.dimension.LunarSkyExposure;
 import dev.galacticraft.mod.client.render.dimension.MoonSurfaceShader;
+import dev.galacticraft.mod.client.render.dimension.JupiterCloudRenderer;
 import dev.galacticraft.mod.world.dimension.GCDimensions;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
@@ -59,7 +66,7 @@ public abstract class GameRendererMixin implements GameRendererAccessor {
     private static final float DEPTH_FAR = 32.0F * 16.0F * 4.0F;
 
     @Unique
-    private static final ResourceLocation MARS_POST_EFFECT = Constant.id("shaders/post/mars.json");
+    private final java.util.Map<ResourceLocation, PostChain> galacticraft$preparedPlanetEffects = new java.util.HashMap<>();
 
     @Unique
     private ResourceLocation galacticraft$activePlanetPostEffect;
@@ -108,6 +115,23 @@ public abstract class GameRendererMixin implements GameRendererAccessor {
     @Shadow
     public abstract void resetProjectionMatrix(Matrix4f matrix4f);
 
+    @Inject(method = "renderLevel", at = @At("RETURN"))
+    private void galacticraft$rememberFlightFrame(DeltaTracker delta, CallbackInfo ci) {
+        dev.galacticraft.mod.client.render.dimension.SpaceflightTransition.rememberRenderedView();
+    }
+
+    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;clear(IZ)V", ordinal = 0, remap = false))
+    private void galacticraft$renderContinuousFlight(DeltaTracker delta, boolean renderLevel, CallbackInfo ci) {
+        dev.galacticraft.mod.client.render.dimension.SpaceflightTransition.render();
+    }
+
+    @Inject(method = "renderItemInHand", at = @At("HEAD"), cancellable = true)
+    private void galacticraft$spaceflightView(Camera camera, float partialTicks, Matrix4f projection, CallbackInfo ci) {
+        if (this.minecraft.player != null
+                && this.minecraft.player.getVehicle() instanceof dev.galacticraft.mod.content.entity.vehicle.RocketEntity rocket
+                && (rocket.isInSpaceflight() || rocket.isLanding() || dev.galacticraft.mod.client.render.dimension.SpaceflightTransition.isActive())) ci.cancel();
+    }
+
     @Inject(method = "tick", at = @At("TAIL"))
     private void galacticraft$updatePlanetPostEffect(CallbackInfo ci) {
         LunarSkyExposure.tick(this.minecraft);
@@ -125,6 +149,7 @@ public abstract class GameRendererMixin implements GameRendererAccessor {
                 && !desiredEffect.equals(this.galacticraft$failedPlanetPostEffect)) {
             ((GameRendererInvoker) this).galacticraft$invokeLoadEffect(desiredEffect);
         }
+        JupiterCloudRenderer.tick(this.minecraft, this.effectActive && JupiterCloudRenderer.EFFECT.equals(this.galacticraft$activePlanetPostEffect));
     }
 
     @Inject(method = "loadEffect", at = @At("RETURN"))
@@ -151,8 +176,69 @@ public abstract class GameRendererMixin implements GameRendererAccessor {
     }
 
     @Inject(method = "reloadShaders", at = @At("HEAD"))
-    private void galacticraft$retryPlanetPostEffectAfterReload(ResourceProvider resources, CallbackInfo ci) {
+    private void galacticraft$clearPlanetEffectsOnReload(ResourceProvider resources, CallbackInfo ci) {
+        this.galacticraft$releasePreparedPlanetEffects();
+    }
+
+    @Inject(method = "close", at = @At("HEAD"), remap = false)
+    private void galacticraft$clearPlanetEffectsOnClose(CallbackInfo ci) {
+        this.galacticraft$releasePreparedPlanetEffects();
+    }
+
+    @Unique
+    private void galacticraft$releasePreparedPlanetEffects() {
+        if (this.galacticraft$preparedPlanetEffects.containsValue(this.postEffect)) this.shutdownEffect();
+        this.galacticraft$preparedPlanetEffects.values().forEach(PostChain::close);
+        this.galacticraft$preparedPlanetEffects.clear();
         this.galacticraft$failedPlanetPostEffect = null;
+        JupiterCloudRenderer.retry();
+    }
+
+    @Inject(method = "reloadShaders", at = @At("RETURN"))
+    private void galacticraft$preparePlanetEffects(ResourceProvider resources, CallbackInfo ci) {
+        // Compile during resource loading, before first entry into either destination.
+        dev.galacticraft.mod.client.render.dimension.MoonSkyRenderer.preload();
+        dev.galacticraft.mod.client.render.dimension.SolarSystemSkyRenderer.preload();
+        try {
+            for (var sky : new Class<?>[]{dev.galacticraft.mod.client.render.dimension.MarsSkyRenderer.class,
+                    dev.galacticraft.mod.client.render.dimension.VenusSkyRenderer.class,
+                    dev.galacticraft.mod.client.render.dimension.MercurySkyRenderer.class})
+                java.lang.invoke.MethodHandles.lookup().ensureInitialized(sky);
+        } catch (IllegalAccessException exception) {
+            throw new IllegalStateException("Could not prepare planetary sky meshes", exception);
+        }
+        for (var effect : new ResourceLocation[]{MoonSurfaceShader.EFFECT, JupiterCloudRenderer.EFFECT}) {
+            try {
+                var chain = new PostChain(this.minecraft.getTextureManager(), resources, this.minecraft.getMainRenderTarget(), effect);
+                chain.resize(this.minecraft.getWindow().getWidth(), this.minecraft.getWindow().getHeight());
+                this.galacticraft$preparedPlanetEffects.put(effect, chain);
+            } catch (java.io.IOException | com.google.gson.JsonSyntaxException exception) {
+                Constant.LOGGER.warn("Could not prepare planetary post effect {}", effect, exception);
+            }
+        }
+    }
+
+    @Inject(method = "loadEffect", at = @At("HEAD"), cancellable = true)
+    private void galacticraft$usePreparedPlanetEffect(ResourceLocation effect, CallbackInfo ci) {
+        var chain = this.galacticraft$preparedPlanetEffects.get(effect);
+        if (chain == null) return;
+        this.shutdownEffect();
+        this.postEffect = chain;
+        this.effectActive = true;
+        this.galacticraft$activePlanetPostEffect = effect;
+        this.galacticraft$failedPlanetPostEffect = null;
+        ci.cancel();
+    }
+
+    @WrapOperation(method = {"loadEffect", "shutdownEffect", "checkEntityPostEffect"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/PostChain;close()V"))
+    private void galacticraft$retainPreparedPlanetEffect(PostChain chain, Operation<Void> original) {
+        if (!this.galacticraft$preparedPlanetEffects.containsValue(chain)) original.call(chain);
+    }
+
+    @Inject(method = "resize", at = @At("TAIL"))
+    private void galacticraft$resizePreparedPlanetEffects(int width, int height, CallbackInfo ci) {
+        for (var chain : this.galacticraft$preparedPlanetEffects.values())
+            if (chain != this.postEffect) chain.resize(width, height);
     }
 
     @Unique
@@ -160,13 +246,23 @@ public abstract class GameRendererMixin implements GameRendererAccessor {
         if (this.minecraft.level == null || ShaderPackCompat.isActive()) return null;
         if (this.minecraft.level.dimension().equals(GCDimensions.MOON)
                 && Galacticraft.CONFIG.moonSurfaceShaderStrength() > 0.0F) return MoonSurfaceShader.EFFECT;
-        if (this.minecraft.level.dimension().equals(GCDimensions.MARS)) return MARS_POST_EFFECT;
-        return null;
+        if (CelestialBodyTags.is(this.minecraft.level, CelestialBodyTags.GAS_GIANT)
+                && Galacticraft.CONFIG.jupiterVolumetricClouds() && !JupiterCloudRenderer.hasFailed()) return JupiterCloudRenderer.EFFECT;
+        return galacticraft$configuredPostEffect();
+    }
+
+    /** The post effect the current celestial body's {@code sky} config asks for, if any. */
+    @Unique
+    private @Nullable ResourceLocation galacticraft$configuredPostEffect() {
+        if (this.minecraft.level == null) return null;
+        Holder<CelestialBody<?, ?>> body = this.minecraft.level.galacticraft$getCelestialBody();
+        return body == null ? null : body.value().sky().flatMap(SkyConfig::postEffect).orElse(null);
     }
 
     @Unique
-    private static boolean galacticraft$isPlanetPostEffect(ResourceLocation effect) {
-        return effect.equals(MARS_POST_EFFECT) || effect.equals(MoonSurfaceShader.EFFECT);
+    private boolean galacticraft$isPlanetPostEffect(ResourceLocation effect) {
+        return effect.equals(MoonSurfaceShader.EFFECT) || effect.equals(JupiterCloudRenderer.EFFECT)
+                || effect.equals(galacticraft$configuredPostEffect());
     }
 
     @WrapOperation(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;renderLevel(Lnet/minecraft/client/DeltaTracker;ZLnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/GameRenderer;Lnet/minecraft/client/renderer/LightTexture;Lorg/joml/Matrix4f;Lorg/joml/Matrix4f;)V"))
@@ -178,15 +274,21 @@ public abstract class GameRendererMixin implements GameRendererAccessor {
                 && MoonSurfaceShader.EFFECT.equals(this.galacticraft$activePlanetPostEffect)
                 && this.minecraft.level.dimension().equals(GCDimensions.MOON);
         original.call(renderer, delta, outline, camera, gameRenderer, lightTexture, view, projection);
+        if (dev.galacticraft.mod.client.render.dimension.SpaceflightTransition.coversWorld()) return;
         if (shadeMoon) {
             MoonSurfaceShader.render(this.minecraft, this.postEffect, camera, view, projection, delta);
+        } else if (this.effectActive && this.postEffect != null && !ShaderPackCompat.isActive()
+                && JupiterCloudRenderer.EFFECT.equals(this.galacticraft$activePlanetPostEffect)
+                && CelestialBodyTags.is(this.minecraft.level, CelestialBodyTags.GAS_GIANT)) {
+            JupiterCloudRenderer.render(this.minecraft, this.postEffect, camera, view, projection, delta);
         }
     }
 
     @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/PostChain;process(F)V"))
     private void galacticraft$skipSecondMoonPass(PostChain effect, float delta, Operation<Void> original) {
-        // Lunar geometry is shaded before the hand clears world depth, and only once.
-        if (!MoonSurfaceShader.EFFECT.equals(this.galacticraft$activePlanetPostEffect)) {
+        // Geometry effects run before the hand clears world depth, and only once.
+        if (!MoonSurfaceShader.EFFECT.equals(this.galacticraft$activePlanetPostEffect)
+                && !JupiterCloudRenderer.EFFECT.equals(this.galacticraft$activePlanetPostEffect)) {
             original.call(effect, delta);
         }
     }

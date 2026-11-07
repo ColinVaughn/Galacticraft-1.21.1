@@ -1,0 +1,174 @@
+{
+  "vertex": "galacticraft:space_planet",
+  "fragment": "galacticraft:space_planet",
+  "samplers": [
+    {
+      "name": "Sampler0"
+    },
+    {
+      "name": "Sampler1"
+    },
+    {
+      "name": "Sampler2"
+    }
+  ],
+  "attributes": [
+    "Position",
+    "Color"
+  ],
+  "uniforms": [
+    {
+      "name": "ViewMat",
+      "type": "matrix4x4",
+      "count": 16,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "name": "Orientation",
+      "type": "matrix3x3",
+      "count": 9,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "name": "ProjMat",
+      "type": "matrix4x4",
+      "count": 16,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "name": "Direction",
+      "type": "float",
+      "count": 3,
+      "values": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "name": "SunDirection",
+      "type": "float",
+      "count": 3,
+      "values": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "Atmosphere",
+      "type": "float",
+      "count": 3,
+      "values": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "Thickness",
+      "type": "float",
+      "count": 1,
+      "values": [
+        0
+      ]
+    },
+    {
+      "name": "DistanceRadius",
+      "type": "float",
+      "count": 1,
+      "values": [
+        10
+      ]
+    },
+    {
+      "name": "Rotation",
+      "type": "float",
+      "count": 1,
+      "values": [
+        0
+      ]
+    },
+    {
+      "name": "Style",
+      "type": "float",
+      "count": 1,
+      "values": [
+        0
+      ]
+    },
+    {
+      "name": "Opacity",
+      "type": "float",
+      "count": 1,
+      "values": [
+        1
+      ]
+    },
+    {
+      "name": "HorizonFade",
+      "type": "float",
+      "count": 1,
+      "values": [
+        0
+      ]
+    },
+    {
+      "name": "AmbientLight",
+      "type": "float",
+      "count": 1,
+      "values": [
+        0.009
+      ]
+    }
+  ],
+  "blend": {
+    "func": "add",
+    "srcrgb": "srcalpha",
+    "dstrgb": "1-srcalpha"
+  }
+}

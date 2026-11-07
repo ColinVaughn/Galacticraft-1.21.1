@@ -90,12 +90,20 @@ public class GCBlockTagProvider extends FabricTagProvider.BlockTagProvider {
 
     @Override
     protected void addTags(HolderLookup.Provider provider) {
+        this.tag(BlockTags.MINEABLE_WITH_SHOVEL).add(GCBlocks.DENSE_CLOUD, GCBlocks.PACKED_CLOUD, GCBlocks.AMMONIA_FROST);
         this.tag(GCBlockTags.MOON_CAVE_SUBSTRATE).add(GCBlocks.MOON_ROCK, GCBlocks.MOON_SURFACE_ROCK,
                 GCBlocks.MOON_BASALT, GCBlocks.LUNASLATE, GCBlocks.COBBLED_MOON_ROCK, GCBlocks.COBBLED_LUNASLATE,
                 GCBlocks.MOON_ANORTHOSITE, GCBlocks.MOON_IMPACT_BRECCIA, GCBlocks.VESICULAR_LUNAR_BASALT,
                 GCBlocks.ICE_BEARING_BRECCIA, GCBlocks.DENSE_ICE);
         this.tag(GCBlockTags.MOON_CAVE_FORMATIONS).add(GCBlocks.LUNAR_BREAKDOWN_RUBBLE, GCBlocks.LUNAR_SCATTERED_FRAGMENTS, GCBlocks.LUNAR_FALLEN_ROOF_SLAB, GCBlocks.LUNAR_FRACTURED_OUTCROP, GCBlocks.LUNAR_BASALT_WALL_SHELF, GCBlocks.LUNAR_CEILING_BREAKDOWN, GCBlocks.LUNAR_BASALT_BREAKDOWN_RUBBLE, GCBlocks.LUNAR_FROSTED_BREAKDOWN_RUBBLE, GCBlocks.ABANDONED_SURVEY_BEACON, GCBlocks.HELION_NODULES, GCBlocks.HELION_WALL_CRUST, GCBlocks.HELIUM_3_VENT, GCBlocks.BURROWER_EGG_CLUSTER, GCBlocks.BURROWER_BROKEN_EGGSHELL, GCBlocks.BURROWER_EXCAVATED_TAILINGS, GCBlocks.BURROWER_DEN_SCRAPS);
         this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(GCBlocks.VESICULAR_LUNAR_BASALT, GCBlocks.ICE_BEARING_BRECCIA, GCBlocks.LUNAR_BREAKDOWN_RUBBLE, GCBlocks.LUNAR_SCATTERED_FRAGMENTS, GCBlocks.LUNAR_FALLEN_ROOF_SLAB, GCBlocks.LUNAR_FRACTURED_OUTCROP, GCBlocks.LUNAR_BASALT_WALL_SHELF, GCBlocks.LUNAR_CEILING_BREAKDOWN, GCBlocks.LUNAR_BASALT_BREAKDOWN_RUBBLE, GCBlocks.LUNAR_FROSTED_BREAKDOWN_RUBBLE, GCBlocks.ABANDONED_SURVEY_BEACON, GCBlocks.HELION_NODULES, GCBlocks.HELION_WALL_CRUST, GCBlocks.HELIUM_3_VENT, GCBlocks.BURROWER_DEN_SCRAPS);
+        this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(dev.galacticraft.mod.content.block.jupiter.JupiterBlocks.NAMES.keySet().stream()
+                .filter(block -> dev.galacticraft.mod.content.block.jupiter.JupiterBlocks.VARIANT_BASES.get(block) != GCBlocks.PACKED_CLOUD)
+                .toArray(Block[]::new));
+        this.tag(BlockTags.MINEABLE_WITH_SHOVEL).add(dev.galacticraft.mod.content.block.jupiter.JupiterBlocks.PACKED_CLOUD_STAIRS,
+                dev.galacticraft.mod.content.block.jupiter.JupiterBlocks.PACKED_CLOUD_SLAB);
+        dev.galacticraft.mod.content.block.jupiter.JupiterBlocks.VARIANT_BASES.keySet().forEach(block ->
+                this.tag(block instanceof net.minecraft.world.level.block.StairBlock ? BlockTags.STAIRS : BlockTags.SLABS).add(block));
         this.tag(BlockTags.MINEABLE_WITH_SHOVEL).add(GCBlocks.BURROWER_EXCAVATED_TAILINGS);
         this.tag(GCBlockTags.MOON_BASALT_ORE_REPLACEABLES).add(GCBlocks.VESICULAR_LUNAR_BASALT);
 
@@ -109,6 +117,11 @@ public class GCBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                 .add(GCBlocks.OLIVINE_GLASS_PANE)
                 .add(GCBlocks.MOON_GLASS_PANE)
                 .forceAddTag(ConventionalBlockTags.GLASS_PANES);
+        this.tag(GCBlockTags.PRESSURE_RATED).add(
+                dev.galacticraft.mod.content.block.jupiter.JupiterBlocks.REINFORCED_AEROSTAT_HULL,
+                dev.galacticraft.mod.content.block.jupiter.JupiterBlocks.PRESSURE_GLASS,
+                dev.galacticraft.mod.content.block.jupiter.JupiterBlocks.SEALED_HATCH);
+
         this.tag(GCBlockTags.UNSEALABLE)
                 .forceAddTag(BlockTags.LEAVES)
                 .add(Blocks.MANGROVE_ROOTS)

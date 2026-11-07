@@ -24,6 +24,8 @@ package dev.galacticraft.mod.content.block.entity.machine;
 
 import com.mojang.datafixers.util.Pair;
 import dev.galacticraft.api.gas.Gases;
+import dev.galacticraft.mod.api.pipe.PipeFluidConsumer;
+import net.minecraft.world.level.material.Fluid;
 import dev.galacticraft.machinelib.api.block.entity.MachineBlockEntity;
 import dev.galacticraft.machinelib.api.filter.ResourceFilters;
 import dev.galacticraft.machinelib.api.machine.MachineStatus;
@@ -65,7 +67,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class OxygenCompressorBlockEntity extends MachineBlockEntity {
+public class OxygenCompressorBlockEntity extends MachineBlockEntity implements PipeFluidConsumer {
     public static final int CHARGE_SLOT = 0;
     public static final int OXYGEN_SLOT = 1;
     public static final int OXYGEN_TANK = 0;
@@ -196,6 +198,12 @@ public class OxygenCompressorBlockEntity extends MachineBlockEntity {
         super.loadAdditional(tag, lookup);
         this.compressionMode.mode = !tag.contains(Constant.Nbt.COMPRESSION_MODE)
                 || tag.getBoolean(Constant.Nbt.COMPRESSION_MODE);
+    }
+
+    /** Compressing, it uses up the oxygen it is piped; decompressing, the same tank is a source. */
+    @Override
+    public boolean consumesFromPipes(Fluid fluid) {
+        return this.compressionMode.mode && fluid.isSame(Gases.OXYGEN);
     }
 
     public boolean getCompressionMode() { return this.compressionMode.mode; }

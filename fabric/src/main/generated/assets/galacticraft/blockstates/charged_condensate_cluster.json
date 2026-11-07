@@ -1,0 +1,11 @@
+{
+  "variants": {
+    "hanging=false": {
+      "model": "galacticraft:block/charged_condensate_cluster"
+    },
+    "hanging=true": {
+      "model": "galacticraft:block/charged_condensate_cluster",
+      "x": 180
+    }
+  }
+}

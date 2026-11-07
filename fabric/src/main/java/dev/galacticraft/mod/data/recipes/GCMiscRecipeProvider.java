@@ -55,6 +55,14 @@ public class GCMiscRecipeProvider extends FabricRecipeProvider {
 
     @Override
     public void buildRecipes(RecipeOutput output) {
+        JupiterRecipes.build(output);
+        GCShapedRecipeBuilder.crafting(RecipeCategory.BUILDING_BLOCKS, GCBlocks.PACKED_CLOUD)
+                .define('C', GCBlocks.DENSE_CLOUD)
+                .pattern("CC")
+                .pattern("CC")
+                .unlockedBy(getHasName(GCBlocks.DENSE_CLOUD), has(GCBlocks.DENSE_CLOUD))
+                .save(output);
+
         // Gear
         GCShapedRecipeBuilder.crafting(RecipeCategory.MISC, GCItems.OXYGEN_MASK)
                 .define('G', ConventionalItemTags.GLASS_PANES_COLORLESS)

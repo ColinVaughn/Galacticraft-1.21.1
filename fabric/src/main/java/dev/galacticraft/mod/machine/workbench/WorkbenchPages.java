@@ -25,8 +25,7 @@ package dev.galacticraft.mod.machine.workbench;
 
 import dev.galacticraft.api.accessor.ResearchAccessor;
 import dev.galacticraft.mod.Constant;
-import dev.galacticraft.mod.content.GCRocketParts;
-import dev.galacticraft.mod.content.item.GCItems;
+import dev.galacticraft.api.component.GCDataComponents;
 import net.minecraft.resources.ResourceKey;
 import dev.galacticraft.mod.recipe.GCRecipes;
 import dev.galacticraft.mod.recipe.WorkbenchRecipe;
@@ -34,6 +33,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
@@ -41,15 +41,16 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import dev.galacticraft.api.registry.RocketRegistries;
+import dev.galacticraft.api.rocket.part.*;
+import dev.galacticraft.mod.recipe.RocketModuleRecipe;
+import net.minecraft.core.Registry;
 import java.util.Optional;
 import java.util.function.Predicate;
 
 /**
- * Assembles the ordered list of workbench pages a player can flip through.
- *
- * Legacy Galacticraft kept this list in {@code GCPlayerStats.unlockedSchematics}; here it is
- * derived on demand from the loaded recipes and the player's unlocks, so both sides can work it out
- * without a dedicated sync packet.
+ * Derives ordered workbench pages from recipes and player unlocks on both sides, avoiding a
+ * separate page-list sync packet.
  */
 public final class WorkbenchPages {
     public static final ResourceLocation ROCKET_ID = Constant.id("rocket/modular");
@@ -80,7 +81,24 @@ public final class WorkbenchPages {
         List<RecipeHolder<? extends WorkbenchRecipe>> recipes = new ArrayList<>();
         recipes.addAll(level.getRecipeManager().getAllRecipesFor(GCRecipes.ROCKET_TYPE));
         recipes.addAll(level.getRecipeManager().getAllRecipesFor(GCRecipes.SCHEMATIC_CRAFTING_TYPE));
+        recipes.addAll(level.getRecipeManager().getAllRecipesFor(GCRecipes.ROCKET_MODULE_TYPE));
+        addModules(level, recipes, RocketRegistries.ROCKET_CONE);
+        addModules(level, recipes, RocketRegistries.ROCKET_BODY);
+        addModules(level, recipes, RocketRegistries.ROCKET_FIN);
+        addModules(level, recipes, RocketRegistries.ROCKET_BOOSTER);
+        addModules(level, recipes, RocketRegistries.ROCKET_ENGINE);
+        addModules(level, recipes, RocketRegistries.ROCKET_UPGRADE);
         return recipes;
+    }
+
+    private static <T extends RocketPart<?, ?>> void addModules(Level level, List<RecipeHolder<? extends WorkbenchRecipe>> recipes, ResourceKey<Registry<T>> registry) {
+        level.registryAccess().registryOrThrow(registry).holders().forEach(holder -> {
+            var pattern = holder.value().getRecipe();
+            if (pattern == null) return;
+            var id = RocketPart.researchId(holder.key()).withPrefix("rocket_module/");
+            if (recipes.stream().noneMatch(recipe -> recipe.id().equals(id)))
+                recipes.add(new RecipeHolder<>(id, new RocketModuleRecipe(holder.key(), pattern)));
+        });
     }
 
     public static WorkbenchPage page(RecipeHolder<? extends WorkbenchRecipe> holder) {
@@ -94,10 +112,13 @@ public final class WorkbenchPages {
     /** The pages {@code player} may flip through, in order. */
     public static List<WorkbenchPage> visible(Level level, Player player) {
         List<WorkbenchPage> candidates = new ArrayList<>();
+        ResearchAccessor research = (ResearchAccessor) player;
         for (RecipeHolder<? extends WorkbenchRecipe> holder : recipes(level)) {
+            if (holder.value() instanceof RocketModuleRecipe module
+                    && RocketPartTypes.fromPart(module.part()) != RocketPartTypes.UPGRADE
+                    && !research.galacticraft$isUnlocked(RocketPart.researchId(module.part()))) continue;
             candidates.add(page(holder));
         }
-        ResearchAccessor research = (ResearchAccessor) player;
         return order(candidates, research::galacticraft$isUnlocked);
     }
 
@@ -108,13 +129,32 @@ public final class WorkbenchPages {
         return null;
     }
 
-    /** Tier schematics unlock module research and return to the common rocket assembly page. */
+    /**
+     * Tier schematics unlock module research and return to the common rocket assembly page. The
+     * parts come from the item's {@link GCDataComponents#ROCKET_PART_UNLOCKS} component, so any mod
+     * can make one.
+     */
     public static List<ResourceKey<?>> rocketPartsUnlockedBy(Item schematicItem) {
-        if (schematicItem == GCItems.TIER_2_ROCKET_SCHEMATIC)
-            return List.of(GCRocketParts.TIER_2_CONE, GCRocketParts.TIER_2_BODY, GCRocketParts.TIER_2_FIN, GCRocketParts.TIER_2_ENGINE);
-        if (schematicItem == GCItems.TIER_3_ROCKET_SCHEMATIC)
-            return List.of(GCRocketParts.TIER_3_CONE, GCRocketParts.TIER_3_BODY, GCRocketParts.TIER_3_FIN, GCRocketParts.TIER_3_ENGINE);
-        return List.of();
+        return schematicItem.components().getOrDefault(GCDataComponents.ROCKET_PART_UNLOCKS, List.of());
+    }
+
+    /**
+     * The rocket parts a schematic stack unlocks. The stack's own component wins over the item's
+     * default, so a datapack can hand out {@code galacticraft:rocket_schematic} carrying its parts.
+     */
+    public static List<ResourceKey<?>> rocketPartsUnlockedBy(ItemStack schematic) {
+        return schematic.getOrDefault(GCDataComponents.ROCKET_PART_UNLOCKS, List.of());
+    }
+
+    /** The assembly page reached by a schematic stack, or null if no page or module research uses it. */
+    public static @Nullable RecipeHolder<? extends WorkbenchRecipe> pageUnlockedBy(Level level, ItemStack schematic) {
+        if (!rocketPartsUnlockedBy(schematic).isEmpty()) return recipe(level, ROCKET_ID);
+        return pageUnlockedBy(level, schematic.getItem());
+    }
+
+    /** Every registered item that unlocks rocket parts. */
+    public static List<Item> tierSchematics() {
+        return BuiltInRegistries.ITEM.stream().filter(item -> !rocketPartsUnlockedBy(item).isEmpty()).toList();
     }
 
     /** The assembly page reached by a schematic, or null if no page or module research uses it. */

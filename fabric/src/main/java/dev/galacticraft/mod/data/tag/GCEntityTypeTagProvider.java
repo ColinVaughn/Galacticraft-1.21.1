@@ -67,6 +67,10 @@ public class GCEntityTypeTagProvider extends FabricTagProvider.EntityTypeTagProv
         this.getOrCreateTagBuilder(GCEntityTypeTags.SENSITIVE_TO_ACID)
                 .add(EntityType.TNT);
 
+        // Empty by default, so packs can see and extend them: hostile mobs evolve without being listed.
+        this.getOrCreateTagBuilder(GCEntityTypeTags.EVOLVES_IN_SPACE);
+        this.getOrCreateTagBuilder(GCEntityTypeTags.NEVER_EVOLVES_IN_SPACE);
+
         this.getOrCreateTagBuilder(GCEntityTypeTags.CAN_REENTER_ATMOSPHERE)
                 .add(EntityType.PLAYER);
 

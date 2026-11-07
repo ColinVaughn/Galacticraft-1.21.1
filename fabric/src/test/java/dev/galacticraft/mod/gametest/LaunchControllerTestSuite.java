@@ -44,7 +44,7 @@ public class LaunchControllerTestSuite implements GalacticraftGameTest {
     private static final java.util.List<LaunchControllerBlockEntity> CONTROLLERS = new java.util.ArrayList<>();
     private static int nextFrequency = 800_000;
 
-    private static int frequency(ServerLevel level) {
+    static int frequency(ServerLevel level) {
         while (CargoPadRegistry.get(level.getServer()).contains(nextFrequency)) nextFrequency++;
         return nextFrequency++;
     }
@@ -198,7 +198,8 @@ public class LaunchControllerTestSuite implements GalacticraftGameTest {
         ServerLevel level = context.getLevel();
         ServerLevel nether = level.getServer().getLevel(Level.NETHER);
         LaunchControllerBlockEntity source = controller(level, context.absolutePos(new BlockPos(2, 1, 2)));
-        BlockPos destinationPos = new BlockPos(source.getBlockPos().getX(), 100, source.getBlockPos().getZ() + 32);
+        // GameTest's random Overworld origin can lie outside the Nether's scaled world border.
+        BlockPos destinationPos = new BlockPos(128, 100, 128);
         LaunchControllerBlockEntity target = controller(nether, destinationPos);
         int frequency = frequency(level);
         int destination = frequency(level);
@@ -220,19 +221,22 @@ public class LaunchControllerTestSuite implements GalacticraftGameTest {
         context.assertTrue(arrived.getVehicleInventory().getItem(26).getCount() == 64
                 && arrived.getCargoLoad() == 1 && arrived.getBbHeight() == 6,
                 "Cross-dimension cargo or full fairing size was lost");
-        long energyAtArrival = target.energyStorage().getAmount();
-        // Also cross vanilla's 300-tick cutoff for a dimension with no players in it.
-        context.runAfterDelay(350, () -> context.succeedWhen(() -> {
-            context.assertTrue(energyAtArrival - target.energyStorage().getAmount() >= 325,
-                    "Controller stopped ticking in an empty dimension");
-            context.assertTrue(nether.getEntity(arrived.getUUID()) == arrived, "Arrived rocket is not available by UUID yet");
-            CompoundTag savedPad = pad.saveWithFullMetadata(nether.registryAccess());
-            pad.loadWithComponents(savedPad, nether.registryAccess());
-            context.assertTrue(pad.getDockedEntity() == arrived, "Reload lost the arrived rocket");
-            arrived.discard();
-            nether.removeBlock(target.getBlockPos(), false);
-            nether.destroyBlock(pad.getBlockPos(), false);
-        }));
+        // Observe work after vanilla's 300-tick cutoff, allowing Tessellate to throttle the region.
+        context.runAfterDelay(325, () -> {
+            long energyAfterEmptyCutoff = target.energyStorage().getAmount();
+            context.runAfterDelay(25, () -> context.succeedWhen(() -> {
+                context.assertTrue(target.energyStorage().getAmount() < energyAfterEmptyCutoff,
+                        "Controller stopped ticking in an empty dimension (energy " + energyAfterEmptyCutoff
+                            + " -> " + target.energyStorage().getAmount() + ", removed=" + target.isRemoved() + ")");
+                context.assertTrue(nether.getEntity(arrived.getUUID()) == arrived, "Arrived rocket is not available by UUID yet");
+                CompoundTag savedPad = pad.saveWithFullMetadata(nether.registryAccess());
+                pad.loadWithComponents(savedPad, nether.registryAccess());
+                context.assertTrue(pad.getDockedEntity() == arrived, "Reload lost the arrived rocket");
+                arrived.discard();
+                nether.removeBlock(target.getBlockPos(), false);
+                nether.destroyBlock(pad.getBlockPos(), false);
+            }));
+        });
     }
 
     @GameTest(batch = BATCH, template = EMPTY_STRUCTURE)
@@ -273,7 +277,7 @@ public class LaunchControllerTestSuite implements GalacticraftGameTest {
         context.succeed();
     }
 
-    private static LaunchControllerBlockEntity controller(ServerLevel level, BlockPos center) {
+    static LaunchControllerBlockEntity controller(ServerLevel level, BlockPos center) {
         for (BlockPos pos : BlockPos.betweenClosed(center.offset(-1, 0, -1), center.offset(1, 7, 1))) {
             level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
         }
@@ -288,7 +292,7 @@ public class LaunchControllerTestSuite implements GalacticraftGameTest {
         return controller;
     }
 
-    private static CargoRocketEntity cargo(ServerLevel level, LaunchPadBlockEntity pad) {
+    static CargoRocketEntity cargo(ServerLevel level, LaunchPadBlockEntity pad) {
         CargoRocketEntity rocket = new CargoRocketEntity(GCEntityTypes.CARGO_ROCKET, level);
         rocket.getFuelTank().insert(GCFluids.FUEL, rocket.getFuelTankCapacity());
         rocket.placeOnPad(pad);
@@ -297,7 +301,7 @@ public class LaunchControllerTestSuite implements GalacticraftGameTest {
         return rocket;
     }
 
-    private static void tick(LaunchControllerBlockEntity controller) {
+    static void tick(LaunchControllerBlockEntity controller) {
         ServerLevel level = (ServerLevel) controller.getLevel();
         controller.tickBase(level, controller.getBlockPos(), controller.getBlockState(), level.getProfiler());
     }

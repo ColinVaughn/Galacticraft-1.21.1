@@ -43,11 +43,15 @@ public class GCTeleporterTypes {
     public static final CelestialTeleporterType<DefaultCelestialTeleporterConfig> LANDER = TELEPORTERS.register(Teleporters.LANDER, LanderCelestialTeleporterType.INSTANCE);
     public static final CelestialTeleporterType<DefaultCelestialTeleporterConfig> OVERWORLD = TELEPORTERS.register(Teleporters.OVERWORLD, OverworldCelestialTeleporterType.INSTANCE);
 
+    public static final ResourceKey<CelestialTeleporter<?, ?>> JUPITER_TELEPORTER = ResourceKey.create(AddonRegistries.CELESTIAL_TELEPORTER, Constant.id("jupiter"));
+    public static final CelestialTeleporterType<DefaultCelestialTeleporterConfig> JUPITER = TELEPORTERS.register("jupiter", dev.galacticraft.mod.content.teleporters.JupiterCelestialTeleporterType.INSTANCE);
+
     public static void register() {
     }
 
     public static void bootstrapRegistries(BootstrapContext<CelestialTeleporter<?, ?>> context) {
         context.register(BuiltinObjects.DIRECT_CELESTIAL_TELEPORTER, new CelestialTeleporter<>(DirectCelestialTeleporterType.INSTANCE, DefaultCelestialTeleporterConfig.INSTANCE));
+        context.register(JUPITER_TELEPORTER, new CelestialTeleporter<>(JUPITER, DefaultCelestialTeleporterConfig.INSTANCE));
         context.register(LANDER_CELESTIAL_TELEPORTER, new CelestialTeleporter<>(LANDER, DefaultCelestialTeleporterConfig.INSTANCE));
         context.register(OVERWORLD_TELEPORTER, new CelestialTeleporter<>(OVERWORLD, DefaultCelestialTeleporterConfig.INSTANCE));
     }

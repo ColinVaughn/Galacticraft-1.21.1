@@ -1,0 +1,12 @@
+{
+  "axial_tilt": 25.19,
+  "body": "galacticraft:mars",
+  "center": [
+    626.7027304758813,
+    1024.0,
+    8626.702730475881
+  ],
+  "radius": 51.0,
+  "rotation_period": 1.02596,
+  "texture": "galacticraft:textures/environment/solar_system/mars.png"
+}

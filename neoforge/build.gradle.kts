@@ -76,11 +76,24 @@ java {
 }
 
 sourceSets {
+    test {
+        java {
+            srcDir(rootProject.file("fabric/src/test/java"))
+            include("dev/galacticraft/test/addon/FuelPodUpgradeType.java")
+            include("dev/galacticraft/test/addon/ExampleAddon.java")
+            exclude { it.file.canonicalFile == rootProject.file("fabric/src/test/java/dev/galacticraft/test/addon/ExampleAddon.java").canonicalFile }
+        }
+        resources {
+            srcDir(rootProject.file("fabric/src/test/resources"))
+            include("META-INF/neoforge.mods.toml", "data/galacticraft-test/**", "data/examplepack/**", "assets/galacticraft-test/**")
+        }
+    }
     main {
         java {
             srcDir(rootProject.file("fabric/src/main/java"))
             exclude("dev/galacticraft/mod/compat/ModMenuApiImpl.java")
             exclude("dev/galacticraft/mod/compat/AppleSkinEventHandler.java")
+            exclude("dev/galacticraft/mod/compat/geckolib/GeckoLibFabricCompat.java")
             exclude("dev/galacticraft/mod/compat/waila/**")
             exclude("dev/galacticraft/fabric/**")
             exclude("dev/galacticraft/mod/lookup/FabricEnergyLookupProviders.java")
@@ -108,8 +121,6 @@ sourceSets {
             exclude("dev/galacticraft/mod/storage/PlaceholderItemStorage.java")
             exclude("dev/galacticraft/mod/util/TransferStorageUtil.java")
             exclude("dev/galacticraft/mod/content/fluid/GCFluidAttribute.java")
-            exclude("dev/galacticraft/mod/data/EmiDefaultRecipeProvider.java")
-            exclude("dev/galacticraft/mod/api/data/**")
             exclude("dev/galacticraft/mod/client/accessor/BlockModelAccessor.java")
             exclude("dev/galacticraft/mod/mixin/client/BlockModelMixin.java")
             exclude("dev/galacticraft/mod/mixin/client/MinecraftMixin.java")
@@ -151,12 +162,24 @@ loom {
         getIsEnabled().set(true)
         getEnableDependencyInterfaceInjection().set(true)
     }
+    if (project.hasProperty("addonTest")) {
+        mods {
+            register("galacticraft") { sourceSet(sourceSets.main.get()) }
+            register("galacticraft_addon_test") { sourceSet(sourceSets.test.get()) }
+        }
+    }
     runs {
         named("client") {
             name("NeoForge Client")
         }
         named("server") {
             name("NeoForge Server")
+            if (project.hasProperty("addonTest")) {
+                source(sourceSets.test.get())
+                runDir("build/addon-test")
+                property("galacticraft.addon-test", "true")
+                programArg("--nogui")
+            }
         }
     }
 }
@@ -174,6 +197,7 @@ configurations["runtimeClasspath"].extendsFrom(common)
 configurations["developmentNeoForge"].extendsFrom(common)
 configurations["testCompileClasspath"].extendsFrom(common)
 configurations["testRuntimeClasspath"].extendsFrom(common)
+configurations["testRuntimeClasspath"].extendsFrom(configurations["architecturyTransformerRuntimeClasspath"])
 
 repositories {
     mavenLocal()
@@ -216,6 +240,7 @@ repositories {
     }
     maven("https://maven.terraformersmc.com/releases/") { content { includeGroup("com.terraformersmc") } }
     maven("https://maven.ryanliptak.com/") { content { includeGroup("squeek.appleskin") } }
+    maven("https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/") { content { includeGroup("software.bernie.geckolib") } }
     maven("https://mvn.devos.one/snapshots/") {
         content { includeGroup("io.github.fabricators_of_create.Porting-Lib") }
     }
@@ -260,6 +285,11 @@ dependencies {
     modCompileOnly("mezz.jei:jei-${rootProject.property("minecraft.version")}-neoforge-api:${rootProject.property("jei.version")}")
     modLocalRuntime("mezz.jei:jei-${rootProject.property("minecraft.version")}-neoforge:${rootProject.property("jei.version")}")
     modCompileOnly("dev.emi:emi-neoforge:${rootProject.property("emi.version")}:api")
+    // Optional GeckoLib support for fitting space gear to model bones.
+    modCompileOnly("software.bernie.geckolib:geckolib-neoforge-${rootProject.property("minecraft.version")}:${rootProject.property("geckolib.neoforge.version")}") { isTransitive = false }
+    if (project.hasProperty("geckolibRuntime")) {
+        modLocalRuntime("software.bernie.geckolib:geckolib-neoforge-${rootProject.property("minecraft.version")}:${rootProject.property("geckolib.neoforge.version")}") { isTransitive = false }
+    }
 
     common(project(path = ":common", configuration = "namedElements")) { isTransitive = false }
     shadowCommon(project(path = ":common", configuration = "transformProductionNeoForge")) { isTransitive = false }

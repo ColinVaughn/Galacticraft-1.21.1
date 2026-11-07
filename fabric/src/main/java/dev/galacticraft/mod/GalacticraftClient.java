@@ -28,6 +28,7 @@ import dev.galacticraft.api.component.GCDataComponents;
 import dev.galacticraft.api.fluid.FluidData;
 import dev.galacticraft.api.gas.Gases;
 import dev.galacticraft.mod.client.ClientCapeLoginSync;
+import dev.galacticraft.mod.client.spacerace.TeamFlagClient;
 import dev.galacticraft.mod.client.GCKeyBinds;
 import dev.galacticraft.mod.client.gui.screen.ingame.*;
 import dev.galacticraft.mod.client.model.GCModelLoader;
@@ -43,6 +44,8 @@ import dev.galacticraft.mod.client.render.entity.feature.OxygenTanksRenderLayer;
 import dev.galacticraft.mod.client.render.entity.feature.ParrotOxygenGearRenderLayer;
 import dev.galacticraft.mod.client.render.entity.feature.PetOxygenMaskRenderLayer;
 import dev.galacticraft.mod.client.render.entity.feature.PetOxygenTanksRenderLayer;
+import dev.galacticraft.mod.client.render.entity.feature.spacegear.FittedSpaceGearLayer;
+import dev.galacticraft.mod.client.render.entity.feature.spacegear.SpaceGearRenderState;
 import dev.galacticraft.mod.client.render.entity.model.GCEntityModelLayer;
 import dev.galacticraft.mod.client.render.entity.rocket.RocketEntityRenderer;
 import dev.galacticraft.mod.client.render.item.AstroMinerItemRenderer;
@@ -59,6 +62,7 @@ import dev.galacticraft.mod.content.block.environment.FallenMeteorBlock;
 import dev.galacticraft.mod.content.entity.vehicle.RocketEntity;
 import dev.galacticraft.mod.content.item.FluidCanisterItem;
 import dev.galacticraft.mod.content.item.GCItems;
+import dev.galacticraft.mod.content.item.RocketModuleItem;
 import dev.galacticraft.mod.compat.astrocraft.AstrocraftCompat;
 import dev.galacticraft.mod.events.ClientEventHandler;
 import dev.galacticraft.mod.misc.cape.CapeRegistry;
@@ -80,6 +84,7 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import dev.architectury.networking.NetworkManager;
 import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
@@ -93,6 +98,7 @@ import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.particle.SplashParticle;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.client.renderer.item.ItemProperties;
@@ -127,6 +133,8 @@ public class GalacticraftClient implements ClientModInitializer {
         GCClientPacketReceiver.register();
         ClientEventHandler.init();
         ClientCapeLoginSync.init();
+        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> TeamFlagClient.onJoin());
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> TeamFlagClient.onLeave());
         CapesClientRole.ensureLoadedAsync();
         CapeRegistry.bootstrap();
         CapesLoader.loadAsync();
@@ -147,6 +155,14 @@ public class GalacticraftClient implements ClientModInitializer {
         MenuRegistry.registerScreenFactory(GCMenuTypes.ENERGY_STORAGE_MODULE, EnergyStorageModuleScreen::new);
         MenuRegistry.registerScreenFactory(GCMenuTypes.ENERGY_STORAGE_CLUSTER, EnergyStorageClusterScreen::new);
         MenuRegistry.registerScreenFactory(GCMenuTypes.OXYGEN_COLLECTOR, OxygenCollectorScreen::new);
+        MenuRegistry.registerScreenFactory(GCMenuTypes.ATMOSPHERIC_COLLECTOR, dev.galacticraft.mod.client.gui.screen.ingame.jupiter.AtmosphericCollectorScreen::new);
+        MenuRegistry.registerScreenFactory(GCMenuTypes.CONDENSATE_SEPARATOR, dev.galacticraft.mod.client.gui.screen.ingame.jupiter.CondensateSeparatorScreen::new);
+        MenuRegistry.registerScreenFactory(GCMenuTypes.VEHICLE_DOCK, dev.galacticraft.mod.client.gui.screen.ingame.jupiter.VehicleDockScreen::new);
+        MenuRegistry.registerScreenFactory(GCMenuTypes.SURVEY_BEACON, dev.galacticraft.mod.client.gui.screen.ingame.jupiter.SurveyBeaconScreen::new);
+        MenuRegistry.registerScreenFactory(GCMenuTypes.STORM_CAPACITOR, dev.galacticraft.mod.client.gui.screen.ingame.jupiter.StormCapacitorScreen::new);
+        MenuRegistry.registerScreenFactory(GCMenuTypes.LIGHTNING_GROUNDER, dev.galacticraft.mod.client.gui.screen.ingame.jupiter.LightningGrounderScreen::new);
+        MenuRegistry.registerScreenFactory(GCMenuTypes.PRESSURE_STABILIZER, dev.galacticraft.mod.client.gui.screen.ingame.jupiter.PressureStabilizerScreen::new);
+        MenuRegistry.registerScreenFactory(GCMenuTypes.STORMHEART_PEDESTAL, dev.galacticraft.mod.client.gui.screen.ingame.jupiter.StormheartPedestalScreen::new);
         MenuRegistry.registerScreenFactory(GCMenuTypes.OXYGEN_COMPRESSOR, OxygenCompressorScreen::new);
         MenuRegistry.registerScreenFactory(GCMenuTypes.FOOD_CANNER, FoodCannerScreen::new);
         MenuRegistry.registerScreenFactory(GCMenuTypes.PLAYER_INV_GC, GCPlayerInventoryScreen::new);
@@ -196,7 +212,16 @@ public class GalacticraftClient implements ClientModInitializer {
         EntityRendererRegistry.register(GCEntityTypes.BUBBLE, BubbleEntityRenderer::new);
         EntityRendererRegistry.register(GCEntityTypes.ROCKET, RocketEntityRenderer::new);
         EntityRendererRegistry.register(GCEntityTypes.LANDER, LanderEntityRenderer::new);
+        EntityRendererRegistry.register(GCEntityTypes.LANDING_BALLOONS, dev.galacticraft.mod.client.render.entity.AutomaticLanderRenderer::new);
+        EntityRendererRegistry.register(GCEntityTypes.ENTRY_POD, dev.galacticraft.mod.client.render.entity.AutomaticLanderRenderer::new);
+        EntityRendererRegistry.register(GCEntityTypes.VENUS_ENTRY_POD, dev.galacticraft.mod.client.render.entity.AutomaticLanderRenderer::new);
         EntityRendererRegistry.register(GCEntityTypes.BUGGY, BuggyRenderer::new);
+        EntityRendererRegistry.register(GCEntityTypes.CLOUD_DIVER, dev.galacticraft.mod.client.render.entity.CloudDiverRenderer::new);
+        EntityRendererRegistry.register(GCEntityTypes.CLOUD_RAY, context -> new dev.galacticraft.mod.client.render.entity.JupiterCreatureRenderer<>(context, "cloud_ray", "idle", 1.0F, 0.0F, 0.8F));
+        EntityRendererRegistry.register(GCEntityTypes.STATIC_JELLY, context -> new dev.galacticraft.mod.client.render.entity.JupiterCreatureRenderer<>(context, "static_jelly", "idle", 1.0F, 0.45F, 0.4F));
+        EntityRendererRegistry.register(GCEntityTypes.SALVAGE_DRONE, context -> new dev.galacticraft.mod.client.render.entity.JupiterCreatureRenderer<>(context, "salvage_drone", "idle", 1.0F, 0.0F, 0.4F));
+        EntityRendererRegistry.register(GCEntityTypes.CURIOSITY_ROVER, dev.galacticraft.mod.client.render.entity.CuriosityRoverRenderer::new);
+        EntityRendererRegistry.register(GCEntityTypes.STORMHEART_LEVIATHAN, context -> new dev.galacticraft.mod.client.render.entity.JupiterCreatureRenderer<>(context, "stormheart_leviathan", "swim", 2.0F, 0.0F, 2.5F));
         EntityRendererRegistry.register(GCEntityTypes.ASTRO_MINER, AstroMinerRenderer::new);
         EntityRendererRegistry.register(GCEntityTypes.CARGO_ROCKET, CargoRocketRenderer::new);
         EntityRendererRegistry.register(GCEntityTypes.PARACHEST, ParachestRenderer::new);
@@ -211,6 +236,10 @@ public class GalacticraftClient implements ClientModInitializer {
         GCBlockEntityRenderer.register();
         GCEntityModelLayer.register();
         registerFeatureRenderers();
+        if (net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("geckolib")) {
+            // Before any renderer is built: GeckoLib collects layers as each one is constructed.
+            dev.galacticraft.mod.compat.geckolib.GeckoLibFabricCompat.register();
+        }
         GalacticraftRocketPartRenderers.register();
         GCKeyBinds.register();
 
@@ -222,6 +251,7 @@ public class GalacticraftClient implements ClientModInitializer {
         BlockRenderLayerMap.INSTANCE.putBlock(GCBlocks.HEAVY_WIRE_WALKWAY, RenderType.cutout());
         BlockRenderLayerMap.INSTANCE.putBlock(GCBlocks.FLUID_PIPE_WALKWAY, RenderType.cutout());
         BlockRenderLayerMap.INSTANCE.putBlock(GCBlocks.IRON_GRATING, RenderType.cutout());
+        for (var block : java.util.List.of(dev.galacticraft.mod.content.block.jupiter.JupiterBlocks.PRESSURE_GLASS, dev.galacticraft.mod.content.block.jupiter.JupiterBlocks.AEROSTAT_GRATING, dev.galacticraft.mod.content.block.jupiter.JupiterBlocks.HYDROSULFIDE_CRYSTAL_CLUSTER, dev.galacticraft.mod.content.block.jupiter.JupiterBlocks.CHARGED_CONDENSATE_CLUSTER)) BlockRenderLayerMap.INSTANCE.putBlock(block, RenderType.cutout());
         BlockRenderLayerMap.INSTANCE.putBlock(GCBlocks.GLOWSTONE_TORCH, RenderType.cutout());
         BlockRenderLayerMap.INSTANCE.putBlock(GCBlocks.GLOWSTONE_WALL_TORCH, RenderType.cutout());
         BlockRenderLayerMap.INSTANCE.putBlock(GCBlocks.UNLIT_TORCH, RenderType.cutout());
@@ -329,13 +359,16 @@ public class GalacticraftClient implements ClientModInitializer {
         });
 
         BuiltinItemRendererRegistry.INSTANCE.register(GCItems.ROCKET, new RocketItemRenderer()::render);
-        for (var module : GCItems.ROCKET_MODULES) {
+        for (var module : RocketModuleItem.all()) {
             BuiltinItemRendererRegistry.INSTANCE.register(module, new RocketItemRenderer()::render);
         }
         BuiltinItemRendererRegistry.INSTANCE.register(GCItems.ASTRO_MINER, new AstroMinerItemRenderer()::render);
         BuiltinItemRendererRegistry.INSTANCE.register(GCBlocks.SHORT_RANGE_TELEPAD.asItem(), new dev.galacticraft.mod.client.render.item.ShortRangeTelepadItemRenderer()::render);
         BuiltinItemRendererRegistry.INSTANCE.register(GCItems.CARGO_ROCKET, new CargoRocketItemRenderer()::render);
         BuiltinItemRendererRegistry.INSTANCE.register(GCItems.BUGGY, new BuggyItemRenderer()::render);
+        for (var machine : dev.galacticraft.mod.content.block.jupiter.JupiterBlocks.MACHINES) {
+            BuiltinItemRendererRegistry.INSTANCE.register(machine.asItem(), dev.galacticraft.mod.client.render.block.entity.JupiterMachineRenderer::renderItem);
+        }
         for (Item flag : GCItems.FLAGS.colorMap().values()) {
             BuiltinItemRendererRegistry.INSTANCE.register(flag, new FlagItemRenderer()::render);
         }
@@ -391,6 +424,9 @@ public class GalacticraftClient implements ClientModInitializer {
             } else if (entityType == EntityType.PARROT) {
                 var parrotRenderer = (RenderLayerParent<Parrot, EntityModel<Parrot>>) entityRenderer;
                 registrationHelper.register(new ParrotOxygenGearRenderLayer<>(parrotRenderer));
+            } else if (!SpaceGearRenderState.hasHandTunedGear(entityRenderer)) {
+                // Fit gear for space-evolved mobs without dedicated gear layers.
+                registrationHelper.register(new FittedSpaceGearLayer<>((LivingEntityRenderer) entityRenderer));
             }
         });
     }

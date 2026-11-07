@@ -24,15 +24,13 @@
 package dev.galacticraft.mod.content.rocket.part.data;
 
 import com.mojang.serialization.Codec;
+import dev.galacticraft.api.rocket.RocketUpgradeData;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 /**
- * How many chests were installed in the rocket workbench when this rocket was built.
- *
- * The registered storage upgrade only carries the maximum chest count, so the
- * per-rocket count has to travel with the rocket itself; without it every rocket built with
- * the storage upgrade would end up the same size.
+ * Chest count installed on this rocket. The upgrade holds only the maximum, so the actual count
+ * must persist with each rocket.
  */
 public record StorageRocketData(
         int chests

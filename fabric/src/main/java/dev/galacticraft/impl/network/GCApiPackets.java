@@ -39,6 +39,7 @@ public class GCApiPackets {
             NetworkManager.registerS2CPayloadType(OxygenUpdatePayload.TYPE, OxygenUpdatePayload.CODEC);
             NetworkManager.registerS2CPayloadType(RemoveSatellitePayload.TYPE, RemoveSatellitePayload.CODEC);
             NetworkManager.registerS2CPayloadType(ResearchUpdatePayload.TYPE, ResearchUpdatePayload.CODEC);
+            NetworkManager.registerS2CPayloadType(ResearchSourcesPayload.TYPE, ResearchSourcesPayload.CODEC);
             NetworkManager.registerS2CPayloadType(UpdateSatellitePayload.TYPE, UpdateSatellitePayload.CODEC);
         }
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, FlagDataPayload.TYPE, FlagDataPayload.CODEC, (payload, context) -> context.queue(() -> payload.handle(context)));

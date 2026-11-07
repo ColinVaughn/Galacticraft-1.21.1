@@ -25,6 +25,7 @@ package dev.galacticraft.mod.content;
 
 import dev.galacticraft.api.entity.attribute.GcApiEntityAttributes;
 import dev.galacticraft.mod.Constant;
+import dev.galacticraft.mod.content.entity.vehicle.AutomaticLanderEntity;
 import dev.galacticraft.mod.Constant.Entity;
 import dev.galacticraft.mod.content.entity.*;
 import dev.galacticraft.mod.content.entity.boss.CreeperBoss;
@@ -49,6 +50,22 @@ import java.util.function.BiConsumer;
 
 public class GCEntityTypes {
     public static final GCRegistry<EntityType<?>> ENTITIES = new GCRegistry<>(BuiltInRegistries.ENTITY_TYPE);
+    public static final EntityType<dev.galacticraft.mod.content.entity.vehicle.CloudDiverEntity> CLOUD_DIVER = ENTITIES.register("cloud_diver", EntityType.Builder.<dev.galacticraft.mod.content.entity.vehicle.CloudDiverEntity>of(dev.galacticraft.mod.content.entity.vehicle.CloudDiverEntity::new, MobCategory.MISC).sized(4.0F, 3.2F).clientTrackingRange(12).updateInterval(2).build(Constant.id("cloud_diver").toString()));
+    public static final EntityType<dev.galacticraft.mod.content.entity.jupiter.CloudRayEntity> CLOUD_RAY = ENTITIES.register("cloud_ray",
+            EntityType.Builder.of(dev.galacticraft.mod.content.entity.jupiter.CloudRayEntity::new, MobCategory.CREATURE)
+                    .sized(2.4F, 0.6F).clientTrackingRange(10).build(Constant.id("cloud_ray").toString()));
+    public static final EntityType<dev.galacticraft.mod.content.entity.jupiter.StaticJellyEntity> STATIC_JELLY = ENTITIES.register("static_jelly",
+            EntityType.Builder.of(dev.galacticraft.mod.content.entity.jupiter.StaticJellyEntity::new, MobCategory.MONSTER)
+                    .sized(1.0F, 1.6F).clientTrackingRange(10).build(Constant.id("static_jelly").toString()));
+    public static final EntityType<dev.galacticraft.mod.content.entity.jupiter.SalvageDroneEntity> SALVAGE_DRONE = ENTITIES.register("salvage_drone",
+            EntityType.Builder.of(dev.galacticraft.mod.content.entity.jupiter.SalvageDroneEntity::new, MobCategory.MONSTER)
+                    .sized(0.9F, 0.8F).clientTrackingRange(10).build(Constant.id("salvage_drone").toString()));
+    public static final EntityType<dev.galacticraft.mod.content.entity.jupiter.StormheartLeviathanEntity> STORMHEART_LEVIATHAN = ENTITIES.register("stormheart_leviathan",
+            EntityType.Builder.of(dev.galacticraft.mod.content.entity.jupiter.StormheartLeviathanEntity::new, MobCategory.MONSTER)
+                    .sized(6.0F, 3.5F).fireImmune().clientTrackingRange(16).build(Constant.id("stormheart_leviathan").toString()));
+    public static final EntityType<dev.galacticraft.mod.content.entity.mars.CuriosityRoverEntity> CURIOSITY_ROVER = ENTITIES.register("curiosity_rover",
+            EntityType.Builder.of(dev.galacticraft.mod.content.entity.mars.CuriosityRoverEntity::new, MobCategory.CREATURE)
+                    .sized(1.4F, 1.3F).eyeHeight(1.15F).clientTrackingRange(10).build(Constant.id("curiosity_rover").toString()));
     public static final EntityType<LunarBurrowerEntity> LUNAR_BURROWER = ENTITIES.register("lunar_burrower",
             EntityType.Builder.of(LunarBurrowerEntity::new, MobCategory.MONSTER).sized(1.6F, 1.4F)
                     .eyeHeight(0.8F).clientTrackingRange(12).updateInterval(2).build(Constant.id("lunar_burrower").toString()));
@@ -172,6 +189,16 @@ public class GCEntityTypes {
             .fireImmune()
             .noSummon()
             .build(Constant.id(Entity.LANDER).toString()));
+    public static final EntityType<AutomaticLanderEntity> LANDING_BALLOONS = arrivalVehicle("landing_balloons", AutomaticLanderEntity.Kind.BALLOONS, 2.5F, 2.5F);
+    public static final EntityType<AutomaticLanderEntity> ENTRY_POD = arrivalVehicle("entry_pod", AutomaticLanderEntity.Kind.ASTEROID_POD, 2F, 3F);
+    public static final EntityType<AutomaticLanderEntity> VENUS_ENTRY_POD = arrivalVehicle("venus_entry_pod", AutomaticLanderEntity.Kind.VENUS_POD, 2F, 3F);
+
+    private static EntityType<AutomaticLanderEntity> arrivalVehicle(String id, AutomaticLanderEntity.Kind kind, float width, float height) {
+        return ENTITIES.register(id, velocityUpdates(EntityType.Builder.<AutomaticLanderEntity>of(
+                (type, level) -> new AutomaticLanderEntity(type, level, kind), MobCategory.MISC)
+                .clientTrackingRange(32).updateInterval(2), true).sized(width, height).fireImmune().build(Constant.id(id).toString()));
+    }
+
     public static final EntityType<Buggy> BUGGY = ENTITIES.register(Entity.BUGGY, velocityUpdates(EntityType.Builder.of(Buggy::new, MobCategory.MISC)
             .clientTrackingRange(150)
             .updateInterval(5), true)
@@ -266,6 +293,11 @@ public class GCEntityTypes {
         register.accept(EVOLVED_PILLAGER, EvolvedPillagerEntity.createAttributes().add(GcApiEntityAttributes.CAN_BREATHE_IN_SPACE, 1.0D).add(Attributes.MAX_HEALTH, 30.0D));
         register.accept(EVOLVED_EVOKER, EvolvedEvokerEntity.createAttributes().add(GcApiEntityAttributes.CAN_BREATHE_IN_SPACE, 1.0D).add(Attributes.MAX_HEALTH, 30.0D));
         register.accept(EVOLVED_VINDICATOR, EvolvedVindicatorEntity.createAttributes().add(GcApiEntityAttributes.CAN_BREATHE_IN_SPACE, 1.0D).add(Attributes.MAX_HEALTH, 30.0D));
+        register.accept(CLOUD_RAY, dev.galacticraft.mod.content.entity.jupiter.CloudRayEntity.createAttributes());
+        register.accept(STATIC_JELLY, dev.galacticraft.mod.content.entity.jupiter.StaticJellyEntity.createAttributes());
+        register.accept(SALVAGE_DRONE, dev.galacticraft.mod.content.entity.jupiter.SalvageDroneEntity.createAttributes());
+        register.accept(STORMHEART_LEVIATHAN, dev.galacticraft.mod.content.entity.jupiter.StormheartLeviathanEntity.createAttributes());
+        register.accept(CURIOSITY_ROVER, dev.galacticraft.mod.content.entity.mars.CuriosityRoverEntity.createAttributes());
         register.accept(GAZER, GazerEntity.createAttributes());
         register.accept(RUMBLER, RumblerEntity.createAttributes());
         register.accept(COMET_CUBE, CometCubeEntity.createAttributes());

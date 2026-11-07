@@ -1,0 +1,5 @@
+{
+  "galacticraft:type": "galacticraft:obj",
+  "model": "galacticraft:models/misc/lander.obj",
+  "mtl": "galacticraft:models/misc/lander_emissive.mtl"
+}

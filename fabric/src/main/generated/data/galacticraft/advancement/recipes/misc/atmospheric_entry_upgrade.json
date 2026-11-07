@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_plate": {
+      "conditions": {
+        "items": [
+          {
+            "items": "galacticraft:heavy_plating_t3"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "galacticraft:atmospheric_entry_upgrade"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_plate"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "galacticraft:atmospheric_entry_upgrade"
+    ]
+  }
+}

@@ -40,6 +40,8 @@ import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.Galacticraft;
 import dev.galacticraft.mod.content.GCBlockEntityTypes;
 import dev.galacticraft.mod.machine.GCMachineStatuses;
+import dev.galacticraft.mod.machine.OxygenBubbleManager;
+import dev.galacticraft.mod.machine.SealerManager;
 import dev.galacticraft.mod.network.s2c.BubbleSizePayload;
 import dev.galacticraft.mod.network.s2c.BubbleUpdatePayload;
 import dev.galacticraft.mod.screen.OxygenBubbleDistributorMenu;
@@ -49,6 +51,7 @@ import dev.architectury.networking.NetworkManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -102,8 +105,11 @@ public class OxygenBubbleDistributorBlockEntity extends MachineBlockEntity {
     private int players = 0;
     private double lastSyncedSize = Double.NaN;
     private long lastSizeSyncTick = -SIZE_SYNC_INTERVAL;
+    /**
+     * Squared radius of the bubble applied to the level, or -1. Saved with the chunk so reloading
+     * resumes the existing bubble instead of stranding air outside a new radius.
+     */
     private int appliedBubbleRadiusSquared = -1;
-    private boolean oxygenUnloaded = true;
     private boolean oxygenWorld = true;
 
     public OxygenBubbleDistributorBlockEntity(BlockPos pos, BlockState state) {
@@ -114,12 +120,15 @@ public class OxygenBubbleDistributorBlockEntity extends MachineBlockEntity {
     public void setLevel(Level level) {
         super.setLevel(level);
         this.oxygenWorld = level.getDefaultBreathable();
+        // Reconcile the level record with this chunk's saved radius after a possible partial save.
+        if (!level.isClientSide()) {
+            level.galacticraft$getBubbleManager().update(this.worldPosition, this.appliedBubbleRadiusSquared);
+        }
     }
 
     @Override
     protected void tickConstant(@NotNull ServerLevel level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull ProfilerFiller profiler) {
         super.tickConstant(level, pos, state, profiler);
-        this.oxygenUnloaded = false;
         profiler.push("extract_resources");
         this.chargeFromSlot(CHARGE_SLOT);
         this.takeFluidFromSlot(OXYGEN_INPUT_SLOT, OXYGEN_TANK, Gases.OXYGEN);
@@ -131,7 +140,7 @@ public class OxygenBubbleDistributorBlockEntity extends MachineBlockEntity {
         profiler.push("transaction");
         MachineStatus status;
         try {
-            if (this.energyStorage().canExtract(Galacticraft.CONFIG.oxygenCollectorEnergyConsumptionRate())) { //todo: config
+            if (this.energyStorage().canExtract(Galacticraft.CONFIG.oxygenCollectorEnergyConsumptionRate())) { // TODO: Add a distributor-specific energy setting.
                 profiler.push("bubble");
                 if (this.size > this.targetSize) {
                     this.setSize(Math.max(this.size - 0.1F, this.targetSize));
@@ -167,14 +176,11 @@ public class OxygenBubbleDistributorBlockEntity extends MachineBlockEntity {
         profiler.push("size");
 
         if (this.size > 0) {
-            this.setSize(this.size - 0.2D);
-            this.trySyncSize(level, pos, profiler);
+            this.setSize(Math.max(this.size - 0.2D, 0));
             this.distributeOxygenToArea(this.size, true); // technically this oxygen is being created from thin air
         }
-
-        if (this.size < 0) {
-            this.setSize(0);
-        }
+        // Even once the bubble is gone: the tick that empties it usually falls inside the sync interval.
+        this.trySyncSize(level, pos, profiler);
         profiler.pop();
         return status;
     }
@@ -190,10 +196,14 @@ public class OxygenBubbleDistributorBlockEntity extends MachineBlockEntity {
         super.tickDisabled(level, pos, state, profiler);
     }
 
+    /**
+     * Chunk unload preserves the bubble and its recorded coverage. Clearing it would reload affected
+     * chunks during unload and can deadlock server shutdown. Breaking the distributor clears it.
+     */
     @Override
     public void setRemoved() {
-        if (!this.oxygenUnloaded) {
-            this.oxygenUnloaded = true;
+        if (this.level != null && !this.level.isClientSide() && this.appliedBubbleRadiusSquared >= 0
+                && this.level.hasChunkAt(this.worldPosition)) {
             this.distributeOxygenToArea(this.size, this.oxygenWorld);
         }
         super.setRemoved();
@@ -217,14 +227,27 @@ public class OxygenBubbleDistributorBlockEntity extends MachineBlockEntity {
     }
 
     public void distributeOxygenToArea(double size, boolean oxygenated) {
-        int bubbleRadiusSquared = oxygenated == this.oxygenWorld ? -1 : (int) (size * size);
-        if (bubbleRadiusSquared == this.appliedBubbleRadiusSquared) return;
+        int bubbleRadiusSquared = size <= 0 || oxygenated == this.oxygenWorld ? -1 : (int) (size * size);
+        int previousRadiusSquared = this.appliedBubbleRadiusSquared;
+        if (bubbleRadiusSquared == previousRadiusSquared) return;
 
+        OxygenBubbleManager bubbles = this.level.galacticraft$getBubbleManager();
+        SealerManager sealers = this.level.galacticraft$getSealerManager();
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         BlockPos origin = this.getBlockPos().above();
-        SphericalVolumeDiff.forEach(this.appliedBubbleRadiusSquared, bubbleRadiusSquared, (x, y, z, added) ->
-                this.level.setBreathable(pos.setWithOffset(origin, x, y, z), added ? oxygenated : this.oxygenWorld));
+        SphericalVolumeDiff.forEach(previousRadiusSquared, bubbleRadiusSquared, (x, y, z, added) -> {
+            pos.setWithOffset(origin, x, y, z);
+            if (added) {
+                this.level.setBreathable(pos, oxygenated);
+            } else if (!bubbles.covers(pos, this) && !sealers.isSealed(pos)) {
+                // Preserve air still held by neighboring bubbles or sealed rooms.
+                this.level.setBreathable(pos, this.oxygenWorld);
+            }
+        });
         this.appliedBubbleRadiusSquared = bubbleRadiusSquared;
+        // The edge can move without touching this chunk's own blocks, which would leave it saving a stale radius.
+        this.setChanged();
+        bubbles.update(this.worldPosition, bubbleRadiusSquared);
     }
 
     public byte getTargetSize() {
@@ -241,6 +264,7 @@ public class OxygenBubbleDistributorBlockEntity extends MachineBlockEntity {
         tag.putByte(Constant.Nbt.MAX_SIZE, this.targetSize);
         tag.putDouble(Constant.Nbt.SIZE, this.size);
         tag.putBoolean(Constant.Nbt.VISIBLE, this.bubbleVisible);
+        tag.putInt(Constant.Nbt.APPLIED_BUBBLE_RADIUS_SQUARED, this.appliedBubbleRadiusSquared);
     }
 
     @Override
@@ -251,6 +275,11 @@ public class OxygenBubbleDistributorBlockEntity extends MachineBlockEntity {
         this.targetSize = tag.getByte(Constant.Nbt.MAX_SIZE);
         if (this.targetSize < 1) this.targetSize = 1;
         this.bubbleVisible = tag.getBoolean(Constant.Nbt.VISIBLE);
+        // Only trust saved coverage during chunk load; item data and /data do not describe existing air.
+        if (this.level == null) {
+            this.appliedBubbleRadiusSquared = tag.contains(Constant.Nbt.APPLIED_BUBBLE_RADIUS_SQUARED, Tag.TAG_INT)
+                    ? tag.getInt(Constant.Nbt.APPLIED_BUBBLE_RADIUS_SQUARED) : -1;
+        }
     }
 
     public double getSize() {

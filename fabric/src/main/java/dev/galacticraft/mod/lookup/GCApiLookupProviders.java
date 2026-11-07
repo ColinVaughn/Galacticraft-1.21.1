@@ -63,7 +63,14 @@ public final class GCApiLookupProviders {
                 GCBlockEntityTypes.CANNON,
                 GCBlockEntityTypes.FLUID_TANK,
                 GCBlockEntityTypes.PAINTER,
-                GCBlockEntityTypes.DECONSTRUCTOR
+                GCBlockEntityTypes.DECONSTRUCTOR,
+                GCBlockEntityTypes.ATMOSPHERIC_COLLECTOR,
+                GCBlockEntityTypes.CONDENSATE_SEPARATOR,
+                GCBlockEntityTypes.VEHICLE_DOCK,
+                GCBlockEntityTypes.SURVEY_BEACON,
+                GCBlockEntityTypes.STORM_CAPACITOR,
+                GCBlockEntityTypes.LIGHTNING_GROUNDER,
+                GCBlockEntityTypes.PRESSURE_STABILIZER
         });
 
         if (Platform.isFabric()) {

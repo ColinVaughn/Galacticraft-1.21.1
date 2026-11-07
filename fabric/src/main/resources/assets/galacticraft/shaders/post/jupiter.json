@@ -1,0 +1,24 @@
+{
+  "targets": [
+    "jupiter_depth",
+    "jupiter_clouds"
+  ],
+  "passes": [
+    {
+      "name": "galacticraft:jupiter_clouds",
+      "intarget": "minecraft:main",
+      "outtarget": "jupiter_clouds",
+      "auxtargets": [
+        {
+          "name": "DepthSampler",
+          "id": "minecraft:main:depth"
+        }
+      ]
+    },
+    {
+      "name": "galacticraft:jupiter_composite",
+      "intarget": "jupiter_clouds",
+      "outtarget": "minecraft:main"
+    }
+  ]
+}

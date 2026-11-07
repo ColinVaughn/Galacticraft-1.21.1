@@ -24,6 +24,7 @@ package dev.galacticraft.mod.world.biome;
 
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.content.GCSounds;
+import dev.galacticraft.mod.world.gen.JupiterWorldgen;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
@@ -101,6 +102,7 @@ public final class GCBiomes {
     public static void bootstrapRegistries(BootstrapContext<Biome> context) { // moj-map typo :(
         HolderGetter<PlacedFeature> featureLookup = context.lookup(Registries.PLACED_FEATURE);
         HolderGetter<ConfiguredWorldCarver<?>> carverLookup = context.lookup(Registries.CONFIGURED_CARVER);
+        for (var jupiter : JupiterWorldgen.BIOMES) context.register(jupiter, JupiterWorldgen.biome(jupiter, featureLookup, carverLookup));
         context.register(SPACE, createSpaceBiome(context.lookup(Registries.PLACED_FEATURE), context.lookup(Registries.CONFIGURED_CARVER)));
         context.register(Moon.COMET_TUNDRA, MoonBiomes.createCometTundra(featureLookup, carverLookup));
         context.register(Moon.BASALTIC_MARE, MoonBiomes.createBasalticMare(featureLookup, carverLookup));

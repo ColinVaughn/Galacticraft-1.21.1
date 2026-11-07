@@ -39,8 +39,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Builds a positional workbench page for a vehicle, filling the wells of a {@link WorkbenchLayout}
- * in order. Legacy Galacticraft assembled the same thing as a {@code HashMap<Integer, ItemStack>}.
+ * Builds a vehicle workbench page by filling {@link WorkbenchLayout} slots in order.
  */
 public class SchematicCraftingRecipeBuilder extends GCRecipeBuilder<SchematicCraftingRecipeBuilder> {
     private final WorkbenchLayout layout;
@@ -98,7 +97,7 @@ public class SchematicCraftingRecipeBuilder extends GCRecipeBuilder<SchematicCra
             throw new IllegalStateException("No way of obtaining recipe " + id);
         }
 
-        return SchematicCraftingRecipe.create(this.group, new ItemStack(this.result, this.count), this.layout, this.schematic, this.sortOrder, this.ingredients)
+        return SchematicCraftingRecipe.create(this.group, this.resultStack(), this.layout, this.schematic, this.sortOrder, this.ingredients)
                 .getOrThrow(error -> new IllegalStateException("Recipe " + id + " does not fit its layout: " + error));
     }
 }

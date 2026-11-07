@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +27,7 @@ import dev.galacticraft.api.accessor.ServerResearchAccessor;
 import dev.galacticraft.api.component.GCDataComponents;
 import dev.galacticraft.api.rocket.LaunchStage;
 import dev.galacticraft.api.rocket.RocketData;
-import dev.galacticraft.api.rocket.RocketPrefabs;
+import dev.galacticraft.mod.content.rocket.RocketPrefabs;
 import dev.galacticraft.api.rocket.part.RocketPartTypes;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.content.GCBlocks;
@@ -54,7 +55,13 @@ import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.level.GameType;
 
+import dev.galacticraft.mod.machine.workbench.ResearchSources;
+import dev.galacticraft.mod.util.Translations;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.resources.ResourceLocation;
 import java.util.List;
+import java.util.Map;
 
 public class ModularRocketTestSuite implements GalacticraftGameTest {
     private static final List<RocketPartTypes> TYPES = List.of(RocketPartTypes.CONE, RocketPartTypes.BODY, RocketPartTypes.FIN, RocketPartTypes.ENGINE);
@@ -115,6 +122,19 @@ public class ModularRocketTestSuite implements GalacticraftGameTest {
         fill(fixture, 1, 3, 1, 1);
         context.assertTrue(fixture.workbench.output.isEmpty(), "Unresearched tier-3 body bypassed research");
         context.assertTrue(fixture.menu.getMissingResearch().size() == 1, "Workbench did not explain the missing body research");
+        context.assertTrue(fixture.menu.getMissingResearchIds().equals(List.of(GCRocketParts.recipeId(GCRocketParts.TIER_3_BODY))),
+                "Workbench named the wrong research: " + fixture.menu.getMissingResearchIds());
+        Map<ResourceLocation, Component> sources = ResearchSources.describe(context.getLevel().getServer());
+        Component bodySource = sources.get(GCRocketParts.recipeId(GCRocketParts.TIER_3_BODY));
+        context.assertTrue(bodySource != null && bodySource.getContents() instanceof TranslatableContents body
+                        && body.getKey().equals(Translations.RocketWorkbench.UNLOCK_BY_SCHEMATIC),
+                "Tier-3 body should point at its schematic, got " + bodySource);
+        Component coneSource = sources.get(GCRocketParts.recipeId(GCRocketParts.TIER_1_CONE));
+        context.assertTrue(coneSource != null && coneSource.getContents() instanceof TranslatableContents cone
+                        && cone.getKey().equals(Translations.RocketWorkbench.UNLOCK_BY_ADVANCEMENT)
+                        && cone.getArgs()[0] instanceof Component title && title.getContents() instanceof TranslatableContents titleKey
+                        && titleKey.getKey().equals("advancement.galacticraft.rocket_workbench.title"),
+                "Basic cone should point at the Rocket Workbench advancement, got " + coneSource);
         ((ServerResearchAccessor) fixture.player).galacticraft$unlockRocketPartRecipes(GCRocketParts.recipeId(GCRocketParts.TIER_3_BODY));
         fixture.menu.onItemChanged();
         assertParts(context, fixture.workbench.output.getItem(0).get(GCDataComponents.ROCKET_DATA), 1, 3, 1, 1);

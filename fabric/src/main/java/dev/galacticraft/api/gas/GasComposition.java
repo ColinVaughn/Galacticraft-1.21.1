@@ -55,6 +55,13 @@ public interface GasComposition {
 
     boolean breathable();
 
+    /** Atmospheric pressure is in Earth atmospheres; oxygen is in parts per million. */
+    static boolean breathable(double oxygenPpm, double pressure) {
+        double partialPressure = oxygenPpm / 1_000_000.0 * pressure;
+        return oxygenPpm >= 0 && oxygenPpm <= 1_000_000 && pressure > 0
+                && Double.isFinite(partialPressure) && partialPressure > 0.195 && partialPressure < 0.235;
+    }
+
     void writePacket(FriendlyByteBuf buf);
 
     @NotNull Object2DoubleMap<ResourceKey<Fluid>> composition();

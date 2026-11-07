@@ -50,6 +50,11 @@
       "type": "galacticraft:default",
       "config": {}
     },
+    "sky": {
+      "fog_color": 8735283,
+      "post_effect": "galacticraft:shaders/post/mars.json",
+      "sky_color": 13007444
+    },
     "teleporter": "galacticraft:lander",
     "world": "galacticraft:mars"
   }

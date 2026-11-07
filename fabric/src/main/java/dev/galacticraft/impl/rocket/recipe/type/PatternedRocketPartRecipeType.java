@@ -85,6 +85,7 @@ public class PatternedRocketPartRecipeType extends RocketPartRecipeType<Patterne
 
     @Override
     public boolean matches(RecipeInput input, Level level, PatternedRocketPartRecipeConfig config) {
+        if (input.size() != slots(config)) return false;
         List<RocketPartRecipeSlot> left = config.left();
         for (int i = 0, leftSize = left.size(); i < leftSize; i++) {
             ItemStack stack = input.getItem(i);
@@ -95,7 +96,7 @@ public class PatternedRocketPartRecipeType extends RocketPartRecipeType<Patterne
         List<RocketPartRecipeSlot> right = config.right();
         for (int i = 0, rightSize = right.size(); i < rightSize; i++) {
             ItemStack stack = input.getItem(left.size() + i);
-            if (stack.isEmpty() || !left.get(i).ingredient().test(stack)) {
+            if (stack.isEmpty() || !right.get(i).ingredient().test(stack)) {
                 return false;
             }
         }

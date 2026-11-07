@@ -47,10 +47,14 @@ public class GCPackets {
             registerS2C(CapeAssignmentsPacket.TYPE, CapeAssignmentsPacket.STREAM_CODEC);
             registerS2C(DustStormSyncPayload.TYPE, DustStormSyncPayload.STREAM_CODEC);
             registerS2C(SolarFlareSyncPayload.TYPE, SolarFlareSyncPayload.STREAM_CODEC);
+            registerS2C(JupiterPressurePayload.TYPE, JupiterPressurePayload.STREAM_CODEC);
             registerS2C(MeteorShowerSyncPayload.TYPE, MeteorShowerSyncPayload.STREAM_CODEC);
             registerS2C(ServerStatisticsPayload.TYPE, ServerStatisticsPayload.STREAM_CODEC);
             registerS2C(GlobalStatisticsPayload.TYPE, GlobalStatisticsPayload.STREAM_CODEC);
             registerS2C(SensorGlassesLeakPayload.TYPE, SensorGlassesLeakPayload.STREAM_CODEC);
+            registerS2C(SpaceflightHandoffPayload.TYPE, SpaceflightHandoffPayload.STREAM_CODEC);
+            registerS2C(SpaceflightArrivalPayload.TYPE, SpaceflightArrivalPayload.STREAM_CODEC);
+            registerS2C(TeamFlagPayload.TYPE, TeamFlagPayload.STREAM_CODEC);
         }
 
         registerC2S(AirlockPlayerNamePayload.TYPE, AirlockPlayerNamePayload.STREAM_CODEC);
@@ -68,8 +72,10 @@ public class GCPackets {
         registerC2S(OpenGcInventoryPayload.TYPE, OpenGcInventoryPayload.STREAM_CODEC);
         registerC2S(OpenPetInventoryPayload.TYPE, OpenPetInventoryPayload.STREAM_CODEC);
         registerC2S(OpenRocketPayload.TYPE, OpenRocketPayload.STREAM_CODEC);
+        registerC2S(CloudDiverActionPayload.TYPE, CloudDiverActionPayload.STREAM_CODEC);
         registerC2S(ToggleBurrowerTunnelPayload.TYPE, ToggleBurrowerTunnelPayload.STREAM_CODEC);
         registerC2S(ToggleRocketLandingPayload.TYPE, ToggleRocketLandingPayload.STREAM_CODEC);
+        registerC2S(SpaceflightReadyPayload.TYPE, SpaceflightReadyPayload.STREAM_CODEC);
         registerC2S(PlanetTeleportPayload.TYPE, PlanetTeleportPayload.STREAM_CODEC);
         registerC2S(SatelliteCreationPayload.TYPE, SatelliteCreationPayload.STREAM_CODEC);
         registerC2S(SatelliteUpdatePayload.TYPE, SatelliteUpdatePayload.STREAM_CODEC);
@@ -77,6 +83,7 @@ public class GCPackets {
         registerC2S(CreativeGcTransferItemPayload.TYPE, CreativeGcTransferItemPayload.STREAM_CODEC);
         registerC2S(ServerStatisticsRequestPayload.TYPE, ServerStatisticsRequestPayload.STREAM_CODEC);
         registerC2S(GlobalStatisticsRequestPayload.TYPE, GlobalStatisticsRequestPayload.STREAM_CODEC);
+        registerC2S(TeamFlagRequestPayload.TYPE, TeamFlagRequestPayload.STREAM_CODEC);
     }
 
     private static <P extends S2CPayload> void registerS2C(CustomPacketPayload.Type<P> type,

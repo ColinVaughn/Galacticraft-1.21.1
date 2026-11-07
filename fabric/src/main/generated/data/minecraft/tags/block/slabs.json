@@ -1,5 +1,8 @@
 {
   "values": [
+    "galacticraft:packed_cloud_slab",
+    "galacticraft:aerostat_hull_slab",
+    "galacticraft:reinforced_aerostat_hull_slab",
     "#galacticraft:slabs"
   ]
 }

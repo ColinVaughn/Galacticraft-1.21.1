@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +25,7 @@ package dev.galacticraft.mod.content.item;
 
 import dev.galacticraft.api.component.GCDataComponents;
 import dev.galacticraft.api.rocket.RocketData;
-import dev.galacticraft.api.rocket.RocketPrefabs;
+import dev.galacticraft.mod.content.rocket.RocketPrefabs;
 import dev.galacticraft.api.rocket.part.RocketPart;
 import dev.galacticraft.api.rocket.part.RocketPartTypes;
 import dev.galacticraft.mod.content.GCBlocks;

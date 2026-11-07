@@ -27,10 +27,12 @@ import com.mojang.blaze3d.platform.NativeImage;
 import dev.galacticraft.impl.network.c2s.FlagDataPayload;
 import dev.galacticraft.impl.network.c2s.TeamNamePayload;
 import dev.galacticraft.mod.Constant;
+import dev.galacticraft.mod.client.spacerace.TeamFlagClient;
 import dev.galacticraft.mod.network.c2s.GlobalStatisticsRequestPayload;
 import dev.galacticraft.mod.network.c2s.ServerStatisticsRequestPayload;
 import dev.galacticraft.mod.network.s2c.GlobalStatisticsPayload;
 import dev.galacticraft.mod.network.s2c.ServerStatisticsPayload;
+import dev.galacticraft.mod.spacerace.TeamFlagImage;
 import dev.galacticraft.mod.util.Translations;
 import dev.architectury.networking.NetworkManager;
 import net.minecraft.Util;
@@ -172,6 +174,9 @@ public class SpaceRaceScreen extends Screen {
             graphics.drawCenteredString(this.minecraft.font,
                     Component.translatable(Translations.SpaceRace.FLAG_REQUIREMENTS),
                     this.width / 2, this.height / 2 - 4, 0xFFAAAAAA);
+            graphics.drawCenteredString(this.minecraft.font,
+                    Component.translatable(Translations.SpaceRace.FLAG_CRAFT_HINT),
+                    this.width / 2, this.height / 2 + 82, 0xFFAAAAAA);
             if (this.flagError != null) {
                 graphics.drawCenteredString(this.minecraft.font, this.flagError,
                         this.width / 2, this.height / 2 + 68, 0xFFFF5555);
@@ -475,7 +480,7 @@ public class SpaceRaceScreen extends Screen {
     }
 
     private Path savedFlagPath() {
-        return this.minecraft.gameDirectory.toPath().resolve("galacticraft/team_flag.png");
+        return TeamFlagClient.savedFlagPath();
     }
 
     private ResourceLocation registerFlag(NativeImage image) {
@@ -546,19 +551,9 @@ public class SpaceRaceScreen extends Screen {
                         }
                     }
                 }
-                byte[] data = new byte[48 * 32 * 3];
-                int index = 0;
-                for (int y = 0; y < 32; y++) {
-                    for (int x = 0; x < 48; x++) {
-                        int color = finalImage.getPixelRGBA(x, y);
-                        data[index++] = (byte) ((color >> 16) & 0xFF);
-                        data[index++] = (byte) ((color >> 8) & 0xFF);
-                        data[index++] = (byte) (color & 0xFF);
-                    }
-                }
-
-                NetworkManager.sendToServer(new FlagDataPayload(data));
+                // The image holds its pixels blue first; the flag travels red first, as the server keeps it.
                 rememberFlag(finalImage, location);
+                NetworkManager.sendToServer(new FlagDataPayload(TeamFlagImage.toRgb(this.teamFlagPixels)));
             } else {
                 this.minecraft.getTextureManager().release(location);
                 this.ownedFlagTextures.remove(location);

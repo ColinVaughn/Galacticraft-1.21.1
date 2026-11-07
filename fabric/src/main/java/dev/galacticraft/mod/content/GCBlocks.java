@@ -107,6 +107,14 @@ public class GCBlocks {
     public static final Block CANNED_FOOD = BLOCKS.register(Constant.Block.CANNED_FOOD, new CannedFoodBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_GRAY).strength(0.5F, 0.5F).sound(SoundType.METAL).noOcclusion().forceSolidOn().pushReaction(PushReaction.DESTROY)));
     public static final GCRegistry.ColorSet<Block> FLAGS = BLOCKS.registerColored(Constant.Block.FLAG, color -> new FlagBlock(color, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_GRAY).strength(0.5f, 0.5f)));
 
+    // JUPITER CLOUDLANDS
+    public static final Block DENSE_CLOUD = BLOCKS.registerWithItem("dense_cloud", new CloudBlock(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.SNOW).strength(0.35F).sound(SoundType.WOOL)));
+    public static final Block PACKED_CLOUD = BLOCKS.registerWithItem("packed_cloud", new Block(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.QUARTZ).strength(0.9F).sound(SoundType.SNOW)));
+    public static final Block AMMONIA_FROST = BLOCKS.registerWithItem("ammonia_frost", new Block(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.ICE).strength(0.5F).friction(0.92F).sound(SoundType.GLASS)));
+
     // MOON UNDERGROUND
     public static final Block LUNAR_BURROWER_EGG = BLOCKS.registerWithItem("lunar_burrower_egg", new LunarBurrowerEggBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GRAY).strength(0.5F).sound(SoundType.STONE).noOcclusion()));
     public static final Block LUNAR_BREAKDOWN_RUBBLE = BLOCKS.registerWithItem("lunar_breakdown_rubble", new LunarFormationBlock(LunarFormationBlock.Kind.LUNAR_BREAKDOWN_RUBBLE, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GRAY).strength(1.5F).sound(SoundType.STONE).noOcclusion().requiresCorrectToolForDrops()));
@@ -222,7 +230,7 @@ public class GCBlocks {
 
     // ASTEROID NATURAL
     public static final Block ASTEROID_ROCK = BLOCKS.registerWithItem(Constant.Block.ASTEROID_ROCK, new Block(BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_BLACK).instrument(NoteBlockInstrument.BASEDRUM).destroyTime(3.0F).requiresCorrectToolForDrops()));
-    public static final Block ASTEROID_ROCK_1 = BLOCKS.registerWithItem(Constant.Block.ASTEROID_ROCK_1, new Block(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BROWN).instrument(NoteBlockInstrument.BASEDRUM).destroyTime(3.0F).requiresCorrectToolForDrops())); // todo naming
+    public static final Block ASTEROID_ROCK_1 = BLOCKS.registerWithItem(Constant.Block.ASTEROID_ROCK_1, new Block(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BROWN).instrument(NoteBlockInstrument.BASEDRUM).destroyTime(3.0F).requiresCorrectToolForDrops()));
     public static final Block ASTEROID_ROCK_2 = BLOCKS.registerWithItem(Constant.Block.ASTEROID_ROCK_2, new Block(BlockBehaviour.Properties.of().mapColor(MapColor.DEEPSLATE).instrument(NoteBlockInstrument.BASEDRUM).destroyTime(3.0F).requiresCorrectToolForDrops()));
     public static final Block DENSE_ICE = BLOCKS.registerWithItem(Constant.Block.DENSE_ICE, new Block(BlockBehaviour.Properties.of().mapColor(MapColor.ICE).instrument(NoteBlockInstrument.BASEDRUM).destroyTime(1.0F).requiresCorrectToolForDrops()));
 
@@ -519,6 +527,7 @@ public class GCBlocks {
     public static final Block UNLIT_SOUL_LANTERN = BLOCKS.register(Constant.Block.UNLIT_SOUL_LANTERN, new UnlitLanternBlock(Blocks.SOUL_LANTERN, BlockBehaviour.Properties.ofFullCopy(Blocks.SOUL_LANTERN).lightLevel(state -> 0)));
 
     public static void register() {
+        dev.galacticraft.mod.content.block.jupiter.JupiterBlocks.register();
         GCBlockPlatformHooks.register();
     }
 

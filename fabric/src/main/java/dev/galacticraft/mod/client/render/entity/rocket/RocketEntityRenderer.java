@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +27,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import dev.galacticraft.api.entity.rocket.render.RocketPartRendererRegistry;
 import dev.galacticraft.api.entity.rocket.render.RocketModelSlot;
+import dev.galacticraft.api.rocket.RocketGeometry;
 import dev.galacticraft.api.rocket.part.RocketPart;
 import dev.galacticraft.mod.content.entity.vehicle.RocketEntity;
 import dev.galacticraft.mod.client.model.Tier1RocketAnimations;
@@ -39,6 +41,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.inventory.InventoryMenu;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 
 public class RocketEntityRenderer extends EntityRenderer<RocketEntity> {
@@ -86,53 +89,29 @@ public class RocketEntityRenderer extends EntityRenderer<RocketEntity> {
             matrices.mulPose(Axis.XP.rotationDegrees(Mth.sin(wobbleTicks) * wobbleTicks * wobbleStrength / 10.0F * (float) entity.getHurtDir()));
         }
 
-//        RenderSystem.setShaderTexture(0, getTextureLocation(entity));
-        Holder<? extends RocketPart<?, ?>> part = entity.engine();
-        if (part != null) {
-            matrices.pushPose();
-            RocketModelSlot.ENGINE.mount(matrices);
-            RocketPartRendererRegistry.INSTANCE.getRenderer(part.unwrapKey().get()).render(client.level, matrices, entity, vertexConsumers, partialTick, light, OverlayTexture.NO_OVERLAY);
-            matrices.popPose();
-        }
+        RocketGeometry geometry = RocketGeometry.of(entity);
+        renderPart(entity.engine(), RocketModelSlot.ENGINE, geometry, client, entity, matrices, vertexConsumers, partialTick, light);
+        renderPart(entity.booster(), RocketModelSlot.BOOSTER, geometry, client, entity, matrices, vertexConsumers, partialTick, light);
+        renderPart(entity.fin(), RocketModelSlot.FIN, geometry, client, entity, matrices, vertexConsumers, partialTick, light);
+        renderPart(entity.body(), RocketModelSlot.BODY, geometry, client, entity, matrices, vertexConsumers, partialTick, light);
+        renderPart(entity.cone(), RocketModelSlot.CONE, geometry, client, entity, matrices, vertexConsumers, partialTick, light);
 
-        part = entity.booster();
-        if (part != null) {
-            matrices.pushPose();
-            RocketModelSlot.BOOSTER.mount(matrices);
-            RocketPartRendererRegistry.INSTANCE.getRenderer(part.unwrapKey().get()).render(client.level, matrices, entity, vertexConsumers, partialTick, light, OverlayTexture.NO_OVERLAY);
-            matrices.popPose();
-        }
+        matrices.popPose();
+    }
 
-        part = entity.fin();
-        if (part != null) {
-            matrices.pushPose();
-            RocketModelSlot.FIN.mount(matrices);
-            RocketPartRendererRegistry.INSTANCE.getRenderer(part.unwrapKey().get()).render(client.level, matrices, entity, vertexConsumers, partialTick, light, OverlayTexture.NO_OVERLAY);
-            matrices.popPose();
-        }
-
-        part = entity.body();
-        if (part != null) {
-            matrices.pushPose();
-            RocketModelSlot.BODY.mount(matrices);
-            RocketPartRendererRegistry.INSTANCE.getRenderer(part.unwrapKey().get()).render(client.level, matrices, entity, vertexConsumers, partialTick, light, OverlayTexture.NO_OVERLAY);
-            matrices.popPose();
-        }
-
-        part = entity.cone();
-        if (part != null) {
-            matrices.pushPose();
-            RocketModelSlot.CONE.mount(matrices);
-            RocketPartRendererRegistry.INSTANCE.getRenderer(part.unwrapKey().get()).render(client.level, matrices, entity, vertexConsumers, partialTick, light, OverlayTexture.NO_OVERLAY);
-            matrices.popPose();
-        }
-
+    private static void renderPart(@Nullable Holder<? extends RocketPart<?, ?>> part, RocketModelSlot slot, RocketGeometry geometry,
+                                   Minecraft client, RocketEntity entity, PoseStack matrices, MultiBufferSource vertexConsumers,
+                                   float partialTick, int light) {
+        if (part == null) return;
+        matrices.pushPose();
+        matrices.translate(0, geometry.mountBlocks(slot), 0);
+        RocketPartRendererRegistry.INSTANCE.getRenderer(part.unwrapKey().orElseThrow()).render(client.level, matrices, entity, vertexConsumers, partialTick, light, OverlayTexture.NO_OVERLAY);
         matrices.popPose();
     }
 
     @Override
     public boolean shouldRender(RocketEntity entity, Frustum visibleRegion, double cameraX, double cameraY, double cameraZ) {
-        return true; //maybe fix this later
+        return true;
     }
 
     @Override

@@ -216,43 +216,46 @@ public class VenusSkyRenderer {
         poseStack.mulPose(Axis.XP.rotationDegrees(-level.getTimeOfDay(partialTicks) * 360.0F));
         // Render sun
         Matrix4f last2 = poseStack.last().pose();
-        if (!ShaderPackCompat.isActive()) {
-            RenderSystem.setShaderColor(0.0F, 0.0F, 0.0F, 1.0F);
-            // Some blanking to conceal the stars
-            f10 = this.sunSize / 3.5F;
-            buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
-            buffer.addVertex(last2, -f10, 99.9F, -f10)
-                    .addVertex(last2, f10, 99.9F, -f10)
-                    .addVertex(last2, f10, 99.9F, f10)
-                    .addVertex(last2, -f10, 99.9F, f10);
+        if (!SurfaceCelestialRenderer.render(context)) {
+            if (!ShaderPackCompat.isActive()) {
+                RenderSystem.setShaderColor(0.0F, 0.0F, 0.0F, 1.0F);
+                // Some blanking to conceal the stars
+                f10 = this.sunSize / 3.5F;
+                buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
+                buffer.addVertex(last2, -f10, 99.9F, -f10)
+                        .addVertex(last2, f10, 99.9F, -f10)
+                        .addVertex(last2, f10, 99.9F, f10)
+                        .addVertex(last2, -f10, 99.9F, f10);
+                BufferUploader.drawWithShader(buffer.buildOrThrow());
+            }
+            ShaderPackCompat.renderSun(context.positionMatrix(), level.getTimeOfDay(partialTicks) * 360.0F, last2, sunMatrix -> {
+                RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 0.1F);
+                float radius = this.sunSize;
+                RenderSystem.setShaderTexture(0, Constant.Skybox.SUN_VENUS);
+                RenderSystem.setShader(GameRenderer::getPositionTexShader);
+                BufferBuilder sunBuffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+                sunBuffer.addVertex(sunMatrix, -radius, 100.0F, -radius).setUv(0.0F, 0.0F)
+                        .addVertex(sunMatrix, radius, 100.0F, -radius).setUv(1.0F, 0.0F)
+                        .addVertex(sunMatrix, radius, 100.0F, radius).setUv(1.0F, 1.0F)
+                        .addVertex(sunMatrix, -radius, 100.0F, radius).setUv(0.0F, 1.0F);
+                BufferUploader.drawWithShader(sunBuffer.buildOrThrow());
+            });
+
+            RenderSystem.setShader(GameRenderer::getPositionTexShader);
+            // Render earth
+            f10 = 0.5F;
+            poseStack.scale(0.6F, 0.6F, 0.6F);
+            poseStack.mulPose(Axis.ZP.rotationDegrees(40.0F));
+            poseStack.mulPose(Axis.XP.rotationDegrees(200F));
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1F);
+            RenderSystem.setShaderTexture(0, Constant.CelestialBody.EARTH);
+            buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+            buffer.addVertex(last2, -f10, -100.0F, f10).setUv(0, 1.0F)
+                    .addVertex(last2, f10, -100.0F, f10).setUv(1.0F, 1.0F)
+                    .addVertex(last2, f10, -100.0F, -f10).setUv(1.0F, 0)
+                    .addVertex(last2, -f10, -100.0F, -f10).setUv(0, 0);
             BufferUploader.drawWithShader(buffer.buildOrThrow());
         }
-        ShaderPackCompat.renderSun(context.positionMatrix(), level.getTimeOfDay(partialTicks) * 360.0F, last2, sunMatrix -> {
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 0.1F);
-            float radius = this.sunSize;
-            RenderSystem.setShaderTexture(0, Constant.Skybox.SUN_VENUS);
-            RenderSystem.setShader(GameRenderer::getPositionTexShader);
-            BufferBuilder sunBuffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-            sunBuffer.addVertex(sunMatrix, -radius, 100.0F, -radius).setUv(0.0F, 0.0F)
-                    .addVertex(sunMatrix, radius, 100.0F, -radius).setUv(1.0F, 0.0F)
-                    .addVertex(sunMatrix, radius, 100.0F, radius).setUv(1.0F, 1.0F)
-                    .addVertex(sunMatrix, -radius, 100.0F, radius).setUv(0.0F, 1.0F);
-            BufferUploader.drawWithShader(sunBuffer.buildOrThrow());
-        });
-
-        // Render earth
-        f10 = 0.5F;
-        poseStack.scale(0.6F, 0.6F, 0.6F);
-        poseStack.mulPose(Axis.ZP.rotationDegrees(40.0F));
-        poseStack.mulPose(Axis.XP.rotationDegrees(200F));
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1F);
-        RenderSystem.setShaderTexture(0, Constant.CelestialBody.EARTH);
-        buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-        buffer.addVertex(last2, -f10, -100.0F, f10).setUv(0, 1.0F)
-                .addVertex(last2, f10, -100.0F, f10).setUv(1.0F, 1.0F)
-                .addVertex(last2, f10, -100.0F, -f10).setUv(1.0F, 0)
-                .addVertex(last2, -f10, -100.0F, -f10).setUv(0, 0);
-        BufferUploader.drawWithShader(buffer.buildOrThrow());
 
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.disableBlend();

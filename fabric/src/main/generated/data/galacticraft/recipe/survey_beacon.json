@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "F": {
+      "item": "galacticraft:frequency_module"
+    },
+    "L": {
+      "item": "galacticraft:sensor_lens"
+    },
+    "R": {
+      "item": "galacticraft:steel_pole"
+    },
+    "S": {
+      "item": "galacticraft:compressed_steel"
+    },
+    "W": {
+      "item": "galacticraft:basic_wafer"
+    }
+  },
+  "pattern": [
+    " L ",
+    "WFW",
+    "SRS"
+  ],
+  "result": {
+    "count": 1,
+    "id": "galacticraft:survey_beacon"
+  }
+}

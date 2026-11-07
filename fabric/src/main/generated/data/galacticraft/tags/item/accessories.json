@@ -1,5 +1,7 @@
 {
   "values": [
+    "galacticraft:pressure_controller_mk1",
+    "galacticraft:pressure_controller_mk2",
     "#galacticraft:frequency_modules",
     "#galacticraft:parachutes",
     "#galacticraft:shield_controllers"

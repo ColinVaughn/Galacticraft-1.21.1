@@ -1,0 +1,35 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"animation.atmospheric_collector.idle": {
+			"loop": true,
+			"animation_length": 1.2,
+			"bones": {
+				"fan": {
+					"rotation": {
+						"0.0": [
+							0,
+							0,
+							0
+						],
+						"0.4167": [
+							0,
+							-120,
+							0
+						],
+						"0.7917": [
+							0,
+							-240,
+							0
+						],
+						"1.2083": [
+							0,
+							-360,
+							0
+						]
+					}
+				}
+			}
+		}
+	}
+}

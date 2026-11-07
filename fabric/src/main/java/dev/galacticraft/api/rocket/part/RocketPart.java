@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,8 +30,11 @@ import dev.galacticraft.api.rocket.recipe.RocketPartRecipe;
 import dev.galacticraft.api.rocket.travelpredicate.ConfiguredTravelPredicate;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Optional;
 
 public sealed interface RocketPart<C extends RocketPartConfig, T extends RocketPartType<C>> permits RocketBody, RocketBooster, RocketEngine, RocketCone, RocketFin, RocketUpgrade {
     static <C extends RocketPartConfig, T extends RocketPartType<? extends C>, P extends RocketPart<? extends C, ? extends T>> Component getName(ResourceKey<? extends P> key) {
@@ -39,6 +43,14 @@ public sealed interface RocketPart<C extends RocketPartConfig, T extends RocketP
 
     static <C extends RocketPartConfig, T extends RocketPartType<? extends C>, P extends RocketPart<? extends C, ? extends T>> @NotNull String getKey(ResourceKey<? extends P> key) {
         return key.registry().getPath() + '.' + key.location().getNamespace() + '.' + key.location().getPath();
+    }
+
+    /**
+     * The research id a player must hold to build the part {@code key} in the rocket workbench, for
+     * example {@code galacticraft:rocket_cone/tier_2}. This is persisted in player data.
+     */
+    static @NotNull ResourceLocation researchId(@NotNull ResourceKey<?> key) {
+        return key.location().withPath(key.registry().getPath() + "/" + key.location().getPath());
     }
 
     @NotNull C config();
@@ -61,5 +73,17 @@ public sealed interface RocketPart<C extends RocketPartConfig, T extends RocketP
 
     default @NotNull ConfiguredTravelPredicate<?, ?> travelPredicate() {
         return this.type().travelPredicate(this.config());
+    }
+
+    default @NotNull RocketPartLayout layout() {
+        return this.type().layout(this.config());
+    }
+
+    default boolean isPaintable() {
+        return this.type().isPaintable(this.config());
+    }
+
+    default @NotNull Optional<ResourceLocation> model() {
+        return this.type().model(this.config());
     }
 }

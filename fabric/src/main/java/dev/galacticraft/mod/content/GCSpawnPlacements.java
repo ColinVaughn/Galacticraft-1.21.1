@@ -34,32 +34,20 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import java.util.List;
 
 /**
- * Where and when Galacticraft's own mobs are allowed to spawn.
- *
- * A mob with no entry here is not held to looser rules, it is held to no rules:
- * {@link SpawnPlacements#checkSpawnRules} answers yes for any type it has never been told about, and
- * {@link SpawnPlacements#getPlacementType} falls back to
- * {@link SpawnPlacementTypes#NO_RESTRICTIONS}. An unregistered monster therefore ignores the light
- * level entirely and does not need ground to stand on - which is how the evolved mobs came to spawn
- * inside lit, sealed bases.
- *
- * The table lives here, in code both loaders compile, because each loader has to install it a
- * different way: Fabric calls {@code SpawnPlacements.register} directly (widened for access) while
- * NeoForge has to go through {@code RegisterSpawnPlacementsEvent}. Keeping the entries in one place
- * is what stops the two lists from drifting apart, which is what happened before - NeoForge had them
- * and Fabric did not.
+ * Shared spawning rules installed by each loader. Unregistered types bypass spawn predicates,
+ * including light checks, so every evolved mob needs an entry. Fabric registers directly;
+ * NeoForge uses {@code RegisterSpawnPlacementsEvent}.
  */
 public final class GCSpawnPlacements {
     private GCSpawnPlacements() {}
 
     /**
-     * One mob's spawning rules, in the shape {@code SpawnPlacements.register} takes.
+     * Spawning rules for one mob type.
      *
      * @param type the mob these rules apply to
-     * @param placement where in the world the mob may be put down
-     * @param heightmap the surface the spawner picks candidate positions from
-     * @param predicate the test a candidate position has to pass
-     * @param <T> the mob type
+     * @param placement where the mob may spawn
+     * @param heightmap the surface used to choose candidate positions
+     * @param predicate the spawn condition
      */
     public record Placement<T extends Mob>(
             EntityType<T> type,
@@ -69,14 +57,13 @@ public final class GCSpawnPlacements {
     ) {}
 
     /**
-     * The evolved mobs are the vanilla mobs in spacesuits, and Galacticraft Legacy let them keep the
-     * vanilla spawning rules - dark, on solid ground, not on peaceful. {@link Monster#checkMonsterSpawnRules}
-     * is that rule, and it reads the light limits off the dimension type, so each planet's
-     * {@code monster_spawn_light_level} governs its own surface.
+     * Evolved mobs use vanilla hostile spawn checks; burrowers and rovers supply custom predicates.
      */
     private static final List<Placement<?>> PLACEMENTS = List.of(
             new Placement<>(GCEntityTypes.LUNAR_BURROWER, SpawnPlacementTypes.ON_GROUND,
                     Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, dev.galacticraft.mod.content.entity.LunarBurrowerEntity::checkSpawnRules),
+            new Placement<>(GCEntityTypes.CURIOSITY_ROVER, SpawnPlacementTypes.ON_GROUND,
+                    Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, dev.galacticraft.mod.content.entity.mars.CuriosityRoverEntity::checkSpawnRules),
             monster(GCEntityTypes.EVOLVED_ZOMBIE),
             monster(GCEntityTypes.EVOLVED_CREEPER),
             monster(GCEntityTypes.EVOLVED_SKELETON),
@@ -85,7 +72,7 @@ public final class GCSpawnPlacements {
             monster(GCEntityTypes.EVOLVED_WITCH)
     );
 
-    /** {@return every mob that has spawning rules of its own, for a loader to install} */
+    /** Returns the spawning rules each loader must install. */
     public static List<Placement<?>> all() {
         return PLACEMENTS;
     }

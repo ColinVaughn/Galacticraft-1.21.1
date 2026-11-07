@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +23,7 @@
 
 package dev.galacticraft.impl.universe.celestialbody.type;
 
+import dev.galacticraft.api.universe.celestialbody.SkyConfig;
 import dev.galacticraft.api.gas.GasComposition;
 import dev.galacticraft.api.satellite.SatelliteRecipe;
 import dev.galacticraft.api.universe.celestialbody.CelestialBody;
@@ -123,6 +125,11 @@ public class PlanetType extends CelestialBodyType<PlanetConfig> implements Tiere
     @Override
     public long dayLength(PlanetConfig config) {
         return config.dayLength();
+    }
+
+    @Override
+    public Optional<SkyConfig> sky(PlanetConfig config) {
+        return config.sky();
     }
 
     @Override

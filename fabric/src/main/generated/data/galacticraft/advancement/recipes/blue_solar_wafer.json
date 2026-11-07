@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "galacticraft:blue_solar_wafer"
+        "recipe": "galacticraft:fabrication/blue_solar_wafer"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -15,7 +15,7 @@
   ],
   "rewards": {
     "recipes": [
-      "galacticraft:blue_solar_wafer"
+      "galacticraft:fabrication/blue_solar_wafer"
     ]
   }
 }

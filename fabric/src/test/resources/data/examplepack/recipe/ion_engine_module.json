@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "E": {
+      "item": "galacticraft:rocket_engine"
+    },
+    "R": {
+      "item": "minecraft:redstone_block"
+    }
+  },
+  "pattern": [
+    "R",
+    "E"
+  ],
+  "result": {
+    "id": "galacticraft:rocket_module",
+    "count": 1,
+    "components": {
+      "galacticraft:rocket_data": {
+        "engine": "examplepack:ion"
+      }
+    }
+  }
+}

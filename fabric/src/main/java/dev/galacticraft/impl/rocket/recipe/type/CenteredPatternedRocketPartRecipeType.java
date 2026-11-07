@@ -77,6 +77,7 @@ public class CenteredPatternedRocketPartRecipeType extends RocketPartRecipeType<
 
     @Override
     public boolean matches(RecipeInput input, Level level, CenteredPatternedRocketPartRecipeConfig config) {
+        if (input.size() != slots(config)) return false;
         List<RocketPartRecipeSlot> slots = config.slots();
         for (int i = 0, n = slots.size(); i < n; i++) {
             ItemStack stack = input.getItem(i);

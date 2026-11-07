@@ -32,6 +32,7 @@ import dev.galacticraft.mod.client.util.Graphics;
 import dev.galacticraft.mod.content.GCEntityTypes;
 import dev.galacticraft.mod.content.entity.vehicle.RocketEntity;
 import dev.galacticraft.mod.machine.storage.VariableSizedContainer;
+import dev.galacticraft.mod.machine.workbench.ResearchSources;
 import dev.galacticraft.mod.machine.workbench.WorkbenchPageDisplay;
 import dev.galacticraft.mod.machine.workbench.WorkbenchPages;
 import dev.galacticraft.mod.screen.RocketWorkbenchMenu;
@@ -46,7 +47,9 @@ import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
@@ -56,7 +59,9 @@ import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import static dev.galacticraft.mod.Constant.RocketWorkbench.*;
 
@@ -66,6 +71,8 @@ import static dev.galacticraft.mod.Constant.RocketWorkbench.*;
  * neighbouring page, exactly as legacy Galacticraft's schematic GUIs did.
  */
 public class RocketWorkbenchScreen extends AbstractContainerScreen<RocketWorkbenchMenu> implements VariableSizedContainer.Listener, net.minecraft.world.ContainerListener {
+    private static final int MISSING_RESEARCH_TOOLTIP_WIDTH = 200;
+    private static final Component BULLET = Component.literal(" - ").withStyle(ChatFormatting.GRAY);
     private static final Component MARKER = Component.literal("!");
 
     private final WorkbenchPageDisplay display;
@@ -172,16 +179,21 @@ public class RocketWorkbenchScreen extends AbstractContainerScreen<RocketWorkben
     @Override
     protected void renderBg(GuiGraphics guiGraphics, float delta, int mouseX, int mouseY) {
         this.inventoryLabelY = this.imageHeight - 96;
+        boolean modulePage = !this.display.rocketPreview() && this.display.slotFrames();
+        if (modulePage) {
+            guiGraphics.fill(this.leftPos, this.topPos, this.leftPos + this.imageWidth, this.topPos + this.imageHeight, 0xFF373737);
+            guiGraphics.fill(this.leftPos + 2, this.topPos + 2, this.leftPos + this.imageWidth - 2, this.topPos + this.imageHeight - 2, 0xFFC6C6C6);
+        }
 
         try (Graphics graphics = Graphics.managed(guiGraphics, this.font)) {
             try (Graphics.Texture texture = graphics.texture(this.display.texture(), 256, 256)) {
-                texture.blit(this.leftPos, this.topPos, 0, this.display.textureV(), this.display.width(), this.display.height());
+                if (!modulePage) texture.blit(this.leftPos, this.topPos, 0, this.display.textureV(), this.display.width(), this.display.height());
 
                 // Only the first chest slot has a frame baked into this port's rocket art, so draw
                 // all of them ourselves. The legacy page textures already have their wells painted.
                 if (this.display.slotFrames()) {
                     for (Slot slot : this.menu.slots) {
-                        if (slot.container instanceof VariableSizedContainer || slot.container == this.menu.workbench.chests || slot.container == this.menu.workbench.refitInput) {
+                        if (modulePage || slot.container instanceof VariableSizedContainer || slot.container == this.menu.workbench.chests || slot.container == this.menu.workbench.refitInput) {
                             texture.blit(this.leftPos + slot.x - 1, this.topPos + slot.y - 1, SLOT_U, SLOT_V, SLOT_WIDTH, SLOT_HEIGHT);
                         }
                     }
@@ -262,8 +274,7 @@ public class RocketWorkbenchScreen extends AbstractContainerScreen<RocketWorkben
     }
 
     /**
-     * Marks the empty result slot when the assembly is complete but the player has not researched
-     * a part. Without it the slot just stays blank and looks like the parts are wrong.
+     * Marks a complete assembly whose result is blocked by missing research.
      */
     private void renderMissingResearchMarker(GuiGraphics graphics) {
         if (this.menu.getMissingResearch().isEmpty() || this.display.resultSlot() == null) {
@@ -282,20 +293,43 @@ public class RocketWorkbenchScreen extends AbstractContainerScreen<RocketWorkben
             return;
         }
 
-        List<Component> lines = new ArrayList<>(missing.size() + 2);
-        lines.add(Component.translatable(Translations.RocketWorkbench.MISSING_RESEARCH).withStyle(ChatFormatting.RED));
+        int width = Math.min(MISSING_RESEARCH_TOOLTIP_WIDTH, Math.max(this.width - mouseX, mouseX) - 24);
+        List<FormattedCharSequence> lines = new ArrayList<>();
+        lines.addAll(this.font.split(Component.translatable(Translations.RocketWorkbench.MISSING_RESEARCH).withStyle(ChatFormatting.RED), width));
         for (Component part : missing) {
-            lines.add(Component.literal(" ").append(part).withStyle(ChatFormatting.GRAY));
+            this.addIndented(lines, Component.literal(" "), part.copy().withStyle(ChatFormatting.GRAY), width);
         }
-        lines.add(Component.translatable(Translations.RocketWorkbench.MISSING_RESEARCH_HINT).withStyle(ChatFormatting.DARK_GRAY));
 
-        graphics.renderComponentTooltip(this.font, lines, mouseX, mouseY);
+        // List each research source once, since multiple parts can share an unlock.
+        Set<Component> sources = new LinkedHashSet<>();
+        boolean unknown = false;
+        for (ResourceLocation research : this.menu.getMissingResearchIds()) {
+            Component source = ResearchSources.source(research);
+            if (source != null) sources.add(source);
+            else unknown = true;
+        }
+        lines.addAll(this.font.split(Component.translatable(Translations.RocketWorkbench.MISSING_RESEARCH_HINT).withStyle(ChatFormatting.YELLOW), width));
+        for (Component source : sources) {
+            this.addIndented(lines, BULLET, source.copy().withStyle(ChatFormatting.GRAY), width);
+        }
+        if (unknown) {
+            this.addIndented(lines, BULLET, Component.translatable(Translations.RocketWorkbench.MISSING_RESEARCH_UNKNOWN).withStyle(ChatFormatting.DARK_GRAY), width);
+        }
+        graphics.renderTooltip(this.font, lines, mouseX, mouseY);
+    }
+
+    /** Wraps {@code text} behind {@code prefix}, indenting continuation lines so each entry reads as one item. */
+    private void addIndented(List<FormattedCharSequence> lines, Component prefix, Component text, int width) {
+        int indent = this.font.width(prefix);
+        List<FormattedCharSequence> wrapped = this.font.split(text, Math.max(20, width - indent));
+        for (int i = 0; i < wrapped.size(); i++) {
+            FormattedCharSequence lead = i == 0 ? prefix.getVisualOrderText() : FormattedCharSequence.forward(" ".repeat(Math.max(1, indent / this.font.width(" "))), Style.EMPTY);
+            lines.add(FormattedCharSequence.composite(lead, wrapped.get(i)));
+        }
     }
 
     /**
-     * Legacy annotated the unlock well with a four-line explanation. This says the same thing, and
-     * also explains a schematic the player has already spent - otherwise the Unlock button simply
-     * does nothing and looks broken.
+     * Explains the unlock slot and schematics whose research the player already holds.
      */
     private void renderSchematicSlotHint(GuiGraphics graphics, int mouseX, int mouseY) {
         if (!this.menu.page().id().equals(WorkbenchPages.ADD_SCHEMATIC_ID)

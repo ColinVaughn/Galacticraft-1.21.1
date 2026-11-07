@@ -23,6 +23,7 @@
 package dev.galacticraft.mod.api.pipe.impl;
 
 import dev.galacticraft.mod.Constant;
+import dev.galacticraft.mod.api.pipe.PipeFluidConsumer;
 import dev.galacticraft.mod.api.block.FluidPipeBlock;
 import dev.galacticraft.mod.api.pipe.FluidPipe;
 import dev.galacticraft.mod.api.pipe.PipeNetwork;
@@ -165,6 +166,7 @@ public final class PipeNetworkImpl implements PipeNetwork {
     }
 
     private static boolean isFluidConsumer(@Nullable BlockEntity target, FluidStack resource) {
+        if (target instanceof PipeFluidConsumer consumer) return consumer.consumesFromPipes(resource.getFluid());
         if (!(target instanceof MachineBlockEntity machine)) return false;
         for (FluidResourceSlot slot : machine.fluidStorage()) {
             if (slot.transferMode().externalInsertion() && !slot.transferMode().externalExtraction()

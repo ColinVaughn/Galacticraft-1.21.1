@@ -65,5 +65,7 @@ public final class GCNeoItemRenderer extends BlockEntityWithoutLevelRenderer {
                 GCBlocks.PARACHEST.defaultBlockState().setValue(ParachestBlock.COLOR,
                         stack.getOrDefault(DataComponents.BASE_COLOR, DyeColor.WHITE)), poses, buffers, light, overlay);
         else if (stack.getItem() instanceof FlagItem) flag.render(stack, context, poses, buffers, light, overlay);
+        else if (stack.getItem() instanceof net.minecraft.world.item.BlockItem item && dev.galacticraft.mod.content.block.jupiter.JupiterBlocks.MACHINES.contains(item.getBlock()))
+            dev.galacticraft.mod.client.render.block.entity.JupiterMachineRenderer.renderItem(stack, context, poses, buffers, light, overlay);
     }
 }

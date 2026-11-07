@@ -1,0 +1,31 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "#": {
+      "item": "galacticraft:canvas"
+    },
+    "|": {
+      "item": "galacticraft:steel_pole"
+    }
+  },
+  "pattern": [
+    "|##",
+    "|##",
+    "|  "
+  ],
+  "result": {
+    "components": {
+      "galacticraft:team_flag": {
+        "id": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "count": 1,
+    "id": "galacticraft:white_flag"
+  }
+}

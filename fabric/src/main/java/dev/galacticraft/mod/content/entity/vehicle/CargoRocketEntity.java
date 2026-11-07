@@ -296,10 +296,7 @@ public class CargoRocketEntity extends GCVehicle
         }
 
         if (this.flightState == FlightState.RETURNING) {
-            String reason = this.lastFailure.isEmpty()
-                    ? "ui.galacticraft.cargo_rocket.destination_blocked"
-                    : this.lastFailure;
-            this.returnToOrigin(level, reason);
+            this.completeFlight(level);
             return;
         }
         if (this.flightState != FlightState.ASCENDING) return;
@@ -315,6 +312,16 @@ public class CargoRocketEntity extends GCVehicle
 
         int baseY = this.originPadPos != null ? this.originPadPos.getY() : Mth.floor(this.getY());
         if (this.getY() >= baseY + TRAVEL_HEIGHT || this.launchTicks >= MAX_LAUNCH_TICKS) {
+            this.completeFlight(level);
+        }
+    }
+
+    private void completeFlight(ServerLevel level) {
+        if (this.isRemoved() || this.level() != level) return;
+        if (this.flightState == FlightState.RETURNING) {
+            this.returnToOrigin(level, this.lastFailure.isEmpty()
+                    ? "ui.galacticraft.cargo_rocket.destination_blocked" : this.lastFailure);
+        } else if (this.flightState == FlightState.ASCENDING) {
             this.travelToDestination(level);
         }
     }

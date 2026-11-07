@@ -50,7 +50,7 @@ import dev.galacticraft.mod.client.render.dimension.VenusWeatherRenderer;
 import dev.galacticraft.mod.client.sounds.GCSoundManager;
 import dev.galacticraft.mod.client.sounds.RocketSound;
 import dev.galacticraft.mod.content.entity.vehicle.RocketEntity;
-import dev.galacticraft.mod.events.RocketEvents;
+import dev.galacticraft.api.event.RocketEvents;
 import dev.galacticraft.api.rocket.LaunchStage;
 import dev.galacticraft.machinelib.client.api.event.MachineStatusEvents;
 import dev.galacticraft.mod.client.model.GCModelLoader;
@@ -68,6 +68,8 @@ import dev.galacticraft.mod.client.render.entity.feature.OxygenTanksRenderLayer;
 import dev.galacticraft.mod.client.render.entity.feature.ParrotOxygenGearRenderLayer;
 import dev.galacticraft.mod.client.render.entity.feature.PetOxygenMaskRenderLayer;
 import dev.galacticraft.mod.client.render.entity.feature.PetOxygenTanksRenderLayer;
+import dev.galacticraft.mod.client.render.entity.feature.spacegear.FittedSpaceGearLayer;
+import dev.galacticraft.mod.client.render.entity.feature.spacegear.SpaceGearRenderState;
 import dev.galacticraft.mod.client.render.entity.model.GCEntityModelLayer;
 import dev.galacticraft.mod.client.render.entity.rocket.RocketEntityRenderer;
 import dev.galacticraft.mod.client.render.rocket.GalacticraftRocketPartRenderers;
@@ -134,10 +136,19 @@ import dev.galacticraft.neoforge.client.GCNeoBlockOutlineRenderer;
 import dev.galacticraft.neoforge.client.GCNeoDimensionEffects;
 import dev.galacticraft.neoforge.client.model.GCNeoDynamicModels;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.ModList;
+import dev.galacticraft.mod.config.ConfigImpl;
 
 /** Native NeoForge client registrations replacing Fabric client entrypoints. */
 public final class GCNeoForgeClient {
-    public static void init(IEventBus modBus) {
+    public static void init(IEventBus modBus, ModContainer container) {
+        // NeoForge counterpart of ModMenuApiImpl: the "Config" button in the Mods list.
+        if (ModList.get().isLoaded("cloth_config")) {
+            container.registerExtensionPoint(IConfigScreenFactory.class,
+                    (mod, parent) -> ConfigImpl.ConfigScreen.INSTANCE.create(parent));
+        }
         GCApiClientPacketReceivers.register();
         GCClientPacketReceiver.register();
         GCModelLoader.registerModelType(UnbakedObjModel.TYPE);
@@ -145,6 +156,10 @@ public final class GCNeoForgeClient {
         modBus.addListener(GCNeoForgeClient::registerScreens);
         modBus.addListener(GCNeoForgeClient::registerRenderers);
         modBus.addListener(GCNeoForgeClient::addRenderLayers);
+        if (ModList.get().isLoaded("geckolib")) {
+            // Before any renderer is built: GeckoLib collects layers as each one is constructed.
+            dev.galacticraft.neoforge.compat.GeckoLibNeoForgeCompat.register();
+        }
         modBus.addListener(GCNeoForgeClient::registerLayers);
         modBus.addListener(GCNeoForgeClient::registerParticles);
         modBus.addListener(GCNeoForgeFluidTypes::registerClientExtensions);
@@ -161,6 +176,7 @@ public final class GCNeoForgeClient {
         NeoForge.EVENT_BUS.addListener(GCNeoForgeClient::onClientTick);
         NeoForge.EVENT_BUS.addListener(GCNeoForgeClient::onRenderGui);
         NeoForge.EVENT_BUS.addListener(GCNeoForgeClient::onLogin);
+        NeoForge.EVENT_BUS.addListener(GCNeoForgeClient::onLogout);
         NeoForge.EVENT_BUS.addListener(FootprintRenderer::renderFootprints);
         NeoForge.EVENT_BUS.addListener(MeteorSkyRenderer::renderStreaks);
         NeoForge.EVENT_BUS.addListener(GCNeoBlockOutlineRenderer::render);
@@ -181,7 +197,8 @@ public final class GCNeoForgeClient {
         };
         event.registerItem(extension, GCItems.ROCKET, GCItems.ASTRO_MINER, GCItems.CARGO_ROCKET, GCItems.BUGGY, GCBlocks.PARACHEST.asItem());
         event.registerItem(extension, GCBlocks.SHORT_RANGE_TELEPAD.asItem());
-        event.registerItem(extension, GCItems.ROCKET_MODULES.toArray(net.minecraft.world.item.Item[]::new));
+        event.registerItem(extension, dev.galacticraft.mod.content.block.jupiter.JupiterBlocks.MACHINES.stream().map(net.minecraft.world.level.block.Block::asItem).toArray(net.minecraft.world.item.Item[]::new));
+        event.registerItem(extension, dev.galacticraft.mod.content.item.RocketModuleItem.all().toArray(net.minecraft.world.item.Item[]::new));
         event.registerItem(extension, GCItems.FLAGS.colorMap().values().toArray(net.minecraft.world.item.Item[]::new));
     }
 
@@ -202,15 +219,32 @@ public final class GCNeoForgeClient {
         cat.addLayer(new PetOxygenTanksRenderLayer(cat));
         LivingEntityRenderer parrot = (LivingEntityRenderer) event.getRenderer(EntityType.PARROT);
         parrot.addLayer(new ParrotOxygenGearRenderLayer(parrot));
+
+        // Fit gear for space-evolved mobs without dedicated gear layers.
+        // Register after pet layers so those renderers already count as equipped.
+        for (EntityType<?> type : event.getEntityTypes()) {
+            if (event.getRenderer(type) instanceof LivingEntityRenderer living && !SpaceGearRenderState.hasHandTunedGear(living)) {
+                living.addLayer(new FittedSpaceGearLayer(living));
+            }
+        }
     }
 
     private static void registerDimensionEffects(RegisterDimensionSpecialEffectsEvent event) {
+        event.register(dev.galacticraft.mod.Constant.id("solar_system"), new GCNeoDimensionEffects(MoonDimensionEffects.INSTANCE,
+                dev.galacticraft.mod.client.render.dimension.SolarSystemSkyRenderer.INSTANCE::render, null));
         event.register(dev.galacticraft.mod.Constant.id("moon"), new GCNeoDimensionEffects(MoonDimensionEffects.INSTANCE, MoonSkyRenderer.INSTANCE::render, null));
         event.register(dev.galacticraft.mod.Constant.id("venus"), new GCNeoDimensionEffects(VenusDimensionEffects.INSTANCE, VenusSkyRenderer.INSTANCE::render, VenusWeatherRenderer.INSTANCE::render));
         event.register(dev.galacticraft.mod.Constant.id("mars"), new GCNeoDimensionEffects(MarsDimensionEffects.INSTANCE, MarsSkyRenderer.INSTANCE::render, null));
         event.register(dev.galacticraft.mod.Constant.id("mercury"), new GCNeoDimensionEffects(MercuryDimensionEffects.INSTANCE, MercurySkyRenderer.INSTANCE::render, null));
+        event.register(dev.galacticraft.mod.Constant.id("jupiter"), new GCNeoDimensionEffects(
+                dev.galacticraft.mod.client.render.dimension.JupiterDimensionEffects.INSTANCE,
+                dev.galacticraft.mod.client.render.dimension.ConfigurableSkyRenderer.INSTANCE::render, null));
         event.register(dev.galacticraft.mod.Constant.id("asteroid"), new GCNeoDimensionEffects(AsteroidDimensionEffects.INSTANCE, AsteroidSkyRenderer.INSTANCE::render, null));
         event.register(dev.galacticraft.mod.Constant.id("satellite"), new GCNeoDimensionEffects(AsteroidDimensionEffects.INSTANCE, SatelliteSkyRenderer.INSTANCE::render, null));
+        // Addon dimensions opt into a configurable space sky with "effects": "galacticraft:space".
+        event.register(dev.galacticraft.mod.client.render.dimension.SpaceDimensionEffects.ID, new GCNeoDimensionEffects(
+                dev.galacticraft.mod.client.render.dimension.SpaceDimensionEffects.INSTANCE,
+                dev.galacticraft.mod.client.render.dimension.ConfigurableSkyRenderer.INSTANCE::render, null));
     }
 
     private static void clientSetup(FMLClientSetupEvent event) {
@@ -221,6 +255,7 @@ public final class GCNeoForgeClient {
             ItemBlockRenderTypes.setRenderLayer(GCBlocks.HEAVY_WIRE_WALKWAY, RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(GCBlocks.FLUID_PIPE_WALKWAY, RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(GCBlocks.IRON_GRATING, RenderType.cutout());
+        for (var block : java.util.List.of(dev.galacticraft.mod.content.block.jupiter.JupiterBlocks.PRESSURE_GLASS, dev.galacticraft.mod.content.block.jupiter.JupiterBlocks.AEROSTAT_GRATING, dev.galacticraft.mod.content.block.jupiter.JupiterBlocks.HYDROSULFIDE_CRYSTAL_CLUSTER, dev.galacticraft.mod.content.block.jupiter.JupiterBlocks.CHARGED_CONDENSATE_CLUSTER)) ItemBlockRenderTypes.setRenderLayer(block, RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(GCBlocks.GLOWSTONE_TORCH, RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(GCBlocks.GLOWSTONE_WALL_TORCH, RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(GCBlocks.UNLIT_TORCH, RenderType.cutout());
@@ -294,6 +329,7 @@ public final class GCNeoForgeClient {
             event.registerShader(new ShaderInstance(event.getResourceProvider(), dev.galacticraft.mod.Constant.id("rendertype_bubble"), com.mojang.blaze3d.vertex.DefaultVertexFormat.NEW_ENTITY), GCRenderTypes::setBubbleShader);
             event.registerShader(new ShaderInstance(event.getResourceProvider(), dev.galacticraft.mod.Constant.id("space_star"), com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_TEX_COLOR), GCRenderTypes::setSpaceStarShader);
             event.registerShader(new ShaderInstance(event.getResourceProvider(), dev.galacticraft.mod.Constant.id("space_galaxy"), com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION), GCRenderTypes::setSpaceGalaxyShader);
+            event.registerShader(new ShaderInstance(event.getResourceProvider(), dev.galacticraft.mod.Constant.id("space_planet"), com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_TEX_COLOR), GCRenderTypes::setSpacePlanetShader);
         } catch (java.io.IOException exception) {
             throw new IllegalStateException("Failed to load Galacticraft core shaders", exception);
         }
@@ -302,6 +338,11 @@ public final class GCNeoForgeClient {
     private static void onLogin(net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingIn event) {
         ClientCapePrefs prefs = ClientCapePrefs.load();
         CapeClientNet.sendSelectionIfOnline(prefs.mode, prefs.mode == CapeMode.GC ? prefs.gcCapeId : null);
+        dev.galacticraft.mod.client.spacerace.TeamFlagClient.onJoin();
+    }
+
+    private static void onLogout(net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) {
+        dev.galacticraft.mod.client.spacerace.TeamFlagClient.onLeave();
     }
 
     private static void registerKeyMappings(RegisterKeyMappingsEvent event) {
@@ -329,6 +370,7 @@ public final class GCNeoForgeClient {
 
     private static void onRenderGui(RenderGuiEvent.Post event) {
         OxygenOverlay.onHudRender(event.getGuiGraphics(), event.getPartialTick());
+        dev.galacticraft.mod.client.gui.overlay.JupiterPressureOverlay.onHudRender(event.getGuiGraphics(), event.getPartialTick());
         DustStormOverlay.onHudRender(event.getGuiGraphics(), event.getPartialTick());
         SolarFlareOverlay.onHudRender(event.getGuiGraphics(), event.getPartialTick());
         SensorGlassesOverlay.onHudRender(event.getGuiGraphics(), event.getPartialTick());
@@ -342,7 +384,7 @@ public final class GCNeoForgeClient {
         if (!(rocket instanceof RocketEntity entity)) return;
         LaunchStage stage = entity.getLaunchStage();
         if (stage == LaunchStage.IGNITED || (stage == LaunchStage.LAUNCHED && oldStage == LaunchStage.IDLE)) {
-            Minecraft.getInstance().getSoundManager().play(new RocketSound(entity));
+            RocketSound.play(entity);
         }
     }
 
@@ -367,6 +409,14 @@ public final class GCNeoForgeClient {
         event.register(GCMenuTypes.ENERGY_STORAGE_MODULE, EnergyStorageModuleScreen::new);
         event.register(GCMenuTypes.ENERGY_STORAGE_CLUSTER, EnergyStorageClusterScreen::new);
         event.register(GCMenuTypes.OXYGEN_COLLECTOR, OxygenCollectorScreen::new);
+        event.register(GCMenuTypes.ATMOSPHERIC_COLLECTOR, dev.galacticraft.mod.client.gui.screen.ingame.jupiter.AtmosphericCollectorScreen::new);
+        event.register(GCMenuTypes.CONDENSATE_SEPARATOR, dev.galacticraft.mod.client.gui.screen.ingame.jupiter.CondensateSeparatorScreen::new);
+        event.register(GCMenuTypes.VEHICLE_DOCK, dev.galacticraft.mod.client.gui.screen.ingame.jupiter.VehicleDockScreen::new);
+        event.register(GCMenuTypes.SURVEY_BEACON, dev.galacticraft.mod.client.gui.screen.ingame.jupiter.SurveyBeaconScreen::new);
+        event.register(GCMenuTypes.STORM_CAPACITOR, dev.galacticraft.mod.client.gui.screen.ingame.jupiter.StormCapacitorScreen::new);
+        event.register(GCMenuTypes.LIGHTNING_GROUNDER, dev.galacticraft.mod.client.gui.screen.ingame.jupiter.LightningGrounderScreen::new);
+        event.register(GCMenuTypes.PRESSURE_STABILIZER, dev.galacticraft.mod.client.gui.screen.ingame.jupiter.PressureStabilizerScreen::new);
+        event.register(GCMenuTypes.STORMHEART_PEDESTAL, dev.galacticraft.mod.client.gui.screen.ingame.jupiter.StormheartPedestalScreen::new);
         event.register(GCMenuTypes.OXYGEN_COMPRESSOR, OxygenCompressorScreen::new);
         event.register(GCMenuTypes.FOOD_CANNER, FoodCannerScreen::new);
         event.register(GCMenuTypes.PLAYER_INV_GC, GCPlayerInventoryScreen::new);
@@ -418,7 +468,16 @@ public final class GCNeoForgeClient {
         event.registerEntityRenderer(GCEntityTypes.BUBBLE, BubbleEntityRenderer::new);
         event.registerEntityRenderer(GCEntityTypes.ROCKET, RocketEntityRenderer::new);
         event.registerEntityRenderer(GCEntityTypes.LANDER, LanderEntityRenderer::new);
+        event.registerEntityRenderer(GCEntityTypes.LANDING_BALLOONS, dev.galacticraft.mod.client.render.entity.AutomaticLanderRenderer::new);
+        event.registerEntityRenderer(GCEntityTypes.ENTRY_POD, dev.galacticraft.mod.client.render.entity.AutomaticLanderRenderer::new);
+        event.registerEntityRenderer(GCEntityTypes.VENUS_ENTRY_POD, dev.galacticraft.mod.client.render.entity.AutomaticLanderRenderer::new);
         event.registerEntityRenderer(GCEntityTypes.BUGGY, BuggyRenderer::new);
+        event.registerEntityRenderer(GCEntityTypes.CLOUD_DIVER, dev.galacticraft.mod.client.render.entity.CloudDiverRenderer::new);
+        event.registerEntityRenderer(GCEntityTypes.CLOUD_RAY, context -> new dev.galacticraft.mod.client.render.entity.JupiterCreatureRenderer<>(context, "cloud_ray", "idle", 1.0F, 0.0F, 0.8F));
+        event.registerEntityRenderer(GCEntityTypes.STATIC_JELLY, context -> new dev.galacticraft.mod.client.render.entity.JupiterCreatureRenderer<>(context, "static_jelly", "idle", 1.0F, 0.45F, 0.4F));
+        event.registerEntityRenderer(GCEntityTypes.SALVAGE_DRONE, context -> new dev.galacticraft.mod.client.render.entity.JupiterCreatureRenderer<>(context, "salvage_drone", "idle", 1.0F, 0.0F, 0.4F));
+        event.registerEntityRenderer(GCEntityTypes.CURIOSITY_ROVER, dev.galacticraft.mod.client.render.entity.CuriosityRoverRenderer::new);
+        event.registerEntityRenderer(GCEntityTypes.STORMHEART_LEVIATHAN, context -> new dev.galacticraft.mod.client.render.entity.JupiterCreatureRenderer<>(context, "stormheart_leviathan", "swim", 2.0F, 0.0F, 2.5F));
         event.registerEntityRenderer(GCEntityTypes.ASTRO_MINER, AstroMinerRenderer::new);
         event.registerEntityRenderer(GCEntityTypes.CARGO_ROCKET, CargoRocketRenderer::new);
         event.registerEntityRenderer(GCEntityTypes.PARACHEST, ParachestRenderer::new);
@@ -441,6 +500,11 @@ public final class GCNeoForgeClient {
         event.registerBlockEntityRenderer(GCBlockEntityTypes.ROCKET_WORKBENCH, RocketWorkbenchBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(GCBlockEntityTypes.ASTRO_MINER_BASE, AstroMinerBaseBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(GCBlockEntityTypes.RADAR, RadarBlockEntityRenderer::new);
+        for (var type : GCBlockEntityTypes.JUPITER_MACHINES) {
+            @SuppressWarnings("unchecked") var machine = (net.minecraft.world.level.block.entity.BlockEntityType<net.minecraft.world.level.block.entity.BlockEntity>) type;
+            if (type != GCBlockEntityTypes.VEHICLE_DOCK) event.registerBlockEntityRenderer(machine, dev.galacticraft.mod.client.render.block.entity.JupiterMachineRenderer::new);
+        }
+        event.registerBlockEntityRenderer(GCBlockEntityTypes.VEHICLE_DOCK, dev.galacticraft.mod.client.render.block.entity.VehicleDockRenderer::new);
         event.registerBlockEntityRenderer(GCBlockEntityTypes.CANNON, CannonBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(GCBlockEntityTypes.FLAG, FlagBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(GCBlockEntityTypes.TREASURE_CHEST, TreasureChestBlockEntityRenderer::new);
@@ -453,7 +517,6 @@ public final class GCNeoForgeClient {
         event.registerLayerDefinition(GCEntityModelLayer.OLI_GRUB, dev.galacticraft.mod.client.model.entity.OliGrubEntityModel::createBodyLayer);
         event.registerLayerDefinition(GCEntityModelLayer.GREY, dev.galacticraft.mod.client.model.entity.GreyEntityModel::createBodyLayer);
         event.registerLayerDefinition(GCEntityModelLayer.ARCH_GREY, dev.galacticraft.mod.client.model.entity.ArchGreyEntityModel::createBodyLayer);
-        event.registerLayerDefinition(GCEntityModelLayer.LANDER, dev.galacticraft.mod.client.model.entity.LanderModel::createBodyLayer);
         event.registerLayerDefinition(GCEntityModelLayer.PARACHEST, dev.galacticraft.mod.client.render.entity.model.ParachestModel::createParachuteLayer);
         event.registerLayerDefinition(GCEntityModelLayer.MOON_VILLAGER, dev.galacticraft.mod.client.render.entity.model.MoonVillagerModel::createBodyLayer);
         event.registerLayerDefinition(GCEntityModelLayer.SKELETON_BOSS, dev.galacticraft.mod.client.model.entity.EvolvedSkeletonBossModel::createBodyLayer);

@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "galacticraft:heavy_plating"
+        "recipe": "galacticraft:compressing/heavy_plating"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -26,7 +26,7 @@
   ],
   "rewards": {
     "recipes": [
-      "galacticraft:heavy_plating"
+      "galacticraft:compressing/heavy_plating"
     ]
   }
 }

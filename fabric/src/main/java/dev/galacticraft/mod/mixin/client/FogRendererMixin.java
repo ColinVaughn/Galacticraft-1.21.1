@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,10 +23,13 @@
 
 package dev.galacticraft.mod.mixin.client;
 
+import dev.galacticraft.api.universe.celestialbody.CelestialBodyTags;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.client.render.dimension.OverworldRenderer;
+import dev.galacticraft.mod.client.render.dimension.JupiterDimensionEffects;
+import dev.galacticraft.mod.world.dimension.GCDimensions;
 import dev.galacticraft.mod.content.entity.vehicle.RocketEntity;
 import dev.galacticraft.mod.tag.GCFluidTags;
 import net.minecraft.client.Camera;
@@ -88,8 +92,23 @@ public class FogRendererMixin {
         }
     }
 
+    /**
+     * Vanilla fades the fog to black near and below the world's floor. On Jupiter the depths glow instead, so the core
+     * colour is painted over the final fog and clear colour once the camera sinks into the heat.
+     */
+    @Inject(method = "setupColor", at = @At("TAIL"))
+    private static void gc$jupiterCoreGlow(Camera camera, float partialTicks, ClientLevel clientLevel, int renderDistanceChunks, float bossColorModifier, CallbackInfo ci) {
+        if (!clientLevel.dimension().equals(dev.galacticraft.mod.world.dimension.GCDimensions.JUPITER)) return;
+        if (camera.getPosition().y > JupiterDimensionEffects.CORE_TOP || camera.getFluidInCamera() != FogType.NONE) return;
+        Vec3 glow = JupiterDimensionEffects.INSTANCE.coreFog(clientLevel, partialTicks);
+        fogRed = (float) glow.x;
+        fogGreen = (float) glow.y;
+        fogBlue = (float) glow.z;
+        com.mojang.blaze3d.systems.RenderSystem.clearColor(fogRed, fogGreen, fogBlue, 0.0F);
+    }
+
     @ModifyArg(method = "setupFog", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;setShaderFogStart(F)V", remap = false), index = 0)
-    private static float gc$setShaderFogStart(float start, @Local FogType fogType) {
+    private static float gc$setShaderFogStart(float start, @Local FogType fogType, @Local(argsOnly = true) FogRenderer.FogMode fogMode) {
         Player player = Minecraft.getInstance().player;
         if (fogType != FogType.NONE) {
             if (player.isEyeInFluid(GCFluidTags.OIL)) {
@@ -109,11 +128,15 @@ public class FogRendererMixin {
                 }
             }
         }
+        if (fogType == FogType.NONE && player != null && CelestialBodyTags.is(player.level(), CelestialBodyTags.GAS_GIANT)
+                && !gc$coreSky(fogMode)) {
+            return Math.min(start, JupiterDimensionEffects.fogDistance(Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().y) * 0.25F);
+        }
         return start;
     }
 
     @ModifyArg(method = "setupFog", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;setShaderFogEnd(F)V", remap = false), index = 0)
-    private static float gc$setShaderFogEnd(float end, @Local FogType fogType) {
+    private static float gc$setShaderFogEnd(float end, @Local FogType fogType, @Local(argsOnly = true) FogRenderer.FogMode fogMode) {
         if (fogType != FogType.NONE) {
             Player player = Minecraft.getInstance().player;
             if (player.isEyeInFluid(GCFluidTags.OIL)) {
@@ -124,6 +147,20 @@ public class FogRendererMixin {
                 return 12.0F;
             }
         }
+        Player player = Minecraft.getInstance().player;
+        if (fogType == FogType.NONE && player != null && CelestialBodyTags.is(player.level(), CelestialBodyTags.GAS_GIANT)
+                && !gc$coreSky(fogMode)) {
+            return Math.min(end, JupiterDimensionEffects.fogDistance(Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().y));
+        }
         return end;
+    }
+
+    /**
+     * In Jupiter's core the sky pass keeps vanilla's sky fog, so the dimmer dome overhead shows through and blends into
+     * the glowing haze at the horizon: light visibly comes from below. The world itself keeps the close fog.
+     */
+    private static boolean gc$coreSky(FogRenderer.FogMode fogMode) {
+        return fogMode == FogRenderer.FogMode.FOG_SKY
+                && JupiterDimensionEffects.coreHeat(Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().y) > 0;
     }
 }

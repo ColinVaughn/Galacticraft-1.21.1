@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,12 +26,12 @@ package dev.galacticraft.impl.internal.mixin.gear;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import dev.galacticraft.api.accessor.GearInventoryProvider;
 import dev.galacticraft.api.accessor.LevelBodyAccessor;
-import dev.galacticraft.api.entity.attribute.GcApiEntityAttributes;
 import dev.galacticraft.impl.internal.gear.OxygenTankExtractor;
 import dev.galacticraft.api.item.Accessory;
 import dev.galacticraft.api.universe.celestialbody.CelestialBody;
 import dev.galacticraft.api.universe.celestialbody.SurfaceEnvironment;
 import dev.galacticraft.impl.internal.accessor.LivingEntityOxygenAccessor;
+import dev.galacticraft.impl.internal.accessor.SpaceEvolvedAccessor;
 import dev.galacticraft.impl.internal.fabric.GalacticraftAPI;
 import dev.galacticraft.impl.network.s2c.GearInvPayload;
 import dev.galacticraft.mod.Constant;
@@ -38,6 +39,7 @@ import dev.galacticraft.mod.Galacticraft;
 import dev.galacticraft.mod.content.GCAccessorySlots;
 import dev.galacticraft.mod.content.block.special.CryogenicChamberBlock;
 import dev.galacticraft.mod.content.block.special.CryogenicChamberPart;
+import dev.galacticraft.mod.content.entity.SpaceEvolution;
 import dev.galacticraft.mod.content.entity.vehicle.LanderEntity;
 import dev.galacticraft.mod.content.item.GCItems;
 import dev.galacticraft.mod.tag.GCFluidTags;
@@ -57,7 +59,6 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
@@ -79,7 +80,7 @@ import static dev.galacticraft.mod.content.entity.damage.GCDamageTypes.HEAT;
 import static dev.galacticraft.mod.content.entity.damage.GCDamageTypes.SUFFOCATION;
 
 @Mixin(LivingEntity.class)
-public abstract class LivingEntityMixin extends Entity implements GearInventoryProvider, LivingEntityOxygenAccessor {
+public abstract class LivingEntityMixin extends Entity implements GearInventoryProvider, LivingEntityOxygenAccessor, SpaceEvolvedAccessor {
 
     @Unique
     @SuppressWarnings("WrongEntityDataParameterClass")
@@ -111,6 +112,10 @@ public abstract class LivingEntityMixin extends Entity implements GearInventoryP
 
     private int lastHurtBySuffocationTimestamp;
 
+    /** Set when a mob is evolved for space where it stands; see {@code SpaceEvolution}. Server-side only. */
+    @Unique
+    private boolean galacticraft$spaceEvolved;
+
     @Unique
     private int galacticraft$breathabilityCacheTick = Integer.MIN_VALUE;
     @Unique
@@ -140,6 +145,7 @@ public abstract class LivingEntityMixin extends Entity implements GearInventoryP
         this.entityData.set(DATA_HAS_GEAR_ID, tag.getBoolean(Constant.Nbt.HAS_GEAR));
         this.entityData.set(DATA_TANK_1_SIZE_ID, tag.getString(Constant.Nbt.OXYGEN_TANK_1));
         this.entityData.set(DATA_TANK_2_SIZE_ID, tag.getString(Constant.Nbt.OXYGEN_TANK_2));
+        this.galacticraft$spaceEvolved = tag.getBoolean(Constant.Nbt.SPACE_EVOLVED);
     }
 
     @Inject(method = "addAdditionalSaveData", at = @At("TAIL"), cancellable = true)
@@ -148,14 +154,16 @@ public abstract class LivingEntityMixin extends Entity implements GearInventoryP
         tag.putBoolean(Constant.Nbt.HAS_GEAR, this.galacticraft$hasGear());
         tag.putString(Constant.Nbt.OXYGEN_TANK_1, this.galacticraft$tankSize(0));
         tag.putString(Constant.Nbt.OXYGEN_TANK_2, this.galacticraft$tankSize(1));
+        if (this.galacticraft$spaceEvolved) {
+            tag.putBoolean(Constant.Nbt.SPACE_EVOLVED, true);
+        }
     }
 
     @Inject(method = "baseTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isEyeInFluid(Lnet/minecraft/tags/TagKey;)Z"), require = 0)
     private void galacticraft_oxygenCheck(CallbackInfo ci) {
         LivingEntity entity = ((LivingEntity) (Object) this);
         if (entity.galacticraft$oxygenConsumptionRate() == 0) return;
-        AttributeInstance attribute = entity.getAttribute(GcApiEntityAttributes.CAN_BREATHE_IN_SPACE);
-        if (!this.galacticraft$isEyePositionBreathable() && !(attribute != null && attribute.getValue() >= 0.99D)) {
+        if (!this.galacticraft$isEyePositionBreathable() && !this.galacticraft$breathesInSpace()) {
             if (!this.galacticraft$isEyeInNonBreathableFluid() && !(entity instanceof Player player && player.getAbilities().invulnerable)) {
                 entity.setAirSupply(this.decreaseAirSupply(entity.getAirSupply()));
                 if (entity.getAirSupply() == -20) {
@@ -193,9 +201,8 @@ public abstract class LivingEntityMixin extends Entity implements GearInventoryP
         LivingEntity entity = ((LivingEntity) (Object) this);
         long rate = entity.galacticraft$oxygenConsumptionRate();
         if (rate == 0) return;
-        AttributeInstance attribute = entity.getAttribute(GcApiEntityAttributes.CAN_BREATHE_IN_SPACE);
         if (!this.galacticraft$isEyeInNonBreathableFluid() && (
-                (attribute != null && attribute.getValue() >= 0.99D) ||
+                this.galacticraft$breathesInSpace() ||
                 this.galacticraft$isEyePositionBreathable()
         )) {
             this.lastHurtBySuffocationTimestamp = this.tickCount;
@@ -274,7 +281,9 @@ public abstract class LivingEntityMixin extends Entity implements GearInventoryP
         // Sealed breathable spaces suppress thermal damage.
         if (this.galacticraft$isEyePositionBreathable()) return;
 
-        int temperature = galacticraft_surfaceTemperature(body.value(), level);
+        int temperature = body.is(dev.galacticraft.api.universe.celestialbody.CelestialBodyTags.GAS_GIANT)
+                ? dev.galacticraft.mod.world.dimension.jupiter.JupiterEnvironment.temperature(entity.getY())
+                : galacticraft_surfaceTemperature(body.value(), level);
         boolean cold = temperature <= GALACTICRAFT_COLD_THRESHOLD;
         boolean hot = temperature >= GALACTICRAFT_HEAT_THRESHOLD;
         if (!cold && !hot) return;
@@ -293,6 +302,7 @@ public abstract class LivingEntityMixin extends Entity implements GearInventoryP
 
     @Override
     public boolean galacticraft$isEyePositionBreathable() {
+        if (getVehicle() instanceof dev.galacticraft.mod.content.entity.vehicle.CloudDiverEntity diver && diver.hasCabinOxygen()) return true;
         if (this.galacticraft$breathabilityCacheTick != this.tickCount) {
             LivingEntity entity = (LivingEntity) (Object) this;
             int eyeY = entity.getBlockY() + (int) Math.floor(entity.getEyeHeight(entity.getPose()));
@@ -489,6 +499,30 @@ public abstract class LivingEntityMixin extends Entity implements GearInventoryP
     @Override
     public long galacticraft$oxygenConsumptionRate() {
         return Galacticraft.CONFIG.playerOxygenConsumptionRate();
+    }
+
+    /** Mobs that need no air: those with the attribute, and those evolved for space where they stood. */
+    @Unique
+    private boolean galacticraft$breathesInSpace() {
+        return SpaceEvolution.breathesInSpace((LivingEntity) (Object) this);
+    }
+
+    @Override
+    public boolean galacticraft$isSpaceEvolved() {
+        return this.galacticraft$spaceEvolved;
+    }
+
+    @Override
+    public void galacticraft$setSpaceEvolved(boolean evolved) {
+        this.galacticraft$spaceEvolved = evolved;
+    }
+
+    @Override
+    public void galacticraft$wearSpaceGear(String tankSize) {
+        this.entityData.set(DATA_HAS_MASK_ID, true);
+        this.entityData.set(DATA_HAS_GEAR_ID, true);
+        this.entityData.set(DATA_TANK_1_SIZE_ID, tankSize);
+        this.entityData.set(DATA_TANK_2_SIZE_ID, tankSize);
     }
 
     @Inject(method = "addAdditionalSaveData", at = @At("HEAD"))

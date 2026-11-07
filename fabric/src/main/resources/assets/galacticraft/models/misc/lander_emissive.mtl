@@ -1,0 +1,6 @@
+# Galacticraft moon lander light layer: same UVs as lander.mtl, drawn full-bright
+newmtl lander
+Ka 1 1 1
+Kd 1 1 1
+d 1
+map_Kd galacticraft:obj/lander_emissive

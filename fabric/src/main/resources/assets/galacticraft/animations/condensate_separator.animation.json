@@ -1,0 +1,35 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"animation.condensate_separator.idle": {
+			"loop": true,
+			"animation_length": 0.6,
+			"bones": {
+				"rotor": {
+					"rotation": {
+						"0.0": [
+							0,
+							0,
+							0
+						],
+						"0.2083": [
+							0,
+							120,
+							0
+						],
+						"0.4167": [
+							0,
+							240,
+							0
+						],
+						"0.5833": [
+							0,
+							360,
+							0
+						]
+					}
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "galacticraft:preset_flag",
+  "ingredients": [
+    {
+      "item": "galacticraft:white_flag"
+    },
+    {
+      "item": "minecraft:blue_dye"
+    },
+    {
+      "item": "minecraft:yellow_dye"
+    }
+  ],
+  "result": {
+    "id": "galacticraft:white_flag",
+    "count": 1,
+    "components": {
+      "galacticraft:flag_design": "galacticraft:ukraine"
+    }
+  }
+}

@@ -86,63 +86,22 @@ public class OverworldRenderer extends SpaceSkyRenderer {
         this.skyBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, RenderSystem.getShader());
         VertexBuffer.unbind();
         RenderSystem.enableBlend();
-        // RenderSystem.defaultBlendFunc();
-        // final float[] sunriseColors = this.minecraft.level.effects().getSunriseColor(this.minecraft.level.getTimeOfDay(partialTicks), partialTicks);
-
-        // if (sunriseColors != null) {
-        //     final float sunsetModInv = Math.min(1.0F, Math.max(1.0F - theta * 50.0F, 0.0F));
-
-        //     RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        //     poseStack.pushPose();
-        //     poseStack.mulPose(Axis.XP.rotationDegrees(90.0F));
-        //     poseStack.mulPose(Axis.YP.rotationDegrees(Mth.sin(this.minecraft.level.getSunAngle(partialTicks)) < 0.0F ? 180.0F : 0.0F));
-        //     poseStack.mulPose(Axis.ZP.rotationDegrees(90.0F));
-        //     x = sunriseColors[0] * sunsetModInv;
-        //     y = sunriseColors[1] * sunsetModInv;
-        //     z = sunriseColors[2] * sunsetModInv;
-
-        //     BufferBuilder buffer = tesselator.begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
-
-        //     buffer.addVertex(0.0F, 100.0F, 0.0F).setColor(x * sunsetModInv, y * sunsetModInv, z * sunsetModInv, sunriseColors[3]);
-
-        //     float angle;
-        //     for (int i = 0; i <= 16; ++i) {
-        //         angle = i * Mth.TWO_PI / 16.0F;
-        //         final float s = Mth.sin(angle);
-        //         final float c = Mth.cos(angle);
-        //         buffer.addVertex(s * 120.0F, c * 120.0F, -c * 40.0F * sunriseColors[3]).setColor(x, y, z, 0.0F);
-        //     }
-
-        //     BufferUploader.drawWithShader(buffer.buildOrThrow());
-        //     poseStack.popPose();
-        // }
 
         RenderSystem.blendFuncSeparate(
                 GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO
         );
 
         poseStack.pushPose();
-        // float alpha = 1.0F - this.minecraft.level.getRainLevel(partialTicks);
-        // RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F); // alpha);
         poseStack.mulPose(Axis.ZP.rotationDegrees(this.minecraft.level.getTimeOfDay(partialTicks) * 360.0F));
 
         // Draw stars
-        // RenderSystem.disableBlend();
-        // RenderSystem.defaultBlendFunc();
-        // RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
 
-        // Vec3 vec = getFogColor(this.minecraft.level, partialTicks, camera.getPosition());
-        // float threshold = Math.max(0.1F, (float) vec.length() - 0.1F);
         double playerHeight = player.getY();
         float fade = Math.min(((float) playerHeight - Constant.OVERWORLD_SKYPROVIDER_STARTHEIGHT) / ((float) Constant.SPACE_HEIGHT - Constant.OVERWORLD_SKYPROVIDER_STARTHEIGHT), 1.0F);
-        // float bright1 = Math.min(0.9F, Mth.sqrt(fade) * 3);
 
         ClientLevel level = (ClientLevel) player.level();
         float starBrightness = Math.max(level.getStarBrightness(partialTicks), fade);
         this.starManager.render(poseStack, projectionMatrix, level, partialTicks, starBrightness);
-
-        // if (bright1 > threshold) {
-            // RenderSystem.setShaderColor(bright1, bright1, bright1, 1.0F);
 
         // Draw sun's halo
         RenderSystem.blendFuncSeparate(
@@ -214,7 +173,9 @@ public class OverworldRenderer extends SpaceSkyRenderer {
 
         float light = Mth.clamp(Mth.cos(this.minecraft.level.getTimeOfDay(partialTicks) * Mth.TWO_PI) * 2.0F + 1.0F, 0.5F, 1.0F);
         RenderSystem.setShaderColor(light, light, light, 1.0F);
-        this.earthManager.render(poseStack, this.minecraft.level, 2.0D * (player.getY() - 64.0D), partialTicks, camera);
+        // The shared surface pass uses the flight atlas; retain the legacy image only without the shader.
+        if (dev.galacticraft.mod.client.model.GCRenderTypes.getSpacePlanetShader() == null)
+            this.earthManager.render(poseStack, this.minecraft.level, 2.0D * (player.getY() - 64.0D), partialTicks, camera);
 
         poseStack.popPose();
 

@@ -31,8 +31,16 @@ import dev.galacticraft.api.entity.ControllableEntity;
 import dev.galacticraft.api.entity.IgnoreShift;
 import dev.galacticraft.api.rocket.LaunchStage;
 import dev.galacticraft.api.rocket.RocketData;
-import dev.galacticraft.api.rocket.RocketPrefabs;
+import dev.galacticraft.mod.content.rocket.RocketPrefabs;
 import dev.galacticraft.api.rocket.entity.Rocket;
+import dev.galacticraft.api.event.RocketEvents;
+import dev.galacticraft.api.event.CelestialEvents;
+import dev.galacticraft.api.registry.AddonRegistries;
+import dev.galacticraft.mod.world.dimension.GCDimensions;
+import dev.galacticraft.mod.world.dimension.SpaceTravel;
+import dev.galacticraft.mod.world.dimension.SpaceflightHandoff;
+import dev.galacticraft.mod.network.s2c.SpaceflightHandoffPayload;
+import dev.galacticraft.api.rocket.RocketGeometry;
 import dev.galacticraft.api.rocket.part.*;
 import dev.galacticraft.api.universe.celestialbody.CelestialBody;
 import dev.galacticraft.mod.Constant;
@@ -40,6 +48,13 @@ import dev.galacticraft.mod.Galacticraft;
 import dev.galacticraft.mod.api.block.entity.FuelDock;
 import dev.galacticraft.mod.attachments.GCServerPlayer;
 import dev.galacticraft.mod.content.GCBlocks;
+import dev.galacticraft.mod.content.GCCelestialBodies;
+import dev.galacticraft.mod.content.teleporters.JupiterCelestialTeleporterType;
+import dev.galacticraft.mod.content.teleporters.DestinationArrival;
+import dev.galacticraft.mod.network.s2c.SpaceflightArrivalPayload;
+import dev.galacticraft.mod.world.dimension.jupiter.JupiterLanding;
+import dev.galacticraft.mod.world.gen.custom.AsteroidChunkGenerator;
+import net.minecraft.world.level.levelgen.Heightmap;
 import dev.galacticraft.mod.content.GCFluids;
 import dev.galacticraft.mod.content.GCRocketParts;
 import dev.galacticraft.mod.content.GCStats;
@@ -53,7 +68,6 @@ import dev.galacticraft.mod.content.rocket.part.config.StorageUpgradeConfig;
 import dev.galacticraft.mod.content.rocket.part.data.ExplosiveRocketData;
 import dev.galacticraft.mod.content.rocket.part.data.StorageRocketData;
 import dev.galacticraft.mod.content.rocket.part.type.StorageUpgradeType;
-import dev.galacticraft.mod.events.RocketEvents;
 import dev.galacticraft.mod.network.s2c.OpenCelestialScreenPayload;
 import dev.galacticraft.mod.particle.EntityParticleOption;
 import dev.galacticraft.mod.particle.GCParticleTypes;
@@ -105,6 +119,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.UUID;
 import java.util.List;
 import java.util.Optional;
 
@@ -120,6 +135,10 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
     private static final EntityDataAccessor<Long> FUEL_CAPACITY = SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.LONG);
     private static final EntityDataAccessor<Boolean> CREATIVE = SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> MANUAL_LANDING = SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.BOOLEAN);
+    /** Spaceflight cruise control: boost stays on without holding the key. Synced for the HUD. */
+    private static final EntityDataAccessor<Boolean> BOOST_LOCKED = SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.BOOLEAN);
+    /** Two boost presses this close together (vanilla's double-tap window) toggle the boost lock. */
+    private static final int BOOST_LOCK_TAP_TICKS = 7;
 
     private static final int CRASH_ARM_DELAY_TICKS = 20;
     private static final int ROCKET_LAUNCH_PAD_BLOCKS = 9;
@@ -136,10 +155,8 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
 
     private FuelDock linkedPad = null;
     /**
-     * Where the pad was when the rocket was last saved. Kept separately because the dock itself
-     * cannot always be resolved at load time - an entity is deserialized while its chunk is still
-     * coming up, so the block entity lookup can come back empty - and without this the position
-     * would be dropped from the next save and the rocket would be orphaned for good.
+     * Saved pad position retained when the block entity is unavailable during chunk loading.
+     * Dropping it would lose the dock link on the next save.
      */
     private @Nullable BlockPos linkedPadPos = null;
     private boolean gc4FuelMode = Galacticraft.CONFIG.gc4RocketFuelMode();
@@ -156,6 +173,11 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
     private int timeBeforeLaunch;
     private int controllerDestination = -1;
     private float timeSinceLaunch;
+    private @Nullable ResourceLocation spaceOrigin;
+    private double spaceSurfaceX, spaceSurfaceZ;
+    private int spaceInputTick = -100;
+    private boolean spaceBoost, spaceBrake;
+    private int lastBoostTap = -100;
     private int landingTicks;
     private int landingInputTick;
     private float landingForward, landingStrafe;
@@ -183,7 +205,35 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
 
     public boolean isLanding() { return getLaunchStage() == LaunchStage.LAUNCHED && this.entityData.get(MANUAL_LANDING); }
 
+    private @Nullable SpaceflightHandoff spaceflightHandoff;
+    private @Nullable FlightTransfer preparedFlight;
+
+    private record FlightTransfer(ServerLevel destination, Vec3 position, float pitch) { }
+
+    public boolean isPreparingSpaceflight() { return preparedFlight != null; }
+
+    public @Nullable UUID pendingSpaceflightHandoff() {
+        return spaceflightHandoff == null ? null : spaceflightHandoff.token();
+    }
+
+    public void acknowledgeSpaceflight(ServerPlayer player, UUID token) {
+        acknowledgeSpaceflight(player, token, preparedFlight == null);
+    }
+
+    public boolean acknowledgeSpaceflight(ServerPlayer player, UUID token, boolean terrainReady) {
+        return spaceflightHandoff != null && player.getVehicle() == this && terrainReady == (preparedFlight == null)
+                && spaceflightHandoff.acknowledge(player.getUUID(), token);
+    }
+
+    public boolean isInSpaceflight() { return level().dimension().equals(GCDimensions.SOLAR_SYSTEM); }
+
+    @Override
+    protected int interpolationSteps(int requested) {
+        return isInSpaceflight() ? Math.max(1, requested) : super.interpolationSteps(requested);
+    }
+
     public void toggleLanding(ServerPlayer pilot) {
+        if (isInSpaceflight()) return;
         if (this.level().isClientSide() || this.getFirstPassenger() != pilot || getLaunchStage() != LaunchStage.LAUNCHED) return;
         if (isTankEmpty()) {
             pilot.sendSystemMessage(Component.translatable(Translations.Ui.ROCKET_NO_FUEL), true);
@@ -205,7 +255,15 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
 
     @Override
     protected boolean canAddPassenger(Entity passenger) {
-        return this.getPassengers().isEmpty();
+        if (this.getPassengers().isEmpty()) return true;
+        // Extra seats carry players; physical spaceflight keeps the crew together.
+        return passenger instanceof Player && this.getPassengers().size() < this.maxPassengers();
+    }
+
+    /** Seats on this rocket, the pilot's included, as set by its body. */
+    public int maxPassengers() {
+        Holder<RocketBody<?, ?>> body = this.body();
+        return body != null ? Math.max(1, body.value().getMaxPassengers()) : 1;
     }
 
     @Override
@@ -348,15 +406,28 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
                 || this.getPassengers().isEmpty() || this.isTankEmpty()) return false;
         int destination = this.controllerRoute();
         if (destination < 0) return false;
-        this.ignite(destination);
-        return true;
+        return this.ignite(destination);
     }
 
-    private void ignite(int destination) {
+    /** @return whether the countdown started; a {@link RocketEvents#PRE_LAUNCH} listener may refuse it */
+    private boolean ignite(int destination) {
+        if (RocketEvents.PRE_LAUNCH.invoker().preLaunch(this, this.getFirstPassenger()).isFalse()) {
+            this.cancelPreLaunch();
+            return false;
+        }
         this.controllerDestination = destination;
         this.timeBeforeLaunch = this.getPreLaunchWait();
         this.setLaunchStage(LaunchStage.IGNITED);
         this.launchConfirmState = LaunchConfirmState.IDLE;
+        return true;
+    }
+
+    private void igniteFromPad() {
+        if (!this.isRemoved() && !this.getPassengers().isEmpty() && (!this.isTankEmpty() || debugMode)
+                && this.launchConfirmState == LaunchConfirmState.WAITING_SECOND_PRESS
+                && this.getLaunchStage().ordinal() < LaunchStage.IGNITED.ordinal()) {
+            this.ignite(this.controllerRoute());
+        }
     }
 
     private int controllerRoute() {
@@ -399,6 +470,7 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
         arrived.setPad(destination.pad());
         arrived.setOnGround(true);
         destination.pad().setDockedEntity(arrived);
+        RocketEvents.LANDED.invoker().landed(arrived);
         for (Entity passenger : arrived.getPassengers()) {
             if (passenger instanceof ServerPlayer player) {
                 GCServerPlayer data = GCServerPlayer.get(player);
@@ -608,6 +680,17 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
         builder.define(FUEL_CAPACITY, FluidUtil.bucketsToDroplets(RocketFlightLogic.DEFAULT_FUEL_TANK_CAPACITY_BUCKETS));
         builder.define(CREATIVE, false);
         builder.define(MANUAL_LANDING, false);
+        builder.define(BOOST_LOCKED, false);
+    }
+
+    public boolean isBoostLocked() {
+        return this.entityData.get(BOOST_LOCKED);
+    }
+
+    /** Flight handling comes from the engine type, including addon engines. */
+    private int engineTier() {
+        var engine = engine();
+        return engine == null ? 1 : Math.max(1, engine.value().getFlightTier());
     }
 
     @Override
@@ -633,7 +716,10 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
 
     @Override
     protected Vec3 getPassengerAttachmentPoint(Entity entity, EntityDimensions dimensions, float scale) {
-        return new Vec3(0F, 1.8125F, 0F);
+        // Crew sit in a column above the pilot, kept inside the hull.
+        int seat = Math.max(0, this.getPassengers().indexOf(entity));
+        float y = Math.min(1.8125F + seat * 0.9F, Math.max(1.8125F, dimensions.height() - 1.8F));
+        return new Vec3(0F, y, 0F);
     }
 
     @Override
@@ -715,14 +801,8 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
     }
 
     /**
-     * Explosive-upgrade crash behavior:
-     * - DO NOT do default crash explosions
-     * - Use the payload block's TNT behavior so modded TNT (extending TntBlock) works
-     * - Detonate instantly (fuse 0)
-     *
-     * This supports:
-     *  - Vanilla TNT (spawns PrimedTnt in TntBlock.wasExploded)
-     *  - Modded TNT that extends TntBlock and overrides wasExploded to spawn its own primed entity
+     * Detonates through the payload block's TNT behavior so modded primed entities remain supported.
+     * Uses a zero fuse and bypasses the default rocket crash explosion.
      */
     private void doExplosivePayloadCrashInstant() {
         RocketData data = this.getRocketData();
@@ -843,6 +923,7 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
         setTimeAsState(getTimeAsState() + 1);
 
         super.tick();
+        this.tickParts();
 
         int particleChance = (this.timeBeforeLaunch >= 100) ? Math.abs(this.timeBeforeLaunch / 100) : 1;
         if ((this.getLaunchStage() == LaunchStage.LAUNCHED || this.getLaunchStage() == LaunchStage.IGNITED)
@@ -856,6 +937,8 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
             return;
         }
 
+        if (tickSpaceflightHandoff()) return;
+
         // The pad's chunk may have finished loading after this rocket did.
         this.resolveLinkedPad();
 
@@ -868,6 +951,11 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
         }
 
         Entity passenger = getFirstPassenger();
+
+        if (isInSpaceflight() && getLaunchStage() == LaunchStage.LAUNCHED) {
+            tickSpaceflight();
+            return;
+        }
 
         if (getLaunchStage() == LaunchStage.IGNITED) {
             if (tickIgnition(passenger)) return;
@@ -887,11 +975,23 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
             tickFailedFlight();
         }
 
-        if (getLaunchStage().ordinal() >= LaunchStage.LAUNCHED.ordinal()) {
-            if (!getPassengers().isEmpty() && getPassengers().get(0) instanceof ServerPlayer player) {
-                GCTriggers.LAUNCH_ROCKET.trigger(player);
-            }
+        if (getLaunchStage().ordinal() >= LaunchStage.LAUNCHED.ordinal() && getFirstPassenger() instanceof ServerPlayer player) {
+            GCTriggers.LAUNCH_ROCKET.trigger(player);
         }
+    }
+
+    /** Runs each fitted part's {@link RocketPart#tick} hook, on both sides. */
+    private void tickParts() {
+        tickPart(this.cone());
+        tickPart(this.body());
+        tickPart(this.fin());
+        tickPart(this.booster());
+        tickPart(this.engine());
+        tickPart(this.upgrade());
+    }
+
+    private void tickPart(@Nullable Holder<? extends RocketPart<?, ?>> part) {
+        if (part != null && part.isBound()) part.value().tick(this);
     }
 
     private void explodeBurningRocket() {
@@ -924,6 +1024,7 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
         if (getTimeAsState() >= getPreLaunchWait()) {
             this.setLaunchStage(LaunchStage.LAUNCHED);
             this.setThrust(Mth.SQRT_OF_TWO / 2.0F);
+            RocketEvents.LAUNCH.invoker().launch(this);
 
             resetCrashSystem();
 
@@ -958,6 +1059,20 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
     }
 
     private boolean tickLaunched() {
+        if (!isLanding() && Galacticraft.CONFIG.seamlessSpaceTravel() && controllerDestination < 0
+                && getY() >= Constant.ESCAPE_HEIGHT - 256) {
+            var departure = SpaceTravel.fromLevel(level());
+            var space = ((ServerLevel) level()).getServer().getLevel(GCDimensions.SOLAR_SYSTEM);
+            if (departure != null && space != null) {
+                SpaceTravel.prepareArrival(space, departure.departurePosition(), getId());
+                spaceOrigin = departure.body().location();
+                spaceSurfaceX = getX();
+                spaceSurfaceZ = getZ();
+                // Space entry faces +Z; warm that flight path while the rocket is still ascending.
+                var ahead = SpaceTravel.preloadTarget(registryAccess(), departure.departurePosition(), SpaceTravel.forward(90, 0));
+                if (ahead != null) tryEnterAtmosphere(ahead, false);
+            }
+        }
         if (!this.isCreative() && !debugMode && (isTankEmpty() || !this.getTank().getResource().is(GCFluidTags.FUEL))) {
             this.setLaunchStage(LaunchStage.FAILED);
         } else {
@@ -975,22 +1090,261 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
         }
 
         if (!isLanding() && getLaunchStage() == LaunchStage.LAUNCHED && this.position().y() >= Constant.ESCAPE_HEIGHT) {
-            if (this.landAtController()) return true;
-            if (this.getPassengers().isEmpty()) {
-                this.remove(RemovalReason.DISCARDED);
-                return true;
-            }
-
-            for (Entity entity : getPassengers()) {
-                if (entity instanceof ServerPlayer serverPlayer) {
-                    openCelestialScreen(serverPlayer);
-                    break;
-                }
-            }
+            this.completeSpaceTravel((ServerLevel) this.level());
             return true;
         }
 
         return false;
+    }
+
+    private void completeSpaceTravel(ServerLevel level) {
+        if (this.isRemoved() || this.level() != level || this.getLaunchStage() != LaunchStage.LAUNCHED
+                || this.isLanding() || this.getY() < Constant.ESCAPE_HEIGHT) return;
+        if (Galacticraft.CONFIG.seamlessSpaceTravel() && this.controllerDestination < 0 && beginSpaceflight(level)) return;
+        RocketEvents.REACHED_SPACE.invoker().reachedSpace(this);
+        if (this.landAtController()) return;
+        if (this.getPassengers().isEmpty()) {
+            this.remove(RemovalReason.DISCARDED);
+            return;
+        }
+        ServerPlayer pilot = null;
+        for (Entity entity : this.getPassengers()) {
+            if (entity instanceof ServerPlayer serverPlayer) {
+                if (pilot == null) pilot = serverPlayer;
+                else this.openCrewCelestialScreen(serverPlayer);
+            }
+        }
+        if (pilot != null) this.openCelestialScreen(pilot);
+    }
+
+    private boolean beginSpaceflight(ServerLevel source) {
+        SpaceTravel.Destination departure = SpaceTravel.fromLevel(source);
+        ServerLevel space = source.getServer().getLevel(GCDimensions.SOLAR_SYSTEM);
+        if (departure == null || space == null || getPassengers().isEmpty()) return false;
+        setDeltaMovement(Vec3.ZERO);
+        SpaceTravel.prepareArrival(space, departure.departurePosition(), getId());
+        spaceOrigin = departure.body().location();
+        spaceSurfaceX = getX();
+        spaceSurfaceZ = getZ();
+        RocketEvents.REACHED_SPACE.invoker().reachedSpace(this);
+        prepareSpaceflightTransfer(space, departure.departurePosition(), 90);
+        return true;
+    }
+
+    private void prepareSpaceflightTransfer(ServerLevel destination, Vec3 position, float pitch) {
+        UUID token = UUID.randomUUID();
+        var passengers = getPassengers().stream().filter(ServerPlayer.class::isInstance).map(Entity::getUUID)
+                .collect(java.util.stream.Collectors.toSet());
+        boolean departure = destination.dimension().equals(GCDimensions.SOLAR_SYSTEM);
+        Vec3 flightPosition = departure ? position : position();
+        preparedFlight = new FlightTransfer(destination, position, pitch);
+        this.entityData.set(BOOST_LOCKED, false);
+        spaceflightHandoff = new SpaceflightHandoff(token, passengers);
+        setDeltaMovement(Vec3.ZERO);
+        setThrust(0);
+        for (Entity passenger : getPassengers()) {
+            if (passenger instanceof ServerPlayer player) {
+                if (player.containerMenu != player.inventoryMenu) player.closeContainer();
+                NetworkManager.sendToPlayer(player, new SpaceflightHandoffPayload(getUUID(), token,
+                        destination.dimension(), flightPosition, position, departure ? 0 : getYRot(), departure ? 90 : getXRot(), false));
+            }
+        }
+    }
+
+    private boolean tickSpaceflightHandoff() {
+        if (spaceflightHandoff == null) return false;
+        spaceflightHandoff.retainPassengers(getPassengers().stream().map(Entity::getUUID)
+                .collect(java.util.stream.Collectors.toSet()));
+        boolean chunksReady = preparedFlight == null || SpaceTravel.prepareArrival(preparedFlight.destination(), preparedFlight.position(), getId());
+        if (spaceflightHandoff.ready() && chunksReady) {
+            if (preparedFlight != null) {
+                completePreparedSpaceflight();
+                return true;
+            }
+            UUID token = spaceflightHandoff.token();
+            spaceflightHandoff = null;
+            if (isLanding() && !getPassengers().isEmpty()) {
+                deployDestinationArrival(token);
+                return true;
+            }
+            return false;
+        }
+        // Keep the craft and fuel safe while client chunks, lighting, meshes and seats arrive.
+        setDeltaMovement(Vec3.ZERO);
+        setThrust(0);
+        resetCrashSystem();
+        SpaceTravel.prepareArrival((ServerLevel) level(), position(), getId());
+        return true;
+    }
+
+    private void completePreparedSpaceflight() {
+        FlightTransfer flight = preparedFlight;
+        UUID token = spaceflightHandoff.token();
+        var clients = getPassengers().stream().filter(ServerPlayer.class::isInstance).map(ServerPlayer.class::cast).toList();
+        preparedFlight = null;
+        spaceflightHandoff = null;
+        if (clients.isEmpty()) return;
+        boolean departure = flight.destination().dimension().equals(GCDimensions.SOLAR_SYSTEM);
+        Vec3 flightPosition = departure ? flight.position() : position();
+        Entity moved = changeDimension(new DimensionTransition(flight.destination(), flight.position(), Vec3.ZERO,
+                departure ? 0 : getYRot(), flight.pitch(), DimensionTransition.DO_NOTHING));
+        if (!(moved instanceof RocketEntity arrived)) {
+            for (ServerPlayer player : clients) NetworkManager.sendToPlayer(player, new SpaceflightHandoffPayload(getUUID(), token,
+                    flight.destination().dimension(), flightPosition, flight.position(), 0, flight.pitch(), true));
+            return;
+        }
+        arrived.setXRot(flight.pitch());
+        arrived.setZRot(0);
+        arrived.resetCrashSystem();
+        arrived.setDeltaMovement(Vec3.ZERO);
+        arrived.spaceflightHandoff = new SpaceflightHandoff(token, clients.stream().map(Entity::getUUID)
+                .collect(java.util.stream.Collectors.toSet()));
+        if (departure) {
+            arrived.setYRot(0);
+            for (ServerPlayer player : clients)
+                player.sendSystemMessage(Component.translatable("ui.galacticraft.space.departure"), true);
+        } else {
+            arrived.entityData.set(MANUAL_LANDING, true);
+            arrived.landingTicks = 0;
+            arrived.setThrust(0);
+        }
+    }
+
+    private void deployDestinationArrival(UUID token) {
+        var crew = getPassengers().stream().filter(ServerPlayer.class::isInstance).map(ServerPlayer.class::cast).toList();
+        if (crew.isEmpty()) return;
+        ServerPlayer owner = crew.getFirst();
+        packReturnInventory(owner);
+        var destination = SpaceTravel.fromLevel((ServerLevel) level());
+        var body = destination == null ? null : destination.resolve(registryAccess());
+        var from = spaceOrigin == null ? null : registryAccess().registryOrThrow(AddonRegistries.CELESTIAL_BODY).get(spaceOrigin);
+        for (int i = 0; i < crew.size(); i++) {
+            var player = crew.get(i);
+            // Separate seats/vehicles keep every rider in control of their own descent, without copying the hold.
+            Vec3 seat = position().add(DestinationArrival.crewOffset(i));
+            Entity arrival = i == 0
+                    ? DestinationArrival.fromStoredRocket(player, seat)
+                    : DestinationArrival.spawn(player, seat, NonNullList.create(), 0);
+            NetworkManager.sendToPlayer(player, new SpaceflightArrivalPayload(token, arrival.getUUID()));
+            if (body != null && from != null) CelestialEvents.AFTER_TRAVEL.invoker().afterTravel(player, body, from);
+        }
+        setFuel(0);
+        discard();
+    }
+
+    private void packReturnInventory(ServerPlayer serverPlayer) {
+        GCServerPlayer gcPlayer = GCServerPlayer.get(serverPlayer);
+        gcPlayer.setRocketStacks(this.collectCargoForTransfer());
+        gcPlayer.setFuel(this.tank.getAmount());
+
+        var rocket = new ItemStack(GCItems.ROCKET);
+        RocketData d = this.getRocketData();
+        rocket.applyComponents(d.asPatch());
+        if (this.isCreative()) {
+            rocket.set(GCDataComponents.CREATIVE, true);
+        }
+        gcPlayer.finishReturnInventory(rocket);
+    }
+
+    private void tickSpaceflight() {
+        boolean freshInput = !getPassengers().isEmpty() && tickCount - spaceInputTick <= 10;
+        boolean powered = freshInput && !spaceBrake && (isCreative() || !isTankEmpty() && getTank().getResource().is(GCFluidTags.FUEL));
+        setThrust(powered ? 1 : 0);
+        Vec3 velocity = getDeltaMovement();
+        if (powered) {
+            if (!isCreative()) getTank().extract(fuelBurnPerTick());
+            int tier = engineTier();
+            velocity = SpaceTravel.accelerate(velocity, SpaceTravel.forward(getXRot(), getYRot())
+                    .scale(spaceBoost ? SpaceTravel.boostSpeed(tier) : SpaceTravel.CRUISE_SPEED), SpaceTravel.acceleration(tier));
+        } else if (!freshInput || spaceBrake) {
+            velocity = SpaceTravel.accelerate(velocity, Vec3.ZERO, SpaceTravel.acceleration(engineTier()));
+        }
+        // Empty tanks coast without applying surface gravity; the pilot can still brake.
+        setDeltaMovement(velocity);
+        double days = SpaceTravel.days(level());
+        SpaceTravel.Destination nearest = SpaceTravel.nearest(registryAccess(), position(), days);
+        var ahead = SpaceTravel.preloadTarget(registryAccess(), position(), velocity);
+        if (ahead != null && ahead.distance(position(), days) > SpaceTravel.PRELOAD_DISTANCE) tryEnterAtmosphere(ahead, false);
+        if (nearest == null) { move(MoverType.SELF, getDeltaMovement()); return; }
+        double distance = nearest.distance(position(), days);
+        if (distance <= SpaceTravel.PRELOAD_DISTANCE && tryEnterAtmosphere(nearest, distance <= SpaceTravel.ENTRY_DISTANCE)) return;
+        move(MoverType.SELF, getDeltaMovement());
+        checkCrashAfterMove(velocity);
+    }
+
+    private boolean tryEnterAtmosphere(SpaceTravel.Destination target, boolean entering) {
+        ServerLevel destination = target.level((ServerLevel) level());
+        CelestialBody<?, ?> body = target.resolve(registryAccess());
+        CelestialBody<?, ?> from = spaceOrigin == null ? null : registryAccess().registryOrThrow(AddonRegistries.CELESTIAL_BODY).get(spaceOrigin);
+        if (destination == null || body == null || from == null || !getRocketData().canTravel(registryAccess(), from, body)) {
+            if (entering) holdOutsideAtmosphere(target, "ui.galacticraft.space.unreachable");
+            return entering;
+        }
+        double x = Mth.clamp(spaceSurfaceX, destination.getWorldBorder().getMinX() + 32, destination.getWorldBorder().getMaxX() - 32);
+        double z = Mth.clamp(spaceSurfaceZ, destination.getWorldBorder().getMinZ() + 32, destination.getWorldBorder().getMaxZ() - 32);
+        if (destination.getChunkSource().getGenerator() instanceof AsteroidChunkGenerator asteroids) {
+            var asteroid = asteroids.isLargeAsteroidAt(Mth.floor(x), Mth.floor(z));
+            if (asteroid != null) { x = asteroid.x + .5; z = asteroid.z + .5; }
+        }
+        Vec3 arrival = new Vec3(x, destination.getMaxBuildHeight() + 32, z);
+        SpaceTravel.prepareArrival(destination, arrival, getId());
+        if (!entering) return false;
+        // Only the center is needed to choose the height; the armed handoff waits for the full send-ready area.
+        if (getPassengers().isEmpty() || destination.getChunkSource().getChunkNow(Mth.floor(x) >> 4, Mth.floor(z) >> 4) == null) {
+            setDeltaMovement(Vec3.ZERO);
+            return true;
+        }
+        int ground = destination.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Mth.floor(x), Mth.floor(z));
+        arrival = new Vec3(x, SpaceTravel.landingHeight(destination.dimension(), ground), z);
+        if (target.body().equals(GCCelestialBodies.JUPITER)) {
+            if (getPassengers().stream().anyMatch(passenger -> passenger instanceof ServerPlayer player
+                    && !JupiterCelestialTeleporterType.hasEntryShield(player))) {
+                holdOutsideAtmosphere(target, "message.galacticraft.jupiter.entry_shield");
+                return true;
+            }
+            var landing = JupiterLanding.prepare(destination, x, z);
+            if (landing.isEmpty()) { holdOutsideAtmosphere(target, "message.galacticraft.jupiter.no_landing"); return true; }
+            var pos = landing.get();
+            arrival = new Vec3(pos.getX() + .5, Math.min(308, pos.getY() + 18), pos.getZ() + .5);
+            SpaceTravel.prepareArrival(destination, arrival, getId());
+        }
+        for (Entity passenger : getPassengers()) {
+            if (passenger instanceof ServerPlayer player && CelestialEvents.BEFORE_TRAVEL.invoker().beforeTravel(player, body, from).isFalse()) {
+                holdOutsideAtmosphere(target, "ui.galacticraft.space.denied");
+                return true;
+            }
+        }
+        if (destination.dimension().equals(GCDimensions.ASTEROID)) {
+            for (int seat = 0; seat < getPassengers().size(); seat++) {
+                Vec3 offset = DestinationArrival.crewOffset(seat);
+                ground = Math.max(ground, DestinationArrival.landingSurface(destination, Mth.floor(x + offset.x), Mth.floor(z + offset.z)));
+            }
+            arrival = new Vec3(x, SpaceTravel.landingHeight(destination.dimension(), ground), z);
+        }
+        prepareSpaceflightTransfer(destination, arrival, 0);
+        return true;
+    }
+
+    private void holdOutsideAtmosphere(SpaceTravel.Destination target, String message) {
+        setPos(target.approachPosition(position(), SpaceTravel.ENTRY_DISTANCE + 16, SpaceTravel.days(level())));
+        setDeltaMovement(Vec3.ZERO);
+        if (tickCount % 20 == 0) {
+            for (Entity passenger : getPassengers()) {
+                if (passenger instanceof ServerPlayer player) player.sendSystemMessage(Component.translatable(message), true);
+            }
+        }
+    }
+
+    /**
+     * Sends a crew member to the celestial map. Crew pick their own destination within the rocket's
+     * reach and land in their own lander; the rocket, its fuel and its cargo stay with the pilot.
+     */
+    private void openCrewCelestialScreen(ServerPlayer crew) {
+        if (crew.containerMenu != crew.inventoryMenu) {
+            crew.closeContainer();
+        }
+        crew.galacticraft$openCelestialScreen(this.getRocketData());
+        NetworkManager.sendToPlayer(crew, new OpenCelestialScreenPayload(this.getRocketData(), this.level().galacticraft$getCelestialBody()));
     }
 
     private void openCelestialScreen(ServerPlayer serverPlayer) {
@@ -1004,17 +1358,8 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
             serverPlayer.closeContainer();
         }
 
-        GCServerPlayer gcPlayer = GCServerPlayer.get(serverPlayer);
-        gcPlayer.setRocketStacks(this.collectCargoForTransfer());
-        gcPlayer.setFuel(this.tank.getAmount());
-
-        var rocket = new ItemStack(GCItems.ROCKET);
+        packReturnInventory(serverPlayer);
         RocketData d = this.getRocketData();
-        rocket.applyComponents(d.asPatch());
-        if (this.isCreative()) {
-            rocket.set(GCDataComponents.CREATIVE, true);
-        }
-        gcPlayer.finishReturnInventory(rocket);
 
         serverPlayer.galacticraft$openCelestialScreen(d);
         NetworkManager.sendToPlayer(serverPlayer, new OpenCelestialScreenPayload(this.getRocketData(), this.level().galacticraft$getCelestialBody()));
@@ -1055,9 +1400,18 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
         double velY = 0.955D * this.getDeltaMovement().y()
                 + 0.08D * Mth.SQRT_OF_TWO * this.getThrust() * Mth.cos(this.getXRot() * Mth.DEG_TO_RAD);
 
+        Holder<RocketBooster<?, ?>> booster = this.getLaunchStage() == LaunchStage.LAUNCHED ? this.booster() : null;
+        if (booster != null) {
+            velY += booster.value().getAccelerationPerTick() * this.getThrust() * Mth.cos(this.getXRot() * Mth.DEG_TO_RAD);
+        }
+
         if (!this.onGround()) {
             Holder<CelestialBody<?, ?>> holder = this.level().galacticraft$getCelestialBody();
             velY -= (holder != null ? holder.value().gravity() : 1.0D) * 0.08D;
+        }
+
+        if (booster != null) {
+            velY = Math.min(velY, booster.value().getMaximumVelocity());
         }
 
         this.setDeltaMovement(new Vec3(velX, velY, velZ));
@@ -1098,34 +1452,38 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
             player.getInventory().placeItemBackInInventory(data.getLaunchpadStack());
             data.setLaunchpadStack(ItemStack.EMPTY);
         }
+        RocketEvents.LANDED.invoker().landed(this);
     }
 
     protected void spawnParticles() {
         if (!this.isAlive()) return;
         if (isLanding() && getThrust() <= 0) return;
 
-        double sinPitch = Mth.sin(this.getXRot() * Mth.DEG_TO_RAD);
-        double x1 = 2 * sinPitch * Mth.sin(this.getYRot() * Mth.DEG_TO_RAD);
-        double z1 = -2 * sinPitch * Mth.cos(this.getYRot() * Mth.DEG_TO_RAD);
-        double y1 = -Mth.cos(this.getXRot() * Mth.DEG_TO_RAD);
+        // Exhaust follows the nozzle axis; retain the upright and horizontal launch speeds.
+        Vec3 nose = SpaceTravel.forward(this.getXRot(), this.getYRot());
+        double sinPitch = Mth.sin(this.getXRot() * Mth.DEG_TO_RAD), cosPitch = Mth.cos(this.getXRot() * Mth.DEG_TO_RAD);
+        Vec3 exhaust = nose.scale(-Math.sqrt(4 * sinPitch * sinPitch + cosPitch * cosPitch));
 
         if (this.getLaunchStage() == LaunchStage.FAILED && this.linkedPad != null) {
             double modifier = Mth.clamp(this.getY() - this.linkedPad.getDockPos().getY(), 120.0, 300.0);
-            x1 *= modifier / 100.0D;
-            y1 *= modifier / 100.0D;
-            z1 *= modifier / 100.0D;
+            exhaust = exhaust.scale(modifier / 100.0D);
         }
+        double x1 = exhaust.x, y1 = exhaust.y, z1 = exhaust.z;
 
-        Vec3 delta = this.getDeltaMovement();
-        double y = this.getY() + y1 - delta.y() + 1.2D;
+        // Use actual displacement: synced velocity is clamped to 3.9 blocks per axis.
+        Vec3 motion = new Vec3(this.getX() - this.xo, this.getY() - this.yo, this.getZ() - this.zo);
+        // Space exhaust inherits craft motion; atmospheric flames stay behind the previous nozzle position.
+        Vec3 carrier = this.isInSpaceflight() ? motion : Vec3.ZERO;
+        Vec3 nozzle = this.position().add(0, 1.6D, 0).subtract(nose.scale(1.4D)).subtract(motion.subtract(carrier));
 
-        final double x2 = this.getX() + x1 - delta.x();
-        final double z2 = this.getZ() + z1 - delta.z();
+        double y = nozzle.y;
+        final double x2 = nozzle.x;
+        final double z2 = nozzle.z;
 
         LivingEntity riddenBy = (!this.getPassengers().isEmpty() && this.getPassengers().get(0) instanceof LivingEntity le) ? le : null;
 
         if (getLaunchStage() == LaunchStage.LAUNCHED) {
-            EntityParticleOption particleData = new EntityParticleOption(GCParticleTypes.LAUNCH_FLAME_LAUNCHED, riddenBy == null ? null : riddenBy.getUUID());
+            EntityParticleOption particleData = new EntityParticleOption(GCParticleTypes.LAUNCH_FLAME_LAUNCHED, riddenBy == null ? null : riddenBy.getUUID(), carrier);
             this.level().addParticle(particleData, x2 + 0.4 - this.random.nextDouble() / 10D, y, z2 + 0.4 - this.random.nextDouble() / 10D, x1, y1, z1);
             this.level().addParticle(particleData, x2 - 0.4 + this.random.nextDouble() / 10D, y, z2 + 0.4 - this.random.nextDouble() / 10D, x1, y1, z1);
             this.level().addParticle(particleData, x2 - 0.4 + this.random.nextDouble() / 10D, y, z2 - 0.4 + this.random.nextDouble() / 10D, x1, y1, z1);
@@ -1174,12 +1532,15 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
         long savedFuel = tag.getLong("Fuel");
         long savedCapacity = tag.contains("FuelCapacity") ? tag.getLong("FuelCapacity")
                 : FluidUtil.bucketsToDroplets(Galacticraft.CONFIG.rocketFuelTankCapacity());
-        resizeFuelTank(Math.max(savedCapacity, savedFuel));
+        resizeFuelTank(Math.max(this.getFuelTankCapacity(), Math.max(savedCapacity, savedFuel)));
         if (tag.contains("Fuel")) this.setFuel(savedFuel);
         if (tag.contains("Creative")) this.setCreative(tag.getBoolean("Creative"));
         this.entityData.set(MANUAL_LANDING, getLaunchStage() == LaunchStage.LAUNCHED && tag.getBoolean("ManualLanding"));
         this.landingTicks = Math.clamp(tag.getInt("LandingTicks"), 0, RocketFlightLogic.LANDING_DEPLOY_TICKS);
         this.controllerDestination = tag.contains("ControllerDestination") ? tag.getInt("ControllerDestination") : -1;
+        this.spaceOrigin = ResourceLocation.tryParse(tag.getString("SpaceOrigin"));
+        this.spaceSurfaceX = tag.getDouble("SpaceSurfaceX");
+        this.spaceSurfaceZ = tag.getDouble("SpaceSurfaceZ");
 
         if (tag.contains("CrashArmTimer")) this.crashArmTimer = tag.getInt("CrashArmTimer");
         if (tag.contains("Crashed")) this.crashed = tag.getBoolean("Crashed");
@@ -1209,6 +1570,9 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
         tag.putLong("FuelCapacity", this.getFuelTankCapacity());
         tag.putBoolean("Gc4FuelMode", this.gc4FuelMode);
         tag.putInt("ControllerDestination", this.controllerDestination);
+        if (spaceOrigin != null) tag.putString("SpaceOrigin", spaceOrigin.toString());
+        tag.putDouble("SpaceSurfaceX", spaceSurfaceX);
+        tag.putDouble("SpaceSurfaceZ", spaceSurfaceZ);
         tag.putBoolean("Creative", this.isCreative());
         tag.putBoolean("ManualLanding", isLanding());
         tag.putInt("LandingTicks", this.landingTicks);
@@ -1230,25 +1594,26 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
         return RocketFlightLogic.PRE_LAUNCH_WAIT_TICKS;
     }
 
-    /** Droplets of fuel the engines burn on a single tick of powered flight. */
+    /**
+     * Droplets of fuel the engines burn on a single tick of powered flight.
+     *
+     * In GC4 fuel mode the fitted engine and booster set the burn rate. With GC4 mode off the server
+     * config sets one uniform burn rate for every rocket instead.
+     */
     private long fuelBurnPerTick() {
-        int tier = fuelEngineTier();
-        int burnTicksPerBucket = this.gc4FuelMode && tier > 0
-                ? RocketFlightLogic.gc4BurnTicksPerBucket(tier) : Galacticraft.CONFIG.rocketBurnTicksPerBucket();
+        Holder<RocketEngine<?, ?>> engine = this.engine();
+        if (this.gc4FuelMode && engine != null) {
+            Holder<RocketBooster<?, ?>> booster = this.booster();
+            long boosterUsage = booster != null ? booster.value().getFuelUsagePerTick() : 0;
+            return Math.max(0, engine.value().getFuelUsagePerTick()) + Math.max(0, boosterUsage);
+        }
+        int burnTicksPerBucket = Galacticraft.CONFIG.rocketBurnTicksPerBucket();
         if (burnTicksPerBucket <= 0) return FluidUtil.bucketsToDroplets(1);
         return FluidUtil.bucketsToDroplets(1) / burnTicksPerBucket;
     }
 
     private static long initialFuelTankCapacity() {
         return FluidUtil.bucketsToDroplets(Galacticraft.CONFIG.gc4RocketFuelMode() ? 1 : Galacticraft.CONFIG.rocketFuelTankCapacity());
-    }
-
-    private int fuelEngineTier() {
-        ResourceKey<?> engine = this.getRocketData().engine().map(EitherHolder::key).orElse(null);
-        if (GCRocketParts.TIER_1_ENGINE.equals(engine)) return 1;
-        if (GCRocketParts.TIER_2_ENGINE.equals(engine)) return 2;
-        if (GCRocketParts.TIER_3_ENGINE.equals(engine)) return 3;
-        return 0;
     }
 
     private void resizeFuelTank(long capacity) {
@@ -1272,13 +1637,13 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
 
     public void setData(RocketData data) {
         this.entityData.set(ROCKET_DATA, data);
-        if (this.tank.isEmpty() && this.gc4FuelMode) {
-            int tier = fuelEngineTier();
-            long capacity = tier > 0
-                    ? FluidUtil.bucketsToDroplets(1) * RocketFlightLogic.gc4FuelCapacityMilliBuckets(tier) / 1000
-                    : FluidUtil.bucketsToDroplets(Galacticraft.CONFIG.rocketFuelTankCapacity());
-            resizeFuelTank(capacity);
-        }
+        Holder<RocketEngine<?, ?>> engine = this.engine();
+        long capacity = Math.max(1, this.gc4FuelMode && engine != null
+                ? engine.value().getFuelCapacity()
+                : FluidUtil.bucketsToDroplets(Galacticraft.CONFIG.rocketFuelTankCapacity()));
+        var upgrade = this.upgrade();
+        long extra = upgrade == null ? 0 : Math.max(0, upgrade.value().additionalFuelCapacity(data));
+        resizeFuelTank(capacity + Math.min(extra, Long.MAX_VALUE - capacity));
     }
 
     @Override
@@ -1290,23 +1655,38 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
     @Override
     public EntityDimensions getDimensions(Pose pose) {
         if (this.entityData == null) return super.getDimensions(pose);
-        RocketData data = this.getRocketData();
-        ResourceKey<?> cone = data.cone().map(EitherHolder::key).orElse(null);
-        ResourceKey<?> fins = data.fin().map(EitherHolder::key).orElse(null);
-        float height = GCRocketParts.TIER_2_CONE.equals(cone) ? 91 / 16F
-                : GCRocketParts.TIER_3_CONE.equals(cone) ? 78.4F / 16F : 5.25F;
-        float width = GCRocketParts.TIER_3_FIN.equals(fins) ? 44.8F / 16F
-                : GCRocketParts.TIER_2_FIN.equals(fins) ? 42.8F / 16F : 2.5F;
-        return EntityDimensions.scalable(width, height).withEyeHeight(2.525F);
+        RocketGeometry geometry = RocketGeometry.of(this.getRocketData(), this.registryAccess());
+        return EntityDimensions.scalable(geometry.width() / 16F, geometry.top() / 16F).withEyeHeight(2.525F);
     }
 
     @Override
     public void inputTick(float leftImpulse, float forwardImpulse, boolean up, boolean down, boolean left, boolean right,
                           boolean jumping, boolean shiftKeyDown, boolean invertControls) {
+        if (!level().isClientSide() && spaceflightHandoff != null && !spaceflightHandoff.ready()) return;
         boolean risingEdge = jumping && !this.lastJumping;
         this.lastJumping = jumping;
 
         LaunchStage stage = this.getLaunchStage();
+
+        if (isInSpaceflight() && stage == LaunchStage.LAUNCHED) {
+            this.spaceInputTick = tickCount;
+            if (!level().isClientSide()) {
+                // Double-tap boost toggles the lock; braking releases it.
+                if (risingEdge) {
+                    if (tickCount - this.lastBoostTap <= BOOST_LOCK_TAP_TICKS) {
+                        this.entityData.set(BOOST_LOCKED, !isBoostLocked());
+                        this.lastBoostTap = -100;
+                    } else {
+                        this.lastBoostTap = tickCount;
+                    }
+                }
+                if (shiftKeyDown) this.entityData.set(BOOST_LOCKED, false);
+            }
+            this.spaceBoost = jumping || isBoostLocked();
+            this.spaceBrake = shiftKeyDown;
+            steerFromInput(up, down, left, right, false, false, false);
+            return;
+        }
 
         if (isLanding()) {
             this.landingInputTick = tickCount;
@@ -1326,9 +1706,15 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
         // Re-read stage in case it changed above.
         stage = this.getLaunchStage();
 
-        if (stage.ordinal() >= LaunchStage.LAUNCHED.ordinal()) {
+        if (stage.ordinal() >= LaunchStage.LAUNCHED.ordinal() && this.canManeuver()) {
             steerFromInput(up, down, left, right, jumping, shiftKeyDown, invertControls);
         }
+    }
+
+    /** Whether the fitted fins let the pilot steer during powered flight. */
+    public boolean canManeuver() {
+        Holder<RocketFin<?, ?>> fin = this.fin();
+        return fin != null && fin.value().canManeuver();
     }
 
     private void handleLaunchConfirmation(boolean risingEdge) {
@@ -1351,9 +1737,7 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
                         );
                     }
 
-                    case WAITING_SECOND_PRESS -> {
-                        this.ignite(this.controllerRoute());
-                    }
+                    case WAITING_SECOND_PRESS -> this.igniteFromPad();
                 }
             }
         }

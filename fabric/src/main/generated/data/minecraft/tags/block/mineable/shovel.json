@@ -1,5 +1,10 @@
 {
   "values": [
+    "galacticraft:dense_cloud",
+    "galacticraft:packed_cloud",
+    "galacticraft:ammonia_frost",
+    "galacticraft:packed_cloud_stairs",
+    "galacticraft:packed_cloud_slab",
     "galacticraft:burrower_excavated_tailings",
     "galacticraft:mercury_rocky_regolith",
     "galacticraft:mercury_dark_regolith",

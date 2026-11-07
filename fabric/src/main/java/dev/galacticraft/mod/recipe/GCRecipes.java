@@ -30,6 +30,8 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SimpleCraftingRecipeSerializer;
 
 public class GCRecipes {
+    public static final RecipeType<RocketModuleRecipe> ROCKET_MODULE_TYPE = new GCRecipeType<>();
+    public static final RecipeSerializer<RocketModuleRecipe> ROCKET_MODULE_SERIALIZER = new RocketModuleRecipe.Serializer();
     public static final RecipeType<FabricationRecipe> FABRICATION_TYPE = new GCRecipeType<>();
     public static final RecipeType<CompressingRecipe> COMPRESSING_TYPE = new GCRecipeType<>();
     public static final RecipeType<RocketRecipe> ROCKET_TYPE = new GCRecipeType<>();
@@ -45,6 +47,8 @@ public class GCRecipes {
     public static final RecipeSerializer<EmergencyKitRecipe> EMERGENCY_KIT_SERIALIZER = new SimpleCraftingRecipeSerializer<>(EmergencyKitRecipe::new);
 
     public static void register() {
+        Registry.register(BuiltInRegistries.RECIPE_TYPE, Constant.id("rocket_module"), ROCKET_MODULE_TYPE);
+        Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, Constant.id("rocket_module"), ROCKET_MODULE_SERIALIZER);
         Registry.register(BuiltInRegistries.RECIPE_TYPE, Constant.id(Constant.Recipe.FABRICATION), FABRICATION_TYPE);
         Registry.register(BuiltInRegistries.RECIPE_TYPE, Constant.id(Constant.Recipe.COMPRESSING), COMPRESSING_TYPE);
         Registry.register(BuiltInRegistries.RECIPE_TYPE, Constant.id(Constant.Recipe.ROCKET), ROCKET_TYPE);

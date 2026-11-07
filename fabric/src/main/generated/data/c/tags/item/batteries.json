@@ -1,5 +1,7 @@
 {
   "values": [
+    "galacticraft:pressure_controller_mk1",
+    "galacticraft:pressure_controller_mk2",
     "galacticraft:battery",
     "galacticraft:infinite_battery"
   ]

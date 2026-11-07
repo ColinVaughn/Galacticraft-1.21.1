@@ -1,7 +1,7 @@
 package dev.galacticraft.mod.gametest;
 
 import dev.galacticraft.api.rocket.LaunchStage;
-import dev.galacticraft.api.rocket.RocketPrefabs;
+import dev.galacticraft.mod.content.rocket.RocketPrefabs;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.Galacticraft;
 import dev.galacticraft.mod.config.ConfigImpl;

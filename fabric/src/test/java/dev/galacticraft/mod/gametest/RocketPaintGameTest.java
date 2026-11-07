@@ -3,7 +3,7 @@ package dev.galacticraft.mod.gametest;
 import dev.galacticraft.api.component.GCDataComponents;
 import dev.galacticraft.api.rocket.RocketData;
 import dev.galacticraft.api.rocket.RocketPaint;
-import dev.galacticraft.api.rocket.RocketPrefabs;
+import dev.galacticraft.mod.content.rocket.RocketPrefabs;
 import dev.galacticraft.api.rocket.part.RocketPartTypes;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.content.GCBlocks;

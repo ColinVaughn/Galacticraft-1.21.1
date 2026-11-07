@@ -23,7 +23,7 @@
 
 package dev.galacticraft.mod.data;
 
-import dev.galacticraft.api.component.GCItemSubPredicates;
+import dev.galacticraft.mod.content.advancements.GCItemSubPredicates;
 import dev.galacticraft.impl.internal.accessor.AdvancementRewardsAccessor;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.content.GCBlocks;

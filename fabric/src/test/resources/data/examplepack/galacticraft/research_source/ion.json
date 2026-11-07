@@ -1,0 +1,8 @@
+{
+  "research": [
+    "examplepack:rocket_engine/ion"
+  ],
+  "description": {
+    "text": "Craft an Ion Engine Schematic with paper and a redstone block."
+  }
+}

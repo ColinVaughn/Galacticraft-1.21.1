@@ -27,6 +27,8 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import dev.galacticraft.mod.accessor.DimensionDayTimeAccessor;
 import dev.galacticraft.mod.accessor.GCLevelAccessor;
+import dev.galacticraft.mod.content.entity.MoonVillagerEntity;
+import dev.galacticraft.mod.content.entity.SpaceEvolution;
 import dev.galacticraft.mod.misc.footprint.FootprintManager;
 import dev.galacticraft.mod.misc.footprint.ServerFootprintManager;
 import dev.galacticraft.mod.util.DimensionTime;
@@ -43,6 +45,7 @@ import net.minecraft.server.level.progress.ChunkProgressListener;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.RandomSequences;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.CustomSpawner;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
@@ -56,12 +59,15 @@ import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 @Mixin(ServerLevel.class)
 public abstract class ServerLevelMixin extends Level implements GCLevelAccessor {
@@ -89,16 +95,9 @@ public abstract class ServerLevelMixin extends Level implements GCLevelAccessor 
     }
 
     /**
-     * Runs a celestial body's own clock, so its day does not belong to the Overworld.
-     *
-     * Every dimension other than the Overworld is handed a {@code DerivedLevelData} that reads the
-     * Overworld's day time and discards writes to its own, which is why sleeping and {@code /time set}
-     * do nothing out here and why an Overworld clock jump drags every other sky with it. Galacticraft
-     * Legacy solved this with a per-dimension time offset; this is the same idea, kept as an absolute
-     * clock rather than an offset so nothing has to detect and undo the Overworld's jumps.
-     *
-     * Started at whatever the shared clock read the first time the dimension ticks, so an existing
-     * save carries on from where it was.
+     * Maintains an independent celestial clock because {@code DerivedLevelData} reads Overworld
+     * time and ignores dimension-local writes. Initializes from the shared clock on the first tick
+     * to preserve the time of existing saves.
      */
     @Inject(method = "tick", at = @At("HEAD"))
     private void gc$runOwnDayTime(BooleanSupplier hasTimeLeft, CallbackInfo ci) {
@@ -122,12 +121,8 @@ public abstract class ServerLevelMixin extends Level implements GCLevelAccessor 
     }
 
     /**
-     * Wakes players at their own dimension's sunrise.
-     *
-     * Vanilla rounds the clock up to the next multiple of 24000, which is a sunrise in the Overworld
-     * but an arbitrary moment on a body that takes eight vanilla days to turn - from the middle of the
-     * lunar night it only ever wakes you into more of the same night. The target comes from that body's
-     * own day instead, as Galacticraft Legacy's {@code WorldUtil.setNextMorning} did.
+     * Advances sleeping players to their celestial body's sunrise. Vanilla's 24000-tick boundary
+     * only matches the Overworld day length.
      */
     @WrapOperation(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;setDayTime(J)V"))
     private void gc$sleepSkipsToLocalMorning(ServerLevel level, long vanillaMorning, Operation<Void> original) {
@@ -135,6 +130,34 @@ public abstract class ServerLevelMixin extends Level implements GCLevelAccessor 
         original.call(level, dayLength == DimensionTime.VANILLA_DAY_LENGTH
                 ? vanillaMorning
                 : DimensionTime.nextMorning(level.getDayTime(), dayLength));
+    }
+
+    /**
+     * Restores carried Moon villagers before adding them to the level.
+     *
+     * @see MoonVillagerEntity#restoreCarried
+     */
+    @Inject(method = "addEntity", at = @At("HEAD"), cancellable = true)
+    private void gc$restoreCarriedMoonVillagers(Entity entity, CallbackInfoReturnable<Boolean> cir) {
+        MoonVillagerEntity moonVillager = MoonVillagerEntity.restoreCarried((ServerLevel) (Object) this, entity);
+        if (moonVillager != null) {
+            cir.setReturnValue(((ServerLevel) (Object) this).addFreshEntity(moonVillager));
+        }
+    }
+
+    /**
+     * Applies space evolution before tracking. All spawn and dimension-entry paths funnel through
+     * {@code addEntity}, so the initial entity sync includes the evolved state.
+     */
+    @Inject(method = "addEntity", at = @At("HEAD"))
+    private void gc$evolveArrivalsForSpace(Entity entity, CallbackInfoReturnable<Boolean> cir) {
+        SpaceEvolution.onEntityAdded(this, entity);
+    }
+
+    /** Mobs placed by world generation join their chunk later and never pass through {@code addEntity}. */
+    @ModifyVariable(method = "addWorldGenChunkEntities", at = @At("HEAD"), argsOnly = true)
+    private Stream<Entity> gc$evolveGeneratedMobsForSpace(Stream<Entity> entities) {
+        return entities.peek(entity -> SpaceEvolution.onEntityAdded(this, entity));
     }
 
     @Inject(method = "sendBlockUpdated", at = @At(value = "INVOKE", target = "Ljava/util/Set;iterator()Ljava/util/Iterator;", remap = false))

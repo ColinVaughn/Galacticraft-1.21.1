@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "G": {
+      "item": "minecraft:glass"
+    },
+    "J": {
+      "item": "galacticraft:jovian_composite_plate"
+    }
+  },
+  "pattern": [
+    "GGG",
+    "GJG",
+    "GGG"
+  ],
+  "result": {
+    "count": 8,
+    "id": "galacticraft:pressure_glass"
+  }
+}

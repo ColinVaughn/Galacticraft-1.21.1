@@ -1,0 +1,12 @@
+{
+  "axial_tilt": 3.13,
+  "body": "galacticraft:jupiter",
+  "center": [
+    11918.58428704209,
+    1024.0,
+    11499.999999999998
+  ],
+  "radius": 1053.0,
+  "rotation_period": 0.41354,
+  "texture": "galacticraft:textures/environment/solar_system/jupiter.png"
+}

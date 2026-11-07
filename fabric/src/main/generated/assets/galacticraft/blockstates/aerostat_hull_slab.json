@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "galacticraft:block/aerostat_hull_slab"
+    },
+    "type=double": {
+      "model": "galacticraft:block/aerostat_hull"
+    },
+    "type=top": {
+      "model": "galacticraft:block/aerostat_hull_slab_top"
+    }
+  }
+}

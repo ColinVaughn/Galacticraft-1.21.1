@@ -25,19 +25,28 @@ package dev.galacticraft.mod.gametest;
 import dev.galacticraft.api.gas.Gases;
 import dev.galacticraft.impl.internal.accessor.ChunkOxygenAccessor;
 import dev.galacticraft.impl.internal.accessor.ChunkOxygenSyncer;
+import dev.galacticraft.machinelib.api.block.MachineBlock;
 import dev.galacticraft.machinelib.api.machine.configuration.RedstoneMode;
 import dev.galacticraft.mod.content.GCBlocks;
+import dev.galacticraft.mod.content.block.entity.machine.OxygenBubbleDistributorBlockEntity;
 import dev.galacticraft.mod.content.block.entity.machine.OxygenSealerBlockEntity;
+import dev.galacticraft.mod.content.block.machine.ResourceStorageBlock;
+import dev.galacticraft.mod.machine.SealerManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.AfterBatch;
 import net.minecraft.gametest.framework.BeforeBatch;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.TrapDoorBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.Half;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 public final class OxygenSealerTestSuite implements GalacticraftGameTest {
     /**
@@ -47,22 +56,32 @@ public final class OxygenSealerTestSuite implements GalacticraftGameTest {
      */
     private static final String BATCH = "galacticraft:oxygen_sealer";
     /**
-     * Invalidating a seal drops every sealed block in the level, not only the ones behind the block that
-     * changed, so the test that does it gets a batch of its own rather than pulling the air out from
-     * under the tests it would otherwise run beside.
+     * Isolate room invalidation: a recompute processes all rooms, so cross-room regressions must
+     * fail the test that triggered them.
      */
     private static final String INVALIDATION_BATCH = "galacticraft:oxygen_sealer_invalidation";
     /**
-     * Cutting a sealer's redstone means changing a block, which invalidates every seal in the level, so
-     * this gets a batch to itself for the same reason {@link #INVALIDATION_BATCH} exists.
+     * Separate batch for the same invalidation risk as {@link #INVALIDATION_BATCH}.
      */
     private static final String REDSTONE_BATCH = "galacticraft:oxygen_sealer_redstone";
     /**
-     * Switching a sealer off has to leave the room unbreathable, and any test laying a block anywhere in
-     * the level unseals every room for a tick - which would let that check pass for the wrong reason. So
-     * this one runs alone too.
+     * Isolate shutdown so another test cannot remove this room's air and make it pass accidentally.
      */
     private static final String SWITCH_OFF_BATCH = "galacticraft:oxygen_sealer_switch_off";
+    /** Opens a room, so this gets a batch to itself for the reason {@link #INVALIDATION_BATCH} gives. */
+    private static final String UNSEAL_AROUND_BUBBLE_BATCH = "galacticraft:oxygen_sealer_unseal_around_bubble";
+    /**
+     * Isolate cosmetic changes so a regression cannot unseal neighboring tests' rooms.
+     */
+    private static final String COSMETIC_CHANGE_BATCH = "galacticraft:oxygen_sealer_cosmetic_change";
+    /** Opens a room, so this gets a batch to itself for the reason {@link #INVALIDATION_BATCH} gives. */
+    private static final String RESHAPE_BATCH = "galacticraft:oxygen_sealer_reshape";
+    /**
+     * Isolate torch tests because cross-room unsealing permanently extinguishes their fixtures.
+     */
+    private static final String LIGHT_A_TORCH_BATCH = "galacticraft:oxygen_sealer_light_a_torch";
+    private static final String LAY_A_BLOCK_BATCH = "galacticraft:oxygen_sealer_lay_a_block";
+    private static final String PUT_OUT_BATCH = "galacticraft:oxygen_sealer_put_out";
     private static boolean levelWasBreathable = true;
 
     /** A hollow stone shell spanning this cube, so the interior is the positions from 1 to 3. */
@@ -71,10 +90,23 @@ public final class OxygenSealerTestSuite implements GalacticraftGameTest {
     private static final BlockPos SECOND_SEALER = new BlockPos(3, 1, 3);
     /** An interior position neither sealer occupies. */
     private static final BlockPos INTERIOR = new BlockPos(2, 2, 2);
-    /** A wall of the room, so breaking it opens the room to the vacuum outside. */
-    private static final BlockPos WALL = new BlockPos(2, 0, 2);
     /** Interior, against {@link #FIRST_SEALER}, so a block here powers that sealer. */
     private static final BlockPos SIGNAL_SOURCE = new BlockPos(2, 1, 1);
+    /**
+     * Ceiling opening; side walls and the floor border the plot's solid ground and barriers.
+     */
+    private static final BlockPos CEILING = new BlockPos(2, ROOM_SIZE - 1, 2);
+    /**
+     * The middle of a bubble of radius 1, from a distributor standing where {@link #SECOND_SEALER} would.
+     * {@link #INTERIOR} is outside it.
+     */
+    private static final BlockPos BUBBLE_CENTRE = SECOND_SEALER.above();
+    /** A wall inside that bubble, which the room never holds. */
+    private static final BlockPos WALL_IN_BUBBLE = BUBBLE_CENTRE.east();
+    /** Interior, in the corner {@link #SECOND_SEALER} takes when a test has a second sealer. */
+    private static final BlockPos STORAGE_MODULE = SECOND_SEALER;
+    /** A floor corner no other fixture uses, for a torch standing in the room. */
+    private static final BlockPos TORCH = new BlockPos(3, 1, 1);
     /** Long enough for the machines to tick their resource flags and the sealer manager to run. */
     private static final int SETTLE_TICKS = 6;
     /** How long {@link #await} keeps looking before giving up, comfortably inside the test timeout. */
@@ -146,6 +178,66 @@ public final class OxygenSealerTestSuite implements GalacticraftGameTest {
         restoreAir(level);
     }
 
+    @BeforeBatch(batch = UNSEAL_AROUND_BUBBLE_BATCH)
+    public void emptyTheAirToUnsealAroundABubble(ServerLevel level) {
+        vacuum(level);
+    }
+
+    @AfterBatch(batch = UNSEAL_AROUND_BUBBLE_BATCH)
+    public void putTheAirBackAfterUnsealingAroundABubble(ServerLevel level) {
+        restoreAir(level);
+    }
+
+    @BeforeBatch(batch = COSMETIC_CHANGE_BATCH)
+    public void emptyTheAirToChangeHowAMachineLooks(ServerLevel level) {
+        vacuum(level);
+    }
+
+    @AfterBatch(batch = COSMETIC_CHANGE_BATCH)
+    public void putTheAirBackAfterChangingHowAMachineLooks(ServerLevel level) {
+        restoreAir(level);
+    }
+
+    @BeforeBatch(batch = RESHAPE_BATCH)
+    public void emptyTheAirToReshapeTheCeiling(ServerLevel level) {
+        vacuum(level);
+    }
+
+    @AfterBatch(batch = RESHAPE_BATCH)
+    public void putTheAirBackAfterReshapingTheCeiling(ServerLevel level) {
+        restoreAir(level);
+    }
+
+    @BeforeBatch(batch = LIGHT_A_TORCH_BATCH)
+    public void emptyTheAirToLightATorch(ServerLevel level) {
+        vacuum(level);
+    }
+
+    @AfterBatch(batch = LIGHT_A_TORCH_BATCH)
+    public void putTheAirBackAfterLightingATorch(ServerLevel level) {
+        restoreAir(level);
+    }
+
+    @BeforeBatch(batch = LAY_A_BLOCK_BATCH)
+    public void emptyTheAirToLayABlock(ServerLevel level) {
+        vacuum(level);
+    }
+
+    @AfterBatch(batch = LAY_A_BLOCK_BATCH)
+    public void putTheAirBackAfterLayingABlock(ServerLevel level) {
+        restoreAir(level);
+    }
+
+    @BeforeBatch(batch = PUT_OUT_BATCH)
+    public void emptyTheAirToPutATorchOut(ServerLevel level) {
+        vacuum(level);
+    }
+
+    @AfterBatch(batch = PUT_OUT_BATCH)
+    public void putTheAirBackAfterPuttingATorchOut(ServerLevel level) {
+        restoreAir(level);
+    }
+
     private static void vacuum(ServerLevel level) {
         levelWasBreathable = level.getDefaultBreathable();
         level.setDefaultBreathable(false);
@@ -155,18 +247,134 @@ public final class OxygenSealerTestSuite implements GalacticraftGameTest {
         level.setDefaultBreathable(levelWasBreathable);
     }
 
+    /**
+     * Opening a room has to invalidate its seal. A room keeps its air until the recompute that follows the
+     * change, so this checks once that has run. The hole goes in the ceiling: the floor and the side walls
+     * back onto the plot's ground and barrier, which the sealer rightly reads as more wall.
+     */
     @GameTest(template = EMPTY_STRUCTURE, batch = INVALIDATION_BATCH, timeoutTicks = 200)
     public void blockChangeInvalidatesSealedState(GameTestHelper context) {
         buildRoom(context);
         OxygenSealerBlockEntity sealer = placeFuelledSealer(context, FIRST_SEALER);
 
         await(context, sealer::isSealed, "the sealer never sealed the room to begin with", () -> {
-            context.setBlock(WALL, Blocks.AIR);
-            check(context, () -> {
+            context.setBlock(CEILING, Blocks.AIR);
+
+            runAt(context, SETTLE_TICKS, () -> check(context, () -> {
                 if (sealer.isSealed()) return "opening the room did not invalidate the oxygen sealer";
-                if (context.getLevel().isBreathable(context.absolutePos(INTERIOR))) return "the opened room stayed breathable";
+                if (breathable(context, INTERIOR)) return "the opened room stayed breathable";
                 return null;
-            });
+            }));
+        });
+    }
+
+    /**
+     * Checks that cosmetic machine state changes do not queue seal recomputes (issue #20). Query
+     * the pending state before the next tick, since recomputing an unchanged room leaves no trace.
+     */
+    @GameTest(template = EMPTY_STRUCTURE, batch = COSMETIC_CHANGE_BATCH, timeoutTicks = 200)
+    public void aMachineChangingOnlyHowItLooksLeavesTheSealAlone(GameTestHelper context) {
+        buildRoom(context);
+        OxygenSealerBlockEntity sealer = placeFuelledSealer(context, FIRST_SEALER);
+        context.setBlock(STORAGE_MODULE, GCBlocks.OXYGEN_STORAGE_MODULE);
+        SealerManager sealers = context.getLevel().galacticraft$getSealerManager();
+
+        await(context, () -> sealer.isSealed() && breathable(context, INTERIOR) && !sealers.isRecomputeQueued(),
+                "the sealer never settled on holding the room", () -> check(context, () -> {
+            restyle(context, FIRST_SEALER, state -> state.cycle(MachineBlock.ACTIVE));
+            if (sealers.isRecomputeQueued()) return "a sealer switching its light queued a flood fill of every room in the level";
+            restyle(context, STORAGE_MODULE, state -> state.setValue(ResourceStorageBlock.AMOUNT, 6));
+            if (sealers.isRecomputeQueued()) return "a storage module's gauge moving queued a flood fill of every room in the level";
+            if (!sealer.isSealed() || !breathable(context, INTERIOR)) return "a machine changing only how it looks unsealed the room around it";
+            // The control: a block that does change the room has to queue one, or the checks above prove nothing.
+            context.setBlock(INTERIOR, Blocks.STONE);
+            if (!sealers.isRecomputeQueued()) return "laying a block in the room queued no recompute either, so this proves nothing";
+            return null;
+        }));
+    }
+
+    /**
+     * Control for {@link #aMachineChangingOnlyHowItLooksLeavesTheSealAlone}: opening a trapdoor
+     * changes sealing faces even though the block type stays the same.
+     */
+    @GameTest(template = EMPTY_STRUCTURE, batch = RESHAPE_BATCH, timeoutTicks = 200)
+    public void aTrapdoorOpeningInTheCeilingUnsealsTheRoom(GameTestHelper context) {
+        buildRoom(context);
+        // Lying in the bottom of its block, so its solid face is the one the room looks up at.
+        context.setBlock(CEILING, Blocks.IRON_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.HALF, Half.BOTTOM));
+        OxygenSealerBlockEntity sealer = placeFuelledSealer(context, FIRST_SEALER);
+
+        await(context, () -> sealer.isSealed() && breathable(context, INTERIOR),
+                "a closed trapdoor in the ceiling never held the room, so this proves nothing", () -> {
+            restyle(context, CEILING, state -> state.setValue(TrapDoorBlock.OPEN, true));
+
+            runAt(context, SETTLE_TICKS, () -> check(context, () -> {
+                if (sealer.isSealed()) return "the room stayed sealed after the trapdoor in its ceiling opened";
+                if (breathable(context, INTERIOR)) return "the room stayed breathable after the trapdoor in its ceiling opened";
+                return null;
+            }));
+        });
+    }
+
+    /**
+     * Checks that placing a torch in a sealed room does not briefly unseal it and extinguish the torch.
+     */
+    @GameTest(template = EMPTY_STRUCTURE, batch = LIGHT_A_TORCH_BATCH, timeoutTicks = 200)
+    public void aTorchLitInsideASealedRoomStaysLit(GameTestHelper context) {
+        buildRoom(context);
+        OxygenSealerBlockEntity sealer = placeFuelledSealer(context, FIRST_SEALER);
+
+        await(context, () -> sealer.isSealed() && breathable(context, TORCH),
+                "the sealer never sealed the room to begin with", () -> {
+            context.setBlock(TORCH, Blocks.TORCH);
+
+            runAt(context, SETTLE_TICKS, () -> check(context, () -> {
+                if (!context.getBlockState(TORCH).is(Blocks.TORCH)) return "a torch lit inside a sealed room went out";
+                if (!sealer.isSealed()) return "the room did not stay sealed around the torch, so this proves nothing";
+                return null;
+            }));
+        });
+    }
+
+    /**
+     * Checks that building inside a sealed room leaves existing torches lit.
+     */
+    @GameTest(template = EMPTY_STRUCTURE, batch = LAY_A_BLOCK_BATCH, timeoutTicks = 200)
+    public void aBlockLaidInsideASealedRoomLeavesItsTorchLit(GameTestHelper context) {
+        buildRoom(context);
+        placeLitTorch(context, TORCH);
+        OxygenSealerBlockEntity sealer = placeFuelledSealer(context, FIRST_SEALER);
+
+        await(context, () -> sealer.isSealed() && breathable(context, TORCH),
+                "the sealer never sealed the room around the torch", () -> {
+            context.setBlock(INTERIOR, Blocks.STONE);
+
+            runAt(context, SETTLE_TICKS, () -> check(context, () -> {
+                if (!context.getBlockState(TORCH).is(Blocks.TORCH)) return "laying a block inside a sealed room put out the torch already burning there";
+                if (!sealer.isSealed()) return "the room did not reseal around the new block, so this proves nothing";
+                return null;
+            }));
+        });
+    }
+
+    /**
+     * Control: opening the room to vacuum must extinguish its torch.
+     */
+    @GameTest(template = EMPTY_STRUCTURE, batch = PUT_OUT_BATCH, timeoutTicks = 200)
+    public void openingASealedRoomPutsItsTorchOut(GameTestHelper context) {
+        buildRoom(context);
+        placeLitTorch(context, TORCH);
+        OxygenSealerBlockEntity sealer = placeFuelledSealer(context, FIRST_SEALER);
+
+        await(context, () -> sealer.isSealed() && breathable(context, TORCH),
+                "the sealer never sealed the room around the torch", () -> {
+            context.setBlock(CEILING, Blocks.AIR);
+
+            runAt(context, SETTLE_TICKS, () -> check(context, () -> {
+                if (sealer.isSealed()) return "the room stayed sealed with a hole in its ceiling, so this proves nothing";
+                if (!context.getBlockState(TORCH).is(GCBlocks.UNLIT_TORCH)) return "a torch went on burning after its room was opened to vacuum";
+                return null;
+            }));
         });
     }
 
@@ -287,6 +495,58 @@ public final class OxygenSealerTestSuite implements GalacticraftGameTest {
         }));
     }
 
+    /**
+     * A bubble switched off inside a sealed room. Bubbles and rooms write the same per-block air, and the
+     * bubble only clears what it is giving up - but the room is still holding most of that.
+     */
+    @GameTest(template = EMPTY_STRUCTURE, batch = BATCH, timeoutTicks = 200)
+    public void aBubbleSwitchedOffInsideASealedRoomLeavesTheRoomItsAir(GameTestHelper context) {
+        buildRoom(context);
+        OxygenSealerBlockEntity sealer = placeFuelledSealer(context, FIRST_SEALER);
+        OxygenBubbleDistributorBlockEntity distributor = placeDistributor(context, SECOND_SEALER);
+
+        await(context, () -> sealer.isSealed() && breathable(context, BUBBLE_CENTRE),
+                "the sealer never sealed the room around the distributor", () -> {
+            distributor.distributeOxygenToArea(1, true);
+            distributor.distributeOxygenToArea(1, false);
+            check(context, () -> {
+                if (!breathable(context, BUBBLE_CENTRE)) return "switching a bubble off inside a sealed room took the room's air";
+                if (breathable(context, WALL_IN_BUBBLE)) return "the bubble kept the air only it covered, so this proves nothing";
+                return null;
+            });
+        });
+    }
+
+    /**
+     * The other way round: a room losing its seal clears every block it held, and the ones a bubble
+     * inside it also covers have to keep their air.
+     */
+    @GameTest(template = EMPTY_STRUCTURE, batch = UNSEAL_AROUND_BUBBLE_BATCH, timeoutTicks = 200)
+    public void aRoomLosingItsSealLeavesTheBubbleInsideItBreathable(GameTestHelper context) {
+        buildRoom(context);
+        OxygenSealerBlockEntity sealer = placeFuelledSealer(context, FIRST_SEALER);
+        OxygenBubbleDistributorBlockEntity distributor = placeDistributor(context, SECOND_SEALER);
+
+        await(context, () -> sealer.isSealed() && breathable(context, INTERIOR),
+                "the sealer never sealed the room around the distributor", () -> {
+            distributor.distributeOxygenToArea(1, true);
+            context.setBlock(CEILING, Blocks.AIR);
+
+            runAt(context, SETTLE_TICKS, () -> {
+                try {
+                    check(context, () -> {
+                        if (sealer.isSealed()) return "the room stayed sealed with a hole in its ceiling, so this proves nothing";
+                        if (breathable(context, INTERIOR)) return "the opened room kept its own air, so this proves nothing";
+                        if (!breathable(context, BUBBLE_CENTRE)) return "a room losing its seal took the air of the bubble inside it";
+                        return null;
+                    });
+                } finally {
+                    distributor.distributeOxygenToArea(1, false);
+                }
+            });
+        });
+    }
+
     /** Builds a hollow stone shell with a breathable-once-sealed interior of 1..3 on every axis. */
     private static void buildRoom(GameTestHelper context) {
         for (int x = 0; x < ROOM_SIZE; x++) {
@@ -309,13 +569,43 @@ public final class OxygenSealerTestSuite implements GalacticraftGameTest {
         return sealer;
     }
 
+    /** Placed without power, so it never grows a bubble of its own and the test applies one by hand. */
+    private static OxygenBubbleDistributorBlockEntity placeDistributor(GameTestHelper context, BlockPos pos) {
+        context.setBlock(pos, GCBlocks.OXYGEN_BUBBLE_DISTRIBUTOR);
+        return context.getBlockEntity(pos);
+    }
+
+    private static boolean breathable(GameTestHelper context, BlockPos pos) {
+        return context.getLevel().isBreathable(context.absolutePos(pos));
+    }
+
+    /** Swaps a block for another state of itself in place, the way a machine does, without neighbour updates. */
+    private static void restyle(GameTestHelper context, BlockPos pos, UnaryOperator<BlockState> change) {
+        BlockPos absolute = context.absolutePos(pos);
+        BlockState before = context.getLevel().getBlockState(absolute);
+        BlockState after = change.apply(before);
+        context.assertFalse(after == before, "restyling " + before + " changed nothing, so this proves nothing");
+        context.getLevel().setBlock(absolute, after, Block.UPDATE_CLIENTS);
+    }
+
     /**
-     * Waits for {@code ready} to hold, looking once a tick, then runs {@code then}.
-     *
-     * Sealing settles over several ticks, and laying any block anywhere in the level drops every seal
-     * in it for a tick before they are recomputed - so while the other tests in a batch are still
-     * building their rooms, sampling at a fixed tick is a race. Only ever wait for a condition the test
-     * needs to be true: waiting for one to be false would be satisfied by exactly that flicker.
+     * Stands a burning torch in the room before it is sealed. The level is held in vacuum, where a torch
+     * goes straight out, so its air is switched back on for the moment the torch is placed.
+     */
+    private static void placeLitTorch(GameTestHelper context, BlockPos pos) {
+        ServerLevel level = context.getLevel();
+        level.setDefaultBreathable(true);
+        try {
+            context.setBlock(pos, Blocks.TORCH);
+        } finally {
+            level.setDefaultBreathable(false);
+        }
+        context.assertTrue(context.getBlockState(pos).is(Blocks.TORCH), "the torch went out as it was placed, so this proves nothing");
+    }
+
+    /**
+     * Polls once per tick until {@code ready}, then runs {@code then}. Wait for a positive readiness
+     * condition: a negative check can pass before asynchronous sealing has begun.
      */
     private void await(GameTestHelper context, BooleanSupplier ready, String timedOut, Runnable then) {
         await(context, DEADLINE_TICKS, ready, timedOut, then);

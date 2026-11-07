@@ -25,7 +25,12 @@ package dev.galacticraft.mod.client.render.block.entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import dev.galacticraft.mod.client.render.entity.model.GCEntityModelLayer;
+import dev.galacticraft.mod.client.spacerace.TeamFlagLayout;
+import dev.galacticraft.mod.client.spacerace.TeamFlagTextures;
+import dev.galacticraft.mod.content.FlagDesigns;
 import dev.galacticraft.mod.content.block.entity.decoration.FlagBlockEntity;
+import dev.galacticraft.mod.spacerace.TeamFlagOwner;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
@@ -40,18 +45,24 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.UUID;
+
 public class FlagBlockEntityRenderer implements BlockEntityRenderer<FlagBlockEntity> {
     protected final ModelPart flag;
+    /** A team's flag: the space race menu's 3:2 design, as long from the pole as a banner flag and a little deeper. */
+    protected final ModelPart teamFlag;
 
     public FlagBlockEntityRenderer(BlockEntityRendererProvider.Context context) {
         ModelPart root = context.bakeLayer(GCEntityModelLayer.FLAG);
         this.flag = root.getChild("flag");
+        this.teamFlag = root.getChild("team_flag");
     }
 
     public static LayerDefinition createBodyLayer() {
@@ -60,6 +71,11 @@ public class FlagBlockEntityRenderer implements BlockEntityRenderer<FlagBlockEnt
 
         PartDefinition flag = root.addOrReplaceChild("flag",
                 CubeListBuilder.create().texOffs(0, 0).addBox(48.5F, 1.5F, -0.5F, 20, 40, 1),
+                PartPose.rotation(0, 0, Mth.HALF_PI)
+        );
+        root.addOrReplaceChild("team_flag",
+                CubeListBuilder.create().texOffs(0, 0).addBox(68.5F - TeamFlagLayout.BOX_WIDTH, 1.5F, -0.5F,
+                        TeamFlagLayout.BOX_WIDTH, TeamFlagLayout.BOX_HEIGHT, TeamFlagLayout.BOX_DEPTH),
                 PartPose.rotation(0, 0, Mth.HALF_PI)
         );
 
@@ -77,6 +93,7 @@ public class FlagBlockEntityRenderer implements BlockEntityRenderer<FlagBlockEnt
         } else {
             this.flag.xRot = 0.0f;
         }
+        this.teamFlag.xRot = this.flag.xRot;
 
         matrices.pushPose();
         matrices.translate(0.5, 0, 0.5);
@@ -84,10 +101,30 @@ public class FlagBlockEntityRenderer implements BlockEntityRenderer<FlagBlockEnt
         matrices.mulPose(Axis.YN.rotationDegrees(flag.getYaw()));
 
         matrices.scale(2f/3f, 2f/3f, 2f/3f);
-        renderPatterns(
-                matrices, vertexConsumers, light, overlay, this.flag, ModelBakery.BANNER_BASE, flag.getBaseColor(), flag.getPatterns()
-        );
+        ResourceLocation design = flag.getDesign();
+        TeamFlagOwner team = flag.getTeam();
+        if (team != null) {
+            ResourceLocation texture = TeamFlagTextures.texture(teamShown(flag, team));
+            this.teamFlag.render(matrices, vertexConsumers.getBuffer(RenderType.entitySolid(texture)), light, overlay);
+        } else if (design != null) {
+            this.flag.render(matrices, vertexConsumers.getBuffer(RenderType.entitySolid(FlagDesigns.texture(design))), light, overlay);
+        } else {
+            renderPatterns(
+                    matrices, vertexConsumers, light, overlay, this.flag, ModelBakery.BANNER_BASE, flag.getBaseColor(), flag.getPatterns()
+            );
+        }
         matrices.popPose();
+    }
+
+    /**
+     * The team whose design a flag shows. An unclaimed team flag in a player's hand or inventory previews their own
+     * design, since crafting or planting it makes it theirs; planted unclaimed, it flies plain cloth.
+     */
+    private static @Nullable UUID teamShown(FlagBlockEntity flag, TeamFlagOwner team) {
+        if (team.isClaimed()) return team.id();
+        if (flag.getLevel() != null) return null;
+        Minecraft client = Minecraft.getInstance();
+        return client.player != null ? client.player.getUUID() : null;
     }
 
     public static boolean shouldSway(@Nullable Level level, BlockPos pos) {

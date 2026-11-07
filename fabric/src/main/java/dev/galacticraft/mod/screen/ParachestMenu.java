@@ -87,11 +87,11 @@ public class ParachestMenu extends AbstractContainerMenu {
             ItemStack itemstack1 = slot.getItem();
             itemstack = itemstack1.copy();
 
-            if (slotIndex < this.container.getContainerSize()) {
-                if (!this.moveItemStackTo(itemstack1, size - 36, size, true)) {
+            if (slotIndex >= 36) {
+                if (!this.moveItemStackTo(itemstack1, 0, 36, true)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (!this.moveItemStackTo(itemstack1, 0, this.container.getContainerSize(), false)) {
+            } else if (!this.moveItemStackTo(itemstack1, 36, size, false)) {
                 return ItemStack.EMPTY;
             }
 

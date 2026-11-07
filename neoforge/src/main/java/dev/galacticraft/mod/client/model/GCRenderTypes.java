@@ -40,6 +40,7 @@ public final class GCRenderTypes {
     private static @Nullable ShaderInstance bubbleShader;
     private static @Nullable ShaderInstance spaceStarShader;
     private static @Nullable ShaderInstance spaceGalaxyShader;
+    private static @Nullable ShaderInstance spacePlanetShader;
 
     private static final BiFunction<ResourceLocation, Boolean, RenderType> OBJ = Util.memoize((texture, outline) ->
             RenderType.create("galacticraft_obj", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.TRIANGLES,
@@ -100,6 +101,9 @@ public final class GCRenderTypes {
     public static void setSpaceStarShader(ShaderInstance shader) { spaceStarShader = shader; }
     public static @Nullable ShaderInstance getSpaceGalaxyShader() { return spaceGalaxyShader; }
     public static void setSpaceGalaxyShader(ShaderInstance shader) { spaceGalaxyShader = shader; }
+
+    public static @Nullable ShaderInstance getSpacePlanetShader() { return spacePlanetShader; }
+    public static void setSpacePlanetShader(ShaderInstance shader) { spacePlanetShader = shader; }
 
     private GCRenderTypes() {}
 }

@@ -1,5 +1,8 @@
 {
   "values": [
+    "galacticraft:packed_cloud_stairs",
+    "galacticraft:aerostat_hull_stairs",
+    "galacticraft:reinforced_aerostat_hull_stairs",
     "#galacticraft:stairs"
   ]
 }

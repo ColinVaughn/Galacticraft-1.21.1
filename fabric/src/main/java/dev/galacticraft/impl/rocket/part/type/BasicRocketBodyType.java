@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,8 +23,11 @@
 
 package dev.galacticraft.impl.rocket.part.type;
 
+import java.util.Optional;
+import net.minecraft.resources.ResourceLocation;
 import com.mojang.serialization.Codec;
 import dev.galacticraft.api.rocket.entity.Rocket;
+import dev.galacticraft.api.rocket.part.RocketPartLayout;
 import dev.galacticraft.api.rocket.part.type.RocketBodyType;
 import dev.galacticraft.api.rocket.recipe.RocketPartRecipe;
 import dev.galacticraft.api.rocket.travelpredicate.ConfiguredTravelPredicate;
@@ -55,5 +59,20 @@ public final class BasicRocketBodyType extends RocketBodyType<BasicRocketBodyCon
     @Override
     public @Nullable RocketPartRecipe<?, ?> getRecipe(BasicRocketBodyConfig config) {
         return config.recipe();
+    }
+
+    @Override
+    public @NotNull RocketPartLayout layout(@NotNull BasicRocketBodyConfig config) {
+        return config.layout();
+    }
+
+    @Override
+    public boolean isPaintable(@NotNull BasicRocketBodyConfig config) {
+        return config.paintable();
+    }
+
+    @Override
+    public @NotNull Optional<ResourceLocation> model(@NotNull BasicRocketBodyConfig config) {
+        return config.model();
     }
 }

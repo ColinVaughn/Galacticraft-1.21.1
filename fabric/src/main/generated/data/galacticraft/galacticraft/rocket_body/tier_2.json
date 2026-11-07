@@ -2,6 +2,7 @@
   "type": "galacticraft:basic",
   "config": {
     "max_passengers": 1,
+    "paintable": true,
     "predicate": {
       "type": "galacticraft:access_weight",
       "config": {

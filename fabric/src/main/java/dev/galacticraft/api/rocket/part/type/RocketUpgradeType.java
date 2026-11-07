@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,9 +25,14 @@ package dev.galacticraft.api.rocket.part.type;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
+import dev.galacticraft.api.rocket.RocketUpgradeData;
 import dev.galacticraft.api.rocket.part.RocketUpgrade;
 import dev.galacticraft.api.rocket.part.config.RocketUpgradeConfig;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
+import java.util.Optional;
 
 public non-sealed abstract class RocketUpgradeType<C extends RocketUpgradeConfig> implements RocketPartType<C> {
     private final @NotNull MapCodec<RocketUpgrade<C, RocketUpgradeType<C>>> codec;
@@ -43,5 +49,42 @@ public non-sealed abstract class RocketUpgradeType<C extends RocketUpgradeConfig
     @Override
     public @NotNull MapCodec<? extends RocketUpgrade<C, ? extends RocketUpgradeType<C>>> codec() {
         return this.codec;
+    }
+
+    /**
+     * Returns whether {@code stack} may go into the rocket workbench's upgrade slot {@code slot}.
+     * The workbench offers each item to every registered upgrade and accepts it if any says yes,
+     * so keep your items out of other upgrades' slots here when they must not mix.
+     *
+     * @param slots the current contents of every upgrade slot
+     */
+    public boolean canPlace(@NotNull C config, int slot, @NotNull ItemStack stack, @NotNull List<ItemStack> slots) {
+        return false;
+    }
+
+    /** Extra tank capacity in droplets; zero preserves the engine/global tank balance. */
+    public long additionalFuelCapacity(C config, dev.galacticraft.api.rocket.RocketData data) {
+        return 0;
+    }
+
+    /**
+     * Returns whether the items in the workbench's upgrade slots install this upgrade on the rocket
+     * being built. When several upgrades say yes, the one whose registry id sorts first wins.
+     *
+     * @param slots the current contents of every upgrade slot
+     */
+    public boolean isInstalledBy(@NotNull C config, @NotNull List<ItemStack> slots) {
+        return false;
+    }
+
+    /**
+     * Returns the per-rocket data to store with this upgrade when {@link #isInstalledBy} said yes,
+     * or empty if this upgrade keeps no per-rocket data.
+     *
+     * @param slots the current contents of every upgrade slot
+     * @see RocketUpgradeData#register
+     */
+    public @NotNull Optional<RocketUpgradeData> createData(@NotNull C config, @NotNull List<ItemStack> slots) {
+        return Optional.empty();
     }
 }

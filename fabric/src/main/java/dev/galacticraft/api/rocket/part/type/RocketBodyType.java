@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +31,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * The body of a rocket. Controls the number of installable rocket upgrades and the maximum passenger count.
+ * The body of a rocket. Controls the maximum passenger count.
  */
 public non-sealed abstract class RocketBodyType<C extends RocketBodyConfig> implements RocketPartType<C> {
     private final @NotNull MapCodec<RocketBody<C, RocketBodyType<C>>> codec;
@@ -50,7 +51,9 @@ public non-sealed abstract class RocketBodyType<C extends RocketBodyConfig> impl
     }
 
     /**
-     * Returns the maximum number of passengers allowed on this rocket.
+     * Returns the maximum number of passengers allowed on this rocket, the pilot included. Seats
+     * after the first are crew seats and only take players; at the edge of space each crew member
+     * picks a destination on their own celestial map and lands in their own lander.
      *
      * @return the maximum number of passengers allowed on this rocket.
      */

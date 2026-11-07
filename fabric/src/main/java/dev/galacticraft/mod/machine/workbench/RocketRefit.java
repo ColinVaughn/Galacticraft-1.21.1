@@ -4,9 +4,10 @@ package dev.galacticraft.mod.machine.workbench;
 import dev.galacticraft.api.component.GCDataComponents;
 import dev.galacticraft.api.rocket.RocketData;
 import dev.galacticraft.api.rocket.RocketPaint;
-import dev.galacticraft.api.rocket.RocketPrefabs;
+import dev.galacticraft.mod.content.rocket.RocketPrefabs;
 import dev.galacticraft.api.rocket.part.RocketPartTypes;
 import dev.galacticraft.mod.content.item.GCItems;
+import dev.galacticraft.mod.content.item.GenericRocketModuleItem;
 import dev.galacticraft.mod.content.item.RocketModuleItem;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.EitherHolder;
@@ -42,17 +43,24 @@ public final class RocketRefit {
     public static ItemStack module(RocketData data, RocketPartTypes type) {
         var key = key(data, type);
         if (key.isEmpty()) return ItemStack.EMPTY;
-        for (RocketModuleItem module : GCItems.ROCKET_MODULES) {
+        for (RocketModuleItem module : RocketModuleItem.all()) {
             if (module.type() == type && key.equals(key(module.rocketData(), type))) {
                 ItemStack result = module.getDefaultInstance();
                 RocketData defaults = module.rocketData();
                 result.set(GCDataComponents.ROCKET_DATA, new RocketData(defaults.cone(), defaults.body(), defaults.fin(),
-                        defaults.booster(), defaults.engine(), defaults.upgrade(), defaults.upgradeData(), data.tints().color(type).orElse(data.color()),
+                        defaults.booster(), defaults.engine(), defaults.upgrade(), type == RocketPartTypes.UPGRADE ? data.upgradeData() : defaults.upgradeData(), data.tints().color(type).orElse(data.color()),
                         RocketPaint.NONE.withColor(type, data.paint().color(type).orElse(null))));
                 return result;
             }
         }
-        return ItemStack.EMPTY;
+        // A part with no module item of its own, such as one from a datapack, rides the generic module.
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        ItemStack generic = GenericRocketModuleItem.stackFor((ResourceKey) key.get());
+        RocketData carried = GCItems.ROCKET_MODULE.rocketData(generic);
+        generic.set(GCDataComponents.ROCKET_DATA, new RocketData(carried.cone(), carried.body(), carried.fin(), carried.booster(),
+                carried.engine(), carried.upgrade(), type == RocketPartTypes.UPGRADE ? data.upgradeData() : carried.upgradeData(), data.tints().color(type).orElse(data.color()),
+                RocketPaint.NONE.withColor(type, data.paint().color(type).orElse(null))));
+        return generic;
     }
 
     public static RocketData replace(RocketData original, RocketPartTypes type, ItemStack incoming) {
@@ -62,8 +70,11 @@ public final class RocketRefit {
         RocketPaint tints = original.tints().withColor(type, tint);
         return new RocketData(type == RocketPartTypes.CONE ? replacement.cone() : original.cone(),
                 type == RocketPartTypes.BODY ? replacement.body() : original.body(),
-                type == RocketPartTypes.FIN ? replacement.fin() : original.fin(), original.booster(),
-                type == RocketPartTypes.ENGINE ? replacement.engine() : original.engine(), original.upgrade(), original.upgradeData(),
+                type == RocketPartTypes.FIN ? replacement.fin() : original.fin(),
+                type == RocketPartTypes.BOOSTER ? replacement.booster() : original.booster(),
+                type == RocketPartTypes.ENGINE ? replacement.engine() : original.engine(),
+                type == RocketPartTypes.UPGRADE ? replacement.upgrade() : original.upgrade(),
+                type == RocketPartTypes.UPGRADE ? replacement.upgradeData() : original.upgradeData(),
                 original.color(), paint, tints);
     }
 }

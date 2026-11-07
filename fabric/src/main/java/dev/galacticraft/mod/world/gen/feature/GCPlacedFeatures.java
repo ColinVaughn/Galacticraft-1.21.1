@@ -43,6 +43,7 @@ import net.minecraft.world.level.levelgen.placement.CountPlacement;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.placement.EnvironmentScanPlacement;
 import net.minecraft.world.level.levelgen.placement.HeightRangePlacement;
+import net.minecraft.world.level.levelgen.placement.HeightmapPlacement;
 import net.minecraft.world.level.levelgen.placement.InSquarePlacement;
 import net.minecraft.world.level.levelgen.placement.SurfaceRelativeThresholdFilter;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
@@ -72,6 +73,17 @@ public class GCPlacedFeatures {
     public static final ResourceKey<PlacedFeature> MERCURY_LAVA_LAKE = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("mercury_lava_lake"));
     public static final ResourceKey<PlacedFeature> MERCURY_CRYSTAL_SCATTER = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("mercury_crystal_scatter"));
 
+    public static final ResourceKey<PlacedFeature> JUPITER_HYDROSULFIDE_CRYSTALS = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("jupiter_hydrosulfide_crystals"));
+    public static final ResourceKey<PlacedFeature> JUPITER_CHARGED_CONDENSATE = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("jupiter_charged_condensate"));
+    public static final ResourceKey<PlacedFeature> JUPITER_SURVEY_WRECK = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("jupiter_survey_wreck"));
+    public static final ResourceKey<PlacedFeature> JUPITER_STORM_HARVESTER = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("jupiter_storm_harvester"));
+    public static final ResourceKey<PlacedFeature> STORMHEART_CITADEL = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("stormheart_citadel"));
+    public static final ResourceKey<PlacedFeature> JUPITER_WEATHER_STATION = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("jupiter_weather_station"));
+    public static final ResourceKey<PlacedFeature> JUPITER_WEATHER_STATION_REFUGE = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("jupiter_weather_station_refuge"));
+    public static final ResourceKey<PlacedFeature> JUPITER_RESEARCH_FACILITY = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("jupiter_research_facility"));
+    public static final ResourceKey<PlacedFeature> JUPITER_STORM_HARVESTER_DENSE = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("jupiter_storm_harvester_dense"));
+    public static final ResourceKey<PlacedFeature> JUPITER_HYDROSULFIDE_FRONT = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("jupiter_hydrosulfide_front"));
+
     public static final ResourceKey<PlacedFeature> MOON_BOULDER = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("moon_boulder"));
     public static final ResourceKey<PlacedFeature> MOON_BOULDER_SPARSE = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("moon_boulder_sparse"));
     public static final ResourceKey<PlacedFeature> MOON_OLIVINE_SPIRE = ResourceKey.create(Registries.PLACED_FEATURE, Constant.id("moon_olivine_spire"));
@@ -97,6 +109,35 @@ public class GCPlacedFeatures {
 
     public static void bootstrapRegistries(BootstrapContext<PlacedFeature> context) {
         HolderGetter<ConfiguredFeature<?, ?>> configuredFeatureLookup = context.lookup(Registries.CONFIGURED_FEATURE);
+        // Jupiter: the cluster features find their own cloud faces, the wrecks and citadel their own clearance.
+        context.register(JUPITER_HYDROSULFIDE_CRYSTALS, new PlacedFeature(configuredFeatureLookup.getOrThrow(GCConfiguredFeature.JUPITER_HYDROSULFIDE_CRYSTALS), List.of(
+                CountPlacement.of(6), InSquarePlacement.spread(), BiomeFilter.biome())));
+        context.register(JUPITER_CHARGED_CONDENSATE, new PlacedFeature(configuredFeatureLookup.getOrThrow(GCConfiguredFeature.JUPITER_CHARGED_CONDENSATE), List.of(
+                CountPlacement.of(6), InSquarePlacement.spread(), BiomeFilter.biome())));
+        context.register(JUPITER_SURVEY_WRECK, new PlacedFeature(configuredFeatureLookup.getOrThrow(GCConfiguredFeature.JUPITER_SURVEY_WRECK), List.of(
+                RarityFilter.onAverageOnceEvery(90), InSquarePlacement.spread(),
+                HeightRangePlacement.uniform(VerticalAnchor.absolute(150), VerticalAnchor.absolute(198)), BiomeFilter.biome())));
+        context.register(JUPITER_STORM_HARVESTER, new PlacedFeature(configuredFeatureLookup.getOrThrow(GCConfiguredFeature.JUPITER_STORM_HARVESTER), List.of(
+                RarityFilter.onAverageOnceEvery(120), InSquarePlacement.spread(),
+                HeightRangePlacement.uniform(VerticalAnchor.absolute(72), VerticalAnchor.absolute(134)), BiomeFilter.biome())));
+        context.register(JUPITER_HYDROSULFIDE_FRONT, new PlacedFeature(configuredFeatureLookup.getOrThrow(GCConfiguredFeature.JUPITER_HYDROSULFIDE_CRYSTALS), List.of(
+                CountPlacement.of(10), InSquarePlacement.spread(), BiomeFilter.biome())));
+        context.register(JUPITER_STORM_HARVESTER_DENSE, new PlacedFeature(configuredFeatureLookup.getOrThrow(GCConfiguredFeature.JUPITER_STORM_HARVESTER), List.of(
+                RarityFilter.onAverageOnceEvery(70), InSquarePlacement.spread(),
+                HeightRangePlacement.uniform(VerticalAnchor.absolute(72), VerticalAnchor.absolute(134)), BiomeFilter.biome())));
+        context.register(JUPITER_WEATHER_STATION, new PlacedFeature(configuredFeatureLookup.getOrThrow(GCConfiguredFeature.JUPITER_WEATHER_STATION), List.of(
+                RarityFilter.onAverageOnceEvery(160), InSquarePlacement.spread(),
+                HeightmapPlacement.onHeightmap(Heightmap.Types.WORLD_SURFACE_WG), BiomeFilter.biome())));
+        context.register(JUPITER_WEATHER_STATION_REFUGE, new PlacedFeature(configuredFeatureLookup.getOrThrow(GCConfiguredFeature.JUPITER_WEATHER_STATION), List.of(
+                RarityFilter.onAverageOnceEvery(30), InSquarePlacement.spread(),
+                HeightmapPlacement.onHeightmap(Heightmap.Types.WORLD_SURFACE_WG), BiomeFilter.biome())));
+        context.register(JUPITER_RESEARCH_FACILITY, new PlacedFeature(configuredFeatureLookup.getOrThrow(GCConfiguredFeature.JUPITER_RESEARCH_FACILITY), List.of(
+                RarityFilter.onAverageOnceEvery(220), InSquarePlacement.spread(),
+                HeightRangePlacement.uniform(VerticalAnchor.absolute(24), VerticalAnchor.absolute(76)), BiomeFilter.biome())));
+        // Citadels only generate inside Red Vortices, so the rarity is per vortex chunk.
+        context.register(STORMHEART_CITADEL, new PlacedFeature(configuredFeatureLookup.getOrThrow(GCConfiguredFeature.STORMHEART_CITADEL), List.of(
+                RarityFilter.onAverageOnceEvery(40), InSquarePlacement.spread(),
+                HeightRangePlacement.uniform(VerticalAnchor.absolute(6), VerticalAnchor.absolute(44)), BiomeFilter.biome())));
         context.register(MOON_CAVE_DECORATIONS, new PlacedFeature(configuredFeatureLookup.getOrThrow(GCConfiguredFeature.MOON_CAVE_DECORATIONS), List.of(
                 CountPlacement.of(2), InSquarePlacement.spread(), BiomeFilter.biome())));
         context.register(MOON_BURROWER_DEN, new PlacedFeature(configuredFeatureLookup.getOrThrow(GCConfiguredFeature.MOON_BURROWER_DEN), List.of(

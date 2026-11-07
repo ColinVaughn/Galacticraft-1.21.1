@@ -22,6 +22,7 @@
 
 package dev.galacticraft.mod.content.entity.boss;
 
+import dev.galacticraft.mod.Galacticraft;
 import dev.galacticraft.mod.content.block.entity.DungeonSpawnerBlockEntity;
 import dev.galacticraft.mod.content.item.GCItems;
 import dev.galacticraft.mod.util.Translations;
@@ -35,6 +36,8 @@ import net.minecraft.world.BossEvent;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -54,6 +57,13 @@ public abstract class AbstractBossEntity extends Monster {
 
     public AbstractBossEntity(EntityType<? extends AbstractBossEntity> entityType, Level level) {
         super(entityType, level);
+        // Legacy's dungeonBossHealthMod. Applied as the boss is built, so a boss loaded from disk keeps
+        // the health it was saved with rather than being scaled a second time.
+        AttributeInstance maxHealth = this.getAttribute(Attributes.MAX_HEALTH);
+        if (maxHealth != null) {
+            maxHealth.setBaseValue(maxHealth.getBaseValue() * Galacticraft.CONFIG.bossHealthMultiplier());
+            this.setHealth(this.getMaxHealth());
+        }
     }
 
     public abstract int getChestTier();
@@ -80,42 +90,7 @@ public abstract class AbstractBossEntity extends Monster {
     protected void tickDeath() {
         ++this.deathTime;
 
-//        if (this.deathTime >= 180 && this.deathTime <= 200) {
-//            final float x = (this.random.nextFloat() - 0.5F) * this.width;
-//            final float y = (this.random.nextFloat() - 0.5F) * (this.height / 2.0F);
-//            final float z = (this.random.nextFloat() - 0.5F) * this.width;
-//            this.world.spawnParticle(EnumParticleTypes.EXPLOSION_HUGE, this.posX + x, this.posY + 2.0D + y, this.posZ + z, 0.0D, 0.0D, 0.0D);
-//        }
-//
-//        int i;
-//        int j;
-//
-//        if (!this.world.isRemote) {
-//            if (this.deathTime >= 180 && this.deathTime % 5 == 0) {
-//                GalacticraftCore.packetPipeline.sendToAllAround(new PacketSimple(PacketSimple.EnumSimplePacket.C_PLAY_SOUND_EXPLODE, GCCoreUtil.getDimensionID(this.world), new Object[]
-//                        {}), new NetworkRegistry.TargetPoint(GCCoreUtil.getDimensionID(this.world), this.posX, this.posY, this.posZ, 40.0D));
-//            }
-//
-//            if (this.deathTime > 150 && this.deathTime % 5 == 0) {
-//                i = 30;
-//
-//                while (i > 0) {
-//                    j = EntityXPOrb.getXPSplit(i);
-//                    i -= j;
-//                    this.world.spawnEntity(new EntityXPOrb(this.world, this.posX, this.posY, this.posZ, j));
-//                }
-//            }
-//        }
-
        if (this.deathTime >= 200 && !this.level().isClientSide) {
-//            i = 20;
-//
-//            while (i > 0) {
-//                j = EntityXPOrb.getXPSplit(i);
-//                i -= j;
-//                this.world.spawnEntity(new EntityXPOrb(this.world, this.posX, this.posY, this.posZ, j));
-//            }
-//
             this.recordDefeat();
 
             this.level().broadcastEntityEvent(this, EntityEvent.POOF);
@@ -124,10 +99,8 @@ public abstract class AbstractBossEntity extends Monster {
     }
 
     /**
-     * Hands out this kill's rewards and marks the dungeon cleared, once. Normally this happens when
-     * the death animation runs out, but the animation lasts ten seconds and anything that destroys
-     * the corpse before then - despawning because the room emptied, {@code /kill}, a mod - would
-     * otherwise throw the kill away and let the boss respawn.
+     * Records a defeated boss once, including when its corpse is removed before the death animation
+     * ends. Otherwise the dungeon can lose its rewards and allow the boss to respawn.
      */
     private void recordDefeat() {
         if (this.defeatRecorded) {
@@ -252,6 +225,11 @@ public abstract class AbstractBossEntity extends Monster {
         }
 
         super.remove(reason);
+    }
+
+    /** Returns whether a different, still-present spawner owns this boss. */
+    public boolean belongsToAnotherSpawner(DungeonSpawnerBlockEntity spawner) {
+        return this.spawner != null && this.spawner != spawner && !this.spawner.isRemoved();
     }
 
     public void onBossSpawned(DungeonSpawnerBlockEntity spawner) {

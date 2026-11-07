@@ -23,14 +23,20 @@
 package dev.galacticraft.impl.network.c2s;
 
 import dev.galacticraft.mod.Constant;
+import dev.galacticraft.mod.spacerace.SpaceRaceTeams;
 import io.netty.buffer.ByteBuf;
 import dev.architectury.networking.NetworkManager;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * The team flag a player designed in the space race menu, in {@link dev.galacticraft.mod.spacerace.TeamFlagImage}
+ * form. Sent when they confirm a design, and again from their saved design whenever they join a world.
+ */
 public record FlagDataPayload(byte[] data) implements C2SPayload {
     public static final ResourceLocation ID = Constant.id("flag_data");
     public static final Type<FlagDataPayload> TYPE = new Type<>(ID);
@@ -47,5 +53,7 @@ public record FlagDataPayload(byte[] data) implements C2SPayload {
 
     @Override
     public void handle(NetworkManager.@NotNull PacketContext context) {
+        ServerPlayer player = (ServerPlayer) context.getPlayer();
+        SpaceRaceTeams.get(player.server).acceptFlag(player, this.data);
     }
 }

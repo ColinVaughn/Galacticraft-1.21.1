@@ -45,7 +45,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.RandomSource;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -53,7 +52,6 @@ import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -108,12 +106,7 @@ public class CompressorBlockEntity extends BasicRecipeMachineBlockEntity<Craftin
             if (!this.hasFuel) return GCMachineStatuses.NO_FUEL;
         }
 
-        Level level = this.getLevel();
-        BlockPos blockPos = this.getBlockPos();
-        if (this.shouldExtinguish(level, blockPos, level.getBlockState(blockPos))) {
-            return GCMachineStatuses.NOT_ENOUGH_OXYGEN;
-        }
-
+        // No oxygen check: as in Galacticraft Legacy, the compressor burns its fuel on the Moon too.
         return null;
     }
 
@@ -156,17 +149,6 @@ public class CompressorBlockEntity extends BasicRecipeMachineBlockEntity<Craftin
 
     @Override
     public @NotNull MachineStatus tick(@NotNull ServerLevel level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull ProfilerFiller profiler) {
-        profiler.push("extinguish");
-        if (this.fuelTime > 0 && this.shouldExtinguish(level, pos, state)) {
-            this.fuelLength = 0;
-            this.fuelTime = 0;
-            RandomSource randomSource = level.getRandom();
-            level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.25F, 2.6F + (randomSource.nextFloat() - randomSource.nextFloat()) * 0.8F);
-
-            return GCMachineStatuses.NOT_ENOUGH_OXYGEN;
-        }
-        profiler.pop();
-
         RecipeHolder<CompressingRecipe> recipe = this.getActiveRecipe();
         if (recipe != null && this.getState().isActive()) {
             int maxProgress = this.getProcessingTime(recipe);
@@ -181,11 +163,6 @@ public class CompressorBlockEntity extends BasicRecipeMachineBlockEntity<Craftin
     public void updateActiveState(Level level, BlockPos pos, BlockState state, boolean active) {
         this.lit = this.fuelLength > 0;
         super.updateActiveState(level, pos, state.setValue(CompressorBlock.LIT, this.lit), active);
-    }
-
-    private boolean shouldExtinguish(Level level, BlockPos pos, BlockState state) {
-        return !level.isBreathable(pos.relative(state.getValue(BlockStateProperties.HORIZONTAL_FACING)))
-                && !level.isBreathable(pos);
     }
 
     @Override

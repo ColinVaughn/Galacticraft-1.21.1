@@ -2,7 +2,7 @@
   "type": "galacticraft:basic",
   "config": {
     "acceleration": 0.02,
-    "fuel_usage": 1000,
+    "fuel_usage": 5,
     "max_velocity": 1.0,
     "predicate": {
       "type": "galacticraft:access_weight",

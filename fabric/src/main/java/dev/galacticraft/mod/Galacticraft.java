@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +24,7 @@
 package dev.galacticraft.mod;
 
 import dev.architectury.platform.Platform;
-import dev.galacticraft.api.component.GCItemSubPredicates;
+import dev.galacticraft.mod.content.advancements.GCItemSubPredicates;
 import dev.galacticraft.mod.attachments.GCAttachments;
 import dev.galacticraft.mod.api.config.Config;
 import dev.galacticraft.mod.command.GCCommands;
@@ -91,6 +92,7 @@ public class Galacticraft {
         GCStructureTypes.register();
         GCCarvers.register();
         GCFeatures.register();
+        dev.galacticraft.mod.world.gen.JupiterBands.register();
         MoonSurfaceRules.register();
         GCMultiNoiseBiomeSourceParameterLists.register();
         GCAccessorySlots.register();

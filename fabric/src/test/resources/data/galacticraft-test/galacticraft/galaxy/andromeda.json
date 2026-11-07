@@ -1,0 +1,26 @@
+{
+  "name": {
+    "text": "Andromeda"
+  },
+  "description": {
+    "text": "An example galaxy from the Galacticraft example addon."
+  },
+  "position": {
+    "type": "galacticraft:static",
+    "config": {
+      "x": 600.0,
+      "y": -450.0
+    }
+  },
+  "display": {
+    "type": "galacticraft:icon",
+    "config": {
+      "texture": "galacticraft-test:icon.png",
+      "u": 0,
+      "v": 0,
+      "width": 460,
+      "height": 460,
+      "scale": 1.0
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "body": "galacticraft-test:alpheratz",
+  "center": [
+    60000,
+    1024,
+    0
+  ],
+  "radius": 1200,
+  "sky_radius": 50,
+  "texture": "galacticraft:textures/environment/solar_system/sun.png",
+  "rotation_period": 25
+}

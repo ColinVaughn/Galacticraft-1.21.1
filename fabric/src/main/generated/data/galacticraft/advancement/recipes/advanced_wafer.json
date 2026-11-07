@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "galacticraft:advanced_wafer"
+        "recipe": "galacticraft:fabrication/advanced_wafer"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -15,7 +15,7 @@
   ],
   "rewards": {
     "recipes": [
-      "galacticraft:advanced_wafer"
+      "galacticraft:fabrication/advanced_wafer"
     ]
   }
 }

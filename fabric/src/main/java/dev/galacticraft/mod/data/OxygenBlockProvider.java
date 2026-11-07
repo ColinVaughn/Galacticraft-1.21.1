@@ -62,7 +62,7 @@ public abstract class OxygenBlockProvider implements DataProvider {
 
     public void add(List<OxygenBlockDataManager.OxygenData> data, Block block, float amount, boolean replace) {
         for (BlockState blockState : block.getStateDefinition().getPossibleStates()) {
-            add(data, blockState, amount);
+            add(data, blockState, amount, replace);
         }
     }
 

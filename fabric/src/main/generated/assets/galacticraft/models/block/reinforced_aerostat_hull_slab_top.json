@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/slab_top",
+  "textures": {
+    "bottom": "galacticraft:block/reinforced_aerostat_hull",
+    "side": "galacticraft:block/reinforced_aerostat_hull",
+    "top": "galacticraft:block/reinforced_aerostat_hull"
+  }
+}

@@ -41,6 +41,7 @@ public final class MeteorDefenseModel {
     private final ModelPart root;
     private final Map<String, ModelPart> bones = new HashMap<>();
     private final Map<String, BurrowerAnimations.Clip> animations = new HashMap<>();
+    private final float height;
 
     public MeteorDefenseModel(ResourceManager resources, String name) {
         this(resources, "block", name);
@@ -51,6 +52,7 @@ public final class MeteorDefenseModel {
              var motion = resources.getResourceOrThrow(Constant.id("animations/" + name + ".animation.json")).openAsReader()) {
             JsonObject geo = JsonParser.parseReader(geometry).getAsJsonObject().getAsJsonArray("minecraft:geometry").get(0).getAsJsonObject();
             root = bake(geo);
+            height = top(geo);
             collect(geo.getAsJsonArray("bones"));
             JsonParser.parseReader(motion).getAsJsonObject().getAsJsonObject("animations").entrySet().forEach(entry -> {
                 var clip = BurrowerAnimations.readClip(entry.getValue().getAsJsonObject());
@@ -102,30 +104,58 @@ public final class MeteorDefenseModel {
         return LayerDefinition.create(mesh, description.get("texture_width").getAsInt(), description.get("texture_height").getAsInt()).bakeRoot();
     }
 
+    private static float top(JsonObject geometry) {
+        float top = 0;
+        for (JsonElement bone : geometry.getAsJsonArray("bones"))
+            if (bone.getAsJsonObject().has("cubes")) for (JsonElement cube : bone.getAsJsonObject().getAsJsonArray("cubes"))
+                top = Math.max(top, v(cube.getAsJsonObject().getAsJsonArray("origin"), 1) + v(cube.getAsJsonObject().getAsJsonArray("size"), 1));
+        return top;
+    }
     private static float v(JsonArray vector, int axis) { return vector == null ? 0 : vector.get(axis).getAsFloat(); }
     public ModelPart bone(String name) { return Objects.requireNonNull(bones.get(name), name); }
-    public void reset() { root.getAllParts().forEach(ModelPart::resetPose); }
+    /** resetPose() leaves scale alone in 1.21.1, so restore it too or scale keyframes would compound every frame. */
+    public void reset() { root.getAllParts().forEach(part -> { part.resetPose(); part.xScale = part.yScale = part.zScale = 1; }); }
+    public boolean hasAnimation(String name) { return animations.containsKey(name); }
+    /** Tallest point of the model in pixels, for fitting it into an item slot. */
+    public float height() { return height; }
 
     public void animate(String name, double seconds) {
+        this.animate(name, seconds, 1.0F);
+    }
+
+    /** Adds a clip's pose on top of the current one, scaled by {@code weight} so clips can cross-fade. */
+    public void animate(String name, double seconds, float weight) {
+        if (weight <= 0.001F) return;
         var clip = Objects.requireNonNull(animations.get(name), name);
         float time = (float) (clip.loop ? (seconds % clip.length + clip.length) % clip.length
                 : Math.max(0, Math.min(seconds, clip.length)));
         for (String bone : clip.boneNames()) {
             var pose = clip.sample(bone, time);
             var part = bones.get(bone);
-            part.x += pose.position().x(); part.y -= pose.position().y(); part.z += pose.position().z();
-            part.xRot += pose.rotation().x() * Mth.DEG_TO_RAD;
-            part.yRot += pose.rotation().y() * Mth.DEG_TO_RAD;
-            part.zRot += pose.rotation().z() * Mth.DEG_TO_RAD;
-            part.xScale *= pose.scale().x(); part.yScale *= pose.scale().y(); part.zScale *= pose.scale().z();
+            part.x += pose.position().x() * weight; part.y -= pose.position().y() * weight; part.z += pose.position().z() * weight;
+            part.xRot += pose.rotation().x() * Mth.DEG_TO_RAD * weight;
+            part.yRot += pose.rotation().y() * Mth.DEG_TO_RAD * weight;
+            part.zRot += pose.rotation().z() * Mth.DEG_TO_RAD * weight;
+            part.xScale *= Mth.lerp(weight, 1, pose.scale().x()); part.yScale *= Mth.lerp(weight, 1, pose.scale().y());
+            part.zScale *= Mth.lerp(weight, 1, pose.scale().z());
         }
     }
 
+    /** Length of a clip in seconds. */
+    public float length(String name) {
+        return Objects.requireNonNull(animations.get(name), name).length;
+    }
+
     public void render(PoseStack pose, VertexConsumer vertices, int light, int overlay) {
+        this.render(pose, vertices, light, overlay, -1);
+    }
+
+    /** Renders tinted by an ARGB {@code color}, e.g. to shift an emissive layer's hue. */
+    public void render(PoseStack pose, VertexConsumer vertices, int light, int overlay, int color) {
         pose.pushPose();
         // Bedrock mirrors X and ModelPart uses downward Y; this restores Blockbench's world axes.
         pose.scale(-1, -1, 1);
-        root.render(pose, vertices, light, overlay);
+        root.render(pose, vertices, light, overlay, color);
         pose.popPose();
     }
 

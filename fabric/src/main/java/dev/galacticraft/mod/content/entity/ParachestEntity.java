@@ -61,6 +61,7 @@ public class ParachestEntity extends Entity {
         this.placedChest = false;
         this.fuelLevel = fuelLevel;
         this.color = color;
+        this.entityData.set(COLOR, (byte) color.getId());
     }
 
     public ParachestEntity(EntityType<?> entityType, Level level) {
@@ -91,6 +92,7 @@ public class ParachestEntity extends Entity {
 
         if (tag.contains("color")) {
             this.color = DyeColor.byId(tag.getInt("color"));
+            this.entityData.set(COLOR, (byte) this.color.getId());
         }
     }
 

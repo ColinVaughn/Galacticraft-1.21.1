@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +23,7 @@
 
 package dev.galacticraft.mod.client.gui.overlay;
 
+import dev.galacticraft.api.universe.celestialbody.CelestialBodyTags;
 import dev.galacticraft.mod.client.render.dimension.solarflare.ClientSolarFlares;
 import dev.galacticraft.mod.content.entity.vehicle.LanderEntity;
 import dev.galacticraft.mod.tag.GCItemTags;
@@ -42,7 +44,7 @@ public class SolarFlareOverlay {
     public static void onHudRender(GuiGraphics graphics, DeltaTracker delta) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.options.hideGui || mc.level == null || mc.player == null) return;
-        if (!mc.level.dimension().equals(GCDimensions.MERCURY)) return;
+        if (!CelestialBodyTags.is(mc.level, CelestialBodyTags.SOLAR_FLARES)) return;
 
         LocalPlayer player = mc.player;
         float intensity = ClientSolarFlares.intensity();
@@ -50,7 +52,6 @@ public class SolarFlareOverlay {
         int width = mc.getWindow().getGuiScaledWidth();
         int height = mc.getWindow().getGuiScaledHeight();
 
-        // --- Bright glare wash (only when exposed to the open flare) ---
         boolean sheltered = mc.level.isBreathable(player.blockPosition().above())
                 || player.getVehicle() instanceof LanderEntity;
         if (intensity > 0.05F && !sheltered && !player.isSpectator()) {

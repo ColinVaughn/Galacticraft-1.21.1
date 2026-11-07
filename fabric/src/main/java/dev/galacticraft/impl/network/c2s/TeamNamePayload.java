@@ -23,12 +23,14 @@
 package dev.galacticraft.impl.network.c2s;
 
 import dev.galacticraft.mod.Constant;
+import dev.galacticraft.mod.spacerace.SpaceRaceTeams;
 import io.netty.buffer.ByteBuf;
 import dev.architectury.networking.NetworkManager;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.NotNull;
 
 public record TeamNamePayload(String name) implements C2SPayload {
@@ -38,7 +40,7 @@ public record TeamNamePayload(String name) implements C2SPayload {
 
     public TeamNamePayload {
         if (name.length() > 32) {
-            throw new IllegalArgumentException("Team name cannot be longer than 32 characters"); //todo: actual constraints
+            throw new IllegalArgumentException("Team name cannot be longer than 32 characters");
         }
     }
 
@@ -49,6 +51,7 @@ public record TeamNamePayload(String name) implements C2SPayload {
 
     @Override
     public void handle(NetworkManager.@NotNull PacketContext context) {
-
+        ServerPlayer player = (ServerPlayer) context.getPlayer();
+        SpaceRaceTeams.get(player.server).acceptName(player, this.name);
     }
 }
