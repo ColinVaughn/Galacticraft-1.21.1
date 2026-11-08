@@ -1,5 +1,14 @@
 # Changelog
 
+## 5.4.19-prealpha - 2026-11-08
+
+Minecraft 1.21.1. Separate builds are provided for Fabric and NeoForge. Java 21 is required.
+
+### Fixes
+
+- Fixed a startup crash in packs with ModernFix (`MixinTargetAlreadyLoadedException` for `ExtraCodecs$TagOrElementLocation`). 5.4.18 shipped an older Dynamic Dimensions build whose Sable compatibility code loaded Minecraft classes too early.
+- Restored the Dynamic Dimensions build from 5.4.17. This also brings back NeoForge level load and unload events for dynamic dimensions such as space stations.
+
 ## 5.4.18-prealpha - 2026-11-07
 
 Minecraft 1.21.1. Separate builds are provided for Fabric and NeoForge. Java 21 is required.
