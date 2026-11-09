@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +23,7 @@
 
 package dev.galacticraft.mod.world.dimension.solarflare;
 
+import dev.galacticraft.api.universe.celestialbody.CelestialBodyTags;
 import dev.galacticraft.api.universe.celestialbody.CelestialBody;
 import dev.galacticraft.mod.Galacticraft;
 import dev.galacticraft.mod.api.config.Config;
@@ -83,7 +85,7 @@ public final class MercurySolarFlareManager {
 
     private static boolean isMercury(ServerLevel level) {
         Holder<CelestialBody<?, ?>> body = level.galacticraft$getCelestialBody();
-        return body != null && body.is(GCCelestialBodies.MERCURY);
+        return body != null && body.is(CelestialBodyTags.SOLAR_FLARES);
     }
 
     /** Current flare intensity in {@code [0,1]} for this level, or 0 if not an active Mercury flare. */

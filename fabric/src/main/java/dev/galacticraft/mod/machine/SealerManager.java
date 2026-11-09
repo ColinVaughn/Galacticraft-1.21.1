@@ -35,6 +35,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.VisibleForTesting;
 
 import java.util.*;
 
@@ -50,10 +51,8 @@ public class SealerManager {
         private final Map<BlockPos, BlockPos> routeParents = new HashMap<>();
         private BlockPos leakEnd;
         /**
-         * Whether the flood fill found a boundary in every direction within the sealers' volume budget.
-         * An empty queue is not a substitute for this: a fill that stops early because it has joined a
-         * space that is already known to be enclosed still has queued positions, and every one of them
-         * lies inside that space.
+         * Whether the fill is enclosed within the volume budget. Joining a known enclosed space can
+         * leave queued positions, so queue emptiness does not determine this.
          */
         private boolean enclosed = false;
 
@@ -89,7 +88,6 @@ public class SealerManager {
     private final Set<BlockPos> observedBlocks = new HashSet<>();
     private boolean sealUpdateQueued = false;
     private boolean hasUnsealedActiveSealers = false;
-    private boolean changingBreathability = false;
 
     public SealerManager(Level level) {
         this.level = level;
@@ -229,16 +227,11 @@ public class SealerManager {
     }
 
     private void updateBreathability(Set<BlockPos> nextSealedBlocks) {
-        this.changingBreathability = true;
-        try {
-            for (BlockPos pos : this.sealedBlocks) {
-                if (!nextSealedBlocks.contains(pos)) this.level.setBreathable(pos, false);
-            }
-            for (BlockPos pos : nextSealedBlocks) {
-                if (!this.sealedBlocks.contains(pos)) this.level.setBreathable(pos, true);
-            }
-        } finally {
-            this.changingBreathability = false;
+        for (BlockPos pos : this.sealedBlocks) {
+            if (!nextSealedBlocks.contains(pos)) this.unseal(pos);
+        }
+        for (BlockPos pos : nextSealedBlocks) {
+            if (!this.sealedBlocks.contains(pos)) this.level.setBreathable(pos, true);
         }
     }
 
@@ -269,26 +262,41 @@ public class SealerManager {
     public void onBlockChanged(BlockPos pos, BlockState oldState, BlockState newState) {
         if (this.level.isClientSide || this.level.getDefaultBreathable() || this.sealers.isEmpty()) return;
         if (oldState.equals(newState)) return;
+        if (!this.observedBlocks.isEmpty() && !this.observedBlocks.contains(pos)) return;
+        if (this.sealsTheSame(pos, oldState, newState)) return;
 
-        if (this.observedBlocks.isEmpty() || this.observedBlocks.contains(pos)) {
-            this.sealUpdateQueued = true;
-            if (!this.changingBreathability) {
-                this.clearSealedBlocks();
-            }
-        }
+        // Keep air until recompute; clearing it early permanently extinguishes torches.
+        this.sealUpdateQueued = true;
     }
 
-    private void clearSealedBlocks() {
-        this.changingBreathability = true;
-        try {
-            for (BlockPos pos : this.sealedBlocks) this.level.setBreathable(pos, false);
-            this.sealedBlocks.clear();
-            for (OxygenSealerBlockEntity sealer : this.sealers.values()) {
-                sealer.setSealed(false);
+    /**
+     * Checks whether an in-place state change preserves every face read by the seal flood fill.
+     * Cosmetic machine changes must not recompute all rooms. Compare only states of the same block:
+     * the new state is checked before placement, while the old block entity is still present.
+     */
+    private boolean sealsTheSame(BlockPos pos, BlockState oldState, BlockState newState) {
+        if (oldState.getBlock() != newState.getBlock()) return false;
+        for (Direction direction : Direction.values()) {
+            if (this.isSealedFace(oldState, pos, direction) != this.isSealedFace(newState, pos, direction)) {
+                return false;
             }
-        } finally {
-            this.changingBreathability = false;
         }
+        return true;
+    }
+
+    /** A bubble writes the same air and only rewrites its own edge, so it would never put this back. */
+    private void unseal(BlockPos pos) {
+        if (!this.level.galacticraft$getBubbleManager().covers(pos, null)) this.level.setBreathable(pos, false);
+    }
+
+    public boolean isSealed(BlockPos pos) {
+        return this.sealedBlocks.contains(pos);
+    }
+
+    /** Returns whether a room recompute is queued for the next tick. */
+    @VisibleForTesting
+    public boolean isRecomputeQueued() {
+        return this.sealUpdateQueued;
     }
 
     private boolean isFullySealedBlock(BlockState state, BlockPos pos) {

@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "galacticraft:compressed_iron"
+        "recipe": "galacticraft:compressing/compressed_iron"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -26,7 +26,7 @@
   ],
   "rewards": {
     "recipes": [
-      "galacticraft:compressed_iron"
+      "galacticraft:compressing/compressed_iron"
     ]
   }
 }

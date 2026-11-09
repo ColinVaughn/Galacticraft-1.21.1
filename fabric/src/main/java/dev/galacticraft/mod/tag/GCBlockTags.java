@@ -31,6 +31,8 @@ import net.minecraft.world.level.block.Block;
 public class GCBlockTags {
     public static final TagKey<Block> SEALABLE = galacticraftTag("sealable");
     public static final TagKey<Block> UNSEALABLE = galacticraftTag("unsealable");
+    /** Walls strong enough to hold a Pressure Stabilizer habitat against the Jovian deep atmosphere. */
+    public static final TagKey<Block> PRESSURE_RATED = galacticraftTag("pressure_rated");
 
     public static final TagKey<Block> FOOTPRINTS = galacticraftTag("footprints");
     /** Blocks revealed by Sensor Glasses. Datapacks may add non-ore detectable resources here. */

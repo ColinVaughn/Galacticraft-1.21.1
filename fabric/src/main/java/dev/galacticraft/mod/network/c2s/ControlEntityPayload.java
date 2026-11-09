@@ -68,6 +68,8 @@ public record ControlEntityPayload(float leftImpulse, float forwardImpulse, bool
 
     public void apply(ServerPlayer player) {
         if (player.isPassenger() && player.getVehicle() instanceof ControllableEntity controllable) {
+            if (player.getVehicle() instanceof dev.galacticraft.mod.content.entity.vehicle.CloudDiverEntity diver && diver.getControllingPassenger() != player) return;
+            if (player.getVehicle() instanceof dev.galacticraft.mod.content.entity.vehicle.RocketEntity rocket && rocket.getFirstPassenger() != player) return;
             controllable.inputTick(leftImpulse(), forwardImpulse(), up(), down(), left(), right(), jumping(), shiftKeyDown(), invertControls());
         }
     }

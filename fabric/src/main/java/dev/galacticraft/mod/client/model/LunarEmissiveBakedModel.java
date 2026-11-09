@@ -42,11 +42,13 @@ public class LunarEmissiveBakedModel implements BakedModel {
     public static boolean matches(ResourceLocation id) {
         if (!id.getNamespace().equals(Constant.MOD_ID)) return false;
         String path = id.getPath();
-        return path.endsWith("helion_nodules") || path.endsWith("helion_wall_crust") || path.endsWith("helium_3_vent");
+        return path.endsWith("helion_nodules") || path.endsWith("helion_wall_crust") || path.endsWith("helium_3_vent")
+                || path.endsWith("charged_condensate_cluster");
     }
     public static boolean glows(BakedQuad quad) {
         var sprite = quad.getSprite().contents().name();
-        return sprite.equals(Constant.id("block/helion_core")) || sprite.equals(Constant.id("block/helium_3_surface"));
+        return sprite.equals(Constant.id("block/helion_core")) || sprite.equals(Constant.id("block/helium_3_surface"))
+                || sprite.equals(Constant.id("block/charged_condensate_cluster_glow"));
     }
     private static final class GlowQuad extends BakedQuad {
         GlowQuad(BakedQuad source) { super(bright(source.getVertices()), source.getTintIndex(), source.getDirection(), source.getSprite(), false); }

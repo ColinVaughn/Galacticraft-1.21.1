@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "galacticraft:rocket_schematic",
+          "functions": [
+            {
+              "function": "minecraft:set_components",
+              "components": {
+                "galacticraft:rocket_part_unlocks": [
+                  "examplepack:rocket_engine/ion"
+                ],
+                "minecraft:item_name": "{\"text\":\"Ion Engine Schematic\"}"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

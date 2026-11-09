@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "H": {
+      "item": "galacticraft:stormheart_core"
+    },
+    "P": {
+      "item": "galacticraft:jovian_composite_plate"
+    },
+    "S": {
+      "item": "galacticraft:oxygen_sealer"
+    },
+    "V": {
+      "item": "galacticraft:oxygen_vent"
+    },
+    "W": {
+      "item": "galacticraft:advanced_wafer"
+    }
+  },
+  "pattern": [
+    "PVP",
+    "WSW",
+    "PHP"
+  ],
+  "result": {
+    "count": 1,
+    "id": "galacticraft:pressure_stabilizer"
+  }
+}

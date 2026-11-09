@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -633,6 +634,8 @@ public interface Constant {
 
         String TIER_2_ROCKET_SCHEMATIC = "tier_2_rocket_schematic";
         String TIER_3_ROCKET_SCHEMATIC = "tier_3_rocket_schematic";
+        String ROCKET_SCHEMATIC = "rocket_schematic";
+        String ROCKET_MODULE = "rocket_module";
         String CARGO_ROCKET_SCHEMATIC = "cargo_rocket_schematic";
         String MOON_BUGGY_SCHEMATIC = "moon_buggy_schematic";
         String ASTRO_MINER_SCHEMATIC = "astro_miner_schematic";
@@ -1297,7 +1300,6 @@ public interface Constant {
         String OLI_GRUB = "textures/entity/oli_grub.png";
         String COMET_CUBE = "textures/entity/comet_cube.png";
         String GAZER = "textures/entity/gazer.png";
-        String LANDER = "textures/entity/lander.png";
         String SKELETON_BOSS = "textures/entity/skeletonboss.png";
     }
 
@@ -1355,6 +1357,11 @@ public interface Constant {
     interface LootTable {
         String BASIC_MOON_RUINS_CHEST = "chests/moon_ruins/basic_chest";
         String MOON_CAVE_EXPEDITION_CACHE = "chests/moon_cave_expedition_cache";
+        String JUPITER_SURVEY_WRECK = "chests/jupiter/survey_wreck";
+        String JUPITER_STORM_HARVESTER = "chests/jupiter/storm_harvester";
+        String JUPITER_WEATHER_STATION = "chests/jupiter/weather_station";
+        String JUPITER_RESEARCH_FACILITY = "chests/jupiter/research_facility";
+        String JUPITER_STORMHEART_CITADEL = "chests/jupiter/stormheart_citadel";
 
         // Not under chests/ for historical reasons: chests in already-generated dungeons store
         // these ids in their NBT, so renaming them would empty every existing dungeon.
@@ -1404,6 +1411,8 @@ public interface Constant {
         String HAS_GEAR = "HasGear";
         String OXYGEN_TANK_1 = "OxygenTank1";
         String OXYGEN_TANK_2 = "OxygenTank2";
+        String SPACE_EVOLVED = "SpaceEvolved";
+        String MOON_VILLAGER = "MoonVillager";
         String BLOCK_ENTITY_TAG = "BlockEntityTag";
         String NO_DROP = "NoDrop";
         String OWNER = "Owner";
@@ -1414,6 +1423,7 @@ public interface Constant {
         String SIZE = "Size";
         String MAX_SIZE = "MaxSize";
         String BUBBLE_SIZE = "BubbleSize";
+        String APPLIED_BUBBLE_RADIUS_SQUARED = "AppliedBubbleRadiusSquared";
         String USE_COUNT = "UseCountArray";
         String TREES_DISABLED = "TreesDisabled";
         String GRASS_DISABLED = "GrassDisabled";

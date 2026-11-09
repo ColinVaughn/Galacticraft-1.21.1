@@ -107,6 +107,9 @@ public class MarsBiomes {
     private static Biome mars(BiomeGenerationSettings.Builder generation, float temperature, int fogColor, int skyColor, boolean dusty) {
         MobSpawnSettings.Builder spawnBuilder = new MobSpawnSettings.Builder();
         MoonBiomes.monsters(spawnBuilder, 95, 5, 100);
+        // Place rare rovers during generation; their spawn rule excludes natural spawning.
+        spawnBuilder.addSpawn(net.minecraft.world.entity.MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(dev.galacticraft.mod.content.GCEntityTypes.CURIOSITY_ROVER, 1, 1, 1));
+        spawnBuilder.creatureGenerationProbability(0.01F);
 
         BiomeSpecialEffects.Builder specialEffects = new BiomeSpecialEffects.Builder();
         specialEffects.waterColor(4159204)

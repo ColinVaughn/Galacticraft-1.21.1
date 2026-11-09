@@ -26,6 +26,7 @@ import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.api.data.recipe.GCCookingRecipeBuilder;
 import dev.galacticraft.mod.api.data.recipe.GCShapedRecipeBuilder;
 import dev.galacticraft.mod.content.GCBlocks;
+import dev.galacticraft.mod.content.item.FlagItem;
 import dev.galacticraft.mod.content.item.GCItems;
 import dev.galacticraft.mod.data.model.GCBlockFamilies;
 import dev.galacticraft.mod.recipe.FlagRecipe;
@@ -33,17 +34,26 @@ import dev.galacticraft.mod.tag.GCItemTags;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider;
 import net.fabricmc.fabric.api.tag.convention.v2.ConventionalItemTags;
+import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementRequirements;
+import net.minecraft.advancements.AdvancementRewards;
+import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.BlockFamily;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.SingleItemRecipeBuilder;
 import net.minecraft.data.recipes.SpecialRecipeBuilder;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.ShapedRecipe;
+import net.minecraft.world.item.crafting.ShapedRecipePattern;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -149,6 +159,27 @@ public class GCDecorationRecipeProvider extends FabricRecipeProvider {
                 .save(output);
 
         SpecialRecipeBuilder.special(FlagRecipe::new).save(output, Constant.Block.FLAG);
+        teamFlagRecipe(output);
+    }
+
+    /**
+     * Builds the team flag recipe directly because the shaped recipe builder cannot write its
+     * result component. The unclaimed flag binds to its crafter or planter.
+     */
+    private static void teamFlagRecipe(RecipeOutput output) {
+        ResourceLocation id = Constant.id("team_flag");
+        ShapedRecipePattern pattern = ShapedRecipePattern.of(
+                Map.of('|', Ingredient.of(GCItems.STEEL_POLE), '#', Ingredient.of(GCItems.CANVAS)),
+                "|##",
+                "|##",
+                "|  ");
+        Advancement.Builder unlock = output.advancement()
+                .addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(id))
+                .addCriterion(getHasName(GCItems.CANVAS), has(GCItems.CANVAS))
+                .rewards(AdvancementRewards.Builder.recipe(id))
+                .requirements(AdvancementRequirements.Strategy.OR);
+        output.accept(id, new ShapedRecipe("", CraftingBookCategory.MISC, pattern, FlagItem.teamFlag()),
+                unlock.build(id.withPrefix("recipes/" + RecipeCategory.DECORATIONS.getFolderName() + "/")));
     }
 
     private static void generateBlockFamilyRecipes(RecipeOutput output, BlockFamily blockFamily) {

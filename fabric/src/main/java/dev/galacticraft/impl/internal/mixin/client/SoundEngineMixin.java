@@ -29,6 +29,9 @@ import dev.galacticraft.impl.accessor.SoundSystemAccessor;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.sounds.SoundEngine;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.sounds.SoundInstance;
+import dev.galacticraft.mod.client.sounds.RocketSound;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import org.spongepowered.asm.mixin.Final;
@@ -55,6 +58,14 @@ public abstract class SoundEngineMixin implements SoundSystemAccessor {
             return Mth.clamp(original * this.multiplier, 0.0f, 2.0f);
         }
         return original;
+    }
+
+    @ModifyReturnValue(method = "calculateVolume(Lnet/minecraft/client/resources/sounds/SoundInstance;)F", at = @At("RETURN"))
+    private float galacticraft$cabinEngineVolume(float original, SoundInstance sound) {
+        // Hull-conducted engine sound stays audible in vacuum, with the player's normal category volume.
+        return sound instanceof RocketSound rocket && rocket.isCabinSound()
+                ? Mth.clamp(sound.getVolume() * Minecraft.getInstance().options.getSoundSourceVolume(sound.getSource()), 0, 1)
+                : original;
     }
 
     @ModifyExpressionValue(method = "play", at = @At(value = "INVOKE", target = "Ljava/util/List;isEmpty()Z"))

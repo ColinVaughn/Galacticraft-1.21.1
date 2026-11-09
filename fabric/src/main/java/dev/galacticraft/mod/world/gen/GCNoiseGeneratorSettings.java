@@ -44,10 +44,12 @@ public class GCNoiseGeneratorSettings {
     public static final ResourceKey<NoiseGeneratorSettings> MOON = key("moon");
     public static final ResourceKey<NoiseGeneratorSettings> VENUS = key("venus");
     public static final ResourceKey<NoiseGeneratorSettings> MERCURY = key("mercury");
+    public static final ResourceKey<NoiseGeneratorSettings> JUPITER = key("jupiter");
 
     public static void bootstrapRegistries(BootstrapContext<NoiseGeneratorSettings> context) {
         HolderGetter<DensityFunction> densityLookup = context.lookup(Registries.DENSITY_FUNCTION);
         HolderGetter<NormalNoise.NoiseParameters> noiseLookup = context.lookup(Registries.NOISE);
+        context.register(JUPITER, JupiterWorldgen.settings(noiseLookup));
 
 //        context.register(MOON, new NoiseGeneratorSettings(
 //                NoiseSettings.create(-32, 256, 1, 2),

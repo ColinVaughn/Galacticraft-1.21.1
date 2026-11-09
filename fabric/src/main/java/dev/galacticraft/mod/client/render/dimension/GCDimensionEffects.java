@@ -36,10 +36,17 @@ public class GCDimensionEffects {
     public static final ResourceLocation MARS = Constant.id("mars");
     public static final ResourceLocation MERCURY = Constant.id("mercury");
     public static final ResourceLocation ASTEROID = Constant.id("asteroid");
+    public static final ResourceLocation JUPITER = Constant.id("jupiter");
     public static final ResourceLocation SATELLITE = Constant.id("satellite");
 
     public static void register() {
         boolean astrocraft = AstrocraftCompat.isLoaded();
+
+        DimensionRenderingRegistry.registerDimensionEffects(Constant.id("solar_system"), MoonDimensionEffects.INSTANCE);
+        DimensionRenderingRegistry.registerCloudRenderer(GCDimensions.SOLAR_SYSTEM, EmptyCloudRenderer.INSTANCE);
+        DimensionRenderingRegistry.registerWeatherRenderer(GCDimensions.SOLAR_SYSTEM, EmptyWeatherRenderer.INSTANCE);
+        DimensionRenderingRegistry.registerSkyRenderer(GCDimensions.SOLAR_SYSTEM,
+                context -> SolarSystemSkyRenderer.INSTANCE.render(new FabricWorldRenderContext(context)));
 
         DimensionRenderingRegistry.registerDimensionEffects(MOON, MoonDimensionEffects.INSTANCE);
         DimensionRenderingRegistry.registerCloudRenderer(GCDimensions.MOON, EmptyCloudRenderer.INSTANCE);
@@ -76,6 +83,17 @@ public class GCDimensionEffects {
             DimensionRenderingRegistry.registerSkyRenderer(GCDimensions.ASTEROID, context -> AsteroidSkyRenderer.INSTANCE.render(new FabricWorldRenderContext(context)));
         }
 
+        DimensionRenderingRegistry.registerDimensionEffects(JUPITER, JupiterDimensionEffects.INSTANCE);
+        DimensionRenderingRegistry.registerWeatherRenderer(GCDimensions.JUPITER, EmptyWeatherRenderer.INSTANCE);
+        if (!astrocraft) {
+            DimensionRenderingRegistry.registerSkyRenderer(GCDimensions.JUPITER,
+                    context -> ConfigurableSkyRenderer.INSTANCE.render(new FabricWorldRenderContext(context)));
+        }
+
         DimensionRenderingRegistry.registerDimensionEffects(SATELLITE, AsteroidDimensionEffects.INSTANCE);
+
+        // Addon dimensions opt into a configurable space sky with "effects": "galacticraft:space".
+        // Fabric keys sky renderers by dimension, so those are attached as each level loads.
+        DimensionRenderingRegistry.registerDimensionEffects(SpaceDimensionEffects.ID, SpaceDimensionEffects.INSTANCE);
     }
 }

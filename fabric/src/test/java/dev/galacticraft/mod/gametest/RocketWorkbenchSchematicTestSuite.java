@@ -53,6 +53,9 @@ import java.util.List;
 public class RocketWorkbenchSchematicTestSuite implements GalacticraftGameTest {
     private static final ResourceLocation ROCKET_PAGE = WorkbenchPages.ROCKET_ID;
     private static final ResourceLocation BUGGY_PAGE = Constant.id("buggy");
+    private static final List<ResourceLocation> FRESH_PAGES = List.of(ROCKET_PAGE,
+            Constant.id("rocket_module/rocket_upgrade/explosive"), Constant.id("rocket_module/rocket_upgrade/storage"),
+            WorkbenchPages.ADD_SCHEMATIC_ID);
 
     @GameTest(template = EMPTY_STRUCTURE)
     public void theAddSchematicPageAcceptsASchematic(GameTestHelper context) {
@@ -81,6 +84,31 @@ public class RocketWorkbenchSchematicTestSuite implements GalacticraftGameTest {
         }
 
         fixture.close();
+        context.succeed();
+    }
+
+    /** A datapack schematic: a generic rocket schematic whose stack lists the parts it unlocks. */
+    @GameTest(template = EMPTY_STRUCTURE)
+    public void spendingAStackDefinedSchematicUnlocksItsParts(GameTestHelper context) {
+        Fixture fixture = Fixture.on(context, WorkbenchPages.ADD_SCHEMATIC_ID);
+        var ion = net.minecraft.resources.ResourceKey.create(dev.galacticraft.api.registry.RocketRegistries.ROCKET_ENGINE,
+                net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("examplepack", "ion"));
+        var research = dev.galacticraft.api.rocket.part.RocketPart.researchId(ion);
+        if (((ResearchAccessor) fixture.player).galacticraft$isUnlocked(research)) {
+            fixture.close();
+            context.fail("Fixture already had the datapack part's research", fixture.pos);
+            return;
+        }
+
+        fixture.workbench.schematic.setItem(0, dev.galacticraft.mod.content.item.SchematicItem.stackFor(List.of(ion)));
+        boolean handled = fixture.menu.clickMenuButton(fixture.player, RocketWorkbenchMenu.BUTTON_UNLOCK);
+        boolean spent = fixture.workbench.schematic.getItem(0).isEmpty();
+        boolean researched = ((ResearchAccessor) fixture.player).galacticraft$isUnlocked(research);
+        fixture.close();
+        if (!handled || !spent || !researched) {
+            context.fail("Stack-defined schematic: handled=" + handled + " spent=" + spent + " researched=" + researched, fixture.pos);
+            return;
+        }
         context.succeed();
     }
 
@@ -168,15 +196,15 @@ public class RocketWorkbenchSchematicTestSuite implements GalacticraftGameTest {
      * always offered the unlock page last.
      */
     @GameTest(template = EMPTY_STRUCTURE)
-    public void aFreshWorkbenchOffersOneRocketPageAndTheUnlockPage(GameTestHelper context) {
+    public void aFreshWorkbenchOffersAssemblyUpgradePatternsAndTheUnlockPage(GameTestHelper context) {
         Fixture fixture = Fixture.on(context, null);
 
         List<ResourceLocation> pages = fixture.pageIds();
         ResourceLocation opened = fixture.menu.page().id();
         fixture.close();
 
-        if (!pages.equals(List.of(ROCKET_PAGE, WorkbenchPages.ADD_SCHEMATIC_ID))) {
-            context.fail("A fresh workbench should offer one rocket page and the unlock page, got " + pages, fixture.pos);
+        if (!pages.equals(FRESH_PAGES)) {
+            context.fail("A fresh workbench should offer assembly, upgrade patterns and unlock, got " + pages, fixture.pos);
         } else if (!opened.equals(ROCKET_PAGE)) {
             context.fail("The workbench should open on modular assembly, got " + opened, fixture.pos);
         } else {
@@ -203,34 +231,17 @@ public class RocketWorkbenchSchematicTestSuite implements GalacticraftGameTest {
     /** Flipping must walk the player's own pages and stop at the ends rather than wrapping. */
     @GameTest(template = EMPTY_STRUCTURE)
     public void flippingWalksTheUnlockedPagesAndStopsAtTheEnds(GameTestHelper context) {
-        Fixture fixture = Fixture.on(context, null);
-
-        if (fixture.menu.adjacentPage(-1) != null) {
+        for (int i = 0; i < FRESH_PAGES.size(); i++) {
+            Fixture fixture = Fixture.on(context, FRESH_PAGES.get(i));
+            var back = fixture.menu.adjacentPage(-1);
+            var next = fixture.menu.adjacentPage(1);
+            context.assertTrue(i == 0 ? back == null : back != null && back.id().equals(FRESH_PAGES.get(i - 1)),
+                    "Wrong previous page from " + FRESH_PAGES.get(i));
+            context.assertTrue(i == FRESH_PAGES.size() - 1 ? next == null : next != null && next.id().equals(FRESH_PAGES.get(i + 1)),
+                    "Wrong next page from " + FRESH_PAGES.get(i));
             fixture.close();
-            context.fail("Paging back from the first page should not be possible", fixture.pos);
-            return;
         }
-        WorkbenchPage next = fixture.menu.adjacentPage(1);
-        if (next == null || !next.id().equals(WorkbenchPages.ADD_SCHEMATIC_ID)) {
-            fixture.close();
-            context.fail("Paging forward from the rocket page should reach the unlock page, got " + next, fixture.pos);
-            return;
-        }
-
-        fixture.close();
-
-        Fixture unlockPage = Fixture.on(context, WorkbenchPages.ADD_SCHEMATIC_ID);
-        WorkbenchPage beyond = unlockPage.menu.adjacentPage(1);
-        WorkbenchPage back = unlockPage.menu.adjacentPage(-1);
-        unlockPage.close();
-
-        if (beyond != null) {
-            context.fail("The unlock page is the last page, but paging forward returned " + beyond, fixture.pos);
-        } else if (back == null || !back.id().equals(ROCKET_PAGE)) {
-            context.fail("Paging back from the unlock page should reach modular assembly, got " + back, fixture.pos);
-        } else {
-            context.succeed();
-        }
+        context.succeed();
     }
 
     /** The moon buggy had no recipe at all before it got a page; check the page actually builds one. */
@@ -282,11 +293,7 @@ public class RocketWorkbenchSchematicTestSuite implements GalacticraftGameTest {
         }
     }
 
-    /**
-     * The server names the page when it opens the menu, and both sides build their slot list from
-     * it. A client whose research has not arrived yet must still lay out the page it was told to
-     * open, or its slot indices disagree with the server's and items land in the wrong wells.
-     */
+    /** Checks that the server-selected page determines client slots before research sync arrives. */
     @GameTest(template = EMPTY_STRUCTURE)
     public void anUnlockedPageStillOpensWhenTheClientHasNotSeenTheUnlockYet(GameTestHelper context) {
         Fixture fixture = Fixture.on(context, BUGGY_PAGE);
@@ -305,10 +312,8 @@ public class RocketWorkbenchSchematicTestSuite implements GalacticraftGameTest {
     }
 
     /**
-     * Recipe-viewer transfer handlers address the workbench by slot index, so the page's slot order
-     * is a contract: ingredient wells first, then the upgrade wells, then the result, then exactly
-     * the player's 36 slots. Reading the result slot by arithmetic is what made EMI aim at an
-     * upgrade well instead.
+     * Preserves recipe-transfer slot order: ingredients, upgrades, result, then 36 player slots.
+     * The menu's result slot index must match the transfer handlers.
      */
     @GameTest(template = EMPTY_STRUCTURE)
     public void theMenuNamesItsIngredientAndResultSlots(GameTestHelper context) {
@@ -345,7 +350,7 @@ public class RocketWorkbenchSchematicTestSuite implements GalacticraftGameTest {
     }
 
     @GameTest(template = EMPTY_STRUCTURE)
-    public void tierThreeSchematicUnlocksModulesWithoutAddingAnotherPage(GameTestHelper context) {
+    public void tierThreeSchematicUnlocksModulePatternsWithoutDuplicatingAssembly(GameTestHelper context) {
         Fixture fixture = Fixture.on(context, WorkbenchPages.ADD_SCHEMATIC_ID);
         fixture.workbench.schematic.setItem(0, new ItemStack(GCItems.TIER_3_ROCKET_SCHEMATIC));
         context.assertTrue(fixture.menu.clickMenuButton(fixture.player, RocketWorkbenchMenu.BUTTON_UNLOCK), "Tier-3 schematic was rejected");
@@ -353,7 +358,14 @@ public class RocketWorkbenchSchematicTestSuite implements GalacticraftGameTest {
         for (var part : WorkbenchPages.rocketPartsUnlockedBy(GCItems.TIER_3_ROCKET_SCHEMATIC)) {
             context.assertTrue(((ResearchAccessor) fixture.player).galacticraft$isUnlocked(dev.galacticraft.mod.content.GCRocketParts.recipeId(part)), "Tier-3 module research was not granted");
         }
-        context.assertTrue(fixture.visiblePageIds().equals(List.of(ROCKET_PAGE, WorkbenchPages.ADD_SCHEMATIC_ID)), "Tier-3 schematic added a duplicate rocket page");
+        var pages = fixture.visiblePageIds();
+        // The schematic advancement also grants the tier-3 booster research.
+        var modules = java.util.stream.Stream.concat(WorkbenchPages.rocketPartsUnlockedBy(GCItems.TIER_3_ROCKET_SCHEMATIC).stream(),
+                        java.util.stream.Stream.of(dev.galacticraft.mod.content.GCRocketParts.TIER_3_BOOSTER))
+                .map(part -> dev.galacticraft.api.rocket.part.RocketPart.researchId(part).withPrefix("rocket_module/")).toList();
+        context.assertTrue(pages.size() == modules.size() + FRESH_PAGES.size() && pages.containsAll(modules) && pages.containsAll(FRESH_PAGES)
+                && pages.stream().filter(ROCKET_PAGE::equals).count() == 1
+                && pages.getLast().equals(WorkbenchPages.ADD_SCHEMATIC_ID), "Schematic did not expose its module patterns and one assembly page: " + pages);
         context.assertTrue(fixture.player.containerMenu instanceof RocketWorkbenchMenu menu && menu.page().id().equals(ROCKET_PAGE), "Unlock did not open the Rocket page");
         fixture.close();
         context.succeed();
@@ -370,14 +382,14 @@ public class RocketWorkbenchSchematicTestSuite implements GalacticraftGameTest {
         }
         var saved = fixture.player.saveWithoutId(new net.minecraft.nbt.CompoundTag());
         fixture.player.load(saved);
-        var granted = dev.galacticraft.api.accessor.ServerResearchAccessor.galacticraft$backfillFromAdvancements(fixture.player);
+        var granted = dev.galacticraft.mod.machine.workbench.ResearchBackfill.backfillFromAdvancements(fixture.player);
         for (var schematic : List.of(GCItems.TIER_2_ROCKET_SCHEMATIC, GCItems.TIER_3_ROCKET_SCHEMATIC)) {
             for (var part : WorkbenchPages.rocketPartsUnlockedBy(schematic)) {
                 var id = dev.galacticraft.mod.content.GCRocketParts.recipeId(part);
                 context.assertTrue(granted.contains(id) && research.galacticraft$isUnlocked(id), "Saved tier unlock did not restore module research");
             }
         }
-        context.assertTrue(dev.galacticraft.api.accessor.ServerResearchAccessor.galacticraft$backfillFromAdvancements(fixture.player).isEmpty(), "Migration granted research twice");
+        context.assertTrue(dev.galacticraft.mod.machine.workbench.ResearchBackfill.backfillFromAdvancements(fixture.player).isEmpty(), "Migration granted research twice");
         fixture.close();
         context.succeed();
     }
@@ -389,7 +401,7 @@ public class RocketWorkbenchSchematicTestSuite implements GalacticraftGameTest {
         var ids = WorkbenchPages.rocketPartsUnlockedBy(GCItems.TIER_2_ROCKET_SCHEMATIC).stream()
                 .map(dev.galacticraft.mod.content.GCRocketParts::recipeId).toArray(ResourceLocation[]::new);
         research.galacticraft$unlockRocketPartRecipes(ids);
-        dev.galacticraft.api.accessor.ServerResearchAccessor.galacticraft$backfillFromAdvancements(fixture.player);
+        dev.galacticraft.mod.machine.workbench.ResearchBackfill.backfillFromAdvancements(fixture.player);
         fixture.workbench.schematic.setItem(0, new ItemStack(GCItems.TIER_2_ROCKET_SCHEMATIC));
         context.assertTrue(fixture.menu.clickMenuButton(fixture.player, RocketWorkbenchMenu.BUTTON_UNLOCK), "Known schematic did not open assembly");
         context.assertTrue(fixture.workbench.schematic.getItem(0).is(GCItems.TIER_2_ROCKET_SCHEMATIC), "Previously researched schematic was consumed again");

@@ -1,0 +1,12 @@
+{
+  "axial_tilt": 4.0,
+  "body": "galacticraft:asteroid",
+  "center": [
+    6289.419162443239,
+    1024.0,
+    -8249.999999999998
+  ],
+  "radius": 7.0,
+  "rotation_period": 0.3781,
+  "texture": "galacticraft:textures/environment/solar_system/asteroid.png"
+}

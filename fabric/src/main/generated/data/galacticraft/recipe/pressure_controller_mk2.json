@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "galacticraft:charged_condensate"
+    },
+    "F": {
+      "item": "galacticraft:pressure_controller_mk1"
+    },
+    "P": {
+      "item": "galacticraft:jovian_composite_plate"
+    },
+    "W": {
+      "item": "galacticraft:advanced_wafer"
+    }
+  },
+  "pattern": [
+    "PCP",
+    "WFW",
+    "PCP"
+  ],
+  "result": {
+    "count": 1,
+    "id": "galacticraft:pressure_controller_mk2"
+  }
+}

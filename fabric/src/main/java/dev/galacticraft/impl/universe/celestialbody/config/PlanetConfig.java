@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +23,8 @@
 
 package dev.galacticraft.impl.universe.celestialbody.config;
 
+import dev.galacticraft.api.universe.celestialbody.SkyConfig;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.galacticraft.api.gas.GasComposition;
@@ -59,9 +62,11 @@ public record PlanetConfig(
         int dayTemperature,
         int nightTemperature,
         long dayLength,
-        @Nullable SatelliteRecipe satelliteRecipe
+        @Nullable SatelliteRecipe satelliteRecipe,
+        Optional<SkyConfig> sky
 ) implements CelestialBodyConfig {
-    public static final Codec<PlanetConfig> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+    // Sixteen fields is RecordCodecBuilder's limit, so the sky block is layered on top.
+    private static final MapCodec<PlanetConfig> BASE_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             ComponentSerialization.CODEC.fieldOf("name").forGetter(PlanetConfig::name),
             ComponentSerialization.CODEC.fieldOf("description").forGetter(PlanetConfig::description),
             CelestialBody.CODEC.optionalFieldOf("parent").forGetter(PlanetConfig::parent),
@@ -80,7 +85,21 @@ public record PlanetConfig(
             SatelliteRecipe.CODEC.optionalFieldOf("satellite_recipe").forGetter(c -> Optional.ofNullable(c.satelliteRecipe))
     ).apply(instance, PlanetConfig::new));
 
+    public static final Codec<PlanetConfig> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            BASE_CODEC.forGetter(config -> config),
+            SkyConfig.CODEC.optionalFieldOf("sky").forGetter(PlanetConfig::sky)
+    ).apply(instance, (base, sky) -> base.withSky(sky)));
+
+    public PlanetConfig(Component name, Component description, Optional<ResourceKey<CelestialBody<?, ?>>> parent, CelestialPosition<?, ?> position, CelestialDisplay<?, ?> display, CelestialRingDisplay<?, ?> ring, ResourceKey<Level> world, Holder<CelestialTeleporter<?, ?>> teleporter, GasComposition atmosphere, float gravity, CelestialHandler celestialHandler, int accessWeight, int dayTemperature, int nightTemperature, long dayLength, @Nullable SatelliteRecipe satelliteRecipe) {
+        this(name, description, parent, position, display, ring, world, teleporter, atmosphere, gravity, celestialHandler, accessWeight, dayTemperature, nightTemperature, dayLength, satelliteRecipe, Optional.empty());
+    }
+
+    /** This config with a different sky. */
+    public PlanetConfig withSky(Optional<SkyConfig> sky) {
+        return new PlanetConfig(name, description, parent, position, display, ring, world, teleporter, atmosphere, gravity, celestialHandler, accessWeight, dayTemperature, nightTemperature, dayLength, satelliteRecipe, sky);
+    }
+
     private PlanetConfig(Component name, Component description, Optional<ResourceKey<CelestialBody<?, ?>>> parent, CelestialPosition<?, ?> position, CelestialDisplay<?, ?> display, CelestialRingDisplay<?, ?> ring, ResourceKey<Level> world, Holder<CelestialTeleporter<?, ?>> teleporter, GasComposition atmosphere, float gravity, CelestialHandler celestialHandler, int accessWeight, int dayTemperature, int nightTemperature, long dayLength, Optional<SatelliteRecipe> satelliteRecipe) {
-        this(name, description, parent, position, display, ring, world, teleporter, atmosphere, gravity, celestialHandler, accessWeight, dayTemperature, nightTemperature, dayLength, satelliteRecipe.orElse(null));
+        this(name, description, parent, position, display, ring, world, teleporter, atmosphere, gravity, celestialHandler, accessWeight, dayTemperature, nightTemperature, dayLength, satelliteRecipe.orElse(null), Optional.empty());
     }
 }

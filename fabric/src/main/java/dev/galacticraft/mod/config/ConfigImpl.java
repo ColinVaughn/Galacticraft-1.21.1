@@ -65,6 +65,10 @@ public class ConfigImpl implements Config {
     private static final int DEFAULT_METEOR_SPORADIC_INTERVAL = 1200;
     private static final int DEFAULT_METEOR_SHOWER_MEAN_INTERVAL = 144000;
     private static final float DEFAULT_METEOR_SHOWER_PEAK_MULTIPLIER = 12.0f;
+    /** Matches the vanilla zombie's 20 against the evolved zombie's 25. */
+    private static final float DEFAULT_EVOLVED_HEALTH_MULTIPLIER = 1.25f;
+    private static final float MIN_EVOLVED_HEALTH_MULTIPLIER = 1.0f;
+    private static final float MAX_EVOLVED_HEALTH_MULTIPLIER = 4.0f;
 
     private transient final Gson gson;
     private transient final File file;
@@ -102,6 +106,8 @@ public class ConfigImpl implements Config {
     private long parrotOxygenConsumptionRate = 1;
     private boolean cannotEatInNoAtmosphere = true;
     private boolean cannotEatWithMask = true;
+    private boolean evolveMobsInSpace = true;
+    private float evolvedHealthMultiplier = DEFAULT_EVOLVED_HEALTH_MULTIPLIER;
     private float meteorSpawnMultiplier = 1.0f;
     private boolean meteorsEnabled = true;
     private int meteorSporadicInterval = DEFAULT_METEOR_SPORADIC_INTERVAL;
@@ -131,10 +137,13 @@ public class ConfigImpl implements Config {
     private boolean machineDustEnabled = true;
     private boolean terrainDustEnabled = true;
     private float moonSurfaceShaderStrength = 1.0F;
+    private boolean jupiterVolumetricClouds = true;
+    private int jupiterCloudResolutionDivisor = 4;
     private double bossHealthMultiplier = 1.0;
     private int rocketFuelTankCapacity = RocketFlightLogic.DEFAULT_FUEL_TANK_CAPACITY_BUCKETS;
     private int rocketBurnTicksPerBucket = RocketFlightLogic.DEFAULT_BURN_TICKS_PER_BUCKET;
     private boolean gc4RocketFuelMode = true;
+    private boolean seamlessSpaceTravel = false;
     private double refineryOilToFuelRatio = RefineryFuelLogic.DEFAULT_OIL_TO_FUEL_RATIO;
     private boolean hideAlphaWarning = false;
     private boolean enableGcHouston = true;
@@ -466,6 +475,25 @@ public class ConfigImpl implements Config {
     }
 
     @Override
+    public boolean evolveMobsInSpace() {
+        return this.evolveMobsInSpace;
+    }
+
+    public void setEvolveMobsInSpace(boolean evolveMobsInSpace) {
+        this.evolveMobsInSpace = evolveMobsInSpace;
+    }
+
+    @Override
+    public float evolvedHealthMultiplier() {
+        // Clamped on read as well, so a hand-edited file cannot shrink mobs or make them absurd.
+        return Mth.clamp(this.evolvedHealthMultiplier, MIN_EVOLVED_HEALTH_MULTIPLIER, MAX_EVOLVED_HEALTH_MULTIPLIER);
+    }
+
+    public void setEvolvedHealthMultiplier(float evolvedHealthMultiplier) {
+        this.evolvedHealthMultiplier = evolvedHealthMultiplier;
+    }
+
+    @Override
     public float meteorSpawnMultiplier() {
         return this.meteorSpawnMultiplier;
     }
@@ -725,6 +753,12 @@ public class ConfigImpl implements Config {
     }
 
     @Override
+    public boolean jupiterVolumetricClouds() { return this.jupiterVolumetricClouds; }
+
+    @Override
+    public int jupiterCloudResolutionDivisor() { return Mth.clamp(this.jupiterCloudResolutionDivisor, 2, 4); }
+
+    @Override
     public double bossHealthMultiplier() {
         return this.bossHealthMultiplier;
     }
@@ -746,6 +780,11 @@ public class ConfigImpl implements Config {
     public boolean gc4RocketFuelMode() {
         return this.gc4RocketFuelMode;
     }
+
+    @Override
+    public boolean seamlessSpaceTravel() { return seamlessSpaceTravel; }
+
+    public void setSeamlessSpaceTravel(boolean enabled) { seamlessSpaceTravel = enabled; }
 
     public void setGc4RocketFuelMode(boolean enabled) {
         this.gc4RocketFuelMode = enabled;
@@ -909,7 +948,7 @@ public class ConfigImpl implements Config {
             Function<String, Component> tooltipSingularSub =
                     id -> tooltipWithDescSub.apply(id, null);
 
-            // --- DEBUG CONFIG ---
+            // Debug configuration
             ConfigCategory dB = b.getOrCreateCategory(Component.translatable(Translations.Config.DEBUG));
 
             dB.addEntry(new BooleanToggleBuilder(
@@ -932,7 +971,7 @@ public class ConfigImpl implements Config {
                     .build()
             );
 
-            // --- WIRES CONFIG ---
+            // Wires configuration
 
             SubCategoryBuilder wires = ConfigEntryBuilder.create().startSubCategory(Component.translatable(Translations.Config.WIRES));
 
@@ -956,7 +995,7 @@ public class ConfigImpl implements Config {
                     .build()
             );
 
-            // --- MACHINES CONFIG ---
+            // Machines configuration
 
             SubCategoryBuilder machines = ConfigEntryBuilder.create().startSubCategory(Component.translatable(Translations.Config.MACHINES));
 
@@ -1147,7 +1186,7 @@ public class ConfigImpl implements Config {
 
             b.getOrCreateCategory(Component.translatable(Translations.Config.ENERGY)).addEntry(wires.build()).addEntry(machines.build());
 
-            // --- CLIENT CONFIG ---
+            // Client configuration
 
             ConfigCategory client = b.getOrCreateCategory(Component.translatable(Translations.Config.CLIENT));
 
@@ -1161,11 +1200,11 @@ public class ConfigImpl implements Config {
                     .build()
             );
 
-            // --- SKYBOX CONFIG ---
+            // Skybox configuration
 
             SubCategoryBuilder skybox = ConfigEntryBuilder.create().startSubCategory(Component.translatable(Translations.Config.SKYBOX));
 
-            // --- CREATIVE CONFIG ---
+            // Creative configuration
 
             SubCategoryBuilder creative = ConfigEntryBuilder.create().startSubCategory(Component.translatable(Translations.Config.CREATIVE));
 
@@ -1222,7 +1261,7 @@ public class ConfigImpl implements Config {
                     .build()
             );
 
-            // --- LIFE SUPPORT CONFIG ---
+            // Life support configuration
 
             ConfigCategory lifeSupport = b.getOrCreateCategory(Component.translatable(Translations.Config.LIFE_SUPPORT));
 
@@ -1330,7 +1369,7 @@ public class ConfigImpl implements Config {
                     .build()
             );
 
-            // --- COMMANDS CONFIG ---
+            // Commands configuration
 
             ConfigCategory commands = b.getOrCreateCategory(Component.translatable(Translations.Config.COMMANDS));
 
@@ -1344,7 +1383,7 @@ public class ConfigImpl implements Config {
                     .build()
             );
 
-            // --- DIFFICULTY CONFIG ---
+            // Difficulty configuration
 
             ConfigCategory difficulty = b.getOrCreateCategory(Component.translatable(Translations.Config.DIFFICULTY));
 
@@ -1356,6 +1395,28 @@ public class ConfigImpl implements Config {
                     .setSaveConsumer(config::setMeteorSpawnMultiplier)
                     .setDefaultValue(1.0f)
                     .setMin(Mth.EPSILON)
+                    .build()
+            );
+
+            difficulty.addEntry(new BooleanToggleBuilder(
+                    Component.translatable(Translations.Config.RESET),
+                    label.apply(Translations.Config.EVOLVE_MOBS_IN_SPACE),
+                    config.evolveMobsInSpace())
+                    .setTooltip(tooltipWithDesc.apply(Translations.Config.EVOLVE_MOBS_IN_SPACE, Translations.Config.EVOLVE_MOBS_IN_SPACE_DESC))
+                    .setSaveConsumer(config::setEvolveMobsInSpace)
+                    .setDefaultValue(true)
+                    .build()
+            );
+
+            difficulty.addEntry(new FloatFieldBuilder(
+                    Component.translatable(Translations.Config.RESET),
+                    label.apply(Translations.Config.EVOLVED_HEALTH_MULTIPLIER),
+                    config.evolvedHealthMultiplier())
+                    .setTooltip(tooltipWithDesc.apply(Translations.Config.EVOLVED_HEALTH_MULTIPLIER, Translations.Config.EVOLVED_HEALTH_MULTIPLIER_DESC))
+                    .setSaveConsumer(config::setEvolvedHealthMultiplier)
+                    .setDefaultValue(DEFAULT_EVOLVED_HEALTH_MULTIPLIER)
+                    .setMin(MIN_EVOLVED_HEALTH_MULTIPLIER)
+                    .setMax(MAX_EVOLVED_HEALTH_MULTIPLIER)
                     .build()
             );
 
@@ -1410,9 +1471,14 @@ public class ConfigImpl implements Config {
                     .build()
             );
 
-            // --- ROCKET CONFIG ---
+            // Rocket configuration
 
             ConfigCategory rockets = b.getOrCreateCategory(Component.translatable(Translations.Config.ROCKETS));
+            rockets.addEntry(new BooleanToggleBuilder(
+                    Component.translatable(Translations.Config.RESET),
+                    Component.translatable("config.galacticraft.seamless_space_travel"), config.seamlessSpaceTravel())
+                    .setTooltip(Component.translatable("config.galacticraft.seamless_space_travel.description"))
+                    .setSaveConsumer(config::setSeamlessSpaceTravel).setDefaultValue(false).build());
 
             rockets.addEntry(new BooleanToggleBuilder(
                     Component.translatable(Translations.Config.RESET),

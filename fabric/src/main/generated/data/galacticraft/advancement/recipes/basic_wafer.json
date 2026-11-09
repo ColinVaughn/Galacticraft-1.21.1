@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "galacticraft:basic_wafer"
+        "recipe": "galacticraft:fabrication/basic_wafer"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -15,7 +15,7 @@
   ],
   "rewards": {
     "recipes": [
-      "galacticraft:basic_wafer"
+      "galacticraft:fabrication/basic_wafer"
     ]
   }
 }

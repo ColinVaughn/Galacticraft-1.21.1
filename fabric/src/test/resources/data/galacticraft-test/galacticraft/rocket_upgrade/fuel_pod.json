@@ -1,0 +1,6 @@
+{
+  "type": "galacticraft-test:fuel_pod",
+  "config": {
+    "max_pods": 3
+  }
+}

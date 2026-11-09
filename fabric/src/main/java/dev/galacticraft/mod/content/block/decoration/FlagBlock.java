@@ -25,8 +25,10 @@ package dev.galacticraft.mod.content.block.decoration;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.galacticraft.mod.content.block.entity.decoration.FlagBlockEntity;
+import dev.galacticraft.mod.spacerace.TeamFlagOwner;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -128,6 +130,11 @@ public class FlagBlock extends AbstractBannerBlock {
 
         if (placer != null && FlagBlock.getBaseBlockEntity(level, pos) instanceof FlagBlockEntity flag) {
             flag.setYaw(placer.getYHeadRot());
+            // A team flag nobody has claimed yet - from the creative menu or an autocrafter - becomes the planter's.
+            TeamFlagOwner team = flag.getTeam();
+            if (team != null && !team.isClaimed() && placer instanceof ServerPlayer player) {
+                flag.claim(TeamFlagOwner.of(player));
+            }
         }
     }
 

@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_cloud_diver": {
+      "conditions": {
+        "items": [
+          {
+            "items": "galacticraft:cloud_diver"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "galacticraft:vehicle_dock"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_cloud_diver"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "galacticraft:vehicle_dock"
+    ]
+  }
+}

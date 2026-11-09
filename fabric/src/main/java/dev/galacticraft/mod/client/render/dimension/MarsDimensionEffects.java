@@ -24,12 +24,14 @@ package dev.galacticraft.mod.client.render.dimension;
 
 import dev.galacticraft.mod.api.dimension.GalacticDimensionEffects;
 import dev.galacticraft.mod.client.render.dimension.duststorm.ClientDustStorms;
+import dev.galacticraft.mod.world.dimension.duststorm.DustStormExposure;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.ParticleStatus;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.util.CubicSampler;
 import net.minecraft.util.RandomSource;
@@ -86,8 +88,10 @@ public class MarsDimensionEffects extends GalacticDimensionEffects {
 
     @Override
     public boolean isFoggyAt(int camX, int camY) {
-        // Thicken the render-distance fog once the storm is well underway so visibility drops.
-        return ClientDustStorms.intensity() > 0.55F;
+        // Thicken fog only where the open storm is visible, preserving visibility under cover.
+        if (ClientDustStorms.intensity() <= 0.55F) return false;
+        ClientLevel level = this.minecraft.level;
+        return level != null && DustStormExposure.isStormInView(level, this.minecraft.gameRenderer.getMainCamera().getBlockPosition());
     }
 
     @Override
@@ -107,13 +111,15 @@ public class MarsDimensionEffects extends GalacticDimensionEffects {
         if (particles == ParticleStatus.MINIMAL) return true;
         if (particles == ParticleStatus.DECREASED) count /= 2;
 
-        // Keep dust close to the camera so streaks remain visible.
+        // Keep dust near the camera and exclude roofs, caves, and sealed spaces.
         double wind = 0.7D + intensity * 0.9D;
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         for (int i = 0; i < count; i++) {
             double px = cam.x + (random.nextDouble() - 0.5D) * 22.0D;
             double py = cam.y + (random.nextDouble() - 0.35D) * 11.0D;
             double pz = cam.z + (random.nextDouble() - 0.5D) * 22.0D;
             double gust = 0.75D + random.nextDouble() * 0.5D;
+            if (!DustStormExposure.isExposed(level, pos.set(px, py, pz))) continue;
             level.addParticle(DUST, px, py, pz,
                     wind * gust, (random.nextDouble() - 0.5D) * 0.15D, wind * gust * 0.6D);
         }

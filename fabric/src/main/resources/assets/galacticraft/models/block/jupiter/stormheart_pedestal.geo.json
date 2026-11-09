@@ -1,0 +1,78 @@
+{
+	"format_version": "1.12.0",
+	"minecraft:geometry": [
+		{
+			"description": {
+				"identifier": "geometry.galacticraft.stormheart_pedestal",
+				"texture_width": 128,
+				"texture_height": 128,
+				"visible_bounds_width": 2,
+				"visible_bounds_height": 2.5,
+				"visible_bounds_offset": [0, 0.75, 0]
+			},
+			"bones": [
+				{
+					"name": "root",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [-8, 0, -8], "size": [16, 2, 16], "uv": [0, 0]},
+						{"origin": [-7, 2, -7], "size": [14, 1, 14], "uv": [0, 19]},
+						{"origin": [-6, 3, -6], "size": [12, 5, 12], "uv": [0, 35]},
+						{"origin": [-4, 8, -4], "size": [8, 1, 8], "uv": [49, 35]},
+						{"origin": [5.5, 3, -7.5], "size": [2, 9, 2], "inflate": 0.12, "uv": [21, 62]},
+						{"origin": [5.5, 12, -7.5], "size": [2, 1, 2], "uv": [65, 14]},
+						{"origin": [6, 13, -7], "size": [1, 1, 1], "uv": [38, 53]},
+						{"origin": [3, 9, -4], "size": [1, 2, 1], "uv": [66, 65]},
+						{"origin": [-7.5, 3, -7.5], "size": [2, 9, 2], "inflate": 0.12, "uv": [0, 64]},
+						{"origin": [-7.5, 12, -7.5], "size": [2, 1, 2], "uv": [39, 65]},
+						{"origin": [-7, 13, -7], "size": [1, 1, 1], "uv": [43, 53]},
+						{"origin": [-4, 9, -4], "size": [1, 2, 1], "uv": [39, 69]},
+						{"origin": [5.5, 3, 5.5], "size": [2, 9, 2], "inflate": 0.12, "uv": [9, 64]},
+						{"origin": [5.5, 12, 5.5], "size": [2, 1, 2], "uv": [48, 65]},
+						{"origin": [6, 13, 6], "size": [1, 1, 1], "uv": [30, 62]},
+						{"origin": [3, 9, 3], "size": [1, 2, 1], "uv": [44, 69]},
+						{"origin": [-7.5, 3, 5.5], "size": [2, 9, 2], "inflate": 0.12, "uv": [65, 0]},
+						{"origin": [-7.5, 12, 5.5], "size": [2, 1, 2], "uv": [57, 65]},
+						{"origin": [-7, 13, 6], "size": [1, 1, 1], "uv": [54, 69]},
+						{"origin": [-4, 9, 3], "size": [1, 2, 1], "uv": [49, 69]}
+					]
+				},
+				{
+					"name": "core",
+					"parent": "root",
+					"pivot": [0, 13, 0],
+					"cubes": [
+						{"origin": [-2, 11, -2], "size": [4, 4, 4], "uv": [21, 53]},
+						{"origin": [-1, 10, -1], "size": [2, 6, 2], "inflate": 0.24, "uv": [30, 65]},
+						{"origin": [-3, 12, -1], "size": [6, 2, 2], "inflate": 0.12, "uv": [57, 30]},
+						{"origin": [-1, 12, -3], "size": [2, 2, 6], "uv": [38, 56]}
+					]
+				},
+				{
+					"name": "ring_a",
+					"parent": "root",
+					"pivot": [0, 13, 0],
+					"rotation": [-20, 0, 0],
+					"cubes": [
+						{"origin": [-5.5, 12.8, -5.5], "size": [11, 0.4, 0.5], "uv": [57, 28]},
+						{"origin": [-5.5, 12.8, 5], "size": [11, 0.4, 0.5], "uv": [57, 29]},
+						{"origin": [5, 12.8, -5], "size": [0.5, 0.4, 10], "uv": [49, 45]},
+						{"origin": [-5.5, 12.8, -5], "size": [0.5, 0.4, 10], "uv": [0, 53]}
+					]
+				},
+				{
+					"name": "ring_b",
+					"parent": "root",
+					"pivot": [0, 13, 0],
+					"rotation": [0, 0, -20],
+					"cubes": [
+						{"origin": [-4.5, 12.8, -4.5], "size": [9, 0.4, 0.5], "uv": [65, 12]},
+						{"origin": [-4.5, 12.8, 4], "size": [9, 0.4, 0.5], "uv": [65, 13]},
+						{"origin": [4, 12.8, -4], "size": [0.5, 0.4, 8], "uv": [55, 56]},
+						{"origin": [-4.5, 12.8, -4], "size": [0.5, 0.4, 8], "uv": [57, 19]}
+					]
+				}
+			]
+		}
+	]
+}

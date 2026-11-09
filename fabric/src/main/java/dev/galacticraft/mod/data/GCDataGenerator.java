@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +23,7 @@
 
 package dev.galacticraft.mod.data;
 
+import dev.galacticraft.mod.data.tag.GCCelestialBodyTagProvider;
 import com.mojang.serialization.Lifecycle;
 import dev.galacticraft.api.registry.AddonRegistries;
 import dev.galacticraft.api.registry.RocketRegistries;
@@ -88,6 +90,7 @@ public class GCDataGenerator implements DataGeneratorEntrypoint {
         pack.addProvider(GCBiomeTagProvider::new);
         pack.addProvider(GCDamageTypeTagProvider::new);
         pack.addProvider(GCDimensionTagProvider::new);
+        pack.addProvider(GCCelestialBodyTagProvider::new);
         pack.addProvider(GCEntityTypeTagProvider::new);
         pack.addProvider(GCFluidTagProvider::new);
         pack.addProvider(GCStructureTagProvider::new);
@@ -113,6 +116,7 @@ public class GCDataGenerator implements DataGeneratorEntrypoint {
 
         // universe
         pack.addProvider(BootstrapDataProvider.create("Galaxies", GalaxyImpl::bootstrapRegistries));
+        pack.addProvider(BootstrapDataProvider.create("Spaceflight", dev.galacticraft.mod.content.GCSpaceflight::bootstrap));
         pack.addProvider(BootstrapDataProvider.create("Celestial Bodies", GCCelestialBodies::bootstrapRegistries));
         pack.addProvider(BootstrapDataProvider.create("Celestial Teleporters", GCTeleporterTypes::bootstrapRegistries));
 
@@ -160,6 +164,7 @@ public class GCDataGenerator implements DataGeneratorEntrypoint {
 
         // universe
         builder.add(AddonRegistries.GALAXY, GalaxyImpl::bootstrapRegistries);
+        builder.add(AddonRegistries.SPACEFLIGHT, dev.galacticraft.mod.content.GCSpaceflight::bootstrap);
         builder.add(AddonRegistries.CELESTIAL_BODY, Lifecycle.stable(), GCCelestialBodies::bootstrapRegistries);
         builder.add(AddonRegistries.CELESTIAL_TELEPORTER, Lifecycle.stable(), GCTeleporterTypes::bootstrapRegistries);
 

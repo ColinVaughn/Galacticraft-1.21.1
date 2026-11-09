@@ -1,0 +1,42 @@
+{
+  "carvers": {},
+  "downfall": 0.0,
+  "effects": {
+    "fog_color": 13877152,
+    "sky_color": 12168342,
+    "water_color": 10137272,
+    "water_fog_color": 6913673
+  },
+  "features": [
+    [],
+    [],
+    [],
+    [],
+    [
+      "galacticraft:jupiter_storm_harvester",
+      "galacticraft:jupiter_survey_wreck"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [
+      "galacticraft:jupiter_hydrosulfide_crystals",
+      "galacticraft:jupiter_hydrosulfide_front",
+      "galacticraft:jupiter_charged_condensate"
+    ]
+  ],
+  "has_precipitation": false,
+  "spawn_costs": {},
+  "spawners": {
+    "ambient": [],
+    "axolotls": [],
+    "creature": [],
+    "misc": [],
+    "monster": [],
+    "underground_water_creature": [],
+    "water_ambient": [],
+    "water_creature": []
+  },
+  "temperature": 0.2
+}

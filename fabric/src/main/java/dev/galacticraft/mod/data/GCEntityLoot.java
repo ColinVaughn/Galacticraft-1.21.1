@@ -232,6 +232,32 @@ public class GCEntityLoot extends GCEntityLootSubProvider {
                                         .when(LootItemKilledByPlayerCondition.killedByPlayer())
                         )
         );
+        add(GCEntityTypes.CLOUD_RAY, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F))
+                                .add(LootItem.lootTableItem(dev.galacticraft.mod.content.item.jupiter.JupiterItems.CLOUD_CONDENSATE)
+                                                        .apply(SetItemCountFunction.setCount(UniformGenerator.between(1F, 3F)))
+                                                        .apply(EnchantedCountIncreaseFunction.lootingMultiplier(this.lookup, UniformGenerator.between(0.0F, 1.0F))))));
+        add(GCEntityTypes.STATIC_JELLY, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F))
+                                .add(LootItem.lootTableItem(dev.galacticraft.mod.content.item.jupiter.JupiterItems.CHARGED_CONDENSATE)
+                                                        .apply(SetItemCountFunction.setCount(UniformGenerator.between(0F, 1F)))
+                                                        .apply(EnchantedCountIncreaseFunction.lootingMultiplier(this.lookup, UniformGenerator.between(0.0F, 1.0F))))));
+        add(GCEntityTypes.SALVAGE_DRONE, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F))
+                                .add(LootItem.lootTableItem(dev.galacticraft.mod.content.item.jupiter.JupiterItems.AEROSTAT_SALVAGE)
+                                                        .apply(SetItemCountFunction.setCount(UniformGenerator.between(1F, 2F)))
+                                                        .apply(EnchantedCountIncreaseFunction.lootingMultiplier(this.lookup, UniformGenerator.between(0.0F, 1.0F))))));
+        // The Stormheart Core is claimed at the pedestal.
+        add(GCEntityTypes.STORMHEART_LEVIATHAN, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F))
+                                .add(LootItem.lootTableItem(dev.galacticraft.mod.content.item.jupiter.JupiterItems.CHARGED_CONDENSATE)
+                                                        .apply(SetItemCountFunction.setCount(UniformGenerator.between(6F, 10F))))));
+        add(GCEntityTypes.CURIOSITY_ROVER, LootTable.lootTable()
+                .withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F))
+                        .add(LootItem.lootTableItem(dev.galacticraft.mod.content.item.GCItems.COMPRESSED_STEEL)
+                                .apply(SetItemCountFunction.setCount(UniformGenerator.between(0F, 2F)))
+                                .apply(EnchantedCountIncreaseFunction.lootingMultiplier(this.lookup, UniformGenerator.between(0.0F, 1.0F)))))
+                .withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F))
+                        .add(LootItem.lootTableItem(dev.galacticraft.mod.content.item.GCItems.SENSOR_LENS))
+                        .add(LootItem.lootTableItem(dev.galacticraft.mod.content.item.GCItems.BASIC_WAFER))
+                        .when(LootItemKilledByPlayerCondition.killedByPlayer())
+                        .when(net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceWithEnchantedBonusCondition.randomChanceAndLootingBoost(this.lookup, 0.25F, 0.1F))));
         add(GCEntityTypes.GAZER, noDrops());
         add(GCEntityTypes.RUMBLER, noDrops());
         add(GCEntityTypes.COMET_CUBE, noDrops());

@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +27,7 @@ import com.mojang.serialization.MapCodec;
 import dev.galacticraft.api.component.GCDataComponents;
 import dev.galacticraft.api.rocket.RocketData;
 import dev.galacticraft.api.rocket.RocketPaint;
-import dev.galacticraft.api.rocket.RocketPrefabs;
+import dev.galacticraft.mod.content.rocket.RocketPrefabs;
 import dev.galacticraft.api.rocket.part.RocketPartTypes;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.content.item.GCItems;
@@ -59,7 +60,8 @@ public class ModularRocketRecipe extends RocketRecipe {
     }
 
     private static Ingredient module(RocketPartTypes type) {
-        return Ingredient.of(GCItems.ROCKET_MODULES.stream().filter(item -> item.type() == type).map(ItemStack::new));
+        // The generic module fits any slot; which one depends on the part its stack carries.
+        return Ingredient.of(RocketModuleItem.all().stream().filter(item -> item.type() == type || item.type() == null).map(ItemStack::new));
     }
 
     @Override public List<RocketSlotData> slots() { return SLOTS; }
@@ -82,7 +84,7 @@ public class ModularRocketRecipe extends RocketRecipe {
 
     private RocketData part(RecipeInput input, int slot) {
         return slot < input.size() && input.getItem(slot).getItem() instanceof RocketModuleItem module
-                && module.type() == SLOTS.get(slot).partType() ? module.rocketData(input.getItem(slot)) : RocketPrefabs.MISSING;
+                && module.type(input.getItem(slot)) == SLOTS.get(slot).partType() ? module.rocketData(input.getItem(slot)) : RocketPrefabs.MISSING;
     }
 
     private static Optional<Integer> moduleColor(RocketData data, RocketPartTypes type) {

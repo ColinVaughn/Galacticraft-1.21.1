@@ -50,10 +50,10 @@ public record PatternedRocketPartRecipeConfig(int height, @NotNull List<RocketPa
             RocketPartRecipeSlot.CODEC.listOf().fieldOf("left").forGetter(PatternedRocketPartRecipeConfig::left)
     ).apply(instance, (height, right, left) -> {
         NonNullList<Ingredient> ingredients = NonNullList.createWithCapacity(right.size() + left.size());
-        for (RocketPartRecipeSlot slot : right) {
+        for (RocketPartRecipeSlot slot : left) {
             ingredients.add(slot.ingredient());
         }
-        for (RocketPartRecipeSlot slot : left) {
+        for (RocketPartRecipeSlot slot : right) {
             ingredients.add(slot.ingredient());
         }
         return new PatternedRocketPartRecipeConfig(height, right, left, ingredients);
@@ -139,10 +139,10 @@ public record PatternedRocketPartRecipeConfig(int height, @NotNull List<RocketPa
         ImmutableList<RocketPartRecipeSlot> leftB = left.build();
         ImmutableList<RocketPartRecipeSlot> rightB = right.build();
         NonNullList<Ingredient> ingredientsList = NonNullList.createWithCapacity(rightB.size() + leftB.size());
-        for (RocketPartRecipeSlot slot : rightB) {
+        for (RocketPartRecipeSlot slot : leftB) {
             ingredientsList.add(slot.ingredient());
         }
-        for (RocketPartRecipeSlot slot : leftB) {
+        for (RocketPartRecipeSlot slot : rightB) {
             ingredientsList.add(slot.ingredient());
         }
 

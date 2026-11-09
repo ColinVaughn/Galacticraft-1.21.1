@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -137,7 +138,7 @@ public class RocketRecipeBuilder extends GCRecipeBuilder<RocketRecipeBuilder> {
             throw new IllegalStateException("No way of obtaining recipe " + id);
         }
 
-        ItemStack result = new ItemStack(this.result, this.count);
+        ItemStack result = this.resultStack();
         result.set(GCDataComponents.ROCKET_DATA, this.rocketData);
         return new RocketRecipe(this.group, result, this.bodyHeight, this.body, this.cone, this.engine, this.fins, this.boosters, this.storage, this.schematic, this.sortOrder);
     }

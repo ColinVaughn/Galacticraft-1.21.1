@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +23,7 @@
 
 package dev.galacticraft.mod.client.gui.screen.ingame;
 
+import dev.galacticraft.api.universe.galaxy.Galaxy;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.datafixers.util.Pair;
@@ -79,6 +81,14 @@ public class CelestialSelectionScreen extends CelestialScreen {
     protected int spaceStationListOffset = 0;
     protected boolean renamingSpaceStation;
     protected String renamingString = "";
+    protected boolean systemsOpen;
+    protected int systemsScroll;
+
+    /** One row of the systems panel: a galaxy heading, or a star that jumps the map to its system. */
+    protected record SystemEntry(Component label, @Nullable CelestialBody<?, ?> star) {
+    }
+
+    private static final int SYSTEM_ROW = 14;
 
     public CelestialSelectionScreen(boolean mapMode, @Nullable RocketData data, boolean canCreateStations, CelestialBody<?, ?> fromBody) {
         super(Component.empty());
@@ -108,7 +118,7 @@ public class CelestialSelectionScreen extends CelestialScreen {
         if (body == null) {
             body = this.getFocusedSystem();
             return body == null
-                    ? Component.translatable(Translations.Galaxy.MILKY_WAY)
+                    ? this.galaxies.stream().findFirst().map(Galaxy::name).orElse(Component.empty())
                     : body.galaxyValue(this.galaxies, this.celestialBodies).name();
         }
         if (body.parent().isPresent()) {
@@ -125,9 +135,7 @@ public class CelestialSelectionScreen extends CelestialScreen {
     protected Component parentName() {
         if (this.selectedBody == null) {
             CelestialBody<?, ?> focusedSystem = this.getFocusedSystem();
-            return focusedSystem == null
-                    ? Component.translatable(Translations.CelestialBody.SOL)
-                    : focusedSystem.name();
+            return focusedSystem == null ? Component.empty() : focusedSystem.name();
         }
         if (this.selectedBody.parent().isEmpty()) {
             return this.selectedBody.name();
@@ -347,6 +355,8 @@ public class CelestialSelectionScreen extends CelestialScreen {
             clickHandled |= this.handleSatelliteClick(x, y);
         }
 
+        if (!clickHandled && this.handleSystemsClick(x, y)) return true;
+
         clickHandled = this.handleCelestialListClick(x, y, clickHandled);
 
         if (clickHandled) {
@@ -560,7 +570,98 @@ public class CelestialSelectionScreen extends CelestialScreen {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (this.systemsOpen && this.isOverSystemsList(mouseX, mouseY)) {
+            int hidden = Math.max(0, this.systemEntries().size() - this.visibleSystemRows());
+            this.systemsScroll = Mth.clamp(this.systemsScroll - (int) Math.signum(scrollY), 0, hidden);
+            return true;
+        }
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+    }
+
+    /** The systems panel lists every galaxy with its star systems, so far-off systems are a click away. */
+    protected List<SystemEntry> systemEntries() {
+        List<SystemEntry> entries = new ArrayList<>();
+        Map<Galaxy, List<CelestialBody<?, ?>>> systems = this.getSystemsByGalaxy();
+        for (Map.Entry<Galaxy, List<CelestialBody<?, ?>>> galaxy : systems.entrySet()) {
+            entries.add(new SystemEntry(galaxy.getKey().name(), null));
+            for (CelestialBody<?, ?> star : galaxy.getValue()) {
+                entries.add(new SystemEntry(star.name(), star));
+            }
+        }
+        return entries;
+    }
+
+    /** Whether there is more than one star system to choose between; the panel is hidden otherwise. */
+    protected boolean hasSystemChoice() {
+        return this.getSystemsByGalaxy().values().stream().mapToInt(List::size).sum() > 1;
+    }
+
+    protected int systemsTabY() {
+        return BOT - 11;
+    }
+
+    /** Rows that fit between the tab and the middle of the screen, leaving the catalog room above. */
+    protected int visibleSystemRows() {
+        return Math.max(1, (this.systemsTabY() - this.height / 2) / SYSTEM_ROW);
+    }
+
+    protected boolean isOverSystemsList(double x, double y) {
+        int rows = Math.min(this.systemEntries().size(), this.visibleSystemRows());
+        return x >= LHS && x <= LHS + 95 && y >= this.systemsTabY() - rows * SYSTEM_ROW && y < this.systemsTabY();
+    }
+
+    private boolean handleSystemsClick(double x, double y) {
+        if (!this.hasSystemChoice()) return false;
+        int tabY = this.systemsTabY();
+        if (x >= LHS && x <= LHS + 74 && y >= tabY && y <= tabY + 11) {
+            this.systemsOpen = !this.systemsOpen;
+            return true;
+        }
+        if (!this.systemsOpen || !this.isOverSystemsList(x, y)) return false;
+        List<SystemEntry> entries = this.systemEntries();
+        int row = (int) ((tabY - y) / SYSTEM_ROW);
+        int index = this.firstVisibleSystem(entries.size()) + this.visibleRowsShown(entries.size()) - 1 - row;
+        if (index >= 0 && index < entries.size() && entries.get(index).star() != null) {
+            this.focusSystem(entries.get(index).star());
+        }
+        return true;
+    }
+
+    private int visibleRowsShown(int total) {
+        return Math.min(total, this.visibleSystemRows());
+    }
+
+    private int firstVisibleSystem(int total) {
+        int hidden = Math.max(0, total - this.visibleSystemRows());
+        this.systemsScroll = Mth.clamp(this.systemsScroll, 0, hidden);
+        return this.systemsScroll;
+    }
+
+    private void drawSystemsPanel(Graphics.TextureColor texture) {
+        if (!this.hasSystemChoice()) return;
+        int tabY = this.systemsTabY();
+        texture.blit(LHS, tabY, 74, 11, CATALOG_U, CATALOG_V, CATALOG_WIDTH, CATALOG_HEIGHT, BLUE);
+        texture.drawCenteredText(Component.translatable(Translations.CelestialSelection.SYSTEMS), LHS + 40, tabY + 1, WHITE);
+        if (!this.systemsOpen) return;
+
+        List<SystemEntry> entries = this.systemEntries();
+        int shown = this.visibleRowsShown(entries.size());
+        int first = this.firstVisibleSystem(entries.size());
+        CelestialBody<?, ?> focused = this.getFocusedSystem();
+        for (int i = 0; i < shown; i++) {
+            SystemEntry entry = entries.get(first + i);
+            int y = tabY - (shown - i) * SYSTEM_ROW;
+            if (entry.star() == null) {
+                texture.blit(LHS + 2, y, 93, 12, SIDE_BUTTON_U, SIDE_BUTTON_V, SIDE_BUTTON_WIDTH, SIDE_BUTTON_HEIGHT, YELLOW);
+                texture.drawText(entry.label(), LHS + 7, y + 2, GREY3, false);
+            } else {
+                boolean current = entry.star() == focused;
+                int xOffset = LHS + (current ? 10 : 5);
+                texture.blit(xOffset, y, 93, 12, SIDE_BUTTON_U, SIDE_BUTTON_V, SIDE_BUTTON_WIDTH, SIDE_BUTTON_HEIGHT,
+                        current ? FastColor.ARGB32.color(255, 51, 255, 255) : BLUE);
+                texture.drawText(entry.label(), xOffset + 5, y + 2, 0xe0e0e0, false);
+            }
+        }
     }
 
 
@@ -623,6 +724,8 @@ public class CelestialSelectionScreen extends CelestialScreen {
 
             List<CelestialBody<?, ?>> children = this.getChildren(this.isZoomed() ? this.selectedBody : this.getFocusedSystem());
             this.drawChildButtons(texture, children, 0, 0, true);
+
+            this.drawSystemsPanel(texture);
 
             if (this.mapMode) {
                 texture.blit(RHS - 74, LHS, 74, 11, TOP_RIGHT_ACTION_BUTTON_U + TOP_RIGHT_ACTION_BUTTON_WIDTH, TOP_RIGHT_ACTION_BUTTON_V, -TOP_RIGHT_ACTION_BUTTON_WIDTH, TOP_RIGHT_ACTION_BUTTON_HEIGHT, RED);

@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -62,6 +63,8 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import dev.galacticraft.machinelib.impl.storage.neoforge.ExposedEnergyStorageNeoForge;
 import dev.galacticraft.machinelib.api.item.SingleVariantFixedItemBackedFluidStorage;
+import dev.galacticraft.machinelib.api.component.MLDataComponents;
+import dev.galacticraft.mod.content.item.InfiniteOxygenTankItem;
 import dev.galacticraft.mod.content.item.OxygenTankItem;
 import dev.galacticraft.mod.storage.ItemFluidTransfer;
 import dev.galacticraft.mod.storage.ItemStoragePull;
@@ -124,7 +127,19 @@ public final class GalacticraftNeoForge {
         BuiltInRocketRegistries.register(modBus);
         GalacticraftCommon.init();
         OxygenTankExtractor.register((inventory, slot, amount) -> {
+            if (amount <= 0) return false;
             var stack = inventory.getItem(slot);
+            if (stack.getItem() instanceof InfiniteOxygenTankItem) return true;
+            if (stack.getItem() instanceof OxygenTankItem) {
+                // Avoid rounding each breath up to NeoForge's 81-droplet millibucket.
+                long stored = stack.getOrDefault(MLDataComponents.AMOUNT.get(), 0L);
+                if (stored <= 0) return false;
+                long remaining = Math.max(0L, stored - amount);
+                if (remaining == 0) stack.remove(MLDataComponents.AMOUNT.get());
+                else stack.set(MLDataComponents.AMOUNT.get(), remaining);
+                inventory.setChanged();
+                return true;
+            }
             var handler = stack.getCapability(Capabilities.FluidHandler.ITEM);
             if (handler == null) return false;
             int requested = (int) Math.min(Integer.MAX_VALUE, Math.max(1L, (amount + 80L) / 81L));
@@ -185,8 +200,9 @@ public final class GalacticraftNeoForge {
         initializeApi();
         BuiltinObjects.register();
         BuiltInRocketRegistries.initialize();
+        dev.galacticraft.mod.content.rocket.part.type.GCRocketUpgradeTypes.register();
         new Galacticraft().onInitialize();
-        if (FMLEnvironment.dist == Dist.CLIENT) GCNeoForgeClient.init(modBus);
+        if (FMLEnvironment.dist == Dist.CLIENT) GCNeoForgeClient.init(modBus, container);
     }
 
     private void onCanPlayerSleep(CanPlayerSleepEvent event) {
@@ -221,16 +237,9 @@ public final class GalacticraftNeoForge {
     }
 
     /**
-     * Snuffs out fire sources placed by hand where there is no oxygen.
-     *
-     * Galacticraft normally does this by wrapping the {@code BlockState.onPlace} call inside
-     * {@code LevelChunk.setBlockState}. NeoForge suppresses that call for entity-placed blocks - it
-     * raises {@code Level.captureBlockSnapshots} for the duration of the item use so placement can be
-     * cancelled, and only replays {@code onPlace} itself after this event has fired. The wrapped call
-     * site therefore never runs on this loader, which let hand-placed torches burn in a vacuum.
-     *
-     * Only the single-block event is handled; multi-block placements (beds, doors) contain no fire
-     * sources.
+     * Extinguishes hand-placed fire sources in vacuum. NeoForge snapshot capture defers
+     * {@code onPlace} until after this event, bypassing the shared chunk hook. Only single-block
+     * placements need handling; beds and doors contain no fire sources.
      */
     private void extinguishPlacedBlock(BlockEvent.EntityPlaceEvent event) {
         if (event.isCanceled()) return;
@@ -250,10 +259,8 @@ public final class GalacticraftNeoForge {
     }
 
     /**
-     * The shared API exposes concrete content instances. These vanilla value
-     * registries acquire intrusive holders or direct holder registrations during construction,
-     * before our RegisterEvent queues can bind them. Limit the compatibility window
-     * to exactly those registries; RegisterEvent freezes each one again after binding.
+     * Temporarily unfreezes the vanilla value registries that acquire holders during eager content
+     * construction. Each registry is frozen again by its {@code RegisterEvent}.
      */
     private static void prepareEagerContentConstruction() {
         unfreeze(BuiltInRegistries.BLOCK);
@@ -273,6 +280,7 @@ public final class GalacticraftNeoForge {
         unfreeze(BuiltInRegistries.FEATURE);
         unfreeze(BuiltInRegistries.CARVER);
         unfreeze(BuiltInRegistries.MATERIAL_RULE);
+        unfreeze(BuiltInRegistries.DENSITY_FUNCTION_TYPE);
         unfreeze(BuiltInRegistries.VILLAGER_TYPE);
         unfreeze(BuiltInRegistries.VILLAGER_PROFESSION);
         unfreeze(BuiltInRegistries.DATA_COMPONENT_TYPE);
@@ -300,10 +308,16 @@ public final class GalacticraftNeoForge {
         GCApiServerPacketReceivers.register();
         NeoForge.EVENT_BUS.addListener(this::onServerStarted);
         NeoForge.EVENT_BUS.addListener(this::onAddReloadListeners);
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.OnDatapackSyncEvent event) -> {
+            dev.galacticraft.api.universe.celestialbody.CelestialBodyCache.invalidate();
+            if (event.getPlayer() != null) dev.galacticraft.mod.machine.workbench.ResearchSources.sync(event.getPlayer());
+            else event.getPlayerList().getPlayers().forEach(dev.galacticraft.mod.machine.workbench.ResearchSources::sync);
+        });
     }
 
     private void onAddReloadListeners(AddReloadListenerEvent event) {
         event.addListener(dev.galacticraft.mod.data.OxygenBlockDataManager.INSTANCE);
+        event.addListener(dev.galacticraft.mod.data.ResearchSourceData.INSTANCE);
     }
 
     private void onServerStarted(ServerStartedEvent event) {
@@ -313,13 +327,13 @@ public final class GalacticraftNeoForge {
     }
 
     /**
-     * NeoForge does not consume Fabric's {@code DynamicRegistries} registrations.
-     * Register these explicitly so the server creates and synchronizes Galacticraft's
-     * datapack registries before it builds a world registry access.
+     * Registers datapack registries before world registry access is built. NeoForge does not read
+     * Fabric's {@code DynamicRegistries} registrations.
      */
     private void registerDataPackRegistries(DataPackRegistryEvent.NewRegistry event) {
         event.dataPackRegistry(AddonRegistries.CELESTIAL_BODY, CelestialBody.DIRECT_CODEC, CelestialBody.DIRECT_CODEC);
         event.dataPackRegistry(AddonRegistries.GALAXY, Galaxy.DIRECT_CODEC, Galaxy.DIRECT_CODEC);
+        event.dataPackRegistry(AddonRegistries.SPACEFLIGHT, dev.galacticraft.api.universe.celestialbody.SpaceflightConfig.CODEC, dev.galacticraft.api.universe.celestialbody.SpaceflightConfig.CODEC);
         event.dataPackRegistry(AddonRegistries.CELESTIAL_TELEPORTER, CelestialTeleporter.DIRECT_CODEC, CelestialTeleporter.DIRECT_CODEC);
 
         event.dataPackRegistry(RocketRegistries.ROCKET_CONE, RocketCone.DIRECT_CODEC, RocketCone.DIRECT_CODEC);
@@ -406,6 +420,9 @@ public final class GalacticraftNeoForge {
 
         event.registerItem(Capabilities.EnergyStorage.ITEM,
                 (stack, context) -> GCItems.BATTERY.createEnergyStorage(stack), GCItems.BATTERY);
+        for (var item : java.util.List.of(dev.galacticraft.mod.content.item.jupiter.JupiterItems.PRESSURE_CONTROLLER_MK1, dev.galacticraft.mod.content.item.jupiter.JupiterItems.PRESSURE_CONTROLLER_MK2)) {
+            event.registerItem(Capabilities.EnergyStorage.ITEM, (stack, context) -> item.createEnergyStorage(stack), item);
+        }
         event.registerItem(Capabilities.EnergyStorage.ITEM,
                 (stack, context) -> ((InfiniteBatteryItem) GCItems.INFINITE_BATTERY).createEnergyStorage(),
                 GCItems.INFINITE_BATTERY);

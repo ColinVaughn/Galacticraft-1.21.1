@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +23,7 @@
 
 package dev.galacticraft.mod.command;
 
+import dev.galacticraft.api.universe.celestialbody.CelestialBodyTags;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -36,8 +38,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 
 /**
- * Op-only debug command for driving Mars dust storms in-game:
- * {@code /duststorm <start|stop|forecast|status|intensity <0..1>>}.
+ * Operator-only controls for bodies tagged for dust storms: start, stop, forecast, status,
+ * and intensity, for example {@code /duststorm intensity 0.5}.
  */
 public final class DustStormCommand {
     private DustStormCommand() {
@@ -64,7 +66,7 @@ public final class DustStormCommand {
     private static ServerLevel requireMars(CommandContext<CommandSourceStack> ctx) {
         ServerLevel level = ctx.getSource().getLevel();
         var body = level.galacticraft$getCelestialBody();
-        if (body == null || !body.is(GCCelestialBodies.MARS)) {
+        if (body == null || !body.is(CelestialBodyTags.DUST_STORMS)) {
             ctx.getSource().sendFailure(Component.literal("Dust storms only occur on Mars."));
             return null;
         }

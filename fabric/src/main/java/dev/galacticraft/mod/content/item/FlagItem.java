@@ -22,9 +22,18 @@
 
 package dev.galacticraft.mod.content.item;
 
+import dev.galacticraft.api.component.GCDataComponents;
+import dev.galacticraft.mod.content.FlagDesigns;
+import dev.galacticraft.mod.spacerace.TeamFlagOwner;
+import dev.galacticraft.mod.util.Translations;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.AbstractBannerBlock;
 import net.minecraft.world.level.block.BannerBlock;
 import net.minecraft.world.level.block.Block;
@@ -45,9 +54,53 @@ public class FlagItem extends BlockItem {
         }
     }
 
+    /** Returns an unclaimed team flag. Crafting or planting binds it to the player's team. */
+    public static ItemStack teamFlag() {
+        ItemStack flag = new ItemStack(GCItems.FLAGS.get(DyeColor.WHITE));
+        flag.set(GCDataComponents.TEAM_FLAG, TeamFlagOwner.UNCLAIMED);
+        return flag;
+    }
+
+    /** Returns the team-specific flag name, or the generic name while unclaimed. */
+    public static Component teamFlagName(TeamFlagOwner team) {
+        return team.isClaimed() && !team.name().isBlank()
+                ? Component.translatable(Translations.Items.TEAM_FLAG_OF, team.name())
+                : Component.translatable(Translations.Items.TEAM_FLAG);
+    }
+
+    public static ItemStack withDesign(ResourceLocation design) {
+        ItemStack flag = new ItemStack(GCItems.FLAGS.get(DyeColor.WHITE));
+        flag.set(GCDataComponents.FLAG_DESIGN, design);
+        return flag;
+    }
+
+    @Override
+    public Component getName(ItemStack stack) {
+        TeamFlagOwner team = stack.get(GCDataComponents.TEAM_FLAG);
+        if (team != null) {
+            return teamFlagName(team);
+        }
+        ResourceLocation design = stack.get(GCDataComponents.FLAG_DESIGN);
+        return design != null ? Component.translatable(FlagDesigns.translationKey(design)) : super.getName(stack);
+    }
+
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+        TeamFlagOwner team = stack.get(GCDataComponents.TEAM_FLAG);
+        if (team != null && !team.isClaimed()) {
+            tooltip.add(Component.translatable(Translations.Tooltip.TEAM_FLAG_UNCLAIMED).withStyle(ChatFormatting.GRAY));
+        }
         BannerItem.appendHoverTextFromBannerBlockEntityTag(stack, tooltip);
+    }
+
+    /** A team flag taken from the crafting grid becomes the crafter's team's. */
+    @Override
+    public void onCraftedBy(ItemStack stack, Level level, Player player) {
+        super.onCraftedBy(stack, level, player);
+        TeamFlagOwner team = stack.get(GCDataComponents.TEAM_FLAG);
+        if (team != null && !team.isClaimed() && player instanceof ServerPlayer serverPlayer) {
+            stack.set(GCDataComponents.TEAM_FLAG, TeamFlagOwner.of(serverPlayer));
+        }
     }
 
     public static ItemStack fromBanner(ItemStack stack) {

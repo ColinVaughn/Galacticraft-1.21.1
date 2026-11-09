@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "galacticraft:compressed_tin"
+        "recipe": "galacticraft:compressing/compressed_tin"
       },
       "trigger": "minecraft:recipe_unlocked"
     },
@@ -26,7 +26,7 @@
   ],
   "rewards": {
     "recipes": [
-      "galacticraft:compressed_tin"
+      "galacticraft:compressing/compressed_tin"
     ]
   }
 }

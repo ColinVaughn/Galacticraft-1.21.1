@@ -23,6 +23,10 @@
 package dev.galacticraft.mod.mixin.client;
 
 import dev.galacticraft.mod.accessor.GCLevelAccessor;
+import dev.galacticraft.mod.client.render.dimension.SpaceflightTransition;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Shadow;
+import java.util.Deque;
 import dev.galacticraft.mod.misc.footprint.FootprintManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -38,6 +42,28 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Environment(EnvType.CLIENT)
 public abstract class ClientLevelMixin implements GCLevelAccessor {
     private final @Unique FootprintManager footprintManager = new FootprintManager();
+    @Shadow @Final private Deque<Runnable> lightUpdateQueue;
+
+    @Inject(method = "pollLightUpdates", at = @At("HEAD"), cancellable = true)
+    private void galacticraft$budgetFlightLighting(CallbackInfo ci) {
+        if (!SpaceflightTransition.isActive()) return;
+        long deadline = System.nanoTime() + 2_000_000L;
+        Runnable update;
+        while (System.nanoTime() < deadline && (update = lightUpdateQueue.poll()) != null) update.run();
+        ci.cancel();
+    }
+
+    @Inject(method = "animateTick", at = @At("HEAD"), cancellable = true)
+    private void galacticraft$skipCoveredParticles(CallbackInfo ci) {
+        // Biome sampling for ambient particles can hitch the reveal; resume it after the short blend.
+        if (SpaceflightTransition.isActive()) ci.cancel();
+    }
+
+    @Inject(method = "tickNonPassenger", at = @At("HEAD"))
+    private void galacticraft$trackRocketSound(net.minecraft.world.entity.Entity entity, CallbackInfo ci) {
+        if (entity instanceof dev.galacticraft.mod.content.entity.vehicle.RocketEntity rocket)
+            dev.galacticraft.mod.client.sounds.RocketSound.play(rocket);
+    }
 
     @Inject(method = "tickTime", at = @At("RETURN"))
     private void update(CallbackInfo ci) {

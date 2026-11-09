@@ -1,0 +1,12 @@
+{
+  "body": "galacticraft-test:andromeda_prime",
+  "center": [
+    68000,
+    1024,
+    2000
+  ],
+  "radius": 60,
+  "texture": "galacticraft:textures/environment/solar_system/mars.png",
+  "rotation_period": 1.025,
+  "axial_tilt": 20
+}

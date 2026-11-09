@@ -1,6 +1,10 @@
 {
   "type": "galacticraft:basic",
   "config": {
+    "layout": {
+      "height": 32.0
+    },
+    "paintable": true,
     "predicate": {
       "type": "galacticraft:access_weight",
       "config": {

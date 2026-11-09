@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,7 +51,7 @@ import java.util.Optional;
 public record CelestialBody<C extends CelestialBodyConfig, T extends CelestialBodyType<C>>(T type, C config) {
     public static final Codec<CelestialBody<?, ?>> DIRECT_CODEC = BuiltInAddonRegistries.CELESTIAL_BODY_TYPE.byNameCodec().dispatch(CelestialBody::type, CelestialBodyType::codec);
     public static final Codec<ResourceKey<CelestialBody<?, ?>>> CODEC = ResourceKey.codec(AddonRegistries.CELESTIAL_BODY);
-    public static final Codec<HolderSet<CelestialBody<?, ?>>> LIST_CODEC = RegistryCodecs.homogeneousList(AddonRegistries.CELESTIAL_BODY, DIRECT_CODEC); //fixme: can maybe remove?
+    public static final Codec<HolderSet<CelestialBody<?, ?>>> LIST_CODEC = RegistryCodecs.homogeneousList(AddonRegistries.CELESTIAL_BODY, DIRECT_CODEC);
     public static final StreamCodec<RegistryFriendlyByteBuf, Holder<CelestialBody<?, ?>>> STREAM_CODEC = StreamCodecs.ofHolder(AddonRegistries.CELESTIAL_BODY);
 
     public static double getGravity(Entity entity) {
@@ -166,6 +167,15 @@ public record CelestialBody<C extends CelestialBodyConfig, T extends CelestialBo
      *
      * @return this celestial body's length of a single day on this celestial body
      */
+    /**
+     * Returns how the sky looks from this celestial body's surface, or empty for the stock look.
+     *
+     * @see SkyConfig
+     */
+    public Optional<SkyConfig> sky() {
+        return this.type.sky(this.config);
+    }
+
     public long dayLength() {
         return this.type.dayLength(this.config);
     }

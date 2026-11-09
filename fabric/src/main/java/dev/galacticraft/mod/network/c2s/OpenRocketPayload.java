@@ -56,6 +56,8 @@ public record OpenRocketPayload() implements C2SPayload {
             MenuRegistry.openExtendedMenu(serverPlayer, new SimpleMenuProvider(
                     (syncId, inventory, player) -> new RocketMenu(syncId, inventory, player, rocket), Component.empty()),
                     buf -> buf.writeInt(rocket.getId()));
+        } else if (vehicle instanceof dev.galacticraft.mod.content.entity.vehicle.CloudDiverEntity diver) {
+            diver.openCargo(serverPlayer);
         } else if (vehicle instanceof Buggy buggy) {
             // Legacy opened whichever vehicle the player was riding from the same key.
             MenuRegistry.openExtendedMenu(serverPlayer, buggy);

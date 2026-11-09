@@ -22,6 +22,7 @@
 
 package dev.galacticraft.mod.data;
 
+import dev.galacticraft.api.component.GCDataComponents;
 import dev.galacticraft.mod.content.GCBlockRegistry.DecorationSet;
 import dev.galacticraft.mod.content.GCBlocks;
 import dev.galacticraft.mod.content.block.decoration.FlagBlock;
@@ -201,6 +202,15 @@ public class GCBlockLootTableProvider extends FabricBlockLootTableProvider {
         this.dropSelf(GCBlocks.ASTEROID_ROCK_1);
         this.dropSelf(GCBlocks.ASTEROID_ROCK_2);
         this.dropSelf(GCBlocks.DENSE_ICE);
+        for (var block : dev.galacticraft.mod.content.block.jupiter.JupiterBlocks.NAMES.keySet()) {
+            if (block == dev.galacticraft.mod.content.block.jupiter.JupiterBlocks.HYDROSULFIDE_CRYSTAL_CLUSTER) this.dropOther(block, dev.galacticraft.mod.content.item.jupiter.JupiterItems.HYDROSULFIDE_CRYSTAL);
+            else if (block == dev.galacticraft.mod.content.block.jupiter.JupiterBlocks.CHARGED_CONDENSATE_CLUSTER) this.dropOther(block, dev.galacticraft.mod.content.item.jupiter.JupiterItems.CHARGED_CONDENSATE);
+            else if (block instanceof net.minecraft.world.level.block.SlabBlock) this.add(block, this::createSlabItemTable);
+            else this.dropSelf(block);
+        }
+        this.dropSelf(GCBlocks.DENSE_CLOUD);
+        this.dropSelf(GCBlocks.PACKED_CLOUD);
+        this.dropSelf(GCBlocks.AMMONIA_FROST);
 
         this.dropSelf(GCBlocks.SOFT_VENUS_ROCK);
         this.dropSelf(GCBlocks.HARD_VENUS_ROCK);
@@ -249,7 +259,9 @@ public class GCBlockLootTableProvider extends FabricBlockLootTableProvider {
                                             .include(DataComponents.CUSTOM_NAME)
                                             .include(DataComponents.ITEM_NAME)
                                             .include(DataComponents.HIDE_ADDITIONAL_TOOLTIP)
-                                            .include(DataComponents.BANNER_PATTERNS)))
+                                            .include(DataComponents.BANNER_PATTERNS)
+                                            .include(GCDataComponents.FLAG_DESIGN)
+                                            .include(GCDataComponents.TEAM_FLAG)))
                     )
                 )
             );

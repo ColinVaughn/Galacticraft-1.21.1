@@ -160,9 +160,9 @@ public class RocketPaintScreen extends AbstractContainerScreen<RocketPaintMenu> 
     @Override protected void containerTick() {
         super.containerTick();
         if (!ItemStack.matches(lastInput, menu.input()) || lastRevision != menu.revision()) {
-            status = pending == null ? Component.empty() : text(RocketPaintMenu.canPaint(menu.input()) && pending.equals(RocketPaintMenu.data(menu.input()).paint()) ? "saved" : "changed");
+            status = pending == null ? Component.empty() : text(RocketPaintMenu.canPaint(menu.input(), minecraft.level.registryAccess()) && pending.equals(RocketPaintMenu.data(menu.input()).paint()) ? "saved" : "changed");
             pending = null;
-            var nextParts = RocketPaintMenu.parts(menu.input());
+            var nextParts = RocketPaintMenu.parts(menu.input(), minecraft.level.registryAccess());
             if (!parts.equals(nextParts) || !ItemStack.isSameItem(lastInput, menu.input())) selection = 0;
             lastInput = menu.input().copy();
             lastRevision = menu.revision();

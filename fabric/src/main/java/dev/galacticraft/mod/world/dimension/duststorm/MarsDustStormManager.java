@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,10 +23,10 @@
 
 package dev.galacticraft.mod.world.dimension.duststorm;
 
+import dev.galacticraft.api.universe.celestialbody.CelestialBodyTags;
 import dev.galacticraft.api.universe.celestialbody.CelestialBody;
 import dev.galacticraft.mod.Galacticraft;
 import dev.galacticraft.mod.api.config.Config;
-import dev.galacticraft.mod.content.GCCelestialBodies;
 import dev.galacticraft.mod.content.block.special.CryogenicChamberBlock;
 import dev.galacticraft.mod.content.block.special.CryogenicChamberPart;
 import dev.galacticraft.mod.content.entity.damage.GCDamageTypes;
@@ -42,6 +43,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.VisibleForTesting;
 
 /**
  * Server-side driver of the Mars dust-storm cycle. Ticked once per Mars world tick from
@@ -110,7 +112,7 @@ public final class MarsDustStormManager {
 
     private static boolean isMars(ServerLevel level) {
         Holder<CelestialBody<?, ?>> body = level.galacticraft$getCelestialBody();
-        return body != null && body.is(GCCelestialBodies.MARS);
+        return body != null && body.is(CelestialBodyTags.DUST_STORMS);
     }
 
     /** Current dust intensity in {@code [0,1]} for this level, or 0 if not a Mars storm. */
@@ -146,15 +148,15 @@ public final class MarsDustStormManager {
      * Applies dust-storm effects to an exposed player, scaled by intensity and mitigated by gear:
      * a sealed suit blocks slowdown and damage, sensor glasses block the vision loss.
      */
-    private static void applyPlayerEffects(ServerPlayer player, ServerLevel level, float intensity, Config config) {
+    @VisibleForTesting
+    public static void applyPlayerEffects(ServerPlayer player, ServerLevel level, float intensity, Config config) {
         if (player.getAbilities().invulnerable || player.isSpectator()) return;
         if (player.getVehicle() instanceof LanderEntity) return;
         if (player.getInBlockState().getBlock() instanceof CryogenicChamberBlock
                 || player.getInBlockState().getBlock() instanceof CryogenicChamberPart) return;
 
-        BlockPos eyePos = player.blockPosition().relative(Direction.UP, (int) Math.floor(player.getEyeHeight(player.getPose())));
-        // A sealed, breathable space (base or sealer bubble) keeps the dust out entirely.
-        if (level.isBreathable(eyePos)) return;
+        // The storm only reaches open ground: a roof, a cave or a sealed, breathable space keeps it out entirely.
+        if (!DustStormExposure.isExposed(level, DustStormExposure.eyeBlock(player))) return;
 
         boolean sealed = player.galacticraft$hasMaskAndGear();
         boolean glasses = player.getItemBySlot(EquipmentSlot.HEAD).is(GCItemTags.SENSOR_GLASSES);

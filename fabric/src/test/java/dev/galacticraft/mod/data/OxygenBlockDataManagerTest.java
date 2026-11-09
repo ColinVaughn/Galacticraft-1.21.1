@@ -29,7 +29,9 @@ import net.minecraft.world.level.block.LeavesBlock;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
+import java.util.ArrayList;
+import java.util.List;
 
 class OxygenBlockDataManagerTest {
     @BeforeAll
@@ -47,5 +49,16 @@ class OxygenBlockDataManagerTest {
                 Blocks.OAK_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT, true)
         ));
         assertEquals(0.75F, OxygenBlockDataManager.getOxygen(Blocks.WHEAT.defaultBlockState()));
+    }
+    @Test
+    void blockWideReplacementRetainsFlagForEveryState() {
+        var provider = new OxygenBlockProvider(null, null) {
+            @Override protected void addBlocks(List<OxygenBlockDataManager.OxygenData> data) { }
+            @Override public String getName() { return "test"; }
+        };
+        List<OxygenBlockDataManager.OxygenData> entries = new ArrayList<>();
+        provider.add(entries, Blocks.OAK_LEAVES, 2.0F, true);
+        assertEquals(Blocks.OAK_LEAVES.getStateDefinition().getPossibleStates().size(), entries.size());
+        assertTrue(entries.stream().allMatch(entry -> entry.replace() && entry.amount() == 2.0F));
     }
 }

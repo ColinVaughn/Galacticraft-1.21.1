@@ -24,6 +24,7 @@ package dev.galacticraft.mod.tag;
 
 import dev.galacticraft.mod.Constant;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
 
@@ -36,6 +37,12 @@ public class GCEntityTypeTags {
     public static final TagKey<EntityType<?>> CAN_REENTER_ATMOSPHERE = TagKey.create(Registries.ENTITY_TYPE, Constant.id("can_reenter_atmosphere"));
     /** Legacy Galacticraft mobs rendered with the Sensor Glasses emissive texture. */
     public static final TagKey<EntityType<?>> SENSOR_GLASSES_DETECTABLE = TagKey.create(Registries.ENTITY_TYPE, Constant.id("sensor_glasses_detectable"));
+    /** Mobs evolved for space on arrival in an airless dimension even though they are not hostile. */
+    public static final TagKey<EntityType<?>> EVOLVES_IN_SPACE = TagKey.create(Registries.ENTITY_TYPE, Constant.id("evolves_in_space"));
+    /** Hostile mobs that are never evolved for space. Takes precedence over {@link #EVOLVES_IN_SPACE}. */
+    public static final TagKey<EntityType<?>> NEVER_EVOLVES_IN_SPACE = TagKey.create(Registries.ENTITY_TYPE, Constant.id("never_evolves_in_space"));
+    /** The cross-loader convention tag for bosses, which keep their own health when evolved. */
+    public static final TagKey<EntityType<?>> BOSSES = TagKey.create(Registries.ENTITY_TYPE, ResourceLocation.fromNamespaceAndPath("c", "bosses"));
 
     public static void register() {
     }

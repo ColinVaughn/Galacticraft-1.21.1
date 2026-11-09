@@ -41,6 +41,8 @@ public class GCDamageTypes {
     public static final ResourceKey<DamageType> DUST_STORM = Constant.key(Registries.DAMAGE_TYPE, "dust_storm");
     public static final ResourceKey<DamageType> SOLAR_FLARE = Constant.key(Registries.DAMAGE_TYPE, "solar_flare");
 
+    public static final ResourceKey<DamageType> PRESSURE = Constant.key(Registries.DAMAGE_TYPE, "pressure");
+
     public static void bootstrapRegistries(BootstrapContext<DamageType> context) {
         context.register(CRASH_LANDING, new DamageType("crash_landing", DamageScaling.ALWAYS, 0.1f));
         context.register(METEOR_STRIKE, new DamageType("meteor_strike", 0.0f));
@@ -52,5 +54,6 @@ public class GCDamageTypes {
         context.register(HEAT, new DamageType("heat", 0.0f));
         context.register(DUST_STORM, new DamageType("dust_storm", 0.0f));
         context.register(SOLAR_FLARE, new DamageType("solar_flare", 0.0f));
+        context.register(PRESSURE, new DamageType("pressure", 0.0f));
     }
 }

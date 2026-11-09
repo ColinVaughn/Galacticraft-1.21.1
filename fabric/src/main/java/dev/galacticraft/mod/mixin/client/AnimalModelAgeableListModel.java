@@ -27,6 +27,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.model.AgeableListModel;
 import net.minecraft.client.model.geom.ModelPart;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(AgeableListModel.class)
@@ -37,4 +38,24 @@ public interface AnimalModelAgeableListModel {
 
     @Invoker("bodyParts")
     Iterable<ModelPart> callGetBodyParts();
+
+    // How a baby is drawn: the model applies these itself, so layers have to repeat them.
+
+    @Accessor("scaleHead")
+    boolean galacticraft$scalesBabyHead();
+
+    @Accessor("babyYHeadOffset")
+    float galacticraft$babyYHeadOffset();
+
+    @Accessor("babyZHeadOffset")
+    float galacticraft$babyZHeadOffset();
+
+    @Accessor("babyHeadScale")
+    float galacticraft$babyHeadScale();
+
+    @Accessor("babyBodyScale")
+    float galacticraft$babyBodyScale();
+
+    @Accessor("bodyYOffset")
+    float galacticraft$bodyYOffset();
 }

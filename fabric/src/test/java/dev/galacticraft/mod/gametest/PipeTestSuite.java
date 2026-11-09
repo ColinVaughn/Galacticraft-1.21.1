@@ -102,7 +102,9 @@ public class PipeTestSuite implements GalacticraftGameTest {
             if (accepted != offered) {
                 context.fail("Expected the pipe to accept " + offered + " oxygen, accepted " + accepted, pipePos);
             } else if (consumerAmount != OxygenCompressorBlockEntity.MAX_OXYGEN) {
-                context.fail("Expected the oxygen consumer to fill before storage", consumerPos);
+                context.fail("Expected the oxygen consumer to fill before storage [offered=" + offered + " accepted=" + accepted
+                        + " consumer=" + consumerAmount + "/" + OxygenCompressorBlockEntity.MAX_OXYGEN + " started=" + consumerStart
+                        + " storage=" + storageAmount + "]", consumerPos);
             } else if (storageAmount != expectedOverflow) {
                 context.fail("Expected storage to receive " + expectedOverflow + " overflow, received " + storageAmount, storagePos);
             }

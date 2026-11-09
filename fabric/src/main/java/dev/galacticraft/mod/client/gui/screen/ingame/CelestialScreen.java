@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +35,7 @@ import dev.galacticraft.api.satellite.Satellite;
 import dev.galacticraft.api.universe.celestialbody.CelestialBody;
 import dev.galacticraft.api.universe.celestialbody.star.Star;
 import dev.galacticraft.api.universe.galaxy.Galaxy;
+import dev.galacticraft.api.universe.galaxy.GalaxySystems;
 import dev.galacticraft.api.universe.position.CelestialPosition;
 import dev.galacticraft.impl.universe.celestialbody.type.SatelliteType;
 import dev.galacticraft.impl.universe.position.config.SatelliteConfig;
@@ -91,6 +93,10 @@ public class CelestialScreen extends Screen implements ClientSatelliteAccessor.S
     protected int animateGrandchildren = 0;
     protected Vec2 position = Vec2.ZERO;
     protected final Map<CelestialBody<?, ?>, Vec3> planetPositions = new IdentityHashMap<>();
+    /** On-screen centre of each galaxy, refreshed every frame. */
+    protected final Map<Galaxy, Vec2> galaxyPositions = new IdentityHashMap<>();
+    /** Width a galaxy's display is drawn at, before its own scale; six times a star's. */
+    protected static final int GALAXY_ICON_SIZE = 48;
 
     protected @Nullable CelestialBody<?, ?> selectedBody;
     protected @Nullable CelestialBody<?, ?> selectedParent = this.findDefaultSystem();
@@ -166,6 +172,32 @@ public class CelestialScreen extends Screen implements ClientSatelliteAccessor.S
                 .filter(body -> body.parent().isEmpty() && this.isStar(body))
                 .findFirst()
                 .orElse(null);
+    }
+
+    /**
+     * The root star of every star system, grouped by galaxy. Galaxies and stars are in registry id
+     * order, and galaxies with no systems are left out.
+     */
+    protected Map<Galaxy, List<CelestialBody<?, ?>>> getSystemsByGalaxy() {
+        return GalaxySystems.byGalaxy(this.galaxies, this.celestialBodies);
+    }
+
+    /** Moves the map to a star system and makes it the focused system, leaving any selection. */
+    protected void focusSystem(CelestialBody<?, ?> star) {
+        if (this.selectedBody != null) {
+            this.zoom = this.preSelectZoom;
+        }
+        this.selectedBody = null;
+        this.lastSelectedBody = null;
+        this.selectionState = EnumSelection.UNSELECTED;
+        this.planetZoom = 0.0F;
+        this.animateGrandchildren = 0;
+        this.doneZooming = true;
+        this.ticksSinceUnselectionF = -1.0F;
+        Vector3f pos = this.getCelestialBodyPosition(star, 0.0F);
+        this.position = new Vec2(pos.x(), pos.y());
+        this.preSelectPosition = this.position;
+        this.selectedParent = star;
     }
 
     protected float lineScale(CelestialBody<?, ?> body) {
@@ -481,10 +513,12 @@ public class CelestialScreen extends Screen implements ClientSatelliteAccessor.S
         this.drawOrbitRings(graphics, mouseX, mouseY, delta);
         RenderSystem.disableBlend();
 
+        this.drawGalaxies(graphics, mouseX, mouseY, delta);
         this.drawCelestialBodies(graphics, mouseX, mouseY, delta);
         this.drawSelectionCursor(matrices, delta);
 
         matrices.popPose();
+        this.drawGalaxyLabels(graphics);
         this.drawBorder(graphics);
     }
 
@@ -571,6 +605,47 @@ public class CelestialScreen extends Screen implements ClientSatelliteAccessor.S
             }
         }
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+    }
+
+    /** Draws each galaxy's display at its map position; galaxies fade out as the map zooms in. */
+    protected void drawGalaxies(GuiGraphics graphics, double mouseX, double mouseY, float delta) {
+        PoseStack matrices = graphics.pose();
+        this.galaxyPositions.clear();
+        long time = this.minecraft.level.getGameTime();
+        float alpha = this.galaxyAlpha();
+        for (Galaxy galaxy : this.galaxies) {
+            matrices.pushPose();
+            matrices.translate((float) galaxy.position().x(time, delta), (float) galaxy.position().y(time, delta), 0.0F);
+            matrices.mulPose(Axis.ZP.rotationDegrees(45.0F));
+            matrices.mulPose(Axis.XN.rotationDegrees(55.0F));
+            if (alpha > 0.0F) {
+                RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, alpha);
+                galaxy.display().render(graphics, GALAXY_ICON_SIZE, mouseX, mouseY, delta);
+            }
+            Matrix4f projected = RenderSystem.getProjectionMatrix().mul(matrices.last().pose(), new Matrix4f());
+            this.galaxyPositions.put(galaxy, new Vec2(
+                    (float) (0.5D * (1.0D + projected.m30()) * this.minecraft.getWindow().getGuiScaledWidth()),
+                    (float) (0.5D * (1.0D - projected.m31()) * this.minecraft.getWindow().getGuiScaledHeight())));
+            matrices.popPose();
+        }
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+    }
+
+    /** Names each galaxy on the map once there is more than one, while zoomed out far enough to tell them apart. */
+    protected void drawGalaxyLabels(GuiGraphics graphics) {
+        float alpha = this.galaxyAlpha();
+        if (alpha <= 0.05F || this.galaxies.size() < 2) return;
+        int color = FastColor.ARGB32.color((int) (alpha * 255.0F), 255, 255, 160);
+        for (Map.Entry<Galaxy, Vec2> entry : this.galaxyPositions.entrySet()) {
+            Vec2 pos = entry.getValue();
+            if (pos.x < this.borderSize || pos.x > this.width - this.borderSize || pos.y < this.borderSize + 20 || pos.y > this.height - this.borderSize) continue;
+            graphics.drawCenteredString(this.font, entry.getKey().name(), (int) pos.x, (int) pos.y - 20, color);
+        }
+    }
+
+    /** Galaxies are a zoomed-out view: fully drawn at the widest zoom, gone once zoomed in on a system. */
+    protected float galaxyAlpha() {
+        return this.selectedBody != null && this.isZoomed() ? 0.0F : Mth.clamp(1.0F - this.zoom, 0.0F, 1.0F);
     }
 
     /**

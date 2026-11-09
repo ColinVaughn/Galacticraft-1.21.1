@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,8 +32,6 @@ import dev.galacticraft.impl.rocket.recipe.type.CenteredPatternedRocketPartRecip
 import dev.galacticraft.impl.rocket.recipe.type.PatternedRocketPartRecipeType;
 import dev.galacticraft.impl.rocket.travelpredicate.type.*;
 import dev.galacticraft.mod.Constant;
-import dev.galacticraft.mod.content.rocket.part.type.ExplosiveUpgradeType;
-import dev.galacticraft.mod.content.rocket.part.type.StorageUpgradeType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
@@ -81,8 +80,6 @@ public final class BuiltInRocketRegistries {
         Registry.register(ROCKET_FIN_TYPE, Constant.id("basic"), BasicRocketFinType.INSTANCE);
         Registry.register(ROCKET_BOOSTER_TYPE, Constant.id("basic"), BasicRocketBoosterType.INSTANCE);
         Registry.register(ROCKET_ENGINE_TYPE, Constant.id("basic"), BasicRocketEngineType.INSTANCE);
-        Registry.register(ROCKET_UPGRADE_TYPE, Constant.id("storage"), StorageUpgradeType.INSTANCE);
-        Registry.register(ROCKET_UPGRADE_TYPE, Constant.id("explosive"), ExplosiveUpgradeType.INSTANCE);
 
         Registry.register(ROCKET_PART_RECIPE_TYPE, Constant.id("wrap_patterned"), PatternedRocketPartRecipeType.INSTANCE);
         Registry.register(ROCKET_PART_RECIPE_TYPE, Constant.id("centered_patterned"), CenteredPatternedRocketPartRecipeType.INSTANCE);

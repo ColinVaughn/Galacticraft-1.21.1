@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +27,7 @@ import dev.architectury.registry.menu.MenuRegistry;
 import dev.galacticraft.api.component.GCDataComponents;
 import dev.galacticraft.api.entity.rocket.render.RocketPartRendererRegistry;
 import dev.galacticraft.api.rocket.RocketData;
-import dev.galacticraft.api.rocket.RocketPrefabs;
+import dev.galacticraft.mod.content.rocket.RocketPrefabs;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.client.render.rocket.Tier1RocketPartRenderer;
 import dev.galacticraft.mod.content.GCBlocks;
@@ -123,7 +124,7 @@ public final class ModularRocketClientTest implements ClientModInitializer {
             boolean waitingForPage = (ticks == 9 || ticks == 14 || ticks == 19 || ticks == 24 || ticks == 54)
                     && (!(client.player.containerMenu instanceof RocketWorkbenchMenu menu) || !menu.page().id().equals(expectedPage));
             boolean waitingForPaint = ticks == 42 && (!(client.player.containerMenu instanceof dev.galacticraft.mod.screen.RocketPaintMenu paintMenu)
-                    || !dev.galacticraft.mod.screen.RocketPaintMenu.canPaint(paintMenu.input()));
+                    || !dev.galacticraft.mod.screen.RocketPaintMenu.canPaint(paintMenu.input(), client.level.registryAccess()));
             int expectedBlue = 0xFF000000 | net.minecraft.world.item.DyeColor.BLUE.getTextureDiffuseColor();
             var expectedPaint = dev.galacticraft.api.rocket.RocketPaint.NONE.withColor(dev.galacticraft.api.rocket.part.RocketPartTypes.CONE, expectedBlue)
                     .withColor(dev.galacticraft.api.rocket.part.RocketPartTypes.BODY, expectedBlue)

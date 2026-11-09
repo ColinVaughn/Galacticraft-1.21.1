@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +31,8 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * The booster of a rocket. Controls how fast the rocket accelerates, where the rocket can travel to, and how much fuel is consumed.
+ * Optional thrust added to the rocket engine during powered ascent. Adds acceleration and caps
+ * climb velocity; GC4 fuel mode also adds the booster's configured burn rate.
  */
 public non-sealed abstract class RocketBoosterType<C extends RocketBoosterConfig> implements RocketPartType<C> {
     private final @NotNull MapCodec<RocketBooster<C, RocketBoosterType<C>>> codec;
@@ -49,25 +51,25 @@ public non-sealed abstract class RocketBoosterType<C extends RocketBoosterConfig
     }
 
     /**
-     * Returns the maximum velocity of this booster in blocks/tick.
+     * Returns the fastest the rocket may climb while this booster is fitted, in blocks/tick.
      *
-     * @return the maximum velocity of this booster blocks/tick.
+     * @return the maximum climb velocity in blocks/tick.
      */
     @Contract(pure = true)
     public abstract double getMaximumVelocity(@NotNull C config);
 
     /**
-     * Returns the acceleration of this booster in blocks/tick^2.
+     * Returns the extra acceleration this booster adds at full thrust, in blocks/tick^2.
      *
-     * @return the acceleration of this booster blocks/tick^2.
+     * @return the added acceleration in blocks/tick^2.
      */
     @Contract(pure = true)
     public abstract double getAccelerationPerTick(@NotNull C config);
 
     /**
-     * Returns the amount of fuel consumed by this booster per tick.
+     * Returns the fuel this booster burns per tick of powered flight, on top of the engine's.
      *
-     * @return the amount of fuel consumed by this booster per tick.
+     * @return the fuel burned per tick. One bucket is 81,000 units.
      */
     @Contract(pure = true)
     public abstract long getFuelUsagePerTick(@NotNull C config);

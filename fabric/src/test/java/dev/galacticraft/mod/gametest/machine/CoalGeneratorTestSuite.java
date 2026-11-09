@@ -29,8 +29,12 @@ import dev.galacticraft.machinelib.api.storage.slot.ItemResourceSlot;
 import dev.galacticraft.mod.content.GCBlocks;
 import dev.galacticraft.mod.content.block.entity.machine.CoalGeneratorBlockEntity;
 import dev.galacticraft.mod.content.item.GCItems;
+import dev.galacticraft.mod.machine.GCMachineStatuses;
+import net.minecraft.gametest.framework.AfterBatch;
+import net.minecraft.gametest.framework.BeforeBatch;
 import net.minecraft.gametest.framework.GameTestGenerator;
 import net.minecraft.gametest.framework.TestFunction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Assertions;
@@ -39,8 +43,41 @@ import java.util.List;
 
 @TestSuite("coal_generator")
 public final class CoalGeneratorTestSuite extends MachineGameTest<CoalGeneratorBlockEntity> {
+    /**
+     * Simulates the Moon by disabling default breathability. Coal generators must still burn fuel.
+     */
+    private static final String AIRLESS = "galacticraft:coal_generator_airless";
+    private static final int AIR_WINDOW = 20;
+
+    private static boolean levelWasBreathable = true;
+
     public CoalGeneratorTestSuite() {
         super(GCBlocks.COAL_GENERATOR);
+    }
+
+    @BeforeBatch(batch = AIRLESS)
+    public void pumpTheAirOut(ServerLevel level) {
+        levelWasBreathable = level.getDefaultBreathable();
+        level.setDefaultBreathable(false);
+    }
+
+    @AfterBatch(batch = AIRLESS)
+    public void letTheAirBackIn(ServerLevel level) {
+        level.setDefaultBreathable(levelWasBreathable);
+    }
+
+    /** Checked a second after lighting, so a generator that lit and then went out again is caught too. */
+    @MachineTest(batch = AIRLESS, workTime = AIR_WINDOW)
+    public Runnable makesPowerWithoutOxygen(CoalGeneratorBlockEntity machine) {
+        ItemResourceSlot slot = machine.itemStorage().slot(CoalGeneratorBlockEntity.INPUT_SLOT);
+        slot.set(Items.COAL, 1);
+        return () -> {
+            Assertions.assertTrue(slot.isEmpty(), "Did not burn coal with no oxygen around it");
+            Assertions.assertNotEquals(0, machine.getFuelLength(), "Went out with no oxygen around it");
+            Assertions.assertNotSame(GCMachineStatuses.NOT_ENOUGH_OXYGEN, machine.getState().getStatus(),
+                    "Should not ask for oxygen");
+            Assertions.assertTrue(machine.energyStorage().getAmount() > 0, "Made no power with no oxygen around it");
+        };
     }
 
     @MachineTest

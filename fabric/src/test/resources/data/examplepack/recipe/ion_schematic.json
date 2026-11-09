@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "minecraft:paper"
+    },
+    {
+      "item": "minecraft:redstone_block"
+    }
+  ],
+  "result": {
+    "id": "galacticraft:rocket_schematic",
+    "components": {
+      "galacticraft:rocket_part_unlocks": [
+        "examplepack:rocket_engine/ion"
+      ],
+      "minecraft:item_name": "{\"text\":\"Ion Engine Schematic\"}"
+    }
+  }
+}

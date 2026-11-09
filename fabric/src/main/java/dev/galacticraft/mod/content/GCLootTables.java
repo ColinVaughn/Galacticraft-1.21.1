@@ -39,6 +39,11 @@ public class GCLootTables {
     }
     public static final ResourceKey<LootTable> BASIC_MOON_RUINS_CHEST = Constant.key(Registries.LOOT_TABLE, Constant.LootTable.BASIC_MOON_RUINS_CHEST);
     public static final ResourceKey<LootTable> MOON_CAVE_EXPEDITION_CACHE = Constant.key(Registries.LOOT_TABLE, Constant.LootTable.MOON_CAVE_EXPEDITION_CACHE);
+    public static final ResourceKey<LootTable> JUPITER_SURVEY_WRECK = Constant.key(Registries.LOOT_TABLE, Constant.LootTable.JUPITER_SURVEY_WRECK);
+    public static final ResourceKey<LootTable> JUPITER_STORM_HARVESTER = Constant.key(Registries.LOOT_TABLE, Constant.LootTable.JUPITER_STORM_HARVESTER);
+    public static final ResourceKey<LootTable> JUPITER_WEATHER_STATION = Constant.key(Registries.LOOT_TABLE, Constant.LootTable.JUPITER_WEATHER_STATION);
+    public static final ResourceKey<LootTable> JUPITER_RESEARCH_FACILITY = Constant.key(Registries.LOOT_TABLE, Constant.LootTable.JUPITER_RESEARCH_FACILITY);
+    public static final ResourceKey<LootTable> JUPITER_STORMHEART_CITADEL = Constant.key(Registries.LOOT_TABLE, Constant.LootTable.JUPITER_STORMHEART_CITADEL);
 
     public static final ResourceKey<LootTable> DUNGEON_TIER_1 = Constant.key(Registries.LOOT_TABLE, Constant.LootTable.DUNGEON_TIER_1);
     public static final ResourceKey<LootTable> DUNGEON_TIER_2 = Constant.key(Registries.LOOT_TABLE, Constant.LootTable.DUNGEON_TIER_2);

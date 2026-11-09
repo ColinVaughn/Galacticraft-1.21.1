@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "D",
+    "P",
+    "I"
+  ],
+  "key": {
+    "D": {
+      "item": "minecraft:diamond"
+    },
+    "P": {
+      "item": "galacticraft:heavy_plating_t3"
+    },
+    "I": {
+      "item": "minecraft:gold_ingot"
+    }
+  },
+  "result": {
+    "id": "galacticraft:rocket_module",
+    "components": {
+      "galacticraft:rocket_data": {
+        "body": "galacticraft-test:tier_4"
+      }
+    }
+  }
+}

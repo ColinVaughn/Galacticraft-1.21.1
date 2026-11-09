@@ -256,6 +256,10 @@ public interface Translations {
 
         String DIFFICULTY = "config.galacticraft.difficulty";
         String METEOR_SPAWN_MULTIPLIER = "config.galacticraft.difficulty.meteor_spawn_multiplier";
+        String EVOLVE_MOBS_IN_SPACE = "config.galacticraft.difficulty.evolve_mobs_in_space";
+        String EVOLVE_MOBS_IN_SPACE_DESC = "config.galacticraft.difficulty.evolve_mobs_in_space.desc";
+        String EVOLVED_HEALTH_MULTIPLIER = "config.galacticraft.difficulty.evolved_health_multiplier";
+        String EVOLVED_HEALTH_MULTIPLIER_DESC = "config.galacticraft.difficulty.evolved_health_multiplier.desc";
         String METEORS_ENABLED = "config.galacticraft.difficulty.meteors_enabled";
         String METEORS_ENABLED_DESC = "config.galacticraft.difficulty.meteors_enabled.desc";
         String METEOR_IMPACT_BLOCK_DAMAGE = "config.galacticraft.difficulty.meteor_impact_block_damage";
@@ -287,6 +291,8 @@ public interface Translations {
 
         String FLUID_CANISTER_FILLED = "item.galacticraft.fluid_canister.filled";
         String FLUID_CANISTER_INFINITE = "item.galacticraft.fluid_canister.infinite";
+        String TEAM_FLAG = "item.galacticraft.team_flag";
+        String TEAM_FLAG_OF = "item.galacticraft.team_flag.of";
     }
 
     interface CelestialBody {
@@ -320,6 +326,7 @@ public interface Translations {
 
     interface Tooltip {
         String CREATIVE_ONLY = "tooltip.galacticraft.creative_only";
+        String TEAM_FLAG_UNCLAIMED = "tooltip.galacticraft.team_flag.unclaimed";
         String ENERGY_REMAINING = "tooltip.galacticraft.energy_remaining";
         String INFINITE = "tooltip.galacticraft.infinite";
         String OXYGEN_REMAINING = "tooltip.galacticraft.oxygen_remaining";
@@ -386,8 +393,50 @@ public interface Translations {
         String FLAG_PICKER_ERROR = "ui.galacticraft.space_race_manager.flag.picker_error";
         String DRAW_FLAG = "ui.galacticraft.space_race_manager.flag.draw";
         String FLAG_DRAW_HINT = "ui.galacticraft.space_race_manager.flag.draw_hint";
+        String FLAG_TOOL_PENCIL = "ui.galacticraft.space_race_manager.flag.tool.pencil";
+        String FLAG_TOOL_LINE = "ui.galacticraft.space_race_manager.flag.tool.line";
+        String FLAG_TOOL_RECTANGLE = "ui.galacticraft.space_race_manager.flag.tool.rectangle";
+        String FLAG_TOOL_ELLIPSE = "ui.galacticraft.space_race_manager.flag.tool.ellipse";
+        String FLAG_TOOL_FILL = "ui.galacticraft.space_race_manager.flag.tool.fill";
+        String FLAG_TOOL_PICKER = "ui.galacticraft.space_race_manager.flag.tool.picker";
+        String FLAG_HINT_PENCIL = "ui.galacticraft.space_race_manager.flag.hint.pencil";
+        String FLAG_HINT_LINE = "ui.galacticraft.space_race_manager.flag.hint.line";
+        String FLAG_HINT_RECTANGLE = "ui.galacticraft.space_race_manager.flag.hint.rectangle";
+        String FLAG_HINT_ELLIPSE = "ui.galacticraft.space_race_manager.flag.hint.ellipse";
+        String FLAG_HINT_FILL = "ui.galacticraft.space_race_manager.flag.hint.fill";
+        String FLAG_HINT_PICKER = "ui.galacticraft.space_race_manager.flag.hint.picker";
+        String FLAG_BRUSH_SIZE = "ui.galacticraft.space_race_manager.flag.brush_size";
+        String FLAG_FILLED_SHAPES = "ui.galacticraft.space_race_manager.flag.filled_shapes";
+        String FLAG_MIRROR_X = "ui.galacticraft.space_race_manager.flag.mirror_x";
+        String FLAG_MIRROR_Y = "ui.galacticraft.space_race_manager.flag.mirror_y";
+        String FLAG_GRID = "ui.galacticraft.space_race_manager.flag.grid";
+        String FLAG_SWAP = "ui.galacticraft.space_race_manager.flag.swap";
+        String FLAG_PRIMARY = "ui.galacticraft.space_race_manager.flag.primary";
+        String FLAG_SECONDARY = "ui.galacticraft.space_race_manager.flag.secondary";
+        String FLAG_HEX = "ui.galacticraft.space_race_manager.flag.hex";
+        String FLAG_UNDO_SHORTCUT = "ui.galacticraft.space_race_manager.flag.undo_shortcut";
+        String FLAG_REDO = "ui.galacticraft.space_race_manager.flag.redo";
+        String FLAG_REDO_SHORTCUT = "ui.galacticraft.space_race_manager.flag.redo_shortcut";
+        String FLAG_PATTERNS = "ui.galacticraft.space_race_manager.flag.patterns";
+        String FLAG_PATTERNS_TITLE = "ui.galacticraft.space_race_manager.flag.patterns.title";
+        String FLAG_PATTERNS_HINT = "ui.galacticraft.space_race_manager.flag.patterns.hint";
+        String FLAG_PATTERN_PREFIX = "ui.galacticraft.space_race_manager.flag.pattern.";
+        String FLAG_TOOL_ERASER = "ui.galacticraft.space_race_manager.flag.tool.eraser";
+        String FLAG_HINT_ERASER = "ui.galacticraft.space_race_manager.flag.hint.eraser";
+        String FLAG_TAB_COLORS = "ui.galacticraft.space_race_manager.flag.tab.colors";
+        String FLAG_TAB_LAYERS = "ui.galacticraft.space_race_manager.flag.tab.layers";
+        String FLAG_LAYER_ADD = "ui.galacticraft.space_race_manager.flag.layer.add";
+        String FLAG_LAYER_DUPLICATE = "ui.galacticraft.space_race_manager.flag.layer.duplicate";
+        String FLAG_LAYER_DELETE = "ui.galacticraft.space_race_manager.flag.layer.delete";
+        String FLAG_LAYER_UP = "ui.galacticraft.space_race_manager.flag.layer.up";
+        String FLAG_LAYER_DOWN = "ui.galacticraft.space_race_manager.flag.layer.down";
+        String FLAG_LAYER_MERGE = "ui.galacticraft.space_race_manager.flag.layer.merge";
+        String FLAG_LAYER_VISIBILITY = "ui.galacticraft.space_race_manager.flag.layer.visibility";
+        String FLAG_LAYER_BACKGROUND = "ui.galacticraft.space_race_manager.flag.layer.background";
+        String FLAG_LAYER_NAME = "ui.galacticraft.space_race_manager.flag.layer.name";
+        String FLAG_LAYER_COPY = "ui.galacticraft.space_race_manager.flag.layer.copy";
+        String FLAG_CRAFT_HINT = "ui.galacticraft.space_race_manager.flag.craft_hint";
         String FLAG_UNDO = "ui.galacticraft.space_race_manager.flag.undo";
-        String FLAG_FILL = "ui.galacticraft.space_race_manager.flag.fill";
         String FLAG_USE = "ui.galacticraft.space_race_manager.flag.use";
         String FLAG_SAVE_ERROR = "ui.galacticraft.space_race_manager.flag.save_error";
         String TEAM_COLOR_1 = "ui.galacticraft.space_race_manager.team_color_1";
@@ -466,6 +515,7 @@ public interface Translations {
         String BACK = "ui.galacticraft.celestialselection.back";
         String CANCEL = "ui.galacticraft.celestialselection.cancel";
         String CATALOG = "ui.galacticraft.celestialselection.catalog";
+        String SYSTEMS = "ui.galacticraft.celestialselection.systems";
         String LAUNCH = "ui.galacticraft.celestialselection.launch";
         String RENAME = "ui.galacticraft.celestialselection.rename";
         String TIER = "ui.galacticraft.celestialselection.tier";
@@ -629,6 +679,10 @@ public interface Translations {
     interface RocketWorkbench {
         String MISSING_RESEARCH = "ui.galacticraft.rocket_workbench.missing_research";
         String MISSING_RESEARCH_HINT = "ui.galacticraft.rocket_workbench.missing_research_hint";
+        String MISSING_RESEARCH_UNKNOWN = "ui.galacticraft.rocket_workbench.missing_research_unknown";
+        String UNLOCK_BY_ADVANCEMENT = "ui.galacticraft.rocket_workbench.unlock_by_advancement";
+        String UNLOCK_BY_SCHEMATIC = "ui.galacticraft.rocket_workbench.unlock_by_schematic";
+        String REFIT_RESEARCH_SOURCE = "gui.galacticraft.rocket_refit.research_source";
 
         String PAGE_ADD_SCHEMATIC = "ui.galacticraft.rocket_workbench.page.add_schematic";
         String PAGE_BUGGY = "ui.galacticraft.rocket_workbench.page.buggy";

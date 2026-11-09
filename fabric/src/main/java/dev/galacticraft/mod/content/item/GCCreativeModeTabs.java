@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +25,7 @@ package dev.galacticraft.mod.content.item;
 
 import dev.galacticraft.api.component.GCDataComponents;
 import dev.galacticraft.api.gas.Gases;
-import dev.galacticraft.api.rocket.RocketPrefabs;
+import dev.galacticraft.mod.content.rocket.RocketPrefabs;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.api.block.entity.PipeColor;
 import dev.galacticraft.mod.content.GCBlockRegistry;
@@ -169,6 +170,12 @@ public class GCCreativeModeTabs {
                 output.accept(MARS_COBBLESTONE_SLAB);
                 output.accept(MARS_COBBLESTONE_WALL);
 
+                // JUPITER CLOUDLANDS
+                dev.galacticraft.mod.content.block.jupiter.JupiterBlocks.NAMES.keySet().forEach(output::accept);
+                output.accept(DENSE_CLOUD);
+                output.accept(PACKED_CLOUD);
+                output.accept(AMMONIA_FROST);
+
                 // ASTEROID NATURAL
                 output.accept(ASTEROID_ROCK);
                 output.accept(ASTEROID_ROCK_1);
@@ -276,6 +283,10 @@ public class GCCreativeModeTabs {
                 for (Item flag : GCItems.FLAGS.colorMap().values()) {
                     output.accept(flag);
                 }
+                output.accept(FlagItem.teamFlag());
+                for (net.minecraft.resources.ResourceLocation design : dev.galacticraft.mod.content.FlagDesigns.ALL) {
+                    output.accept(FlagItem.withDesign(design));
+                }
 
                 // MISC DECOR
                 output.accept(WALKWAY);
@@ -374,6 +385,12 @@ public class GCCreativeModeTabs {
             .title(Component.translatable(Translations.ItemGroup.ITEMS))
             .displayItems((parameters, output) -> {
                 // BATTERIES
+                dev.galacticraft.mod.content.item.jupiter.JupiterItems.NAMES.keySet().forEach(output::accept);
+                for (var controller : java.util.List.of(dev.galacticraft.mod.content.item.jupiter.JupiterItems.PRESSURE_CONTROLLER_MK1, dev.galacticraft.mod.content.item.jupiter.JupiterItems.PRESSURE_CONTROLLER_MK2)) {
+                    ItemStack charged = new ItemStack(controller);
+                    controller.setStoredEnergy(charged, controller.getEnergyCapacity(charged));
+                    output.accept(charged);
+                }
                 output.accept(BATTERY);
                 ItemStack chargedBattery = new ItemStack(BATTERY);
                 BATTERY.setStoredEnergy(chargedBattery, BATTERY.getEnergyCapacity(chargedBattery));
@@ -517,6 +534,15 @@ public class GCCreativeModeTabs {
                 output.accept(HEAVY_ROCKET_ENGINE);
                 output.accept(ROCKET_BOOSTER);
                 ROCKET_MODULES.forEach(output::accept);
+                // Parts with no module item of their own, such as datapack parts, as generic modules.
+                for (var registry : java.util.List.of(dev.galacticraft.api.registry.RocketRegistries.ROCKET_CONE,
+                        dev.galacticraft.api.registry.RocketRegistries.ROCKET_BODY, dev.galacticraft.api.registry.RocketRegistries.ROCKET_FIN,
+                        dev.galacticraft.api.registry.RocketRegistries.ROCKET_BOOSTER, dev.galacticraft.api.registry.RocketRegistries.ROCKET_ENGINE)) {
+                    parameters.holders().lookup(registry).ifPresent(lookup -> lookup.listElementIds()
+                            .sorted(java.util.Comparator.comparing(key -> key.location().toString()))
+                            .filter(key -> ROCKET_MODULES.stream().noneMatch(module -> dev.galacticraft.mod.machine.workbench.RocketRefit.key(module.rocketData(), dev.galacticraft.api.rocket.part.RocketPartTypes.fromPart(key)).equals(java.util.Optional.of(key))))
+                            .forEach(key -> output.accept(GenericRocketModuleItem.stackFor(key))));
+                }
 
                 // BUGGY PARTS
                 output.accept(BUGGY_WHEEL);

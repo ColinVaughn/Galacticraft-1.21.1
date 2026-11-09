@@ -25,6 +25,7 @@ package dev.galacticraft.impl.internal.mixin;
 import dev.galacticraft.api.accessor.LevelBodyAccessor;
 import dev.galacticraft.api.registry.AddonRegistries;
 import dev.galacticraft.api.universe.celestialbody.CelestialBody;
+import dev.galacticraft.api.universe.celestialbody.CelestialBodyCache;
 import dev.galacticraft.api.universe.celestialbody.landable.Landable;
 import dev.galacticraft.impl.internal.VirtualLevels;
 import dev.galacticraft.impl.internal.accessor.InternalLevelBodyAccessor;
@@ -57,6 +58,10 @@ public abstract class LevelCelestialBodyMixin implements LevelBodyAccessor, Inte
     private ResourceKey<Level> galacticraft$levelKey;
     @Unique
     private int galacticraft$celestialBodyRegistrySize = -1;
+    @Unique
+    private Registry<CelestialBody<?, ?>> galacticraft$boundRegistry;
+    @Unique
+    private long galacticraft$boundRevision = -1;
     @Unique
     private boolean galacticraft$canonicalLevel = false;
 
@@ -113,12 +118,10 @@ public abstract class LevelCelestialBodyMixin implements LevelBodyAccessor, Inte
         // Checked before the cached value: the constructor resolves optimistically (the level is
         // never installed that early), so a wrapper level does hold its wrapped level's body here.
         if (this.galacticraft$isVirtualLevel()) return null;
-        if (this.celestialBody != null) return this.celestialBody;
-        // Dynamic satellite levels can be constructed before their celestial body is registered.
-        // Retry unresolved levels so a newly-created station starts behaving as a satellite
-        // immediately instead of only after the server reloads it from disk.
         Registry<CelestialBody<?, ?>> celestialBodies = this.galacticraft$celestialBodyRegistry();
-        if (celestialBodies != null && celestialBodies.size() != this.galacticraft$celestialBodyRegistrySize) {
+        if (celestialBodies != this.galacticraft$boundRegistry
+                || CelestialBodyCache.revision() != this.galacticraft$boundRevision
+                || celestialBodies != null && celestialBodies.size() != this.galacticraft$celestialBodyRegistrySize) {
             this.celestialBody = this.galacticraft$resolveCelestialBody();
         }
         return this.celestialBody;
@@ -128,6 +131,8 @@ public abstract class LevelCelestialBodyMixin implements LevelBodyAccessor, Inte
     private @Nullable Holder<CelestialBody<?, ?>> galacticraft$resolveCelestialBody() {
         if (this.galacticraft$levelKey == null) return null;
         Registry<CelestialBody<?, ?>> celestialBodies = this.galacticraft$celestialBodyRegistry();
+        this.galacticraft$boundRegistry = celestialBodies;
+        this.galacticraft$boundRevision = CelestialBodyCache.revision();
         if (celestialBodies == null) return null;
         this.galacticraft$celestialBodyRegistrySize = celestialBodies.size();
         return celestialBodies.holders().filter(

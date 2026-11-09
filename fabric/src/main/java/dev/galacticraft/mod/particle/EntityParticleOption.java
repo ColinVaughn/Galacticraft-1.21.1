@@ -23,11 +23,14 @@
 package dev.galacticraft.mod.particle;
 
 import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
@@ -35,18 +38,33 @@ import java.util.UUID;
 public class EntityParticleOption implements ParticleOptions {
     private final ParticleType<?> type;
     private final UUID uuid;
+    private final Vec3 carrier;
 
     public EntityParticleOption(ParticleType<?> type, UUID uuid) {
+        this(type, uuid, Vec3.ZERO);
+    }
+
+    /** @param carrier per-tick motion inherited from the emitter and kept without drag, as in vacuum */
+    public EntityParticleOption(ParticleType<?> type, UUID uuid, Vec3 carrier) {
         this.type = type;
         this.uuid = uuid;
+        this.carrier = carrier;
     }
 
     public static MapCodec<EntityParticleOption> codec(ParticleType<? extends EntityParticleOption> type) {
-        return UUIDUtil.CODEC.xmap(uuid -> new EntityParticleOption(type, uuid), o -> o.uuid).fieldOf("uuid");
+        return RecordCodecBuilder.mapCodec(instance -> instance.group(
+                UUIDUtil.CODEC.fieldOf("uuid").forGetter(o -> o.uuid),
+                Vec3.CODEC.optionalFieldOf("carrier", Vec3.ZERO).forGetter(o -> o.carrier)
+        ).apply(instance, (uuid, carrier) -> new EntityParticleOption(type, uuid, carrier)));
     }
 
     public static StreamCodec<ByteBuf, EntityParticleOption> streamCodec(ParticleType<?> type) {
-        return UUIDUtil.STREAM_CODEC.map(uuid -> new EntityParticleOption(type, uuid), o -> o.uuid);
+        return StreamCodec.composite(UUIDUtil.STREAM_CODEC, o -> o.uuid, ByteBufCodecs.VECTOR3F, o -> o.carrier.toVector3f(),
+                (uuid, carrier) -> new EntityParticleOption(type, uuid, new Vec3(carrier)));
+    }
+
+    public Vec3 getCarrier() {
+        return this.carrier;
     }
 
     @Override

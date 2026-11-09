@@ -1,0 +1,15 @@
+{
+  "format_version": "1.12.0",
+  "minecraft:geometry": [
+    {
+      "description": {"identifier": "geometry.geo_dummy", "texture_width": 64, "texture_height": 64},
+      "bones": [
+        {"name": "root", "pivot": [0, 0, 0]},
+        {"name": "Torso", "parent": "root", "pivot": [0, 12, 0], "cubes": [{"origin": [-4, 12, -2], "size": [8, 10, 4], "uv": [16, 16]}]},
+        {"name": "Head", "parent": "Torso", "pivot": [0, 22, 0], "cubes": [{"origin": [-3, 22, -3], "size": [6, 6, 6], "uv": [0, 0]}]},
+        {"name": "LeftLeg", "parent": "root", "pivot": [2, 12, 0], "cubes": [{"origin": [0, 0, -2], "size": [4, 12, 4], "uv": [0, 16]}]},
+        {"name": "RightLeg", "parent": "root", "pivot": [-2, 12, 0], "cubes": [{"origin": [-4, 0, -2], "size": [4, 12, 4], "uv": [0, 16]}]}
+      ]
+    }
+  ]
+}

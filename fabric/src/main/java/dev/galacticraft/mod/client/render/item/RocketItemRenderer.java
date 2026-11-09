@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,16 +31,24 @@ import dev.galacticraft.api.entity.rocket.render.RocketPartRendererRegistry;
 import dev.galacticraft.api.entity.rocket.render.RocketModelSlot;
 import dev.galacticraft.api.rocket.RocketData;
 import dev.galacticraft.mod.content.item.RocketModuleItem;
-import dev.galacticraft.api.rocket.RocketPrefabs;
+import dev.galacticraft.api.rocket.RocketGeometry;
+import dev.galacticraft.mod.content.rocket.RocketPrefabs;
+import dev.galacticraft.api.rocket.part.RocketPart;
+import dev.galacticraft.api.rocket.part.RocketPartTypes;
 import dev.galacticraft.mod.client.util.LazyRocketEntity;
 import dev.galacticraft.mod.content.entity.vehicle.RocketEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.core.Holder;
 import net.minecraft.util.Mth;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.EitherHolder;
 import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Optional;
 
 public class RocketItemRenderer {
     private final LazyRocketEntity lazyRocket = new LazyRocketEntity();
@@ -62,7 +71,8 @@ public class RocketItemRenderer {
             matrices.translate(0.5, 0.5, 0.5);
             matrices.mulPose(Axis.YP.rotationDegrees(45));
             matrices.mulPose(Axis.XP.rotationDegrees(15));
-            float scale = switch (module.type()) { case ENGINE -> .6F; case FIN -> .3F; default -> .4F; };
+            RocketPartTypes moduleType = module.type(stack);
+            float scale = moduleType == RocketPartTypes.ENGINE ? .6F : moduleType == RocketPartTypes.FIN ? .3F : .4F;
             matrices.scale(scale, scale, scale);
         } else switch (mode) {
             case ItemDisplayContext.THIRD_PERSON_LEFT_HAND:
@@ -102,51 +112,62 @@ public class RocketItemRenderer {
                 matrices.scale(0.2F, 0.2F, 0.2F);
         }
         RenderSystem.setShaderTexture(0, InventoryMenu.BLOCK_ATLAS);
-        // Preserve the item's existing engine-centred display transforms.
-        double center = module == null ? 7 : switch (module.type()) {
-            case BODY -> 35;
-            case ENGINE -> 8;
-            case FIN -> 14;
-            case CONE -> module.tier() == 2 ? 73 : module.tier() == 3 ? 66.7 : 69.3;
-            default -> 7;
-        };
+        // Preserve the item's existing engine-centred display transforms. A module item centres on
+        // its one part, shifted by however far that part's layout moves its middle from stock.
+        RocketGeometry geometry = RocketGeometry.of(data, level.registryAccess());
+        double center = 7;
+        RocketPartTypes moduleType = module == null ? null : module.type(stack);
+        if (moduleType != null) {
+            RocketModelSlot slot = switch (moduleType) {
+                case BODY -> RocketModelSlot.BODY;
+                case FIN -> RocketModelSlot.FIN;
+                case CONE -> RocketModelSlot.CONE;
+                case BOOSTER -> RocketModelSlot.BOOSTER;
+                default -> RocketModelSlot.ENGINE;
+            };
+            double stockCenter = switch (moduleType) {
+                case BODY -> 35;
+                case ENGINE -> 8;
+                case FIN -> 14;
+                case CONE -> 69.3;
+                default -> 7;
+            };
+            RocketPart<?, ?> part = modulePart(data, moduleType, level);
+            center = stockCenter + (geometry.mountY(slot) - slot.y() * 16)
+                    + (RocketGeometry.height(part, slot) - slot.defaultHeight()) / 2.0;
+        }
         matrices.translate(0, -center / 16, 0);
 
-        data.engine().ifPresent(part -> {
-            matrices.pushPose();
-            RocketModelSlot.ENGINE.mount(matrices);
-            RocketPartRendererRegistry.INSTANCE.getRenderer(part.key()).render(level, matrices, rocket, vertexConsumers, 0, light, overlay);
-            matrices.popPose();
-        });
-
-        data.booster().ifPresent(part -> {
-            matrices.pushPose();
-            RocketModelSlot.BOOSTER.mount(matrices);
-            RocketPartRendererRegistry.INSTANCE.getRenderer(part.key()).render(level, matrices, rocket, vertexConsumers, 0, light, overlay);
-            matrices.popPose();
-        });
-
-        data.fin().ifPresent(part -> {
-            matrices.pushPose();
-            RocketModelSlot.FIN.mount(matrices);
-            RocketPartRendererRegistry.INSTANCE.getRenderer(part.key()).render(level, matrices, rocket, vertexConsumers, 0, light, overlay);
-            matrices.popPose();
-        });
-
-        data.body().ifPresent(part -> {
-            matrices.pushPose();
-            RocketModelSlot.BODY.mount(matrices);
-            RocketPartRendererRegistry.INSTANCE.getRenderer(part.key()).render(level, matrices, rocket, vertexConsumers, 0, light, overlay);
-            matrices.popPose();
-        });
-
-        data.cone().ifPresent(part -> {
-            matrices.pushPose();
-            RocketModelSlot.CONE.mount(matrices);
-            RocketPartRendererRegistry.INSTANCE.getRenderer(part.key()).render(level, matrices, rocket, vertexConsumers, 0, light, overlay);
-            matrices.popPose();
-        });
+        renderPart(data.engine(), RocketModelSlot.ENGINE, geometry, level, rocket, matrices, vertexConsumers, light, overlay);
+        renderPart(data.booster(), RocketModelSlot.BOOSTER, geometry, level, rocket, matrices, vertexConsumers, light, overlay);
+        renderPart(data.fin(), RocketModelSlot.FIN, geometry, level, rocket, matrices, vertexConsumers, light, overlay);
+        renderPart(data.body(), RocketModelSlot.BODY, geometry, level, rocket, matrices, vertexConsumers, light, overlay);
+        renderPart(data.cone(), RocketModelSlot.CONE, geometry, level, rocket, matrices, vertexConsumers, light, overlay);
 
         matrices.popPose();
+    }
+
+    private static <T extends RocketPart<?, ?>> void renderPart(Optional<EitherHolder<T>> part, RocketModelSlot slot, RocketGeometry geometry,
+                                                               ClientLevel level, RocketEntity rocket, PoseStack matrices,
+                                                               MultiBufferSource vertexConsumers, int light, int overlay) {
+        part.ifPresent(holder -> {
+            matrices.pushPose();
+            matrices.translate(0, geometry.mountBlocks(slot), 0);
+            RocketPartRendererRegistry.INSTANCE.getRenderer(holder.key()).render(level, matrices, rocket, vertexConsumers, 0, light, overlay);
+            matrices.popPose();
+        });
+    }
+
+    private static @Nullable RocketPart<?, ?> modulePart(RocketData data, RocketPartTypes type, ClientLevel level) {
+        Optional<? extends EitherHolder<? extends RocketPart<?, ?>>> part = switch (type) {
+            case CONE -> data.cone();
+            case BODY -> data.body();
+            case FIN -> data.fin();
+            case BOOSTER -> data.booster();
+            case ENGINE -> data.engine();
+            case UPGRADE -> data.upgrade();
+        };
+        return part.flatMap(holder -> holder.unwrap(level.registryAccess()))
+                .filter(Holder::isBound).map(Holder::value).orElse(null);
     }
 }

@@ -45,6 +45,7 @@ public final class AddonRegistries {
     public static final ResourceKey<Registry<CelestialBodyType<?>>> CELESTIAL_BODY_TYPE = ResourceKey.createRegistryKey(Constant.id("celestial_body_type"));
     public static final ResourceKey<Registry<CelestialTeleporterType<?>>> CELESTIAL_TELEPORTER_TYPE = ResourceKey.createRegistryKey(Constant.id("celestial_teleporter_type"));
 
+    public static final ResourceKey<Registry<dev.galacticraft.api.universe.celestialbody.SpaceflightConfig>> SPACEFLIGHT = ResourceKey.createRegistryKey(Constant.id("spaceflight"));
     public static final ResourceKey<Registry<Galaxy>> GALAXY = ResourceKey.createRegistryKey(Constant.id("galaxy"));
     public static final ResourceKey<Registry<CelestialBody<?, ?>>> CELESTIAL_BODY = ResourceKey.createRegistryKey(Constant.id("celestial_body"));
     public static final ResourceKey<Registry<CelestialTeleporter<?, ?>>> CELESTIAL_TELEPORTER = ResourceKey.createRegistryKey(Constant.id("celestial_teleporter"));

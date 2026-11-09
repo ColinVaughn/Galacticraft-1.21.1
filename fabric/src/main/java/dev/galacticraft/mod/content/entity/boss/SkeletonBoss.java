@@ -68,8 +68,20 @@ public class SkeletonBoss extends AbstractBossEntity implements RangedAttackMob,
     public Entity thrownEntity;
     public Entity targetEntity;
 
+    /** Galacticraft Legacy's {@code EntitySkeletonBoss}: 150 health, scaled by the boss health multiplier. */
+    private static final double MAX_HEALTH = 150.0D;
+    /** Legacy walks at 0.25, and 0.075 faster for each step of difficulty above easy. */
+    private static final double BASE_SPEED = 0.25D;
+    private static final double SPEED_PER_DIFFICULTY = 0.075D;
+
     public SkeletonBoss(EntityType<? extends SkeletonBoss> entityType, Level level) {
         super(entityType, level);
+        int difficultySteps = switch (level.getDifficulty()) {
+            case HARD -> 2;
+            case NORMAL -> 1;
+            default -> 0;
+        };
+        this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(BASE_SPEED + SPEED_PER_DIFFICULTY * difficultySteps);
     }
 
     @Override
@@ -83,26 +95,11 @@ public class SkeletonBoss extends AbstractBossEntity implements RangedAttackMob,
         this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, false, true));
     }
 
-
     public static AttributeSupplier.Builder createAttributes() {
-        return Monster.createMonsterAttributes();
+        return Monster.createMonsterAttributes()
+                .add(Attributes.MAX_HEALTH, MAX_HEALTH)
+                .add(Attributes.MOVEMENT_SPEED, BASE_SPEED);
     }
-
-//    @Override
-//    protected void applyEntityAttributes() {
-//        super.applyEntityAttributes();
-//        double difficulty = 0;
-//        switch (this.level().getDifficulty()) {
-//            case HARD:
-//                difficulty = 2D;
-//                break;
-//            case NORMAL:
-//                difficulty = 1D;
-//                break;
-//        }
-//        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(150.0F * ConfigManagerCore.dungeonBossHealthMod);
-//        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.25D + 0.075 * difficulty);
-//    }
 
     @Override
     protected void tickDeath() {
@@ -117,11 +114,6 @@ public class SkeletonBoss extends AbstractBossEntity implements RangedAttackMob,
     public boolean isInWater() {
         return false;
     }
-
-//    @Override
-//    public boolean handleWaterMovement() {
-//        return false;
-//    }
 
     @Override
     public void positionRider(Entity passenger, Entity.MoveFunction positionUpdater) {
@@ -166,13 +158,6 @@ public class SkeletonBoss extends AbstractBossEntity implements RangedAttackMob,
     protected SoundEvent getDeathSound() {
         return null;
     }
-
-//    @Override
-//    @SideOnly(Side.CLIENT)
-//    public ItemStack getHeldItem()
-//    {
-//        return EntitySkeletonBoss.defaultHeldItem;
-//    }
 
     @Override
     public void aiStep() {
@@ -257,26 +242,6 @@ public class SkeletonBoss extends AbstractBossEntity implements RangedAttackMob,
         return item;
     }
 
-//    @Override
-//    protected void dropFewItems(boolean b, int i) {
-//        if (this.rand.nextInt(200) - i >= 5) {
-//            return;
-//        }
-//
-//        if (i > 0) {
-//            final ItemStack var2 = new ItemStack(Items.BOW);
-//            EnchantmentHelper.addRandomEnchantment(this.rand, var2, 5, false);
-//            this.entityDropItem(var2, 0.0F);
-//        } else {
-//            this.dropItem(Items.BOW, 1);
-//        }
-//    }
-
-//    @Override
-//    public boolean canBreath() {
-//        return true;
-//    }
-
     @Override
     public void performRangedAttack(LivingEntity target, float pullProgress) {
         if (!this.getPassengers().isEmpty()) {
@@ -324,7 +289,6 @@ public class SkeletonBoss extends AbstractBossEntity implements RangedAttackMob,
     public int getChestTier() {
         return 1;
     }
-
 
     @Override
     public BossEvent.BossBarColor getHealthBarColor() {

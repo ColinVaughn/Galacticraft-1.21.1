@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,16 +25,30 @@ package dev.galacticraft.impl.rocket.part.config;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import dev.galacticraft.api.rocket.part.RocketPartLayout;
 import dev.galacticraft.api.rocket.part.config.RocketConeConfig;
 import dev.galacticraft.api.rocket.recipe.RocketPartRecipe;
 import dev.galacticraft.api.rocket.travelpredicate.ConfiguredTravelPredicate;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
-public record BasicRocketConeConfig(ConfiguredTravelPredicate<?, ?> predicate, @Nullable RocketPartRecipe<?, ?> recipe) implements RocketConeConfig {
+public record BasicRocketConeConfig(ConfiguredTravelPredicate<?, ?> predicate, RocketPartLayout layout, boolean paintable, @Nullable RocketPartRecipe<?, ?> recipe, Optional<ResourceLocation> model) implements RocketConeConfig {
     public static final Codec<BasicRocketConeConfig> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             ConfiguredTravelPredicate.DIRECT_CODEC.fieldOf("predicate").forGetter(BasicRocketConeConfig::predicate),
-            RocketPartRecipe.DIRECT_CODEC.optionalFieldOf("recipe").forGetter(config -> Optional.ofNullable(config.recipe))
-    ).apply(instance, (ConfiguredTravelPredicate<?, ?> predicate, Optional<RocketPartRecipe<?, ?>> recipe) -> new BasicRocketConeConfig(predicate, recipe.orElse(null))));
+            RocketPartLayout.CODEC.optionalFieldOf("layout", RocketPartLayout.DEFAULT).forGetter(BasicRocketConeConfig::layout),
+            Codec.BOOL.optionalFieldOf("paintable", false).forGetter(BasicRocketConeConfig::paintable),
+            RocketPartRecipe.DIRECT_CODEC.optionalFieldOf("recipe").forGetter(config -> Optional.ofNullable(config.recipe)),
+            ResourceLocation.CODEC.optionalFieldOf("model").forGetter(BasicRocketConeConfig::model)
+    ).apply(instance, (ConfiguredTravelPredicate<?, ?> predicate, RocketPartLayout layout, Boolean paintable, Optional<RocketPartRecipe<?, ?>> recipe, Optional<ResourceLocation> model) ->
+            new BasicRocketConeConfig(predicate, layout, paintable, recipe.orElse(null), model)));
+
+    public BasicRocketConeConfig(ConfiguredTravelPredicate<?, ?> predicate, @Nullable RocketPartRecipe<?, ?> recipe) {
+        this(predicate, RocketPartLayout.DEFAULT, false, recipe);
+    }
+
+    public BasicRocketConeConfig(ConfiguredTravelPredicate<?, ?> predicate, RocketPartLayout layout, boolean paintable, @Nullable RocketPartRecipe<?, ?> recipe) {
+        this(predicate, layout, paintable, recipe, Optional.empty());
+    }
 }

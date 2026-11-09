@@ -1,0 +1,12 @@
+{
+  "axial_tilt": 0.03,
+  "body": "galacticraft:mercury",
+  "center": [
+    -6871.333527025293,
+    1024.0,
+    -3100.9856485934974
+  ],
+  "radius": 37.0,
+  "rotation_period": 58.646,
+  "texture": "galacticraft:textures/environment/solar_system/mercury.png"
+}

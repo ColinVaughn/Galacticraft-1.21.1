@@ -30,6 +30,7 @@ import dev.galacticraft.impl.client.accessor.ClientResearchAccessor;
 import dev.galacticraft.impl.internal.accessor.ChunkSectionOxygenAccessor;
 import dev.galacticraft.impl.network.s2c.*;
 import dev.galacticraft.impl.universe.celestialbody.type.SatelliteType;
+import dev.galacticraft.mod.machine.workbench.ResearchSources;
 import dev.architectury.networking.NetworkManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -51,6 +52,7 @@ public class GCApiClientPacketReceivers {
         NetworkManager.registerReceiver(NetworkManager.Side.S2C, OxygenUpdatePayload.TYPE, OxygenUpdatePayload.CODEC, (payload, context) -> context.queue(() -> handle(payload)));
         NetworkManager.registerReceiver(NetworkManager.Side.S2C, RemoveSatellitePayload.TYPE, RemoveSatellitePayload.CODEC, (payload, context) -> context.queue(() -> handle(payload)));
         NetworkManager.registerReceiver(NetworkManager.Side.S2C, ResearchUpdatePayload.TYPE, ResearchUpdatePayload.CODEC, (payload, context) -> context.queue(() -> handle(payload, context)));
+        NetworkManager.registerReceiver(NetworkManager.Side.S2C, ResearchSourcesPayload.TYPE, ResearchSourcesPayload.CODEC, (payload, context) -> context.queue(() -> ResearchSources.accept(payload.sources())));
         NetworkManager.registerReceiver(NetworkManager.Side.S2C, UpdateSatellitePayload.TYPE, UpdateSatellitePayload.CODEC, (payload, context) -> context.queue(() -> handle(payload)));
     }
 

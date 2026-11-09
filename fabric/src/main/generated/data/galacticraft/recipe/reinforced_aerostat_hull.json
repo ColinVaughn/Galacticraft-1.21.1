@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "H": {
+      "item": "galacticraft:aerostat_hull"
+    },
+    "J": {
+      "item": "galacticraft:jovian_composite_plate"
+    }
+  },
+  "pattern": [
+    "HHH",
+    "HJH",
+    "HHH"
+  ],
+  "result": {
+    "count": 8,
+    "id": "galacticraft:reinforced_aerostat_hull"
+  }
+}

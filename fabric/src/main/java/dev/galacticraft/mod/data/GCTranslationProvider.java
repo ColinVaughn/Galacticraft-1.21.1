@@ -60,6 +60,38 @@ public class GCTranslationProvider extends TranslationProvider {
 
     @Override
     protected void generateTranslations(HolderLookup.@NotNull Provider registries) {
+        this.add("config.galacticraft.seamless_space_travel", "Experimental physical spaceflight");
+        this.add("config.galacticraft.seamless_space_travel.description", "Server setting. Continuous rocket flight between built-in planets with your crew. Stations and addon routes continue to use classic travel.");
+        this.add("ui.galacticraft.space.departure", "Spaceflight engaged. Steer toward a planet to enter its atmosphere.");
+        this.add("ui.galacticraft.space.controls", "%1$s/%2$s pitch | %3$s/%4$s turn | %5$s boost (double-tap to lock) | %6$s brake");
+        this.add("ui.galacticraft.space.boost_locked", "BOOST LOCKED - double-tap %1$s or press %2$s to release");
+        this.add("ui.galacticraft.space.fuel", "Fuel: %s%%");
+        this.add("ui.galacticraft.space.system", "SOL SYSTEM");
+        this.add("ui.galacticraft.space.range", "%s m");
+        this.add("ui.galacticraft.space.speed", "%s m/s");
+        this.add("ui.galacticraft.space.unreachable", "This destination is outside your rocketâ€™s reach.");
+        this.add("ui.galacticraft.space.denied", "Atmospheric entry was denied.");
+        this.add("tooltip.galacticraft.pressure_rating", "Pressure limit: P%s");
+        this.add("tooltip.galacticraft.pressure_controller", "Equip in an accessory slot. Sneak-use to ascend; fully recharge to restore the emergency charge.");
+        this.add("message.galacticraft.jupiter.overpressure", "Overpressure: P%s / P%s - ascend!");
+        this.add("message.galacticraft.jupiter.low_charge", "Pressure field charge is low - return or ascend!");
+        this.add("message.galacticraft.jupiter.ascent_unavailable", "Emergency ascent needs a fully rearmed controller, 4,000 energy, and open air on Jupiter.");
+        this.add("message.galacticraft.jupiter.ascent", "Emergency buoyancy engaged. Watch for cloud ceilings.");
+        this.add("message.galacticraft.jupiter.entry_shield", "Jupiter requires an Atmospheric Entry Shield in your inventory.");
+        this.add("message.galacticraft.jupiter.no_landing", "No clear arrival site is available. Your current location is safe.");
+        this.add("gui.galacticraft.jupiter.pressure", "Pressure P%s / P%s  |  Field %s%%");
+        this.add("death.attack.pressure", "%1$s was crushed by Jupiter's atmosphere");
+        dev.galacticraft.mod.content.block.jupiter.JupiterText.ENGLISH.forEach(this::add);
+        dev.galacticraft.mod.content.block.jupiter.JupiterMachineStatuses.ENGLISH.forEach(this::add);
+        this.add("death.attack.pressure.player", "%1$s was driven into crushing pressure by %2$s");
+        this.add("flag_design.galacticraft.fuck_trump", "Fuck Trump Flag");
+        this.add("flag_design.galacticraft.palestine", "Palestine Flag");
+        this.add("flag_design.galacticraft.ukraine", "Ukraine Flag");
+        this.add("flag_design.galacticraft.ukraine_victory", "Ukraine Victory Flag");
+        this.add("entity.galacticraft.cloud_diver", "Cloud Diver");
+        this.add("entity.galacticraft.cloud_diver.wreck", "Buoyant Cloud Diver Wreck");
+        this.add("container.galacticraft.cloud_diver", "Cloud Diver Cargo");
+        this.add("gui.galacticraft.jupiter.diver", "Cloud Diver | Hull %s/300 | Power %s%% | Oxygen %s%%%s");
         this.generateBlockTranslations();
         this.generateItemTranslations();
         this.generateItemTagTranslations();
@@ -146,7 +178,7 @@ public class GCTranslationProvider extends TranslationProvider {
         this.block(GCBlocks.BURROWER_EGG_CLUSTER, "Burrower Egg Cluster");
         this.block(GCBlocks.LUNAR_BURROWER_EGG, "Lunar Burrower Egg");
         this.add("entity.galacticraft.lunar_burrower.cargo", "Burrower Cargo");
-        this.add("entity.galacticraft.lunar_burrower.tunnel_on", "Tunneling ON [%s] Â· Look to aim, move forward to dig");
+        this.add("entity.galacticraft.lunar_burrower.tunnel_on", "Tunneling ON [%s] Ã‚Â· Look to aim, move forward to dig");
         this.add("entity.galacticraft.lunar_burrower.tunnel_off", "Tunneling OFF [%s]");
         this.block(GCBlocks.BURROWER_BROKEN_EGGSHELL, "Burrower Broken Eggshell");
         this.block(GCBlocks.BURROWER_EXCAVATED_TAILINGS, "Excavated Lunar Dirt");
@@ -249,6 +281,17 @@ public class GCTranslationProvider extends TranslationProvider {
         this.block(GCBlocks.MARS_COBBLESTONE_SLAB, "Mars Cobblestone Slab");
         this.block(GCBlocks.MARS_COBBLESTONE_STAIRS, "Mars Cobblestone Stairs");
         this.block(GCBlocks.MARS_COBBLESTONE_WALL, "Mars Cobblestone Wall");
+
+        dev.galacticraft.mod.content.block.jupiter.JupiterBlocks.NAMES.forEach(this::block);
+        // JUPITER CLOUDLANDS
+        this.block(GCBlocks.DENSE_CLOUD, "Dense Cloud");
+        this.block(GCBlocks.PACKED_CLOUD, "Packed Cloud");
+        this.block(GCBlocks.AMMONIA_FROST, "Ammonia Frost");
+        this.add("biome.galacticraft.jupiter_cloudlands", "Jupiter White Zones");
+        this.add("biome.galacticraft.jupiter_amber_belts", "Jupiter Amber Belts");
+        this.add("biome.galacticraft.jupiter_crystal_fronts", "Jupiter Crystal Fronts");
+        this.add("biome.galacticraft.jupiter_calm_eye", "Jupiter Calm Eye");
+        this.add("biome.galacticraft.jupiter_red_vortex", "Jupiter Red Vortex");
 
         // ASTEROID NATURAL
         this.block(GCBlocks.ASTEROID_ROCK, "Asteroid Rock");
@@ -451,7 +494,7 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add("ui.galacticraft.telepad.target.5", "Target needs 2,500 gJ");
         this.add("ui.galacticraft.telepad.target.6", "Target landing area blocked");
         this.add("ui.galacticraft.telepad.target.7", "Target is this telepad");
-        this.blockDesc(GCBlocks.GEOTHERMAL_GENERATOR, "Generates 30–200 gJ/t above a vapor spout with a clear shaft to sulfuric acid, less than 20 blocks below.");
+        this.blockDesc(GCBlocks.GEOTHERMAL_GENERATOR, "Generates 30â€“200 gJ/t above a vapor spout with a clear shaft to sulfuric acid, less than 20 blocks below.");
         this.add("ui.galacticraft.machine.status.invalid_spout", "Invalid Vapor Spout");
         this.add("ui.galacticraft.geothermal.spout_hint", "Clear shaft to sulfuric acid");
         this.add("ui.galacticraft.geothermal.generating", "Generating: %s gJ/t");
@@ -636,11 +679,14 @@ public class GCTranslationProvider extends TranslationProvider {
         this.item(GCItems.FLUID_CANISTER, "Empty Canister");
         this.add(Items.FLUID_CANISTER_FILLED, "%s Canister");
         this.add(Items.FLUID_CANISTER_INFINITE, "Infinite %s Canister");
+        this.add(Items.TEAM_FLAG, "Team Flag");
+        this.add(Items.TEAM_FLAG_OF, "%s Flag");
 
         // SMITHING TEMPLATES
         this.item(GCItems.TITANTIUM_UPGRADE_SMITHING_TEMPLATE, "Smithing Template");
 
         // BATTERIES
+        dev.galacticraft.mod.content.item.jupiter.JupiterItems.NAMES.forEach(this::item);
         this.item(GCItems.BATTERY, "Battery");
         this.item(GCItems.INFINITE_BATTERY, "Infinite Battery");
 
@@ -717,19 +763,22 @@ public class GCTranslationProvider extends TranslationProvider {
             };
             this.item(module, "Tier " + module.tier() + " Rocket " + name);
         }
+        this.item(GCItems.ROCKET_MODULE, "Rocket Module");
+        this.item(GCItems.ROCKET_SCHEMATIC, "Rocket Schematic");
         this.add(dev.galacticraft.mod.recipe.ModularRocketRecipe.TITLE, "Rocket");
         this.add("tooltip.galacticraft.rocket_module", "Assemble on the Rocket Workbench's Rocket page");
         this.add("gui.galacticraft.rocket_refit.title", "Rocket Refit");
         this.add("gui.galacticraft.rocket_refit.label", "Refit");
         this.add("gui.galacticraft.rocket_refit.insert", "Insert a rocket to remove or replace its modules.");
         this.add("gui.galacticraft.rocket_refit.clear", "Clear the assembly and upgrade wells first.");
-        this.add("gui.galacticraft.rocket_refit.incomplete", "Incomplete rocket — cannot be placed on a launch pad");
+        this.add("gui.galacticraft.rocket_refit.incomplete", "Incomplete rocket â€” cannot be placed on a launch pad");
         this.add("gui.galacticraft.rocket_refit.missing", "Missing: %s");
         this.add("gui.galacticraft.rocket_refit.remove", "Click to remove. Insert a matching module to swap.");
         this.add("gui.galacticraft.rocket_refit.install", "Insert a matching module to install.");
         this.add("gui.galacticraft.rocket_refit.unsupported", "This installed part has no detachable module item.");
         this.add("gui.galacticraft.rocket_refit.take", "Take the refitted rocket.");
         this.add("gui.galacticraft.rocket_refit.research", "Research required to install: %s");
+        this.add(RocketWorkbench.REFIT_RESEARCH_SOURCE, "Research required to install %s. %s");
         this.add("gui.galacticraft.rocket_paint.title", "Rocket Paint");
         this.add("gui.galacticraft.rocket_paint.open", "Paint");
         this.add("gui.galacticraft.rocket_paint.whole", "Whole rocket");
@@ -761,10 +810,10 @@ public class GCTranslationProvider extends TranslationProvider {
         this.item(GCItems.BUGGY_STORAGE, "Buggy Storage");
 
         // SCHEMATICS
-        this.item(GCItems.BASIC_ROCKET_CONE_SCHEMATIC, "Basic Rocket Cone Schematic");
-        this.item(GCItems.BASIC_ROCKET_BODY_SCHEMATIC, "Basic Rocket Body Schematic");
-        this.item(GCItems.BASIC_ROCKET_FINS_SCHEMATIC, "Basic Rocket Fins Schematic");
-        this.item(GCItems.BASIC_ROCKET_ENGINE_SCHEMATIC, "Basic Rocket Engine Schematic");
+        this.item(GCItems.BASIC_ROCKET_CONE_SCHEMATIC, "Tier 1 Rocket Cone Schematic");
+        this.item(GCItems.BASIC_ROCKET_BODY_SCHEMATIC, "Tier 1 Rocket Body Schematic");
+        this.item(GCItems.BASIC_ROCKET_FINS_SCHEMATIC, "Tier 1 Rocket Fins Schematic");
+        this.item(GCItems.BASIC_ROCKET_ENGINE_SCHEMATIC, "Tier 1 Rocket Engine Schematic");
 
         this.item(GCItems.TIER_2_ROCKET_SCHEMATIC, "Tier 2 Rocket Schematic");
         this.item(GCItems.CARGO_ROCKET_SCHEMATIC, "Cargo Rocket Schematic");
@@ -793,6 +842,11 @@ public class GCTranslationProvider extends TranslationProvider {
         this.item(GCItems.EVOLVED_PILLAGER_SPAWN_EGG, "Evolved Pillager Spawn Egg");
         this.item(GCItems.EVOLVED_EVOKER_SPAWN_EGG, "Evolved Evoker Spawn Egg");
         this.item(GCItems.EVOLVED_VINDICATOR_SPAWN_EGG, "Evolved Vindicator Spawn Egg");
+        this.item(GCItems.CLOUD_RAY_SPAWN_EGG, "Cloud Ray Spawn Egg");
+        this.item(GCItems.STATIC_JELLY_SPAWN_EGG, "Static Jelly Spawn Egg");
+        this.item(GCItems.SALVAGE_DRONE_SPAWN_EGG, "Salvage Drone Spawn Egg");
+        this.item(GCItems.STORMHEART_LEVIATHAN_SPAWN_EGG, "Stormheart Leviathan Spawn Egg");
+        this.item(GCItems.CURIOSITY_ROVER_SPAWN_EGG, "Curiosity Rover Spawn Egg");
         this.item(GCItems.GAZER_SPAWN_EGG, "Gazer Spawn Egg");
         this.item(GCItems.RUMBLER_SPAWN_EGG, "Rumbler Spawn Egg");
         this.item(GCItems.COMET_CUBE_SPAWN_EGG, "Comet Cube Spawn Egg");
@@ -1004,9 +1058,17 @@ public class GCTranslationProvider extends TranslationProvider {
         this.entity(GCEntityTypes.BURROWER_BODY, "Lunar Burrower");
         this.item(GCItems.LUNAR_BURROWER_SPAWN_EGG, "Lunar Burrower Spawn Egg");
         this.add("entity.galacticraft.lunar_burrower.escape", "Sneak to escape! An ally can interrupt the swallow.");
+        this.entity(GCEntityTypes.CLOUD_RAY, "Cloud Ray");
+        this.entity(GCEntityTypes.STATIC_JELLY, "Static Jelly");
+        this.entity(GCEntityTypes.SALVAGE_DRONE, "Salvage Drone");
+        this.entity(GCEntityTypes.STORMHEART_LEVIATHAN, "Stormheart Leviathan");
+        this.entity(GCEntityTypes.CURIOSITY_ROVER, "Curiosity Rover");
         this.entity(GCEntityTypes.GAZER, "Gazer");
         this.entity(GCEntityTypes.GREY, "Grey");
         this.entity(GCEntityTypes.LANDER, "Lander");
+        this.entity(GCEntityTypes.LANDING_BALLOONS, "Landing Balloons");
+        this.entity(GCEntityTypes.ENTRY_POD, "Asteroid Entry Pod");
+        this.entity(GCEntityTypes.VENUS_ENTRY_POD, "Venus Entry Pod");
         this.entity(GCEntityTypes.MOON_VILLAGER, "Moon Villager");
         this.add(GCEntityTypes.MOON_VILLAGER.getDescriptionId() + ".none", "Moon Villager");
         this.entity(GCEntityTypes.OLI_GRUB, "Oli Grub");
@@ -1139,7 +1201,10 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(TreasureChest.LOCKED, "This chest is locked. You need a Tier %s Dungeon Key.");
 
         this.add(RocketWorkbench.MISSING_RESEARCH, "You have not researched:");
-        this.add(RocketWorkbench.MISSING_RESEARCH_HINT, "Complete the advancement that unlocks the part.");
+        this.add(RocketWorkbench.MISSING_RESEARCH_HINT, "To unlock:");
+        this.add(RocketWorkbench.MISSING_RESEARCH_UNKNOWN, "Earn the advancement or spend the schematic that grants it");
+        this.add(RocketWorkbench.UNLOCK_BY_ADVANCEMENT, "Earn the advancement \"%s\" (%s)");
+        this.add(RocketWorkbench.UNLOCK_BY_SCHEMATIC, "Spend a %s on the Add New Schematic page");
         this.add(RocketWorkbench.PAGE_ADD_SCHEMATIC, "Add New Schematic");
         this.add(RocketWorkbench.PAGE_BUGGY, "Moon Buggy");
         this.add(RocketWorkbench.PAGE_CARGO_ROCKET, "Cargo Rocket");
@@ -1152,12 +1217,12 @@ public class GCTranslationProvider extends TranslationProvider {
     }
 
     protected void generateRocketPartTranslations() {
-        this.rocketPart(GCRocketParts.TIER_1_BODY, "Basic Body");
+        this.rocketPart(GCRocketParts.TIER_1_BODY, "Tier 1 Body");
         this.rocketPart(GCRocketParts.ADVANCED_CONE, "Advanced Cone");
         this.rocketPart(GCRocketParts.SLOPED_CONE, "Sloped Cone");
-        this.rocketPart(GCRocketParts.TIER_1_CONE, "Basic Cone");
-        this.rocketPart(GCRocketParts.TIER_1_ENGINE, "Basic Engine");
-        this.rocketPart(GCRocketParts.TIER_1_FIN, "Basic Fins");
+        this.rocketPart(GCRocketParts.TIER_1_CONE, "Tier 1 Cone");
+        this.rocketPart(GCRocketParts.TIER_1_ENGINE, "Tier 1 Engine");
+        this.rocketPart(GCRocketParts.TIER_1_FIN, "Tier 1 Fins");
         this.rocketPart(GCRocketParts.STORAGE_UPGRADE, "Storage Upgrade");
         this.rocketPart(GCRocketParts.EXPLOSIVE_UPGRADE, "Explosive Upgrade");
         this.rocketPart(GCRocketParts.TIER_2_CONE, "Tier 2 Cone");
@@ -1168,7 +1233,7 @@ public class GCTranslationProvider extends TranslationProvider {
         this.rocketPart(GCRocketParts.TIER_3_BODY, "Tier 3 Body");
         this.rocketPart(GCRocketParts.TIER_3_FIN, "Tier 3 Fins");
         this.rocketPart(GCRocketParts.TIER_3_ENGINE, "Tier 3 Engine");
-        this.rocketPart(GCRocketParts.TIER_1_BOOSTER, "Basic Booster");
+        this.rocketPart(GCRocketParts.TIER_1_BOOSTER, "Tier 1 Booster");
         this.rocketPart(GCRocketParts.TIER_2_BOOSTER, "Tier 2 Booster");
         this.rocketPart(GCRocketParts.TIER_3_BOOSTER, "Tier 3 Booster");
     }
@@ -1238,6 +1303,7 @@ public class GCTranslationProvider extends TranslationProvider {
         this.blockDesc(GCBlocks.REFINERY, "Refines crude oil into fuel used by rockets and vehicles.");
 
         this.add(Tooltip.CREATIVE_ONLY, "Creative Only");
+        this.add(Tooltip.TEAM_FLAG_UNCLAIMED, "Flies your space race flag once you craft or plant it");
         this.add(Tooltip.ENERGY_REMAINING, "Energy Remaining: %s");
         this.add(Tooltip.INFINITE, "Infinite");
         this.add(Tooltip.OXYGEN_REMAINING, "Oxygen Remaining: %s");
@@ -1326,6 +1392,10 @@ public class GCTranslationProvider extends TranslationProvider {
 
         this.add(Config.DIFFICULTY, "Difficulty");
         this.add(Config.METEOR_SPAWN_MULTIPLIER, "Meteor Spawn Multiplier");
+        this.add(Config.EVOLVE_MOBS_IN_SPACE, "Evolve Mobs In Space");
+        this.add(Config.EVOLVE_MOBS_IN_SPACE_DESC, "Hostile Mobs That Arrive In An Airless Dimension, From Any Mod, Breathe And Wear A Helmet And Tanks Instead Of Suffocating");
+        this.add(Config.EVOLVED_HEALTH_MULTIPLIER, "Evolved Mob Health Multiplier");
+        this.add(Config.EVOLVED_HEALTH_MULTIPLIER_DESC, "Max Health Multiplier For Mobs Evolved In Space. Bosses Keep Their Own Health");
         this.add(Config.METEORS_ENABLED, "Meteors And Meteor Showers");
         this.add(Config.METEORS_ENABLED_DESC, "Whether Meteoroids Fall At All, On Any Celestial Body");
         this.add(Config.METEOR_IMPACT_BLOCK_DAMAGE, "Meteor Impact Damage");
@@ -1353,7 +1423,7 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(SpaceRace.BACK, "Back");
         this.add(SpaceRace.BUTTON, "Space Race");
         this.add(SpaceRace.BUTTON_2, "Manager");
-        this.add(SpaceRace.COMING_SOON, "Coming Soon™");
+        this.add(SpaceRace.COMING_SOON, "Coming Soonâ„¢");
         this.add(SpaceRace.EXIT, "Exit");
         this.add(SpaceRace.GLOBAL_STATS, "Global Statistics");
         this.add(SpaceRace.GLOBAL_STATS_ERROR, "Unable to load global statistics");
@@ -1363,9 +1433,9 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(SpaceRace.REFRESH, "Refresh");
         this.add(SpaceRace.REMOVE_PLAYERS, "Remove Player(s)");
         this.add(SpaceRace.SERVER_STATS, "Server Statistics");
-        this.add(SpaceRace.SERVER_STATS_SUMMARY, "%s tracked players • %s online");
+        this.add(SpaceRace.SERVER_STATS_SUMMARY, "%s tracked players â€¢ %s online");
         this.add(SpaceRace.FLAG_CONFIRM, "Use this team flag?");
-        this.add(SpaceRace.FLAG_CONFIRM_MESSAGE, "Your design is saved on this computer.");
+        this.add(SpaceRace.FLAG_CONFIRM_MESSAGE, "Your design is saved on this computer and flies on your team flags.");
         this.add(SpaceRace.CUSTOMIZE_FLAG, "Customize Flag");
         this.add(SpaceRace.DRAG_AND_DROP_FLAG, "Drag and drop an image to use as a flag");
         this.add(SpaceRace.SELECT_FLAG, "Select Image...");
@@ -1375,8 +1445,62 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(SpaceRace.FLAG_PICKER_ERROR, "Could not open the file picker.");
         this.add(SpaceRace.DRAW_FLAG, "Draw Flag...");
         this.add(SpaceRace.FLAG_DRAW_HINT, "Drag to draw; arrows + Space to paint.");
+        this.add(SpaceRace.FLAG_TOOL_PENCIL, "Pencil (P)");
+        this.add(SpaceRace.FLAG_TOOL_LINE, "Line (L)");
+        this.add(SpaceRace.FLAG_TOOL_RECTANGLE, "Rectangle (R)");
+        this.add(SpaceRace.FLAG_TOOL_ELLIPSE, "Ellipse (O)");
+        this.add(SpaceRace.FLAG_TOOL_FILL, "Fill (F)");
+        this.add(SpaceRace.FLAG_TOOL_PICKER, "Eyedropper (I)");
+        this.add(SpaceRace.FLAG_HINT_PENCIL, "Left click paints primary, right click secondary.");
+        this.add(SpaceRace.FLAG_HINT_LINE, "Drag to draw a line. Shift keeps it straight.");
+        this.add(SpaceRace.FLAG_HINT_RECTANGLE, "Drag to draw a rectangle. Shift makes a square.");
+        this.add(SpaceRace.FLAG_HINT_ELLIPSE, "Drag to draw an ellipse. Shift makes a circle.");
+        this.add(SpaceRace.FLAG_HINT_FILL, "Click an area to fill it with one color.");
+        this.add(SpaceRace.FLAG_HINT_PICKER, "Click to pick a color, right click for secondary.");
+        this.add(SpaceRace.FLAG_BRUSH_SIZE, "Brush size %s");
+        this.add(SpaceRace.FLAG_FILLED_SHAPES, "Filled shapes");
+        this.add(SpaceRace.FLAG_MIRROR_X, "Mirror left and right");
+        this.add(SpaceRace.FLAG_MIRROR_Y, "Mirror top and bottom");
+        this.add(SpaceRace.FLAG_GRID, "Grid (G)");
+        this.add(SpaceRace.FLAG_SWAP, "Swap colors (X)");
+        this.add(SpaceRace.FLAG_PRIMARY, "Primary color (left click)");
+        this.add(SpaceRace.FLAG_SECONDARY, "Secondary color (right click)");
+        this.add(SpaceRace.FLAG_HEX, "Hex color");
+        this.add(SpaceRace.FLAG_UNDO_SHORTCUT, "Undo (Ctrl+Z)");
+        this.add(SpaceRace.FLAG_REDO, "Redo");
+        this.add(SpaceRace.FLAG_REDO_SHORTCUT, "Redo (Ctrl+Y)");
+        this.add(SpaceRace.FLAG_PATTERNS, "Patterns...");
+        this.add(SpaceRace.FLAG_PATTERNS_TITLE, "Flag Patterns");
+        this.add(SpaceRace.FLAG_PATTERNS_HINT, "Patterns fill the selected layer with your primary and secondary colors. Undo brings it back.");
+        this.add(SpaceRace.FLAG_TOOL_ERASER, "Eraser (E)");
+        this.add(SpaceRace.FLAG_HINT_ERASER, "Erase to show layers below. Empty cloth is white.");
+        this.add(SpaceRace.FLAG_TAB_COLORS, "Colors");
+        this.add(SpaceRace.FLAG_TAB_LAYERS, "Layers");
+        this.add(SpaceRace.FLAG_LAYER_ADD, "New layer");
+        this.add(SpaceRace.FLAG_LAYER_DUPLICATE, "Duplicate layer");
+        this.add(SpaceRace.FLAG_LAYER_DELETE, "Delete layer");
+        this.add(SpaceRace.FLAG_LAYER_UP, "Move layer up");
+        this.add(SpaceRace.FLAG_LAYER_DOWN, "Move layer down");
+        this.add(SpaceRace.FLAG_LAYER_MERGE, "Merge into the layer below");
+        this.add(SpaceRace.FLAG_LAYER_VISIBILITY, "Show or hide this layer");
+        this.add(SpaceRace.FLAG_LAYER_BACKGROUND, "Background");
+        this.add(SpaceRace.FLAG_LAYER_NAME, "Layer %s");
+        this.add(SpaceRace.FLAG_LAYER_COPY, "%s copy");
+        this.add(SpaceRace.FLAG_PATTERN_PREFIX + "solid", "Solid");
+        this.add(SpaceRace.FLAG_PATTERN_PREFIX + "horizontal_halves", "Horizontal Halves");
+        this.add(SpaceRace.FLAG_PATTERN_PREFIX + "vertical_halves", "Vertical Halves");
+        this.add(SpaceRace.FLAG_PATTERN_PREFIX + "horizontal_bands", "Horizontal Bands");
+        this.add(SpaceRace.FLAG_PATTERN_PREFIX + "vertical_bands", "Vertical Bands");
+        this.add(SpaceRace.FLAG_PATTERN_PREFIX + "centered_cross", "Centered Cross");
+        this.add(SpaceRace.FLAG_PATTERN_PREFIX + "nordic_cross", "Nordic Cross");
+        this.add(SpaceRace.FLAG_PATTERN_PREFIX + "saltire", "Saltire");
+        this.add(SpaceRace.FLAG_PATTERN_PREFIX + "canton", "Canton");
+        this.add(SpaceRace.FLAG_PATTERN_PREFIX + "diagonal", "Diagonal");
+        this.add(SpaceRace.FLAG_PATTERN_PREFIX + "hoist_triangle", "Hoist Triangle");
+        this.add(SpaceRace.FLAG_PATTERN_PREFIX + "border", "Border");
+        this.add(SpaceRace.FLAG_PATTERN_PREFIX + "disc", "Disc");
+        this.add(SpaceRace.FLAG_CRAFT_HINT, "Craft a Team Flag from 3 steel poles and 4 canvas to plant it.");
         this.add(SpaceRace.FLAG_UNDO, "Undo");
-        this.add(SpaceRace.FLAG_FILL, "Fill");
         this.add(SpaceRace.FLAG_USE, "Use Flag");
         this.add(SpaceRace.FLAG_SAVE_ERROR, "Could not save the flag. Please try again.");
         this.add(SpaceRace.TEAM_COLOR_1, "Change");
@@ -1455,6 +1579,7 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(CelestialSelection.BACK, "Back");
         this.add(CelestialSelection.CANCEL, "Cancel");
         this.add(CelestialSelection.CATALOG, "Catalog");
+        this.add(CelestialSelection.SYSTEMS, "Systems");
         this.add(CelestialSelection.LAUNCH, "Launch");
         this.add(CelestialSelection.RENAME, "Rename");
         this.add(CelestialSelection.TIER, "Tier %s");
@@ -1649,7 +1774,7 @@ public class GCTranslationProvider extends TranslationProvider {
     protected void generateWailaTranslations() {
         this.add(Waila.PLUGIN_GALACTICRAFT, "Galacticraft - Boobcat Edition");
         this.add(Waila.SHOW_OXYGEN_LEVEL, "Show Oxygen Tank Levels");
-        this.add(Waila.OXYGEN_TANK_LABEL, "O₂ Tank %s");
+        this.add(Waila.OXYGEN_TANK_LABEL, "Oâ‚‚ Tank %s");
     }
 
     protected void generateStatsTranslations() {
@@ -1681,7 +1806,7 @@ public class GCTranslationProvider extends TranslationProvider {
         this.advancement(Advancements.FILL_TANK, "Air 2 Go", "Fill up an Oxygen Tank");
         this.advancement(Advancements.FILL_ALL_TANKS, "Oxygen Stockpile", "Fill up every kind of Oxygen Tank");
         this.advancement(Advancements.OXYGEN_GEAR, "All Set", "Create everything you need to breathe in space");
-        this.advancement(Advancements.ROCKET_WORKBENCH, "Space Engineer", "Craft a Rocket Workbench");
+        this.advancement(Advancements.ROCKET_WORKBENCH, "Space Engineer", "Craft or pick up a Rocket Workbench");
         this.advancement(Advancements.ROCKET, "We Have a Rocket!", "Weld a Rocket together");
         this.advancement(Advancements.FUEL_LOADER, "Fill Her Up!", "Craft a Fuel Loader");
         this.advancement(Advancements.LEAVE_ROCKET_DURING_COUNTDOWN, "We've Forgotten the Crackers!", "Leave a Rocket during the countdown");

@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "galacticraft:battery"
+    },
+    "C": {
+      "item": "galacticraft:hydrosulfide_crystal"
+    },
+    "P": {
+      "item": "galacticraft:compressed_steel"
+    },
+    "W": {
+      "item": "galacticraft:advanced_wafer"
+    }
+  },
+  "pattern": [
+    " C ",
+    "WBW",
+    "PPP"
+  ],
+  "result": {
+    "count": 1,
+    "id": "galacticraft:pressure_controller_mk1"
+  }
+}

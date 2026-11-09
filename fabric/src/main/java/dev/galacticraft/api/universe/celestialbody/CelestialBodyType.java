@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -132,6 +133,16 @@ public abstract class CelestialBodyType<C extends CelestialBodyConfig> {
      */
     public long dayLength(C config) {
         return 24000;
+    }
+
+    /**
+     * Returns how the sky looks from this celestial body's surface, or empty for the stock look.
+     *
+     * @param config the celestial body configuration to be queried
+     * @see SkyConfig
+     */
+    public Optional<SkyConfig> sky(C config) {
+        return Optional.empty();
     }
 
     /**

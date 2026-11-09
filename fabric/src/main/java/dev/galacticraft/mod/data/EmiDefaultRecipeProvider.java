@@ -25,7 +25,6 @@ package dev.galacticraft.mod.data;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import dev.galacticraft.mod.Constant;
-import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
@@ -39,10 +38,10 @@ import java.util.concurrent.CompletableFuture;
 public class EmiDefaultRecipeProvider implements DataProvider {
     private static final List<ResourceLocation> DEFAULT_RECIPES = new ArrayList<>();
 
-    private final FabricDataOutput output;
+    private final PackOutput output;
     private final CompletableFuture<HolderLookup.Provider> registries;
 
-    public EmiDefaultRecipeProvider(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registries) {
+    public EmiDefaultRecipeProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
         this.output = output;
         this.registries = registries;
     }

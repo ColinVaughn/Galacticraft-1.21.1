@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -97,7 +98,7 @@ public class GCShapelessRecipeBuilder extends GCRecipeBuilder<GCShapelessRecipeB
     @Override
     public Recipe<?> createRecipe(ResourceLocation id) {
         String groupName = Objects.requireNonNullElse(this.group, "");
-        ItemStack itemStack = new ItemStack(this.result, this.count);
+        ItemStack itemStack = this.resultStack();
         if (this.category != null) {
             return new ShapelessRecipe(groupName, RecipeBuilder.determineBookCategory(this.category), itemStack, this.ingredients);
         } else {

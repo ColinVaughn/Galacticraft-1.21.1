@@ -1,0 +1,12 @@
+{
+  "axial_tilt": 177.36,
+  "body": "galacticraft:venus",
+  "center": [
+    -13256.58516481257,
+    1024.0,
+    2451.185918096057
+  ],
+  "radius": 91.0,
+  "rotation_period": 243.025,
+  "texture": "galacticraft:textures/environment/solar_system/venus.png"
+}

@@ -25,6 +25,7 @@ package dev.galacticraft.mod.world.dimension;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.world.biome.source.GCMultiNoiseBiomeSourceParameterLists;
 import dev.galacticraft.mod.world.gen.GCNoiseGeneratorSettings;
+import dev.galacticraft.mod.world.gen.JupiterWorldgen;
 import dev.galacticraft.mod.world.gen.custom.AsteroidChunkGenerator;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
@@ -37,14 +38,21 @@ import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator;
 import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
+import net.minecraft.world.level.levelgen.FlatLevelSource;
+import net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorSettings;
+import dev.galacticraft.mod.world.biome.GCBiomes;
+import java.util.Optional;
+import java.util.List;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 public class GCLevelStems {
+    public static final ResourceKey<LevelStem> SOLAR_SYSTEM = key("solar_system");
     public static final ResourceKey<LevelStem> MOON = key("moon");
     public static final ResourceKey<LevelStem> VENUS = key("venus");
     public static final ResourceKey<LevelStem> MERCURY = key("mercury");
     public static final ResourceKey<LevelStem> ASTEROID = key("asteroid");
+    public static final ResourceKey<LevelStem> JUPITER = key("jupiter");
 
     public static void bootstrapRegistries(@NotNull BootstrapContext<LevelStem> context) {
         HolderGetter<DimensionType> typeLookup = context.lookup(Registries.DIMENSION_TYPE);
@@ -52,8 +60,16 @@ public class GCLevelStems {
         HolderGetter<NoiseGeneratorSettings> noiseLookup = context.lookup(Registries.NOISE_SETTINGS);
         HolderGetter<MultiNoiseBiomeSourceParameterList> biomeNoiseLookup = context.lookup(Registries.MULTI_NOISE_BIOME_SOURCE_PARAMETER_LIST);
 
+        var space = new FlatLevelGeneratorSettings(
+                Optional.empty(), biomeLookup.getOrThrow(GCBiomes.SPACE), List.of());
+        context.register(SOLAR_SYSTEM, new LevelStem(typeLookup.getOrThrow(GCDimensionTypes.SOLAR_SYSTEM),
+                new FlatLevelSource(space)));
+        context.register(JUPITER, new LevelStem(typeLookup.getOrThrow(GCDimensionTypes.JUPITER),
+                new NoiseBasedChunkGenerator(net.minecraft.world.level.biome.MultiNoiseBiomeSource.createFromList(new net.minecraft.world.level.biome.Climate.ParameterList<>(
+                        JupiterWorldgen.biomeParameters().values().stream().map(entry -> entry.mapSecond(key -> (net.minecraft.core.Holder<Biome>) biomeLookup.getOrThrow(key))).toList())),
+                        noiseLookup.getOrThrow(GCNoiseGeneratorSettings.JUPITER))));
+
         // the returned reference may be null
-//        context.register(MOON, new LevelStem(typeLookup.getOrThrow(GCDimensionTypes.MOON), new NoiseBasedChunkGenerator(MultiNoiseBiomeSource.createFromPreset(biomeNoiseLookup.getOrThrow(GCMultiNoiseBiomeSourceParameterLists.MOON)), noiseLookup.getOrThrow(GCNoiseGeneratorSettings.MOON))));
         context.register(VENUS, new LevelStem(typeLookup.getOrThrow(GCDimensionTypes.VENUS), new NoiseBasedChunkGenerator(MultiNoiseBiomeSource.createFromPreset(biomeNoiseLookup.getOrThrow(GCMultiNoiseBiomeSourceParameterLists.VENUS)), noiseLookup.getOrThrow(GCNoiseGeneratorSettings.VENUS))));
         context.register(MERCURY, new LevelStem(typeLookup.getOrThrow(GCDimensionTypes.MERCURY), new NoiseBasedChunkGenerator(MultiNoiseBiomeSource.createFromPreset(biomeNoiseLookup.getOrThrow(GCMultiNoiseBiomeSourceParameterLists.MERCURY)), noiseLookup.getOrThrow(GCNoiseGeneratorSettings.MERCURY))));
         context.register(ASTEROID, new LevelStem(typeLookup.getOrThrow(GCDimensionTypes.ASTEROID), new AsteroidChunkGenerator(MultiNoiseBiomeSource.createFromPreset(biomeNoiseLookup.getOrThrow(GCMultiNoiseBiomeSourceParameterLists.ASTEROID)), ResourceKey.create(Registries.DIMENSION, Constant.id("asteroid")), 1000)));

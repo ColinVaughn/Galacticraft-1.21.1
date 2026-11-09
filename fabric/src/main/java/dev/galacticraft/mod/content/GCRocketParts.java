@@ -26,6 +26,7 @@ package dev.galacticraft.mod.content;
 import dev.galacticraft.api.data.RocketPartRecipeBuilder;
 import dev.galacticraft.api.registry.RocketRegistries;
 import dev.galacticraft.api.rocket.part.*;
+import dev.galacticraft.mod.content.entity.vehicle.RocketFlightLogic;
 import dev.galacticraft.api.rocket.travelpredicate.TravelPredicateType;
 import dev.galacticraft.impl.rocket.part.config.*;
 import dev.galacticraft.impl.rocket.part.type.*;
@@ -77,6 +78,8 @@ public class GCRocketParts {
                 BasicRocketConeType.INSTANCE.configure(
                         new BasicRocketConeConfig(
                                 AccessWeightTravelPredicateType.INSTANCE.configure(new AccessWeightTravelPredicateConfig(1, TravelPredicateType.Result.PASS)),
+                                RocketPartLayout.DEFAULT,
+                                true,
                                 RocketPartRecipeBuilder.create()
                                         .define('T', Ingredient.of(Items.REDSTONE_TORCH))
                                         .define('D', Ingredient.of(GCItems.TIER_1_HEAVY_DUTY_PLATE))
@@ -121,6 +124,8 @@ public class GCRocketParts {
                 BasicRocketConeType.INSTANCE.configure(
                         new BasicRocketConeConfig(
                                 AccessWeightTravelPredicateType.INSTANCE.configure(new AccessWeightTravelPredicateConfig(2, TravelPredicateType.Result.PASS)),
+                                RocketPartLayout.height(32F),
+                                true,
                                 RocketPartRecipeBuilder.create()
                                         .define('T', Ingredient.of(Items.REDSTONE_TORCH))
                                         .define('D', Ingredient.of(GCItems.TIER_2_HEAVY_DUTY_PLATE))
@@ -135,6 +140,8 @@ public class GCRocketParts {
                 BasicRocketConeType.INSTANCE.configure(
                         new BasicRocketConeConfig(
                                 AccessWeightTravelPredicateType.INSTANCE.configure(new AccessWeightTravelPredicateConfig(3, TravelPredicateType.Result.PASS)),
+                                RocketPartLayout.height(19.4F),
+                                true,
                                 RocketPartRecipeBuilder.create()
                                         .define('T', Ingredient.of(Items.REDSTONE_TORCH))
                                         .define('D', Ingredient.of(GCItems.TIER_3_HEAVY_DUTY_PLATE))
@@ -152,6 +159,8 @@ public class GCRocketParts {
                 BasicRocketBodyType.INSTANCE.configure(new BasicRocketBodyConfig(
                         AccessWeightTravelPredicateType.INSTANCE.configure(new AccessWeightTravelPredicateConfig(1, TravelPredicateType.Result.PASS)),
                         1,
+                        RocketPartLayout.DEFAULT,
+                        true,
                         RocketPartRecipeBuilder.create()
                                 .define('D', Ingredient.of(GCItems.TIER_1_HEAVY_DUTY_PLATE))
                                 .left("D")
@@ -169,6 +178,8 @@ public class GCRocketParts {
                 BasicRocketBodyType.INSTANCE.configure(new BasicRocketBodyConfig(
                         AccessWeightTravelPredicateType.INSTANCE.configure(new AccessWeightTravelPredicateConfig(2, TravelPredicateType.Result.PASS)),
                         1,
+                        RocketPartLayout.DEFAULT,
+                        true,
                         RocketPartRecipeBuilder.create()
                                 .define('D', Ingredient.of(GCItems.TIER_2_HEAVY_DUTY_PLATE))
                                 .left("D")
@@ -186,6 +197,8 @@ public class GCRocketParts {
                 BasicRocketBodyType.INSTANCE.configure(new BasicRocketBodyConfig(
                         AccessWeightTravelPredicateType.INSTANCE.configure(new AccessWeightTravelPredicateConfig(3, TravelPredicateType.Result.PASS)),
                         1,
+                        RocketPartLayout.DEFAULT,
+                        true,
                         RocketPartRecipeBuilder.create()
                                 .define('D', Ingredient.of(GCItems.TIER_3_HEAVY_DUTY_PLATE))
                                 .left("D")
@@ -208,7 +221,9 @@ public class GCRocketParts {
                                 AccessWeightTravelPredicateType.INSTANCE.configure(
                                         new AccessWeightTravelPredicateConfig(1, TravelPredicateType.Result.PASS)
                                 ),
-                                false,
+                                true,
+                                RocketPartLayout.DEFAULT,
+                                true,
                                 RocketPartRecipeBuilder.create()
                                         .define('F', Ingredient.of(GCItems.ROCKET_FIN))
                                         .left("F")
@@ -225,7 +240,9 @@ public class GCRocketParts {
                                 AccessWeightTravelPredicateType.INSTANCE.configure(
                                         new AccessWeightTravelPredicateConfig(2, TravelPredicateType.Result.PASS)
                                 ),
-                                false,
+                                true,
+                                RocketPartLayout.width(42.8F),
+                                true,
                                 RocketPartRecipeBuilder.create()
                                         .define('F', Ingredient.of(GCItems.ROCKET_FIN))
                                         .left("F")
@@ -242,7 +259,9 @@ public class GCRocketParts {
                                 AccessWeightTravelPredicateType.INSTANCE.configure(
                                         new AccessWeightTravelPredicateConfig(3, TravelPredicateType.Result.PASS)
                                 ),
-                                false,
+                                true,
+                                RocketPartLayout.width(44.8F),
+                                true,
                                 RocketPartRecipeBuilder.create()
                                         .define('F', Ingredient.of(GCItems.HEAVY_ROCKET_FIN))
                                         .left("F")
@@ -264,7 +283,7 @@ public class GCRocketParts {
                                   ),
                                   1.0,
                                   0.02,
-                                  FluidConstants.NUGGET,
+                                  5, // droplets per tick, on top of the engine
                                   RocketPartRecipeBuilder.create()
                                           .define('B', Ingredient.of(GCItems.ROCKET_BOOSTER))
                                           .left("B")
@@ -281,7 +300,7 @@ public class GCRocketParts {
                                 ),
                                 1.25,
                                 0.03,
-                                FluidConstants.NUGGET * 2,
+                                7, // droplets per tick, on top of the engine
                                 RocketPartRecipeBuilder.create()
                                         .define('B', Ingredient.of(GCItems.ROCKET_BOOSTER))
                                         .define('P', Ingredient.of(GCItems.TIER_2_HEAVY_DUTY_PLATE))
@@ -301,7 +320,7 @@ public class GCRocketParts {
                                 ),
                                 1.5,
                                 0.04,
-                                FluidConstants.NUGGET * 3,
+                                9, // droplets per tick, on top of the engine
                                 RocketPartRecipeBuilder.create()
                                         .define('B', Ingredient.of(GCItems.ROCKET_BOOSTER))
                                         .define('P', Ingredient.of(GCItems.TIER_3_HEAVY_DUTY_PLATE))
@@ -322,7 +341,10 @@ public class GCRocketParts {
                                 AccessWeightTravelPredicateType.INSTANCE.configure(
                                         new AccessWeightTravelPredicateConfig(1, TravelPredicateType.Result.PASS)
                                 ),
-                                FluidConstants.BUCKET * 16,
+                                FluidConstants.BUCKET * RocketFlightLogic.gc4FuelCapacityMilliBuckets(1) / 1000,
+                                FluidConstants.BUCKET / RocketFlightLogic.gc4BurnTicksPerBucket(1),
+                                RocketPartLayout.DEFAULT,
+                                true,
                                 RocketPartRecipeBuilder.create()
                                         .define('E', Ingredient.of(GCItems.ROCKET_ENGINE))
                                         .center("E")
@@ -336,7 +358,10 @@ public class GCRocketParts {
                                 AccessWeightTravelPredicateType.INSTANCE.configure(
                                         new AccessWeightTravelPredicateConfig(2, TravelPredicateType.Result.PASS)
                                 ),
-                                FluidConstants.BUCKET * 24,
+                                FluidConstants.BUCKET * RocketFlightLogic.gc4FuelCapacityMilliBuckets(2) / 1000,
+                                FluidConstants.BUCKET / RocketFlightLogic.gc4BurnTicksPerBucket(2),
+                                RocketPartLayout.DEFAULT,
+                                true,
                                 RocketPartRecipeBuilder.create()
                                         .define('E', Ingredient.of(GCItems.ROCKET_ENGINE))
                                         .center("E")
@@ -350,7 +375,10 @@ public class GCRocketParts {
                                 AccessWeightTravelPredicateType.INSTANCE.configure(
                                         new AccessWeightTravelPredicateConfig(3, TravelPredicateType.Result.PASS)
                                 ),
-                                FluidConstants.BUCKET * 32,
+                                FluidConstants.BUCKET * RocketFlightLogic.gc4FuelCapacityMilliBuckets(3) / 1000,
+                                FluidConstants.BUCKET / RocketFlightLogic.gc4BurnTicksPerBucket(3),
+                                RocketPartLayout.DEFAULT,
+                                true,
                                 RocketPartRecipeBuilder.create()
                                         .define('E', Ingredient.of(GCItems.HEAVY_ROCKET_ENGINE))
                                         .center("E")
@@ -387,7 +415,7 @@ public class GCRocketParts {
     }
 
     public static ResourceLocation recipeId(ResourceKey<?> part) {
-        return part.location().withPath(part.registry().getPath() + "/" + part.location().getPath());
+        return RocketPart.researchId(part);
     }
 
     @Contract(pure = true)

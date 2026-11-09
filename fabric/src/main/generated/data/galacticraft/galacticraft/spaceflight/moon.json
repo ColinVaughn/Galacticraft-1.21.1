@@ -1,0 +1,12 @@
+{
+  "axial_tilt": 1.54,
+  "body": "galacticraft:moon",
+  "center": [
+    0.0,
+    1024.0,
+    2400.0
+  ],
+  "phase": 90.0,
+  "radius": 26.0,
+  "texture": "galacticraft:textures/environment/solar_system/moon.png"
+}

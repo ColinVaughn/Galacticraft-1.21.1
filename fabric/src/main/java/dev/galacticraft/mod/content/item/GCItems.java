@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +24,7 @@
 package dev.galacticraft.mod.content.item;
 
 import dev.galacticraft.api.component.GCDataComponents;
-import dev.galacticraft.api.rocket.RocketPrefabs;
+import dev.galacticraft.mod.content.rocket.RocketPrefabs;
 import dev.galacticraft.api.rocket.RocketData;
 import dev.galacticraft.api.rocket.part.RocketPartTypes;
 import dev.galacticraft.mod.Constant;
@@ -51,7 +52,7 @@ public class GCItems {
         return java.util.List.of(LUNAR_BURROWER_SPAWN_EGG, MOON_VILLAGER_SPAWN_EGG, EVOLVED_ZOMBIE_SPAWN_EGG,
                 EVOLVED_CREEPER_SPAWN_EGG, EVOLVED_SKELETON_SPAWN_EGG, EVOLVED_SPIDER_SPAWN_EGG,
                 EVOLVED_ENDERMAN_SPAWN_EGG, EVOLVED_WITCH_SPAWN_EGG, EVOLVED_PILLAGER_SPAWN_EGG,
-                EVOLVED_EVOKER_SPAWN_EGG, EVOLVED_VINDICATOR_SPAWN_EGG, GAZER_SPAWN_EGG,
+                EVOLVED_EVOKER_SPAWN_EGG, EVOLVED_VINDICATOR_SPAWN_EGG, GAZER_SPAWN_EGG, CLOUD_RAY_SPAWN_EGG, STATIC_JELLY_SPAWN_EGG, SALVAGE_DRONE_SPAWN_EGG, STORMHEART_LEVIATHAN_SPAWN_EGG, CURIOSITY_ROVER_SPAWN_EGG,
                 RUMBLER_SPAWN_EGG, COMET_CUBE_SPAWN_EGG, OLI_GRUB_SPAWN_EGG, GREY_SPAWN_EGG,
                 ARCH_GREY_SPAWN_EGG);
     }
@@ -293,6 +294,8 @@ public class GCItems {
     public static final Item HEAVY_ROCKET_ENGINE = registerGeneric(Constant.Item.HEAVY_ROCKET_ENGINE);
     public static final Item ROCKET_BOOSTER = registerGeneric(Constant.Item.ROCKET_BOOSTER);
     public static final List<RocketModuleItem> ROCKET_MODULES = registerRocketModules();
+    /** A module carrying any rocket part, taken from its stack; how datapacks hand out their parts. */
+    public static final GenericRocketModuleItem ROCKET_MODULE = ITEMS.register(Constant.Item.ROCKET_MODULE, new GenericRocketModuleItem());
 
     private static List<RocketModuleItem> registerRocketModules() {
         List<RocketModuleItem> modules = new ArrayList<>();
@@ -323,10 +326,14 @@ public class GCItems {
     public static final Item BASIC_ROCKET_FINS_SCHEMATIC = ITEMS.register(Constant.Item.BASIC_ROCKET_FINS_SCHEMATIC, new RocketPartSchematic(new Item.Properties().stacksTo(1).rarity(Rarity.RARE), GCRocketParts.TIER_1_FIN));
     public static final Item BASIC_ROCKET_ENGINE_SCHEMATIC = ITEMS.register(Constant.Item.BASIC_ROCKET_ENGINE_SCHEMATIC, new RocketPartSchematic(new Item.Properties().stacksTo(1).rarity(Rarity.RARE), GCRocketParts.TIER_1_ENGINE));
 
-    public static final Item TIER_2_ROCKET_SCHEMATIC = ITEMS.register(Constant.Item.TIER_2_ROCKET_SCHEMATIC, new SchematicItem(new Item.Properties()));
+    public static final Item TIER_2_ROCKET_SCHEMATIC = ITEMS.register(Constant.Item.TIER_2_ROCKET_SCHEMATIC, new SchematicItem(new Item.Properties()
+            .component(GCDataComponents.ROCKET_PART_UNLOCKS, List.of(GCRocketParts.TIER_2_CONE, GCRocketParts.TIER_2_BODY, GCRocketParts.TIER_2_FIN, GCRocketParts.TIER_2_ENGINE))));
     public static final Item CARGO_ROCKET_SCHEMATIC = ITEMS.register(Constant.Item.CARGO_ROCKET_SCHEMATIC, new SchematicItem(new Item.Properties()));
     public static final Item MOON_BUGGY_SCHEMATIC = ITEMS.register(Constant.Item.MOON_BUGGY_SCHEMATIC, new SchematicItem(new Item.Properties()));
-    public static final Item TIER_3_ROCKET_SCHEMATIC = ITEMS.register(Constant.Item.TIER_3_ROCKET_SCHEMATIC, new SchematicItem(new Item.Properties()));
+    public static final Item TIER_3_ROCKET_SCHEMATIC = ITEMS.register(Constant.Item.TIER_3_ROCKET_SCHEMATIC, new SchematicItem(new Item.Properties()
+            .component(GCDataComponents.ROCKET_PART_UNLOCKS, List.of(GCRocketParts.TIER_3_CONE, GCRocketParts.TIER_3_BODY, GCRocketParts.TIER_3_FIN, GCRocketParts.TIER_3_ENGINE))));
+    /** A schematic that unlocks whatever parts its stack's {@code galacticraft:rocket_part_unlocks} lists; for datapacks. */
+    public static final Item ROCKET_SCHEMATIC = ITEMS.register(Constant.Item.ROCKET_SCHEMATIC, new SchematicItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE)));
     public static final Item ASTRO_MINER_SCHEMATIC = ITEMS.register(Constant.Item.ASTRO_MINER_SCHEMATIC, new SchematicItem(new Item.Properties()));
 
     // LEGACY MUSIC DISCS
@@ -357,6 +364,11 @@ public class GCItems {
     public static final Item EVOLVED_EVOKER_SPAWN_EGG = ITEMS.register(Constant.SpawnEgg.EVOLVED_EVOKER, new SpawnEggItem(GCEntityTypes.EVOLVED_EVOKER, 0x1e1c1a, 0xd3cf99, new Item.Properties()));
     public static final Item EVOLVED_VINDICATOR_SPAWN_EGG = ITEMS.register(Constant.SpawnEgg.EVOLVED_VINDICATOR, new SpawnEggItem(GCEntityTypes.EVOLVED_VINDICATOR, 0x3f3b37, 0x275e61, new Item.Properties()));
     public static final Item LUNAR_BURROWER_SPAWN_EGG = ITEMS.register("lunar_burrower_spawn_egg", new SpawnEggItem(GCEntityTypes.LUNAR_BURROWER, 0x545954, 0xb7ead8, new Item.Properties()));
+    public static final Item CLOUD_RAY_SPAWN_EGG = ITEMS.register("cloud_ray_spawn_egg", new SpawnEggItem(GCEntityTypes.CLOUD_RAY, 0xeadbb9, 0xb98149, new Item.Properties()));
+    public static final Item STATIC_JELLY_SPAWN_EGG = ITEMS.register("static_jelly_spawn_egg", new SpawnEggItem(GCEntityTypes.STATIC_JELLY, 0x4b55a0, 0xfff7cf, new Item.Properties()));
+    public static final Item SALVAGE_DRONE_SPAWN_EGG = ITEMS.register("salvage_drone_spawn_egg", new SpawnEggItem(GCEntityTypes.SALVAGE_DRONE, 0x9aa0a8, 0xe0a722, new Item.Properties()));
+    public static final Item CURIOSITY_ROVER_SPAWN_EGG = ITEMS.register("curiosity_rover_spawn_egg", new SpawnEggItem(GCEntityTypes.CURIOSITY_ROVER, 0xe2ded6, 0xb98a32, new Item.Properties()));
+    public static final Item STORMHEART_LEVIATHAN_SPAWN_EGG = ITEMS.register("stormheart_leviathan_spawn_egg", new SpawnEggItem(GCEntityTypes.STORMHEART_LEVIATHAN, 0x3d3437, 0x8fe6ff, new Item.Properties()));
     public static final Item GAZER_SPAWN_EGG = ITEMS.register(Constant.SpawnEgg.GAZER, new SpawnEggItem(GCEntityTypes.GAZER, 0xdbdddb, 0x5c5c5c, new Item.Properties()));
     public static final Item RUMBLER_SPAWN_EGG = ITEMS.register(Constant.SpawnEgg.RUMBLER, new SpawnEggItem(GCEntityTypes.RUMBLER, 0x5c5c5c, 0x36383e, new Item.Properties()));
     public static final Item COMET_CUBE_SPAWN_EGG = ITEMS.register(Constant.SpawnEgg.COMET_CUBE, new SpawnEggItem(GCEntityTypes.COMET_CUBE, 0xd5d8d8, 0x92b9fe, new Item.Properties()));
@@ -369,6 +381,7 @@ public class GCItems {
     }
 
     public static void register() {
+        dev.galacticraft.mod.content.item.jupiter.JupiterItems.register();
         DispenserBlock.registerBehavior(FUEL_BUCKET, DispenserBlock.DISPENSER_REGISTRY.get(Items.WATER_BUCKET));
         DispenserBlock.registerBehavior(HELIUM_3_BUCKET, DispenserBlock.DISPENSER_REGISTRY.get(Items.WATER_BUCKET));
         DispenserBlock.registerBehavior(CRUDE_OIL_BUCKET, DispenserBlock.DISPENSER_REGISTRY.get(Items.WATER_BUCKET));
@@ -385,6 +398,11 @@ public class GCItems {
         DispenserBlock.registerBehavior(EVOLVED_EVOKER_SPAWN_EGG, DispenserBlock.DISPENSER_REGISTRY.get(Items.CREEPER_SPAWN_EGG));
         DispenserBlock.registerBehavior(EVOLVED_VINDICATOR_SPAWN_EGG, DispenserBlock.DISPENSER_REGISTRY.get(Items.CREEPER_SPAWN_EGG));
         DispenserBlock.registerBehavior(LUNAR_BURROWER_SPAWN_EGG, DispenserBlock.DISPENSER_REGISTRY.get(Items.CREEPER_SPAWN_EGG));
+        DispenserBlock.registerBehavior(CLOUD_RAY_SPAWN_EGG, DispenserBlock.DISPENSER_REGISTRY.get(Items.CREEPER_SPAWN_EGG));
+        DispenserBlock.registerBehavior(STATIC_JELLY_SPAWN_EGG, DispenserBlock.DISPENSER_REGISTRY.get(Items.CREEPER_SPAWN_EGG));
+        DispenserBlock.registerBehavior(SALVAGE_DRONE_SPAWN_EGG, DispenserBlock.DISPENSER_REGISTRY.get(Items.CREEPER_SPAWN_EGG));
+        DispenserBlock.registerBehavior(STORMHEART_LEVIATHAN_SPAWN_EGG, DispenserBlock.DISPENSER_REGISTRY.get(Items.CREEPER_SPAWN_EGG));
+        DispenserBlock.registerBehavior(CURIOSITY_ROVER_SPAWN_EGG, DispenserBlock.DISPENSER_REGISTRY.get(Items.CREEPER_SPAWN_EGG));
         DispenserBlock.registerBehavior(GAZER_SPAWN_EGG, DispenserBlock.DISPENSER_REGISTRY.get(Items.CREEPER_SPAWN_EGG));
         DispenserBlock.registerBehavior(RUMBLER_SPAWN_EGG, DispenserBlock.DISPENSER_REGISTRY.get(Items.CREEPER_SPAWN_EGG));
         DispenserBlock.registerBehavior(COMET_CUBE_SPAWN_EGG, DispenserBlock.DISPENSER_REGISTRY.get(Items.CREEPER_SPAWN_EGG));

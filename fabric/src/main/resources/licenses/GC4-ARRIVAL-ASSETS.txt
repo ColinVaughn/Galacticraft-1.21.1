@@ -1,0 +1,12 @@
+Destination arrival models and textures
+
+Copyright Galacticraft developers (micdoodle8, radfast, fishtaco567 and contributors).
+These assets remain under the bundled GC4-LICENSE.txt, not this project's MIT license.
+
+Source: https://github.com/micdoodle8/Galacticraft/tree/8c0f66a7a6945eab5c8fa5a0be6c627dc3f7faad/src/main/resources/assets/galacticraftplanets
+
+Original models: models/landing_balloon.obj/.mtl, models/pod.obj/.mtl, models/pod_flame.obj/.mtl
+Original textures: textures/blocks/landing_balloon.png, textures/blocks/space_pod.png, textures/blocks/pod_flame.png
+
+Models are installed in assets/galacticraft/models/misc; textures in assets/galacticraft/textures/obj.
+Changes: OBJ object declarations changed to named groups for the current loader; material texture paths point to the Galacticraft OBJ atlas. Geometry and textures are unchanged.

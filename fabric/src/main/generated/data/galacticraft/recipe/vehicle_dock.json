@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "galacticraft:battery"
+    },
+    "P": {
+      "item": "galacticraft:compressed_titanium"
+    },
+    "S": {
+      "item": "galacticraft:aerostat_salvage"
+    },
+    "V": {
+      "item": "galacticraft:oxygen_vent"
+    },
+    "W": {
+      "item": "galacticraft:advanced_wafer"
+    }
+  },
+  "pattern": [
+    "SVS",
+    "BWB",
+    "PPP"
+  ],
+  "result": {
+    "count": 1,
+    "id": "galacticraft:vehicle_dock"
+  }
+}

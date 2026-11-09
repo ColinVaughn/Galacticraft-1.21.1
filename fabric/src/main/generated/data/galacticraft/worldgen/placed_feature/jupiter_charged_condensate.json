@@ -1,0 +1,15 @@
+{
+  "feature": "galacticraft:jupiter_charged_condensate",
+  "placement": [
+    {
+      "type": "minecraft:count",
+      "count": 6
+    },
+    {
+      "type": "minecraft:in_square"
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_stormheart_core": {
+      "conditions": {
+        "items": [
+          {
+            "items": "galacticraft:stormheart_core"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "galacticraft:pressure_stabilizer"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_stormheart_core"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "galacticraft:pressure_stabilizer"
+    ]
+  }
+}

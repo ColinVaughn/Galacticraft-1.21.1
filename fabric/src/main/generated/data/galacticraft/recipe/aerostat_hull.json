@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "P": {
+      "item": "galacticraft:compressed_steel"
+    },
+    "S": {
+      "item": "galacticraft:aerostat_salvage"
+    }
+  },
+  "pattern": [
+    "PSP",
+    "S S",
+    "PSP"
+  ],
+  "result": {
+    "count": 8,
+    "id": "galacticraft:aerostat_hull"
+  }
+}

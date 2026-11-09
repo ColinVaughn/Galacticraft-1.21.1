@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "galacticraft:compressed_copper"
+        "recipe": "galacticraft:compressing/compressed_copper"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -26,7 +26,7 @@
   ],
   "rewards": {
     "recipes": [
-      "galacticraft:compressed_copper"
+      "galacticraft:compressing/compressed_copper"
     ]
   }
 }

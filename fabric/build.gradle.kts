@@ -48,6 +48,8 @@ loom {
     accessWidenerPath.set(file("src/main/resources/galacticraft.accesswidener"))
     mixin.add(sourceSets.main.get(), "galacticraft.refmap.json")
     mixin.add(sourceSets.test.get(), "galacticraft-test.refmap.json")
+    // Gives the test source set its own mod* configurations (modTestCompileOnly for the GeckoLib dummy).
+    createRemapConfigurations(sourceSets.test.get())
 
     runs {
         named("client") {
@@ -57,6 +59,34 @@ loom {
             if (project.hasProperty("burrowerClientTest")) {
                 runDir("build/burrower-client-test")
                 property("galacticraft.burrower.client-test", "true")
+            }
+            if (project.hasProperty("spaceflightClientTest")) {
+                runDir("build/spaceflight-client-test")
+                property("galacticraft.spaceflight.client-test", "true")
+                property("galacticraft.spaceflight.ready-delay", project.findProperty("spaceflightReadyDelay")?.toString() ?: "0")
+                property("galacticraft.spaceflight.gallery", project.hasProperty("spaceflightGallery").toString())
+                property("galacticraft.spaceflight.render-distance", project.findProperty("spaceflightRenderDistance")?.toString() ?: "12")
+            }
+            if (project.hasProperty("addonClientTest")) {
+                runDir("build/addon-client-test")
+                property("galacticraft.surface-sky.client-test", "true")
+                property("galacticraft.addon.client-test", "true")
+            }
+            if (project.hasProperty("surfaceSkyClientTest")) {
+                runDir("build/surface-sky-client-test")
+                property("galacticraft.surface-sky.client-test", "true")
+            }
+            if (project.hasProperty("beltClientTest")) {
+                runDir("build/belt-client-test")
+                property("galacticraft.belt.client-test", "true")
+            }
+            if (project.hasProperty("exhaustClientTest")) {
+                runDir("build/exhaust-client-test")
+                property("galacticraft.exhaust.client-test", "true")
+            }
+            if (project.hasProperty("researchTooltipClientTest")) {
+                runDir("build/research-tooltip-client-test")
+                property("galacticraft.research-tooltip.client-test", "true")
             }
             if (project.hasProperty("rocketClientTest")) {
                 runDir("build/rocket-client-test")
@@ -70,9 +100,35 @@ loom {
                 runDir("build/geothermal-client-test")
                 property("galacticraft.geothermal.client-test", "true")
             }
+            if (project.hasProperty("jupiterClientTest")) {
+                runDir("build/jupiter-client-test")
+                property("galacticraft.jupiter.client-test", "true")
+            }
+            if (project.hasProperty("jupiterStructuresClientTest")) {
+                runDir("build/jupiter-structures-client-test")
+                property("galacticraft.jupiter-structures.client-test", "true")
+                // -PshotFilter=rover captures only the shots whose names contain "rover"
+                if (project.hasProperty("shotFilter")) property("galacticraft.client-test.only", project.property("shotFilter").toString())
+            }
             if (project.hasProperty("telepadClientTest")) {
                 runDir("build/telepad-client-test")
                 property("galacticraft.telepad.client-test", "true")
+            }
+            if (project.hasProperty("dustStormClientTest")) {
+                runDir("build/dust-storm-client-test")
+                property("galacticraft.dust-storm.client-test", "true")
+            }
+            if (project.hasProperty("spaceGearClientTest")) {
+                runDir("build/space-gear-client-test")
+                property("galacticraft.space-gear.client-test", "true")
+            }
+            if (project.hasProperty("teamFlagClientTest")) {
+                runDir("build/team-flag-client-test")
+                property("galacticraft.team-flag.client-test", "true")
+            }
+            if (project.hasProperty("flagEditorClientTest")) {
+                runDir("build/flag-editor-client-test")
+                property("galacticraft.flag-editor.client-test", "true")
             }
             if (project.hasProperty("burrowerVisualTest")) {
                 runDir("build/burrower-visual-test")
@@ -172,6 +228,7 @@ repositories {
     maven("https://maven.blamejared.com/") { content { includeGroup("mezz.jei") } }
     maven("https://maven.ryanliptak.com/") { content { includeGroup("squeek.appleskin") } }
     maven("https://api.modrinth.com/maven") { content { includeGroup("maven.modrinth") } }
+    maven("https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/") { content { includeGroup("software.bernie.geckolib") } }
 }
 
 dependencies {
@@ -215,6 +272,13 @@ dependencies {
     }
     modCompileOnly("mcp.mobius.waila:wthit:fabric-${rootProject.property("wthit.version")}")
     modCompileOnly("squeek.appleskin:appleskin-fabric:${rootProject.property("appleskin.version")}")
+    // Optional GeckoLib support for fitting space gear to model bones.
+    modCompileOnly("software.bernie.geckolib:geckolib-fabric-${rootProject.property("minecraft.version")}:${rootProject.property("geckolib.fabric.version")}") { isTransitive = false }
+    // Add GeckoLib to runClient with -PgeckolibRuntime.
+    "modTestCompileOnly"("software.bernie.geckolib:geckolib-fabric-${rootProject.property("minecraft.version")}:${rootProject.property("geckolib.fabric.version")}") { isTransitive = false }
+    if (project.hasProperty("geckolibRuntime")) {
+        modLocalRuntime("software.bernie.geckolib:geckolib-fabric-${rootProject.property("minecraft.version")}:${rootProject.property("geckolib.fabric.version")}") { isTransitive = false }
+    }
 
     modCompileOnly("me.shedaniel:RoughlyEnoughItems-api-fabric:${rootProject.property("rei.version")}")
     modCompileOnly("me.shedaniel:RoughlyEnoughItems-default-plugin-fabric:${rootProject.property("rei.version")}")
@@ -247,6 +311,8 @@ tasks.processResources {
 
 tasks.test {
     useJUnitPlatform()
+    // The optional GeckoLib dummy is not on the unit-test runtime classpath.
+    exclude("dev/galacticraft/test/geckolib/**")
     workingDir = rootProject.file("run")
 }
 

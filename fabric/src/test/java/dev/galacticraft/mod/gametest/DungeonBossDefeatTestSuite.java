@@ -34,15 +34,14 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 /**
- * A dungeon boss only counts as defeated once its 200-tick death animation finishes, and the boss
- * keeps ticking its "the room is empty, despawn me" check the whole way through that animation.
- * Kill the boss without standing in the room - a thrown potion, a lingering cloud, lava - and the
- * despawn check fires first, removing the corpse as if the boss had escaped and rolling back the
- * kill: no key, no reward chest, and the boss respawns.
+ * Checks that removing a defeated boss during its 200-tick death animation still grants rewards
+ * and clears the dungeon. An empty room must not treat the corpse as an escaped living boss.
  */
 public final class DungeonBossDefeatTestSuite implements GalacticraftGameTest {
     private static final BlockPos SPAWNER_POS = new BlockPos(1, 1, 1);
     private static final BlockPos BOSS_POS = new BlockPos(3, 1, 3);
+    private static final BlockPos NEIGHBOUR_SPAWNER_POS = new BlockPos(6, 1, 6);
+    private static final BlockPos NEIGHBOUR_BOSS_POS = new BlockPos(5, 1, 5);
 
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 300)
     public void bossKilledWithNoPlayerInTheRoomStillCountsAsDefeated(GameTestHelper context) {
@@ -103,15 +102,47 @@ public final class DungeonBossDefeatTestSuite implements GalacticraftGameTest {
         });
     }
 
+    /**
+     * Checks that a spawner cannot claim a neighboring dungeon's dying boss and receive its defeat
+     * credit. This requires adjacent spawners to exercise the overlapping lookup ranges.
+     */
+    @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 300)
+    public void aNeighbouringDungeonDoesNotClaimAnotherDungeonsKill(GameTestHelper context) {
+        DungeonSpawnerBlockEntity spawner = placeSpawner(context);
+        SpiderBoss boss = spawnLinkedBoss(context, spawner);
+        DungeonSpawnerBlockEntity neighbour = placeSpawner(context, NEIGHBOUR_SPAWNER_POS);
+        SpiderBoss neighbourBoss = spawnLinkedBoss(context, neighbour, NEIGHBOUR_BOSS_POS);
+        // The neighbour's boss stays put for the whole test, as a living boss with someone in its room would.
+        neighbourBoss.entitiesWithinLast = 0;
+
+        boss.hurt(context.getLevel().damageSources().magic(), 1000.0F);
+
+        runAt(context, 215, () -> {
+            if (!boss.isRemoved()) {
+                context.fail("The dead boss's death animation never finished");
+            } else if (neighbour.isBossDefeated) {
+                context.fail("A neighbouring dungeon was credited with a boss it never fought");
+            } else if (!spawner.isBossDefeated) {
+                context.fail("The dungeon whose boss died was not credited with the kill");
+            } else {
+                context.succeed();
+            }
+        });
+    }
+
     private DungeonSpawnerBlockEntity placeSpawner(GameTestHelper context) {
-        context.setBlock(SPAWNER_POS, GCBlocks.BOSS_SPAWNER.defaultBlockState());
-        BlockEntity blockEntity = context.getBlockEntity(SPAWNER_POS);
+        return placeSpawner(context, SPAWNER_POS);
+    }
+
+    private DungeonSpawnerBlockEntity placeSpawner(GameTestHelper context, BlockPos at) {
+        context.setBlock(at, GCBlocks.BOSS_SPAWNER.defaultBlockState());
+        BlockEntity blockEntity = context.getBlockEntity(at);
         if (!(blockEntity instanceof DungeonSpawnerBlockEntity spawner)) {
             throw new IllegalStateException("Boss spawner block did not create its block entity");
         }
 
         spawner.setEntityId(GCEntityTypes.SPIDER_BOSS, context.getLevel().getRandom());
-        BlockPos origin = context.absolutePos(SPAWNER_POS);
+        BlockPos origin = context.absolutePos(at);
         spawner.setRoom(new Vec3i(origin.getX(), origin.getY(), origin.getZ()), new Vec3i(6, 4, 6));
         return spawner;
     }
@@ -121,7 +152,11 @@ public final class DungeonBossDefeatTestSuite implements GalacticraftGameTest {
      * the room is in whenever the boss is finished off from outside it.
      */
     private SpiderBoss spawnLinkedBoss(GameTestHelper context, DungeonSpawnerBlockEntity spawner) {
-        SpiderBoss boss = context.spawnWithNoFreeWill(GCEntityTypes.SPIDER_BOSS, BOSS_POS);
+        return spawnLinkedBoss(context, spawner, BOSS_POS);
+    }
+
+    private SpiderBoss spawnLinkedBoss(GameTestHelper context, DungeonSpawnerBlockEntity spawner, BlockPos at) {
+        SpiderBoss boss = context.spawnWithNoFreeWill(GCEntityTypes.SPIDER_BOSS, at);
         boss.onBossSpawned(spawner);
         spawner.boss = boss;
         spawner.spawned = true;

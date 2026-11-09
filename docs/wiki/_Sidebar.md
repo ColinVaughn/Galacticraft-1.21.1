@@ -1,0 +1,17 @@
+**Galacticraft datapacks**
+
+- [Home](Home)
+- [Datapack structure](Architecture-and-Registries)
+- [Ion engine tutorial](Datapack-Quickstart)
+- [Rocket parts](Rocket-Parts)
+- [Travel predicates](Travel-Predicates)
+- [Rocket upgrades](Rocket-Upgrades)
+- [Research and schematics](Research-and-Schematics)
+- [Recipes and workbench](Recipes-and-Workbench)
+- [Planets and dimensions](Planets-and-Dimensions)
+- [Galaxies and star systems](Galaxies-and-Star-Systems)
+- [Physical spaceflight](Physical-Spaceflight)
+- [Skies and hazards](Skies-and-Hazards)
+- [Models and resources](Rendering-and-Resources)
+- [Oxygen blocks](Other-Integration-Points)
+- [Testing and troubleshooting](Testing-and-Troubleshooting)

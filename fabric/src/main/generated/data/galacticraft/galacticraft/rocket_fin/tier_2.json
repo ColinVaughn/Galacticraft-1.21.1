@@ -1,7 +1,11 @@
 {
   "type": "galacticraft:basic",
   "config": {
-    "can_maneuver": false,
+    "can_maneuver": true,
+    "layout": {
+      "width": 42.8
+    },
+    "paintable": true,
     "predicate": {
       "type": "galacticraft:access_weight",
       "config": {

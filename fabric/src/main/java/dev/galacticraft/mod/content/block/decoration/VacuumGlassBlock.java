@@ -105,8 +105,25 @@ public class VacuumGlassBlock extends Block {
     public void neighborChanged(BlockState state, Level level, BlockPos pos, Block sourceBlock, BlockPos sourcePos, boolean notify) {
         super.neighborChanged(state, level, pos, sourceBlock, sourcePos, notify);
         Direction direction = Direction.fromDelta(sourcePos.getX() - pos.getX(), sourcePos.getY() - pos.getY(), sourcePos.getZ() - pos.getZ());
-        BlockState neighbor = level.getBlockState(sourcePos);
-        assert direction != null;
+        BlockState state1;
+        if (direction != null) {
+            state1 = this.connect(state, level, pos, direction);
+        } else {
+            // Not from a neighbour: a piston that has just pushed this block into place tells it about itself,
+            // and its connections still describe where it came from. The vertical sides compare against the
+            // horizontal ones, so those go first.
+            state1 = state;
+            for (Direction side : Direction.Plane.HORIZONTAL) state1 = this.connect(state1, level, pos, side);
+            for (Direction side : Direction.Plane.VERTICAL) state1 = this.connect(state1, level, pos, side);
+        }
+        Direction.Axis axis = calculateAxis(state);
+        if (axis != null) state1 = state1.setValue(BlockStateProperties.HORIZONTAL_AXIS, axis);
+
+        level.setBlockAndUpdate(pos, state1);
+    }
+
+    private BlockState connect(BlockState state, Level level, BlockPos pos, Direction direction) {
+        BlockState neighbor = level.getBlockState(pos.relative(direction));
         boolean connect = neighbor.getBlock() == this;
         if (connect && direction.getAxis().isVertical()) {
             connect = (neighbor.getValue(BlockStateProperties.NORTH) == state.getValue(BlockStateProperties.NORTH)
@@ -114,12 +131,7 @@ public class VacuumGlassBlock extends Block {
                     && neighbor.getValue(BlockStateProperties.SOUTH) == state.getValue(BlockStateProperties.SOUTH)
                     && neighbor.getValue(BlockStateProperties.WEST) == state.getValue(BlockStateProperties.WEST)) || (calculateAxis(state) != null && calculateAxis(state) == calculateAxis(neighbor));
         }
-
-        BlockState state1 = state.setValue(propertyFromDirection(direction), connect);
-        Direction.Axis axis = calculateAxis(state);
-        if (axis != null) state1 = state1.setValue(BlockStateProperties.HORIZONTAL_AXIS, axis);
-
-        level.setBlockAndUpdate(pos, state1);
+        return state.setValue(propertyFromDirection(direction), connect);
     }
 
     private static @Nullable Direction.Axis calculateAxis(BlockState neighbor) {

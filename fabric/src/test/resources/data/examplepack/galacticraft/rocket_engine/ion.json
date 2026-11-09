@@ -1,0 +1,14 @@
+{
+  "type": "galacticraft:basic",
+  "config": {
+    "fuel_capacity": 162000,
+    "fuel_usage": 6,
+    "model": "galacticraft:models/misc/rocket_engine_tier_2.json",
+    "predicate": {
+      "type": "galacticraft:access_weight",
+      "config": {
+        "weight": 2
+      }
+    }
+  }
+}

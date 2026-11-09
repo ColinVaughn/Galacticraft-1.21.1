@@ -24,6 +24,9 @@ package dev.galacticraft.impl.internal.mixin.client;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import dev.galacticraft.mod.api.dimension.GalacticDimensionEffects;
+import dev.galacticraft.mod.client.render.dimension.MoonDimensionEffects;
+import dev.galacticraft.mod.client.render.dimension.MercuryDimensionEffects;
+import dev.galacticraft.mod.client.render.dimension.AsteroidDimensionEffects;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.content.entity.vehicle.RocketEntity;
 import net.minecraft.client.Minecraft;
@@ -56,6 +59,10 @@ public abstract class ClientLevelMixin extends Level {
     private Vec3 gc$getDimensionSkyColor(Vec3 original, Vec3 pos, float partialTick) {
         if (effects instanceof GalacticDimensionEffects gcEffects) {
             return gcEffects.getSkyColor((ClientLevel) (Object) this, partialTick);
+        } else if (effects instanceof MoonDimensionEffects || effects instanceof MercuryDimensionEffects
+                || effects instanceof AsteroidDimensionEffects) {
+            // Fog setup also blends in sky color; airless skies must not inherit the biome's daytime blue.
+            return Vec3.ZERO;
         } else if (pos.y() > Constant.OVERWORLD_SKYPROVIDER_STARTHEIGHT && this.dimension() == Level.OVERWORLD) {
             float heightOffset = ((float) (pos.y()) - Constant.OVERWORLD_SKYPROVIDER_STARTHEIGHT) / 200.0F;
             heightOffset = Math.max(1.0F - 0.75F * Mth.sqrt(heightOffset), 0.0F);

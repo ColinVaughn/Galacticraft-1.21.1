@@ -22,12 +22,19 @@
 
 package dev.galacticraft.mod.content.block.entity.decoration;
 
+import dev.galacticraft.api.component.GCDataComponents;
+import dev.galacticraft.mod.content.FlagDesigns;
 import dev.galacticraft.mod.content.GCBlockEntityTypes;
+import dev.galacticraft.mod.content.item.FlagItem;
 import dev.galacticraft.mod.content.item.GCItems;
+import dev.galacticraft.mod.spacerace.TeamFlagOwner;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
@@ -35,9 +42,13 @@ import net.minecraft.world.level.block.entity.BannerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class FlagBlockEntity extends BannerBlockEntity {
     protected float yaw = 0;
+    protected @Nullable ResourceLocation design = null;
+    /** The space race team this flag flies for, or null for a banner or preset flag. */
+    protected @Nullable TeamFlagOwner team = null;
 
     public FlagBlockEntity(BlockPos pos, BlockState state, DyeColor baseColor) {
         super(pos, state, baseColor);
@@ -52,6 +63,12 @@ public class FlagBlockEntity extends BannerBlockEntity {
         super.saveAdditional(compound, registryLookup);
 
         compound.putFloat("yaw", this.yaw);
+        if (this.design != null) {
+            compound.putString("design", this.design.toString());
+        }
+        if (this.team != null) {
+            compound.put("team", TeamFlagOwner.CODEC.encodeStart(NbtOps.INSTANCE, this.team).getOrThrow());
+        }
     }
 
     @Override
@@ -59,6 +76,46 @@ public class FlagBlockEntity extends BannerBlockEntity {
         super.loadAdditional(compound, registryLookup);
 
         this.yaw = compound.getFloat("yaw");
+        this.design = compound.contains("design") ? ResourceLocation.tryParse(compound.getString("design")) : null;
+        this.team = compound.contains("team") ? TeamFlagOwner.CODEC.parse(NbtOps.INSTANCE, compound.get("team")).result().orElse(null) : null;
+    }
+
+    @Override
+    protected void applyImplicitComponents(DataComponentInput input) {
+        super.applyImplicitComponents(input);
+        this.design = input.get(GCDataComponents.FLAG_DESIGN);
+        this.team = input.get(GCDataComponents.TEAM_FLAG);
+    }
+
+    @Override
+    protected void collectImplicitComponents(DataComponentMap.Builder builder) {
+        super.collectImplicitComponents(builder);
+        builder.set(GCDataComponents.FLAG_DESIGN, this.design);
+        builder.set(GCDataComponents.TEAM_FLAG, this.team);
+    }
+
+    @Override
+    public void removeComponentsFromTag(CompoundTag tag) {
+        super.removeComponentsFromTag(tag);
+        tag.remove("design");
+        tag.remove("team");
+    }
+
+    public @Nullable ResourceLocation getDesign() {
+        return this.design;
+    }
+
+    public @Nullable TeamFlagOwner getTeam() {
+        return this.team;
+    }
+
+    /** Makes this flag fly for a team, as when an unclaimed team flag is planted. */
+    public void claim(TeamFlagOwner team) {
+        this.team = team;
+        if (this.level != null) {
+            this.setChanged();
+            this.level.sendBlockUpdated(this.getBlockPos(), this.getBlockState(), this.getBlockState(), Block.UPDATE_CLIENTS);
+        }
     }
 
     public float getYaw() {
@@ -75,7 +132,13 @@ public class FlagBlockEntity extends BannerBlockEntity {
 
     @Override
     public @NotNull Component getName() {
-        return super.getCustomName() != null ? super.getCustomName() : this.getBlockState().getBlock().getName();
+        if (super.getCustomName() != null) {
+            return super.getCustomName();
+        }
+        if (this.team != null) {
+            return FlagItem.teamFlagName(this.team);
+        }
+        return this.design != null ? Component.translatable(FlagDesigns.translationKey(this.design)) : this.getBlockState().getBlock().getName();
     }
 
     @Override

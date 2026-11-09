@@ -46,6 +46,11 @@ public class LaunchControllerMenu extends MachineMenu<LaunchControllerBlockEntit
         data.registerInt(() -> this.saveResult, value -> this.saveResult = value);
     }
 
+    @Override
+    public void broadcastChanges() {
+        super.broadcastChanges();
+    }
+
     public void configure(Player player, int frequency, int destination, int condition, int options) {
         if (player.level().isClientSide || !this.stillValid(player) || !this.be.canEdit(player)
                 || player.level().getBlockEntity(this.be.getBlockPos()) != this.be) return;

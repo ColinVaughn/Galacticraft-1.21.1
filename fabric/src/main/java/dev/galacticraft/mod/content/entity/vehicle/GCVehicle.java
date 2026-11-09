@@ -174,7 +174,12 @@ public abstract class GCVehicle extends Entity {
         this.lerpZ = z;
         this.lerpYRot = yaw;
         this.lerpXRot = pitch;
-        this.lerpSteps = 10;
+        this.lerpSteps = interpolationSteps(interpolationSteps);
+    }
+
+    /** Interpolation ticks for a server position update; the long default smooths rockets and buggies. */
+    protected int interpolationSteps(int requested) {
+        return 10;
     }
 
     protected void tickLerp() { // Stolen from the boat class to fix the rocket from bugging out

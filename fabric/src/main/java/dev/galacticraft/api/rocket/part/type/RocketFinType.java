@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +30,7 @@ import dev.galacticraft.api.rocket.part.config.RocketFinConfig;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * The fins of a rocket. Controls how fast the rocket can accelerate.
+ * The fins of a rocket. Controls whether the pilot can steer during powered flight.
  */
 public non-sealed abstract class RocketFinType<C extends RocketFinConfig> implements RocketPartType<C> {
     private final @NotNull MapCodec<RocketFin<C, RocketFinType<C>>> codec;
@@ -48,5 +49,9 @@ public non-sealed abstract class RocketFinType<C extends RocketFinConfig> implem
         return this.codec;
     }
 
+    /**
+     * Returns whether the pilot can pitch, yaw and roll the rocket during powered flight. Fins
+     * that cannot maneuver keep the rocket on a straight climb.
+     */
     public abstract boolean canManeuver(@NotNull C config);
 }

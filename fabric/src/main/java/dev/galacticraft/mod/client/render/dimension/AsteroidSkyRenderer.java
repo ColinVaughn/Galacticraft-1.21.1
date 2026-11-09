@@ -54,47 +54,49 @@ public class AsteroidSkyRenderer extends SpaceSkyRenderer {
         matrices.popPose();
         context.profiler().pop();
 
-        context.profiler().push("sun");
-        matrices.pushPose();
+        if (!SurfaceCelestialRenderer.render(context)) {
+            context.profiler().push("sun");
+            matrices.pushPose();
 
-        matrices.mulPose(Axis.ZP.rotationDegrees(context.world().getTimeOfDay(partialTicks) * 360.0f));
+            matrices.mulPose(Axis.ZP.rotationDegrees(context.world().getTimeOfDay(partialTicks) * 360.0f));
 
-        Matrix4f matrix = matrices.last().pose();
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        float size = 6.0F;
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        RenderSystem.setShaderTexture(0, Constant.CelestialBody.SOL);
-        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-        buffer.addVertex(matrix, -size, 100.0F, -size).setUv(0.0F, 0.0F)
-                .addVertex(matrix, size, 100.0F, -size).setUv(1.0F, 0.0F)
-                .addVertex(matrix, size, 100.0F, size).setUv(1.0F, 1.0F)
-                .addVertex(matrix, -size, 100.0F, size).setUv(0.0F, 1.0F);
-        BufferUploader.drawWithShader(buffer.buildOrThrow());
+            Matrix4f matrix = matrices.last().pose();
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+            float size = 6.0F;
+            RenderSystem.setShader(GameRenderer::getPositionTexShader);
+            RenderSystem.setShaderTexture(0, Constant.CelestialBody.SOL);
+            BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+            buffer.addVertex(matrix, -size, 100.0F, -size).setUv(0.0F, 0.0F)
+                    .addVertex(matrix, size, 100.0F, -size).setUv(1.0F, 0.0F)
+                    .addVertex(matrix, size, 100.0F, size).setUv(1.0F, 1.0F)
+                    .addVertex(matrix, -size, 100.0F, size).setUv(0.0F, 1.0F);
+            BufferUploader.drawWithShader(buffer.buildOrThrow());
 
-        matrices.popPose();
-        context.profiler().pop();
+            matrices.popPose();
+            context.profiler().pop();
 
-        context.profiler().push("earth");
-        matrices.pushPose();
-        matrix = matrices.last().pose();
+            context.profiler().push("earth");
+            matrices.pushPose();
+            matrix = matrices.last().pose();
 
-        size = 1.0F;
-        assert Minecraft.getInstance().player != null;
-        float earthRotation = (float) (context.world().getSharedSpawnPos().getZ() - Minecraft.getInstance().player.getZ()) * 0.01F;
-        matrices.scale(0.6F, 0.6F, 0.6F);
-        matrices.mulPose(Axis.XP.rotationDegrees((context.world().getTimeOfDay(partialTicks) * 360.0F) * 0.001F + earthRotation + 200.0F));
+            size = 1.0F;
+            assert Minecraft.getInstance().player != null;
+            float earthRotation = (float) (context.world().getSharedSpawnPos().getZ() - Minecraft.getInstance().player.getZ()) * 0.01F;
+            matrices.scale(0.6F, 0.6F, 0.6F);
+            matrices.mulPose(Axis.XP.rotationDegrees((context.world().getTimeOfDay(partialTicks) * 360.0F) * 0.001F + earthRotation + 200.0F));
 
-        RenderSystem.setShaderTexture(0, Constant.CelestialBody.EARTH);
+            RenderSystem.setShaderTexture(0, Constant.CelestialBody.EARTH);
 
-        buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-        buffer.addVertex(matrix, -size, -100.0F, size).setUv(0.0F, 1.0F)
-                .addVertex(matrix, size, -100.0F, size).setUv(1.0F, 1.0F)
-                .addVertex(matrix, size, -100.0F, -size).setUv(1.0F, 0.0F)
-                .addVertex(matrix, -size, -100.0F, -size).setUv(0.0F, 0.0F);
-        BufferUploader.drawWithShader(buffer.buildOrThrow());
+            buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+            buffer.addVertex(matrix, -size, -100.0F, size).setUv(0.0F, 1.0F)
+                    .addVertex(matrix, size, -100.0F, size).setUv(1.0F, 1.0F)
+                    .addVertex(matrix, size, -100.0F, -size).setUv(1.0F, 0.0F)
+                    .addVertex(matrix, -size, -100.0F, -size).setUv(0.0F, 0.0F);
+            BufferUploader.drawWithShader(buffer.buildOrThrow());
 
-        context.profiler().pop();
-        matrices.popPose();
+            context.profiler().pop();
+            matrices.popPose();
+        }
 
         RenderSystem.depthMask(true);
         context.profiler().pop();

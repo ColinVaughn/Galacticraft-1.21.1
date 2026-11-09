@@ -57,6 +57,9 @@ Yes, Forge development will start *after* we have a survival-playable alpha buil
 **Will Galacticraft 5 work with Galacticraft 4 addons?**\
 No, Galacticraft 5 is a complete rewrite, and does not have backwards compatibility with the old addon api.
 
+**How do I make a Galacticraft 5 addon?**\
+See the [addon guide](docs/addon-guide.md) for adding rocket parts, rocket tiers, upgrades and planets.
+
 ## Pre-Alpha Builds
 > [!IMPORTANT]
 > Galacticraft 5 is still under development!\

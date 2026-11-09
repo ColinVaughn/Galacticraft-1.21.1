@@ -67,6 +67,15 @@ public class GCConfiguredFeature {
     public static final ResourceKey<ConfiguredFeature<?, ?>> MERCURY_LAVA_LAKE = key("mercury_lava_lake");
     public static final ResourceKey<ConfiguredFeature<?, ?>> MERCURY_CRYSTAL_SCATTER = key("mercury_crystal_scatter");
 
+    // Jupiter lower atmosphere
+    public static final ResourceKey<ConfiguredFeature<?, ?>> JUPITER_HYDROSULFIDE_CRYSTALS = key("jupiter_hydrosulfide_crystals");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> JUPITER_CHARGED_CONDENSATE = key("jupiter_charged_condensate");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> JUPITER_SURVEY_WRECK = key("jupiter_survey_wreck");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> JUPITER_STORM_HARVESTER = key("jupiter_storm_harvester");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> STORMHEART_CITADEL = key("stormheart_citadel");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> JUPITER_WEATHER_STATION = key("jupiter_weather_station");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> JUPITER_RESEARCH_FACILITY = key("jupiter_research_facility");
+
     // Moon surface decoration
     public static final ResourceKey<ConfiguredFeature<?, ?>> MOON_BOULDER = key("moon_boulder");
     public static final ResourceKey<ConfiguredFeature<?, ?>> MOON_OLIVINE_SPIRE = key("moon_olivine_spire");
@@ -126,6 +135,15 @@ public class GCConfiguredFeature {
                 new LakeFeature.Configuration(BlockStateProvider.simple(Blocks.LAVA), BlockStateProvider.simple(GCBlocks.MERCURY_SCARP_ROCK))));
         context.register(MERCURY_CRYSTAL_SCATTER, new ConfiguredFeature<>(Feature.SIMPLE_BLOCK,
                 new SimpleBlockConfiguration(BlockStateProvider.simple(GCBlocks.MERCURY_CRYSTAL_CLUSTER))));
+
+        // Jupiter
+        context.register(JUPITER_HYDROSULFIDE_CRYSTALS, new ConfiguredFeature<>(GCFeatures.JUPITER_HYDROSULFIDE_CRYSTALS, NoneFeatureConfiguration.INSTANCE));
+        context.register(JUPITER_CHARGED_CONDENSATE, new ConfiguredFeature<>(GCFeatures.JUPITER_CHARGED_CONDENSATE, NoneFeatureConfiguration.INSTANCE));
+        context.register(JUPITER_SURVEY_WRECK, new ConfiguredFeature<>(GCFeatures.JUPITER_SURVEY_WRECK, NoneFeatureConfiguration.INSTANCE));
+        context.register(JUPITER_STORM_HARVESTER, new ConfiguredFeature<>(GCFeatures.JUPITER_STORM_HARVESTER, NoneFeatureConfiguration.INSTANCE));
+        context.register(STORMHEART_CITADEL, new ConfiguredFeature<>(GCFeatures.STORMHEART_CITADEL, NoneFeatureConfiguration.INSTANCE));
+        context.register(JUPITER_WEATHER_STATION, new ConfiguredFeature<>(GCFeatures.JUPITER_WEATHER_STATION, NoneFeatureConfiguration.INSTANCE));
+        context.register(JUPITER_RESEARCH_FACILITY, new ConfiguredFeature<>(GCFeatures.JUPITER_RESEARCH_FACILITY, NoneFeatureConfiguration.INSTANCE));
 
         // Moon
         context.register(MOON_BOULDER, new ConfiguredFeature<>(GCFeatures.MOON_BOULDER,

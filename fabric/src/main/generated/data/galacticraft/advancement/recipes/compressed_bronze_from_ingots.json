@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "galacticraft:compressed_bronze_from_ingots"
+        "recipe": "galacticraft:compressing/compressed_bronze_from_ingots"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -26,7 +26,7 @@
   ],
   "rewards": {
     "recipes": [
-      "galacticraft:compressed_bronze_from_ingots"
+      "galacticraft:compressing/compressed_bronze_from_ingots"
     ]
   }
 }

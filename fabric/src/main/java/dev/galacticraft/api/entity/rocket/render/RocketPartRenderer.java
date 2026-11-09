@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +23,11 @@
 
 package dev.galacticraft.api.entity.rocket.render;
 
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.resources.ResourceLocation;
+import dev.galacticraft.impl.client.rocket.render.ScaledModelRocketPartRenderer;
+import dev.galacticraft.impl.client.rocket.render.BakedModelRocketPartRenderer;
+import dev.galacticraft.impl.client.rocket.render.BakedModelItemRocketPartRenderer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.galacticraft.api.rocket.entity.Rocket;
 import net.fabricmc.api.EnvType;
@@ -34,17 +40,43 @@ import net.minecraft.client.renderer.MultiBufferSource;
 @Environment(EnvType.CLIENT)
 public interface RocketPartRenderer {
     /**
-     * Called when this rocket part is being rendered inside a gui/screen.
+     * Renders the rocket part in a GUI.
      *
-     * @param graphics the gui graphics which has various methods for gui rendering; it also contains the matrix stack
-     * @param x
-     * @param y
-     * @param mouseX   the x position of the mouse
-     * @param mouseY   the y position of the mouse
-     * @param delta    time in-between ticks
+     * @param graphics GUI rendering context
+     * @param x horizontal render position
+     * @param y vertical render position
+     * @param mouseX mouse position on the horizontal axis
+     * @param mouseY mouse position on the vertical axis
+     * @param delta partial tick time
      */
     default void renderGUI(GuiGraphics graphics, int x, int y, int mouseX, int mouseY, float delta) {
     }
 
     void render(ClientLevel world, PoseStack matrices, Rocket rocket, MultiBufferSource vertices, float partialTick, int light, int overlay);
+
+    /**
+     * Draws a Galacticraft model tinted with the rocket's color. Addon models use resource paths
+     * such as {@code assets/mymod/models/misc/rocket_cone_tier_4.json}.
+     *
+     * @param model model resource ID, for example {@code mymod:models/misc/rocket_cone_tier_4.json}
+     */
+    static RocketPartRenderer model(ResourceLocation model) {
+        return new BakedModelRocketPartRenderer(model);
+    }
+
+    /**
+     * Like {@link #model}, but scaled and raised, for a model authored at a different size from the
+     * rocket's part slots.
+     *
+     * @param scale   uniform scale applied to the model
+     * @param yOffset extra height, in blocks, applied after the part's mount height
+     */
+    static RocketPartRenderer scaledModel(ResourceLocation model, float scale, float yOffset) {
+        return new ScaledModelRocketPartRenderer(model, scale, yOffset);
+    }
+
+    /** A renderer that draws an item stack, as the stock storage upgrade draws a chest. */
+    static RocketPartRenderer item(ItemStack stack) {
+        return new BakedModelItemRocketPartRenderer(stack, null);
+    }
 }

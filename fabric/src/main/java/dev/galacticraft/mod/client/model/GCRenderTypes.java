@@ -48,6 +48,9 @@ public class GCRenderTypes {
     @Nullable
     private static ShaderInstance spaceGalaxyShader;
 
+    @Nullable
+    private static ShaderInstance spacePlanetShader;
+
     public static final RenderStateShard.ShaderStateShard BUBBLE_SHADER = new RenderStateShard.ShaderStateShard(
             GCRenderTypes::getRendertypeBubbleShader
     );
@@ -65,6 +68,10 @@ public class GCRenderTypes {
     @Nullable
     public static ShaderInstance getSpaceGalaxyShader() {
         return spaceGalaxyShader;
+    }
+
+    public static @Nullable ShaderInstance getSpacePlanetShader() {
+        return spacePlanetShader;
     }
 
     public static final BiFunction<ResourceLocation, Boolean, RenderType> OBJ = Util.memoize(
@@ -146,6 +153,7 @@ public class GCRenderTypes {
             context.register(Constant.id("rendertype_bubble"), DefaultVertexFormat.NEW_ENTITY, shader -> rendertypeBubbleShader = shader);
             context.register(Constant.id("space_star"), DefaultVertexFormat.POSITION_TEX_COLOR, shader -> spaceStarShader = shader);
             context.register(Constant.id("space_galaxy"), DefaultVertexFormat.POSITION, shader -> spaceGalaxyShader = shader);
+            context.register(Constant.id("space_planet"), DefaultVertexFormat.POSITION_TEX_COLOR, shader -> spacePlanetShader = shader);
         });
     }
 }

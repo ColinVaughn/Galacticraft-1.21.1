@@ -23,6 +23,8 @@
 
 package dev.galacticraft.mod.events;
 
+import dev.galacticraft.api.universe.celestialbody.CelestialBodyTags;
+import dev.galacticraft.api.event.CelestialEvents;
 import dev.galacticraft.api.registry.ExtinguishableBlockRegistry;
 import dev.galacticraft.api.registry.AcidTransformItemRegistry;
 import dev.galacticraft.api.registry.AddonRegistries;
@@ -74,8 +76,15 @@ public class GCEventHandlers {
 
     public static void onPlayerChangePlanets(MinecraftServer server, ServerPlayer player, CelestialBody<?, ?> body, CelestialBody<?, ?> fromBody) {
         if (body.type() instanceof Landable landable && player.galacticraft$isCelestialScreenActive() && (player.galacticraft$getCelestialScreenState() == null || player.galacticraft$getCelestialScreenState().canTravel(server.registryAccess(), fromBody, body))) {
+            if (server.registryAccess().registryOrThrow(AddonRegistries.CELESTIAL_BODY).wrapAsHolder(body).is(CelestialBodyTags.GAS_GIANT)
+                    && !dev.galacticraft.mod.content.teleporters.JupiterCelestialTeleporterType.hasEntryShield(player)) {
+                player.sendSystemMessage(Component.translatable("message.galacticraft.jupiter.entry_shield"));
+                return;
+            }
+            if (CelestialEvents.BEFORE_TRAVEL.invoker().beforeTravel(player, body, fromBody).isFalse()) return;
             player.galacticraft$closeCelestialScreen();
             ((CelestialTeleporter) landable.teleporter(body.config()).value()).onEnterAtmosphere(server.getLevel(landable.world(body.config())), player, body, fromBody);
+            CelestialEvents.AFTER_TRAVEL.invoker().afterTravel(player, body, fromBody);
         } else {
             player.connection.disconnect(Component.translatable(Translations.DimensionTp.INVALID_PACKET));
         }
@@ -83,6 +92,9 @@ public class GCEventHandlers {
 
     public static void onWorldTick(ServerLevel level) {
         tickSatelliteReentryPlane(level);
+        level.players().forEach(dev.galacticraft.mod.world.dimension.jupiter.JupiterPressure::tick);
+        dev.galacticraft.mod.world.dimension.jupiter.JupiterStorms.tick(level);
+        dev.galacticraft.mod.world.dimension.jupiter.JupiterFauna.tick(level);
 
         FootprintManager footprintManager = level.galacticraft$getFootprintManager();
         footprintManager.tick(level);

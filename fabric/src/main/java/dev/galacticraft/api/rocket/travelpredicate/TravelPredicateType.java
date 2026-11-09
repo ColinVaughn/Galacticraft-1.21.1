@@ -83,6 +83,12 @@ public abstract class TravelPredicateType<C extends TravelPredicateConfig> {
             return ALLOW;
         }
 
+        /** Alternative rules allow when any rule allows; a block survives only without an allowance. */
+        public Result or(Result other) {
+            if (this == ALLOW || other == ALLOW) return ALLOW;
+            return this == BLOCK || other == BLOCK ? BLOCK : PASS;
+        }
+
         @Override
         public String getSerializedName() {
             return this.name().toLowerCase(Locale.ROOT);

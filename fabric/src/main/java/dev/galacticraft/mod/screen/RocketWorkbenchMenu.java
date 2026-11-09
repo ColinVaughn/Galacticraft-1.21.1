@@ -30,19 +30,21 @@ import dev.galacticraft.api.component.GCDataComponents;
 import dev.galacticraft.api.inventory.MirroredSlot;
 import dev.galacticraft.api.item.Schematic;
 import dev.galacticraft.api.rocket.RocketData;
-import dev.galacticraft.api.rocket.RocketPrefabs;
+import dev.galacticraft.mod.content.rocket.RocketPrefabs;
 import dev.galacticraft.api.rocket.part.RocketPart;
 import dev.galacticraft.api.rocket.part.RocketPartTypes;
 import dev.galacticraft.mod.content.item.RocketModuleItem;
+import dev.galacticraft.mod.machine.workbench.ResearchSources;
 import dev.galacticraft.mod.machine.workbench.RocketRefit;
 import dev.galacticraft.api.rocket.part.RocketUpgrade;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.content.GCRocketParts;
+import dev.galacticraft.mod.util.Translations;
 import dev.galacticraft.mod.content.block.entity.RocketWorkbenchBlockEntity;
 import dev.galacticraft.mod.content.entity.vehicle.Buggy;
 import dev.galacticraft.mod.content.item.GCItems;
 import dev.galacticraft.mod.content.rocket.part.data.ExplosiveRocketData;
-import dev.galacticraft.mod.content.rocket.part.data.RocketUpgradeData;
+import dev.galacticraft.api.rocket.RocketUpgradeData;
 import dev.galacticraft.mod.content.rocket.part.data.StorageRocketData;
 import dev.galacticraft.mod.content.advancements.GCTriggers;
 import dev.galacticraft.mod.machine.storage.VariableSizedContainer;
@@ -50,6 +52,7 @@ import dev.galacticraft.mod.machine.workbench.WorkbenchLayout;
 import dev.galacticraft.mod.machine.workbench.WorkbenchPage;
 import dev.galacticraft.mod.machine.workbench.WorkbenchPageDisplay;
 import dev.galacticraft.mod.machine.workbench.WorkbenchPages;
+import dev.galacticraft.mod.machine.workbench.WorkbenchUpgrades;
 import dev.galacticraft.mod.machine.workbench.WorkbenchSlot;
 import dev.galacticraft.mod.recipe.RocketRecipe;
 import dev.galacticraft.mod.recipe.ModularRocketRecipe;
@@ -93,12 +96,8 @@ import java.util.function.Predicate;
 import static dev.galacticraft.mod.Constant.RocketWorkbench.*;
 
 /**
- * The rocket workbench, which is a flip-book of schematic pages as legacy Galacticraft's NASA
- * workbench was.
- *
- * Each page is one recipe and lays out its own slots, so the menu is rebuilt - by reopening -
- * whenever the player turns a page. The last page is always the unlock page, where a schematic is
- * consumed to reveal the page it belongs to.
+ * Schematic workbench pages with recipe-specific slots. Reopens the menu when the page changes
+ * to rebuild its slot layout. The final page consumes schematics to unlock recipes.
  */
 public class RocketWorkbenchMenu extends AbstractContainerMenu implements VariableSizedContainer.Listener, ContainerListener {
     public static final int BUTTON_BACK = 0;
@@ -115,6 +114,7 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
     private final WorkbenchPageDisplay display;
 
     private List<Component> missingResearch = List.of();
+    private List<ResourceLocation> missingResearchIds = List.of();
 
     private boolean coneComplete;
     private boolean bodyComplete;
@@ -142,6 +142,10 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
             this.workbench.ingredients.addListener(this);
             this.workbench.chests.addListener(this);
         }
+        // Sync advancement research sources before the client renders locked-part hints.
+        if (playerInventory.player instanceof ServerPlayer serverPlayer) {
+            ResearchSources.sync(serverPlayer);
+        }
 
         this.pages = pagesIncluding(playerInventory.player, pageId);
         this.page = resolvePage(this.pages, pageId);
@@ -166,13 +170,8 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
     }
 
     /**
-     * The player's pages, plus {@code pageId} itself if it names a real recipe the player is not
-     * shown yet.
-     *
-     * The server picks the page and both sides lay their slots out from it. A client whose
-     * research has not caught up would otherwise build a different page from the server, and its
-     * slot indices would no longer line up - items would appear in the wrong wells. Trusting the
-     * requested page keeps the two in step; the server is still the one that decides what opens.
+     * Includes the server-selected recipe even when client research has not synced yet, keeping
+     * slot indices aligned. The server still controls page access.
      */
     private static List<WorkbenchPage> pagesIncluding(Player player, @Nullable ResourceLocation pageId) {
         List<WorkbenchPage> pages = WorkbenchPages.visible(player.level(), player);
@@ -253,16 +252,20 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
         } else {
             this.addSlot(new FilteredSlot(this.workbench.schematic, 0, ADD_SCHEMATIC_SLOT_X, ADD_SCHEMATIC_SLOT_Y,
                     stack -> stack.getItem() instanceof Schematic
-                            && WorkbenchPages.pageUnlockedBy(this.playerInventory.player.level(), stack.getItem()) != null));
+                            && WorkbenchPages.pageUnlockedBy(this.playerInventory.player.level(), stack) != null));
         }
 
         List<WorkbenchLayout.Position> chests = this.display.chestSlots();
         for (int chest = 0; chest < chests.size() && chest < RocketWorkbenchBlockEntity.CHEST_SLOTS; ++chest) {
             final int index = chest;
-            this.addSlot(new FilteredSlot(this.workbench.chests, index, chests.get(chest).x(), chests.get(chest).y(),
-                    stack -> !this.isRefitting() && this.workbench.chests.canPlaceItem(index, stack)) {
-                @Override public boolean mayPickup(Player player) { return !isRefitting(); }
-            }.withBackground(Constant.SlotSprite.CHEST));
+            FilteredSlot slot = this.recipe != null && this.recipe.value() instanceof ModularRocketRecipe && index < 2
+                    ? new RefitPartSlot(this.workbench.chests, index, chests.get(chest).x(), chests.get(chest).y(),
+                            stack -> this.workbench.chests.canPlaceItem(index, stack), index == 0 ? RocketPartTypes.UPGRADE : RocketPartTypes.BOOSTER)
+                    : new FilteredSlot(this.workbench.chests, index, chests.get(chest).x(), chests.get(chest).y(),
+                            stack -> !this.isRefitting() && this.workbench.chests.canPlaceItem(index, stack)) {
+                        @Override public boolean mayPickup(Player player) { return !isRefitting(); }
+                    };
+            this.addSlot(slot.withBackground(Constant.SlotSprite.CHEST));
         }
 
         if (this.display.resultSlot() != null) {
@@ -377,11 +380,15 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
         if (!(stack.getItem() instanceof Schematic)) return false;
 
         Item schematic = stack.getItem();
-        RecipeHolder<? extends WorkbenchRecipe> unlocked = WorkbenchPages.pageUnlockedBy(player.level(), schematic);
+        RecipeHolder<? extends WorkbenchRecipe> unlocked = WorkbenchPages.pageUnlockedBy(player.level(), stack);
         if (unlocked == null) return false;
 
         ResourceLocation unlockId = WorkbenchPages.unlockId(BuiltInRegistries.ITEM.getKey(schematic));
-        if (((ResearchAccessor) player).galacticraft$isUnlocked(unlockId)) {
+        // A part schematic is spent once per set of parts: one generic schematic item can carry many.
+        List<ResourceLocation> parts = WorkbenchPages.rocketPartsUnlockedBy(stack).stream().map(RocketPart::researchId).toList();
+        ResearchAccessor research = (ResearchAccessor) player;
+        boolean known = parts.isEmpty() ? research.galacticraft$isUnlocked(unlockId) : parts.stream().allMatch(research::galacticraft$isUnlocked);
+        if (known) {
             // Creative players are considered to know every page, and survival players may insert
             // a second copy of a schematic they already spent. In either case the button should
             // still turn to that schematic's page instead of appearing to do nothing.
@@ -389,7 +396,9 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
             return true;
         }
 
-        ((ServerResearchAccessor) serverPlayer).galacticraft$unlockRocketPartRecipes(unlockId);
+        List<ResourceLocation> granted = new ArrayList<>(parts);
+        granted.add(unlockId);
+        ((ServerResearchAccessor) serverPlayer).galacticraft$unlockRocketPartRecipes(granted.toArray(new ResourceLocation[0]));
         GCTriggers.UNLOCK_SCHEMATIC.trigger(serverPlayer, stack);
         stack.shrink(1);
         this.workbench.schematic.setItem(0, stack);
@@ -599,10 +608,14 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
         RocketData data = RocketRefit.data(this.refitRocket());
         if (RocketRefit.hasPart(data, slot.type) && RocketRefit.module(data, slot.type).isEmpty()) return false;
         if (incoming.isEmpty()) return true;
-        if (!(incoming.getItem() instanceof RocketModuleItem module) || module.type() != slot.type || incoming.getCount() != 1 || RocketRefit.module(module.rocketData(), slot.type).isEmpty()) return false;
-        ResourceKey<?> key = RocketRefit.key(module.rocketData(), slot.type).orElse(null);
-        if (key == null || !((ResearchAccessor) player).galacticraft$isUnlocked(GCRocketParts.recipeId(key))) {
-            player.displayClientMessage(Component.translatable("gui.galacticraft.rocket_refit.research", slot.type.name), true);
+        if (!(incoming.getItem() instanceof RocketModuleItem module) || module.type(incoming) != slot.type || incoming.getCount() != 1 || RocketRefit.module(module.rocketData(incoming), slot.type).isEmpty()) return false;
+        ResourceKey<?> key = RocketRefit.key(module.rocketData(incoming), slot.type).orElse(null);
+        if (key == null || slot.type != RocketPartTypes.UPGRADE && !((ResearchAccessor) player).galacticraft$isUnlocked(GCRocketParts.recipeId(key))) {
+            Component source = key == null || !(player instanceof ServerPlayer serverPlayer) ? null
+                    : ResearchSources.describe(serverPlayer.server).get(GCRocketParts.recipeId(key));
+            player.displayClientMessage(source == null
+                    ? Component.translatable("gui.galacticraft.rocket_refit.research", slot.type.name)
+                    : Component.translatable(Translations.RocketWorkbench.REFIT_RESEARCH_SOURCE, slot.type.name, source), true);
             return false;
         }
         return true;
@@ -653,7 +666,8 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
 
     private ItemStack quickMoveRefitModule(Player player, Slot slot) {
         if (!(slot.getItem().getItem() instanceof RocketModuleItem module)) return ItemStack.EMPTY;
-        RefitPartSlot part = this.slots.stream().filter(candidate -> candidate instanceof RefitPartSlot refit && refit.type == module.type())
+        RocketPartTypes moduleType = module.type(slot.getItem());
+        RefitPartSlot part = this.slots.stream().filter(candidate -> candidate instanceof RefitPartSlot refit && refit.type == moduleType)
                 .map(candidate -> (RefitPartSlot) candidate).findFirst().orElse(null);
         if (part == null || !part.getItem().isEmpty() && !this.hasInventorySpace(player)) return ItemStack.EMPTY;
         ItemStack incoming = slot.getItem().copy();
@@ -667,7 +681,10 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
     private class RefitPartSlot extends FilteredSlot {
         private final RocketPartTypes type;
         private RefitPartSlot(int index, int x, int y, Predicate<ItemStack> filter, RocketPartTypes type) {
-            super(workbench.ingredients, index, x, y, filter);
+            this(workbench.ingredients, index, x, y, filter, type);
+        }
+        private RefitPartSlot(Container container, int index, int x, int y, Predicate<ItemStack> filter, RocketPartTypes type) {
+            super(container, index, x, y, filter);
             this.type = type;
         }
         @Override public ItemStack getItem() { return isRefitting() ? RocketRefit.module(RocketRefit.data(refitRocket()), type) : super.getItem(); }
@@ -678,22 +695,13 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
     }
 
     private RocketData withWorkbenchUpgrade(RocketData base) {
-        ItemStack upgradeStack = this.workbench.chests.getItem(0);
-
         Optional<EitherHolder<RocketUpgrade<?, ?>>> upgrade = Optional.empty();
         Optional<RocketUpgradeData> upgradeData = Optional.empty();
 
-        if (upgradeStack.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof TntBlock tntBlock) {
-            upgrade = Optional.of(new EitherHolder<>(GCRocketParts.EXPLOSIVE_UPGRADE));
-            upgradeData = Optional.of(new ExplosiveRocketData(BuiltInRegistries.BLOCK.getKey(tntBlock)));
-        } else {
-            // Chests may go in any of the three slots; the rocket's cargo scales with how many are installed.
-            int chests = this.installedChests();
-
-            if (chests > 0) {
-                upgrade = Optional.of(new EitherHolder<>(GCRocketParts.STORAGE_UPGRADE));
-                upgradeData = Optional.of(new StorageRocketData(chests));
-            }
+        var installed = WorkbenchUpgrades.installed(this.playerInventory.player.registryAccess(), this.workbench.chests);
+        if (installed.isPresent()) {
+            upgrade = Optional.of(new EitherHolder<>(installed.get().key()));
+            upgradeData = WorkbenchUpgrades.data(this.playerInventory.player.registryAccess(), this.workbench.chests);
         }
 
         return new RocketData(
@@ -706,16 +714,6 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
                 upgradeData,
                 base.color(), base.paint(), base.tints()
         );
-    }
-
-    private int installedChests() {
-        int chests = 0;
-        for (int slot = 0; slot < this.workbench.chests.getContainerSize(); ++slot) {
-            if (this.workbench.chests.getItem(slot).is(GCItemTags.ROCKET_STORAGE_UPGRADE_ITEMS)) {
-                ++chests;
-            }
-        }
-        return chests;
     }
 
     public RocketData previewRocket() {
@@ -753,6 +751,7 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
     public void onItemChanged() {
         if (this.isRefitting()) {
             this.missingResearch = List.of();
+            this.missingResearchIds = List.of();
             if (this.workbench.getLevel() instanceof ServerLevel) this.workbench.output.clearContent();
             return;
         }
@@ -760,7 +759,9 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
 
         // Worked out on both sides: an empty result slot otherwise gives the player no clue that
         // research, rather than a missing part, is what is blocking the build.
-        this.missingResearch = matches ? this.lockedParts(this.resultRocketData()) : List.of();
+        List<LockedPart> locked = matches ? this.lockedParts(this.resultRocketData()) : List.of();
+        this.missingResearch = locked.stream().map(LockedPart::name).toList();
+        this.missingResearchIds = locked.stream().map(LockedPart::research).toList();
 
         // The server owns the result slot. Recomputing it on the client can erase the
         // synchronized result when research data has not arrived yet after login.
@@ -784,10 +785,8 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
     }
 
     /**
-     * The rocket this page builds, or null if it builds something else. A buggy or an astro miner
-     * carries no rocket data, and must not be gated on rocket-part research it has nothing to do
-     * with - defaulting to tier-1 data here would block those pages for anyone who has not
-     * researched a tier-1 rocket.
+     * Returns rocket data for this page, or {@code null} for non-rocket recipes. Buggy and astro miner
+     * recipes must not require rocket-part research.
      */
     private @Nullable RocketData resultRocketData() {
         if (this.recipe == null) return null;
@@ -798,7 +797,7 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
     private ItemStack buildResult() {
         ItemStack result = this.recipe.value().assemble(this.workbench.ingredients.asInput(), this.registries());
 
-        if (result.has(GCDataComponents.ROCKET_DATA)) {
+        if (result.has(GCDataComponents.ROCKET_DATA) && !(result.getItem() instanceof RocketModuleItem)) {
             result.set(GCDataComponents.ROCKET_DATA, this.withWorkbenchUpgrade(result.get(GCDataComponents.ROCKET_DATA)));
         } else if (result.is(GCItems.BUGGY)) {
             // Legacy's buggy bench read its addon wells as the buggy's storage tier.
@@ -820,11 +819,11 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
     }
 
     /**
-     * Names the structural parts of {@code data} the player has not researched yet. Both sides can
+     * The structural parts of {@code data} the player has not researched yet. Both sides can
      * work this out - the client keeps its own copy of the player's unlocks - so the screen can
      * explain an empty result slot without asking the server.
      */
-    private List<Component> lockedParts(@Nullable RocketData data) {
+    private List<LockedPart> lockedParts(@Nullable RocketData data) {
         Player player = this.playerInventory.player;
         if (data == null || player == null) {
             return List.of();
@@ -832,7 +831,7 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
 
         ResearchAccessor research = (ResearchAccessor) player;
         HolderLookup.Provider lookup = player.level().registryAccess();
-        List<Component> locked = new ArrayList<>();
+        List<LockedPart> locked = new ArrayList<>();
         addIfLocked(locked, research, lookup, data.cone());
         addIfLocked(locked, research, lookup, data.body());
         addIfLocked(locked, research, lookup, data.fin());
@@ -841,14 +840,14 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
         return locked;
     }
 
-    private static <T extends RocketPart<?, ?>> void addIfLocked(List<Component> locked, ResearchAccessor research, HolderLookup.Provider lookup, Optional<EitherHolder<T>> part) {
+    private static <T extends RocketPart<?, ?>> void addIfLocked(List<LockedPart> locked, ResearchAccessor research, HolderLookup.Provider lookup, Optional<EitherHolder<T>> part) {
         if (part.isEmpty()) {
             return;
         }
         ResourceKey<T> key = part.get().unwrap(lookup).flatMap(Holder::unwrapKey).orElse(null);
         // Fail open if the registry lookup is missing; the server still validates the output.
         if (key != null && !research.galacticraft$isUnlocked(GCRocketParts.recipeId(key))) {
-            locked.add(RocketPart.getName(key));
+            locked.add(new LockedPart(GCRocketParts.recipeId(key), RocketPart.getName(key)));
         }
     }
 
@@ -857,6 +856,14 @@ public class RocketWorkbenchMenu extends AbstractContainerMenu implements Variab
      */
     public List<Component> getMissingResearch() {
         return this.missingResearch;
+    }
+
+    private record LockedPart(ResourceLocation research, Component name) {
+    }
+
+    /** The research ids behind {@link #getMissingResearch()}, in the same order. */
+    public List<ResourceLocation> getMissingResearchIds() {
+        return this.missingResearchIds;
     }
 
     @Override

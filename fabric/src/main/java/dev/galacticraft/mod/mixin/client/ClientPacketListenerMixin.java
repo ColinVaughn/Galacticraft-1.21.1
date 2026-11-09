@@ -35,6 +35,19 @@ import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(ClientPacketListener.class)
 public class ClientPacketListenerMixin {
+    @org.spongepowered.asm.mixin.injection.Inject(method = "handleRespawn", at = @At("HEAD"))
+    private void galacticraft$flightRespawn(net.minecraft.network.protocol.game.ClientboundRespawnPacket packet,
+                                           org.spongepowered.asm.mixin.injection.callback.CallbackInfo ci) {
+        if (net.minecraft.client.Minecraft.getInstance().isSameThread())
+            dev.galacticraft.mod.client.render.dimension.SpaceflightTransition.onRespawn(packet.commonPlayerSpawnInfo().dimension());
+    }
+
+    @org.spongepowered.asm.mixin.injection.Inject(method = "handleRespawn", at = @At("RETURN"))
+    private void galacticraft$finishFlightRespawn(net.minecraft.network.protocol.game.ClientboundRespawnPacket packet,
+                                                 org.spongepowered.asm.mixin.injection.callback.CallbackInfo ci) {
+        dev.galacticraft.mod.client.render.dimension.SpaceflightTransition.onRespawnFinished();
+    }
+
     @WrapWithCondition(method = "handleSetEntityPassengersPacket", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;setOverlayMessage(Lnet/minecraft/network/chat/Component;Z)V"))
     private boolean shouldShowOverylay(Gui instance, Component message, boolean tinted, @Local(index = 2) Entity vehicle) {
         if (vehicle instanceof IgnoreShift ignoreShift)

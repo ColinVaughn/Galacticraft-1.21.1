@@ -6,6 +6,7 @@
       "galacticraft:mars_channel_carver"
     ]
   },
+  "creature_spawn_probability": 0.01,
   "downfall": 0.0,
   "effects": {
     "fog_color": 7224106,
@@ -53,7 +54,14 @@
   "spawners": {
     "ambient": [],
     "axolotls": [],
-    "creature": [],
+    "creature": [
+      {
+        "type": "galacticraft:curiosity_rover",
+        "maxCount": 1,
+        "minCount": 1,
+        "weight": 1
+      }
+    ],
     "misc": [],
     "monster": [
       {

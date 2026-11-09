@@ -67,7 +67,7 @@ public class OxygenTanksRenderLayer<T extends LivingEntity, M extends EntityMode
             this.xRot = Mth.HALF_PI;
             y = -5.0F;
             z = 4.01F;
-        } else if (context.getModel() instanceof HierarchicalModel<?> model) {
+        } else if (context.getModel() instanceof HierarchicalModel<?> model && model.root().hasChild(PartNames.BODY)) {
             this.body = model.root().getChild(PartNames.BODY);
         } else if (context.getModel() instanceof HumanoidModel<?> model) {
             this.body = model.body;
@@ -121,7 +121,7 @@ public class OxygenTanksRenderLayer<T extends LivingEntity, M extends EntityMode
             matrices.translate(-0.25F, 0.0F, 0.0F);
             tank2.copyFrom(this.body);
             if (this.xRot != 0.0F) {
-                tank1.xRot = this.xRot;
+                tank2.xRot = this.xRot;
             }
             tank2.render(matrices, vertexConsumer, light, OverlayTexture.NO_OVERLAY);
         }

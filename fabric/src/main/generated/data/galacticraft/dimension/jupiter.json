@@ -1,0 +1,120 @@
+{
+  "type": "galacticraft:jupiter",
+  "generator": {
+    "type": "minecraft:noise",
+    "biome_source": {
+      "type": "minecraft:multi_noise",
+      "biomes": [
+        {
+          "biome": "galacticraft:jupiter_cloudlands",
+          "parameters": {
+            "continentalness": 0.0,
+            "depth": 0.0,
+            "erosion": 0.0,
+            "humidity": [
+              -1.0,
+              1.0
+            ],
+            "offset": 0.0,
+            "temperature": [
+              -1.0,
+              -0.3
+            ],
+            "weirdness": 0.0
+          }
+        },
+        {
+          "biome": "galacticraft:jupiter_crystal_fronts",
+          "parameters": {
+            "continentalness": 0.0,
+            "depth": 0.0,
+            "erosion": 0.0,
+            "humidity": [
+              -1.0,
+              1.0
+            ],
+            "offset": 0.0,
+            "temperature": [
+              -0.3,
+              0.2
+            ],
+            "weirdness": 0.0
+          }
+        },
+        {
+          "biome": "galacticraft:jupiter_amber_belts",
+          "parameters": {
+            "continentalness": 0.0,
+            "depth": 0.0,
+            "erosion": 0.0,
+            "humidity": [
+              -0.55,
+              0.55
+            ],
+            "offset": 0.0,
+            "temperature": [
+              0.2,
+              1.0
+            ],
+            "weirdness": 0.0
+          }
+        },
+        {
+          "biome": "galacticraft:jupiter_amber_belts",
+          "parameters": {
+            "continentalness": 0.0,
+            "depth": 0.0,
+            "erosion": 0.0,
+            "humidity": [
+              -1.0,
+              -0.55
+            ],
+            "offset": 0.0,
+            "temperature": [
+              0.2,
+              0.5
+            ],
+            "weirdness": 0.0
+          }
+        },
+        {
+          "biome": "galacticraft:jupiter_red_vortex",
+          "parameters": {
+            "continentalness": 0.0,
+            "depth": 0.0,
+            "erosion": 0.0,
+            "humidity": [
+              -1.0,
+              -0.55
+            ],
+            "offset": 0.0,
+            "temperature": [
+              0.5,
+              1.0
+            ],
+            "weirdness": 0.0
+          }
+        },
+        {
+          "biome": "galacticraft:jupiter_calm_eye",
+          "parameters": {
+            "continentalness": 0.0,
+            "depth": 0.0,
+            "erosion": 0.0,
+            "humidity": [
+              0.55,
+              1.0
+            ],
+            "offset": 0.0,
+            "temperature": [
+              0.2,
+              1.0
+            ],
+            "weirdness": 0.0
+          }
+        }
+      ]
+    },
+    "settings": "galacticraft:jupiter"
+  }
+}

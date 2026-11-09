@@ -23,6 +23,7 @@
 package dev.galacticraft.mod.mixin;
 
 import dev.galacticraft.mod.accessor.GCLevelAccessor;
+import dev.galacticraft.mod.machine.OxygenBubbleManager;
 import dev.galacticraft.mod.machine.SealerManager;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
@@ -32,9 +33,16 @@ import org.spongepowered.asm.mixin.Unique;
 public class LevelMixin implements GCLevelAccessor {
     @Unique
     private final SealerManager sealerManager = new SealerManager((Level) (Object) this);
+    @Unique
+    private final OxygenBubbleManager bubbleManager = new OxygenBubbleManager((Level) (Object) this);
 
     @Override
     public SealerManager galacticraft$getSealerManager() {
         return sealerManager;
+    }
+
+    @Override
+    public OxygenBubbleManager galacticraft$getBubbleManager() {
+        return bubbleManager;
     }
 }

@@ -1,7 +1,7 @@
 package dev.galacticraft.mod.gametest;
 
 import dev.galacticraft.api.rocket.LaunchStage;
-import dev.galacticraft.api.rocket.RocketPrefabs;
+import dev.galacticraft.mod.content.rocket.RocketPrefabs;
 import dev.galacticraft.mod.attachments.GCServerPlayer;
 import dev.galacticraft.mod.content.GCBlocks;
 import dev.galacticraft.mod.content.GCEntityTypes;
@@ -157,6 +157,10 @@ public class RocketManualLandingTestSuite implements GalacticraftGameTest {
             int direction = i % keys.length;
             boolean zeroImpulses = i >= keys.length;
             context.onEachTick(() -> {
+                // Mock clients do not update movement tickets. Keep adjacent chunks entity-ticking too,
+                // so crossing a boundary cannot pause deceleration before the release assertion.
+                context.getLevel().getChunkSource().addRegionTicket(net.minecraft.server.level.TicketType.POST_TELEPORT,
+                        new net.minecraft.world.level.ChunkPos(rocket.blockPosition()), 3, rocket.getId());
                 // Mounted movement impulses can be zero even while the WASD key states are held.
                 if (context.getTick() <= 30) new ControlEntityPayload(zeroImpulses ? 0 : strafe[direction], zeroImpulses ? 0 : forward[direction],
                         forward[direction] > 0, forward[direction] < 0, strafe[direction] > 0, strafe[direction] < 0,

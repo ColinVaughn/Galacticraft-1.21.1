@@ -22,11 +22,10 @@
 
 package dev.galacticraft.impl.internal.mixin.gear;
 
-import dev.galacticraft.api.entity.attribute.GcApiEntityAttributes;
+import dev.galacticraft.mod.content.entity.SpaceEvolution;
 import dev.galacticraft.impl.internal.accessor.LivingEntityOxygenAccessor;
 import dev.galacticraft.mod.content.entity.damage.GCDamageTypes;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -64,8 +63,8 @@ abstract class NeoLivingEntityMixin {
             return;
         }
 
-        AttributeInstance attribute = entity.getAttribute(GcApiEntityAttributes.CAN_BREATHE_IN_SPACE);
-        boolean canBreathe = attribute != null && attribute.getValue() >= 0.99D;
+        // Space-evolved mobs share the no-air requirement with mobs carrying the attribute.
+        boolean canBreathe = SpaceEvolution.breathesInSpace(entity);
         boolean breathable = ((LivingEntityOxygenAccessor) entity).galacticraft$isEyePositionBreathable();
         if (breathable || canBreathe || ((LivingEntityOxygenAccessor) entity).galacticraft$isEyeInNonBreathableFluid()
                 || entity instanceof Player player && player.getAbilities().invulnerable) {

@@ -76,12 +76,15 @@ public class LaunchControllerBlockEntity extends MachineBlockEntity {
     @Override
     protected void tickConstant(ServerLevel level, BlockPos pos, BlockState state, ProfilerFiller profiler) {
         this.chargeFromSlot(0);
-        if (level.getGameTime() % 20 == 0) {
-            this.keepLoaded(level);
-            if (CargoPadRegistry.isValidAddress(this.frequency) && !this.hasValidFrequency()) {
-                CargoPadRegistry.get(level.getServer()).assign(level.getServer(), this.frequency,
-                        CargoPadRegistry.PadTarget.of(level, pos));
-            }
+        if (level.getGameTime() % 20 == 0) this.refreshRoute(level);
+    }
+
+    private void refreshRoute(ServerLevel level) {
+        if (this.isRemoved() || level.getBlockEntity(this.worldPosition) != this) return;
+        this.keepLoaded(level);
+        if (CargoPadRegistry.isValidAddress(this.frequency) && !this.hasValidFrequency()) {
+            CargoPadRegistry.get(level.getServer()).assign(level.getServer(), this.frequency,
+                    CargoPadRegistry.PadTarget.of(level, this.worldPosition));
         }
     }
 
@@ -106,9 +109,19 @@ public class LaunchControllerBlockEntity extends MachineBlockEntity {
             this.resetSchedule();
             return MachineStatuses.NOT_ENOUGH_ENERGY;
         }
+        this.tickPoweredSchedule(level);
+        return MachineStatuses.ACTIVE;
+    }
+
+    private void tickPoweredSchedule(ServerLevel level) {
+        if (this.isRemoved() || level.getBlockEntity(this.worldPosition) != this) return;
+        if (this.isDisabled() || !this.hasOption(ENABLED) || !this.energyStorage().canExtract(ENERGY_PER_TICK)) {
+            this.resetSchedule();
+            return;
+        }
+        // Keep the route decision and its energy debit in one operation.
         this.tickSchedule(level);
         this.energyStorage().extract(ENERGY_PER_TICK);
-        return MachineStatuses.ACTIVE;
     }
 
     @Override
@@ -117,9 +130,13 @@ public class LaunchControllerBlockEntity extends MachineBlockEntity {
     }
 
     private void tickSchedule(ServerLevel level) {
+        if (!this.hasOption(SCHEDULING)) {
+            this.resetSchedule();
+            return;
+        }
         LaunchPadBlockEntity pad = this.getConnectedPad();
         Dockable rocket = pad == null ? null : pad.getDockedEntity();
-        if (!this.hasOption(SCHEDULING) || !this.hasValidFrequency() || !this.hasValidDestination()
+        if (!this.hasValidFrequency() || !this.hasValidDestination()
                 || !(rocket instanceof CargoRocketEntity || rocket instanceof RocketEntity)
                 || rocket.inFlight()
                 || rocket instanceof RocketEntity crewed && (crewed.getPassengers().isEmpty()

@@ -52,7 +52,7 @@ public abstract class PlayerListMixin {
 
         // Repair saves whose advancements completed before those advancements granted research,
         // then restore the persisted rocket-part research on the joining client.
-        ServerResearchAccessor.galacticraft$backfillFromAdvancements(player);
+        dev.galacticraft.mod.machine.workbench.ResearchBackfill.backfillFromAdvancements(player);
         ((ServerResearchAccessor) player).galacticraft$syncResearch();
 
         // Sync the list of satellites with new players

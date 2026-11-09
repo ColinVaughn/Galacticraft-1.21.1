@@ -119,7 +119,10 @@ public class DungeonSpawnerBlockEntity extends BlockEntity implements Spawner {
         final List<? extends Entity> l = level.getEntities(bossType, this.range15, e -> !e.isRemoved());
 
         for (final Entity e : l) {
-            this.boss = (AbstractBossEntity) e;
+            AbstractBossEntity found = (AbstractBossEntity) e;
+            // Relink only unclaimed bosses or our own; claiming a neighbor's boss misattributes its defeat.
+            if (found.belongsToAnotherSpawner(this)) continue;
+            this.boss = found;
             this.spawned = true;
             this.isBossDefeated = false;
             this.boss.onBossSpawned(this);

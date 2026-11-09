@@ -24,6 +24,8 @@ package dev.galacticraft.mod.world.dimension;
 
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.tag.GCBlockTags;
+import dev.galacticraft.mod.world.gen.JupiterWorldgen;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
@@ -35,13 +37,21 @@ import org.jetbrains.annotations.NotNull;
 import java.util.OptionalLong;
 
 public class GCDimensionTypes {
+    public static final ResourceKey<DimensionType> SOLAR_SYSTEM = key("solar_system");
     public static final ResourceKey<DimensionType> MOON = key("moon");
     public static final ResourceKey<DimensionType> VENUS = key("venus");
     public static final ResourceKey<DimensionType> MARS = key("mars");
     public static final ResourceKey<DimensionType> MERCURY = key("mercury");
     public static final ResourceKey<DimensionType> ASTEROID = key("asteroid");
+    public static final ResourceKey<DimensionType> JUPITER = key("jupiter");
 
     public static void bootstrapRegistries(BootstrapContext<DimensionType> context) {
+        context.register(SOLAR_SYSTEM, new DimensionType(
+                OptionalLong.of(18000), false, false, false, false, 1.0,
+                false, false, -64, 384, 384, BlockTags.INFINIBURN_OVERWORLD,
+                Constant.id("solar_system"), 0.15F,
+                new DimensionType.MonsterSettings(false, false, UniformInt.of(0, 0), 0)
+        ));
         context.register(MOON, new DimensionType(
                 OptionalLong.empty(), // fixedTime
                 true, // hasSkyLight
@@ -55,7 +65,7 @@ public class GCDimensionTypes {
                 384, // height
                 384, // logicalHeight
                 GCBlockTags.INFINIBURN_MOON, // infiniburn
-                Constant.id("moon"), // fixme: GCDimensionEffects somehow seems to load client classes
+                Constant.id("moon"), // TODO: Use shared dimension effects without loading client classes.
                 0.1f, // ambientLight
                 new DimensionType.MonsterSettings(false, false, UniformInt.of(0, 7), 0)
         ));
@@ -73,7 +83,7 @@ public class GCDimensionTypes {
                 384, // height
                 384, // logicalHeight
                 GCBlockTags.INFINIBURN_VENUS, // infiniburn
-                Constant.id("venus"), // effectsLocation // fixme
+                Constant.id("venus"), // effectsLocation
                 0.1F, // ambientLight
                 new DimensionType.MonsterSettings(false, false, UniformInt.of(0, 7), 0)
         ));
@@ -90,7 +100,7 @@ public class GCDimensionTypes {
                 384, // height
                 384, // logicalHeight
                 GCBlockTags.INFINIBURN_MARS, // infiniburn
-                Constant.id("mars"), // effectsLocation // fixme
+                Constant.id("mars"), // effectsLocation
                 0.1F, // ambientLight
                 new DimensionType.MonsterSettings(false, false, UniformInt.of(0, 7), 0)
         ));
@@ -107,7 +117,7 @@ public class GCDimensionTypes {
                 384, // height
                 384, // logicalHeight
                 GCBlockTags.INFINIBURN_MERCURY, // infiniburn
-                Constant.id("mercury"), // effectsLocation // fixme
+                Constant.id("mercury"), // effectsLocation
                 0.1F, // ambientLight
                 new DimensionType.MonsterSettings(false, false, UniformInt.of(0, 7), 0)
         ));
@@ -124,8 +134,18 @@ public class GCDimensionTypes {
                 384, // height
                 384, // logicalHeight
                 GCBlockTags.INFINIBURN_ASTEROID, // infiniburn
-                Constant.id("asteroid"), // effectsLocation // fixme
+                Constant.id("asteroid"), // effectsLocation
                 0.05F, // ambientLight
+                new DimensionType.MonsterSettings(false, false, UniformInt.of(0, 7), 0)
+        ));
+        context.register(JUPITER, new DimensionType(
+                OptionalLong.empty(), true, false, false, false, 1.0,
+                true, false,
+                JupiterWorldgen.MIN_Y,
+                JupiterWorldgen.HEIGHT,
+                JupiterWorldgen.HEIGHT,
+                BlockTags.INFINIBURN_OVERWORLD,
+                Constant.id("jupiter"), 0.08F,
                 new DimensionType.MonsterSettings(false, false, UniformInt.of(0, 7), 0)
         ));
     }

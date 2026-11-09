@@ -1,0 +1,12 @@
+{
+  "type": "galacticraft:solar_system",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "biome": "galacticraft:space",
+      "features": false,
+      "lakes": false,
+      "layers": []
+    }
+  }
+}

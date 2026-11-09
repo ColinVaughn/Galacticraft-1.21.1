@@ -51,9 +51,6 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.RandomSource;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -63,7 +60,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -124,16 +120,9 @@ public class CoalGeneratorBlockEntity extends MachineBlockEntity implements Coal
         this.drainPowerToSlot(CHARGE_SLOT);
         profiler.pop();
 
+        // Match Galacticraft Legacy: allow coal power in vacuum before an oxygen supply is available.
         if (this.fuelLength > 0) {
-            if (this.shouldExtinguish(level, pos, state)) {
-                this.fuelLength = 0;
-                this.fuelTime = 0;
-                RandomSource randomSource = level.getRandom();
-                level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.25F, 2.6F + (randomSource.nextFloat() - randomSource.nextFloat()) * 0.8F);
-                return;
-            } else {
-                this.setHeat(Math.min(1, this.heat + 0.004));
-            }
+            this.setHeat(Math.min(1, this.heat + 0.004));
         }
 
         boolean lit = this.fuelLength > 0;
@@ -197,30 +186,22 @@ public class CoalGeneratorBlockEntity extends MachineBlockEntity implements Coal
         super.updateActiveState(level, pos, state.setValue(CoalGeneratorBlock.LIT, this.lit).setValue(CoalGeneratorBlock.HOT, this.curr), active);
     }
 
-    private boolean shouldExtinguish(ServerLevel level, BlockPos pos, BlockState state) {
-        return !level.isBreathable(pos.relative(state.getValue(BlockStateProperties.HORIZONTAL_FACING)))
-                && !level.isBreathable(pos);
-    }
-
     private MachineStatus consumeFuel(ServerLevel level, BlockPos pos, BlockState state) {
         this.fuelTime = 0;
         this.fuelLength = 0;
 
-        if (!this.shouldExtinguish(level, pos, state)) {
-            ItemResourceSlot slot = this.itemStorage().slot(INPUT_SLOT);
-            if (slot.getModifications() != this.fuelSlotModCount) {
-                this.fuelSlotModCount = slot.getModifications();
-                int time = getFuelTime(slot.getResource(), slot.getComponents());
-                if (time > 0) {
-                    if (slot.consumeOne() != null) {
-                        this.fuelLength = time;
-                        return null;
-                    }
+        ItemResourceSlot slot = this.itemStorage().slot(INPUT_SLOT);
+        if (slot.getModifications() != this.fuelSlotModCount) {
+            this.fuelSlotModCount = slot.getModifications();
+            int time = getFuelTime(slot.getResource(), slot.getComponents());
+            if (time > 0) {
+                if (slot.consumeOne() != null) {
+                    this.fuelLength = time;
+                    return null;
                 }
             }
-            return this.heat > 0 ? GCMachineStatuses.COOLING_DOWN : GCMachineStatuses.NO_FUEL;
         }
-        return GCMachineStatuses.NOT_ENOUGH_OXYGEN;
+        return this.heat > 0 ? GCMachineStatuses.COOLING_DOWN : GCMachineStatuses.NO_FUEL;
     }
 
     @VisibleForTesting

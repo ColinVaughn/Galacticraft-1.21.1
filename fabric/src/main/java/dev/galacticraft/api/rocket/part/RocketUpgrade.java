@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +26,7 @@ package dev.galacticraft.api.rocket.part;
 import com.mojang.serialization.Codec;
 import dev.galacticraft.api.registry.BuiltInRocketRegistries;
 import dev.galacticraft.api.registry.RocketRegistries;
+import dev.galacticraft.api.rocket.RocketUpgradeData;
 import dev.galacticraft.api.rocket.part.config.RocketUpgradeConfig;
 import dev.galacticraft.api.rocket.part.type.RocketUpgradeType;
 import dev.galacticraft.impl.rocket.part.RocketUpgradeImpl;
@@ -35,8 +37,12 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.EitherHolder;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
+import java.util.Optional;
 
 public non-sealed interface RocketUpgrade<C extends RocketUpgradeConfig, T extends RocketUpgradeType<C>> extends RocketPart<C, T> {
     Codec<RocketUpgrade<?, ?>> DIRECT_CODEC = BuiltInRocketRegistries.ROCKET_UPGRADE_TYPE.byNameCodec().dispatch(RocketUpgrade::type, RocketUpgradeType::codec);
@@ -48,5 +54,24 @@ public non-sealed interface RocketUpgrade<C extends RocketUpgradeConfig, T exten
     @Contract(pure = true, value = "_, _ -> new")
     static @NotNull <C extends RocketUpgradeConfig, T extends RocketUpgradeType<C>> RocketUpgrade<C, T> create(@NotNull C config, @NotNull T type) {
         return new RocketUpgradeImpl<>(config, type);
+    }
+
+    public default long additionalFuelCapacity(dev.galacticraft.api.rocket.RocketData data) {
+        return type().additionalFuelCapacity(config(), data);
+    }
+
+    /** @see RocketUpgradeType#canPlace */
+    default boolean canPlace(int slot, @NotNull ItemStack stack, @NotNull List<ItemStack> slots) {
+        return this.type().canPlace(this.config(), slot, stack, slots);
+    }
+
+    /** @see RocketUpgradeType#isInstalledBy */
+    default boolean isInstalledBy(@NotNull List<ItemStack> slots) {
+        return this.type().isInstalledBy(this.config(), slots);
+    }
+
+    /** @see RocketUpgradeType#createData */
+    default @NotNull Optional<RocketUpgradeData> createData(@NotNull List<ItemStack> slots) {
+        return this.type().createData(this.config(), slots);
     }
 }

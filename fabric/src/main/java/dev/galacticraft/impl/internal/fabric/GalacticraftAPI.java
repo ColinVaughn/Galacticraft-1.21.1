@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -58,7 +59,6 @@ import java.nio.file.Path;
 @ApiStatus.Internal
 public class GalacticraftAPI implements ModInitializer {
     public static final SimpleContainer EMPTY_INV = new SimpleContainer(0);
-    //don't know if this is the best way to get file path, but it works
     public static Path currentWorldSaveDirectory;
 
     @Override
@@ -68,6 +68,7 @@ public class GalacticraftAPI implements ModInitializer {
 
         DynamicRegistries.registerSynced(AddonRegistries.CELESTIAL_BODY, CelestialBody.DIRECT_CODEC);
         DynamicRegistries.registerSynced(AddonRegistries.GALAXY, Galaxy.DIRECT_CODEC);
+        DynamicRegistries.registerSynced(AddonRegistries.SPACEFLIGHT, dev.galacticraft.api.universe.celestialbody.SpaceflightConfig.CODEC);
 
         DynamicRegistries.registerSynced(RocketRegistries.ROCKET_CONE, RocketCone.DIRECT_CODEC);
         DynamicRegistries.registerSynced(RocketRegistries.ROCKET_BODY, RocketBody.DIRECT_CODEC);
@@ -81,6 +82,7 @@ public class GalacticraftAPI implements ModInitializer {
         Registry.register(BuiltInRegistries.CHUNK_GENERATOR, Constant.id("satellite"), SatelliteChunkGenerator.CODEC);
         BuiltinObjects.register();
         BuiltInRocketRegistries.initialize();
+        dev.galacticraft.mod.content.rocket.part.type.GCRocketUpgradeTypes.register();
         GcApiEntityAttributes.init();
         ServerLifecycleEvents.SERVER_STARTED.register(this::onServerStarted);
 
@@ -88,11 +90,9 @@ public class GalacticraftAPI implements ModInitializer {
             ((SatelliteAccessor) minecraftServer).galacticraft$loadSatellites(dynamicDimensionLoader);
         });
 
-        // todo: update celestial body level cache
         DynamicRegistrySetupCallback.EVENT.register(view -> {
-            view.registerEntryAdded(AddonRegistries.CELESTIAL_BODY, (rawId, id, object) -> {
-
-            });
+            view.registerEntryAdded(AddonRegistries.CELESTIAL_BODY, (rawId, id, object) ->
+                    dev.galacticraft.api.universe.celestialbody.CelestialBodyCache.invalidate());
         });
         Gases.init();
         // On clients registerReceiver installs the S2C codec as well. Registering

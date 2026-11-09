@@ -58,6 +58,14 @@ public class MoonSkyRenderer extends SpaceSkyRenderer {
 
     private VertexBuffer galaxyBuffer;
 
+    public static void preload() {
+        if (INSTANCE.galaxyBuffer == null) INSTANCE.galaxyBuffer = createGalaxyBuffer();
+        CelestialBodyRendererManager.getInstance().preloadStars();
+        var textures = net.minecraft.client.Minecraft.getInstance().getTextureManager();
+        textures.preload(Constant.Skybox.SUN_MOON, net.minecraft.Util.backgroundExecutor());
+        textures.preload(Constant.CelestialBody.EARTH, net.minecraft.Util.backgroundExecutor());
+    }
+
     @Override
     public void render(GCWorldRenderContext context) {
         RenderSystem.depthMask(false);
@@ -81,13 +89,15 @@ public class MoonSkyRenderer extends SpaceSkyRenderer {
         celestialBodyRendererManager.render(context, celestialMatrices.last().pose());
         context.profiler().pop();
 
-        context.profiler().push("moon_sun");
-        this.renderSun(context, skyAngle, celestialMatrices.last().pose());
-        context.profiler().pop();
+        if (!SurfaceCelestialRenderer.render(context)) {
+            context.profiler().push("moon_sun");
+            this.renderSun(context, skyAngle, celestialMatrices.last().pose());
+            context.profiler().pop();
 
-        context.profiler().push("moon_earth");
-        this.renderEarth(context);
-        context.profiler().pop();
+            context.profiler().push("moon_earth");
+            this.renderEarth(context);
+            context.profiler().pop();
+        }
 
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.enableCull();

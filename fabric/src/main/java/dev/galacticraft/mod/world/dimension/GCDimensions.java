@@ -30,11 +30,13 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 public class GCDimensions {
+    public static final ResourceKey<Level> SOLAR_SYSTEM = key("solar_system");
     public static final ResourceKey<Level> MOON = key("moon");
     public static final ResourceKey<Level> VENUS = key("venus");
     public static final ResourceKey<Level> MARS = key("mars");
     public static final ResourceKey<Level> MERCURY = key("mercury");
     public static final ResourceKey<Level> ASTEROID = key("asteroid");
+    public static final ResourceKey<Level> JUPITER = key("jupiter");
 
     @Contract(pure = true)
     private static @NotNull ResourceKey<Level> key(@NotNull String id) {

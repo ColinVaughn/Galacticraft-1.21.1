@@ -96,6 +96,15 @@ public interface Config {
 
     boolean cannotEatInNoAtmosphere();
 
+    /**
+     * Returns whether hostile mobs entering airless dimensions gain space breathing, gear, and
+     * {@link #evolvedHealthMultiplier()} health.
+     */
+    boolean evolveMobsInSpace();
+
+    /** Returns the max-health multiplier for space-evolved mobs; bosses are exempt. */
+    float evolvedHealthMultiplier();
+
     float meteorSpawnMultiplier();
 
     boolean meteorsEnabled();
@@ -161,6 +170,11 @@ public interface Config {
     /** Client lunar surface shading, from zero (disabled) to one (full strength). */
     default float moonSurfaceShaderStrength() { return 1.0F; }
 
+    default boolean jupiterVolumetricClouds() { return true; }
+
+    /** Two through four; four renders the cloud march at one sixteenth of screen pixel count. */
+    default int jupiterCloudResolutionDivisor() { return 4; }
+
     double bossHealthMultiplier();
 
     /**
@@ -171,6 +185,8 @@ public interface Config {
 
     /** Use GC4-sized tanks and approximate GC4 fuel costs for the built-in rocket engines. */
     default boolean gc4RocketFuelMode() { return true; }
+
+    default boolean seamlessSpaceTravel() { return false; }
 
     /**
      * Ticks of powered flight one bucket of fuel provides. Raising this makes every launch cost

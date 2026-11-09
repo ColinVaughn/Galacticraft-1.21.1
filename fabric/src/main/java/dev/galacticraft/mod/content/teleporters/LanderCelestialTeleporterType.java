@@ -27,8 +27,7 @@ import dev.galacticraft.api.universe.celestialbody.CelestialBody;
 import dev.galacticraft.api.universe.celestialbody.landable.teleporter.config.CelestialTeleporterConfig;
 import dev.galacticraft.api.universe.celestialbody.landable.teleporter.type.CelestialTeleporterType;
 import dev.galacticraft.impl.universe.celestialbody.landable.teleporter.config.DefaultCelestialTeleporterConfig;
-import dev.galacticraft.mod.Constant;
-import dev.galacticraft.mod.content.entity.vehicle.LanderEntity;
+import dev.galacticraft.mod.world.dimension.SpaceTravel;
 import dev.galacticraft.mod.world.gen.custom.AsteroidChunkGenerator;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -57,12 +56,10 @@ public class LanderCelestialTeleporterType<Config extends CelestialTeleporterCon
             }
         }
 
-        entity.teleportTo(level, targetX, Constant.REENTRY_HEIGHT, targetZ, NO_RELATIVE_MOVEMENT, -90.0F, 45.0F);
+        int ground = DestinationArrival.landingSurface(level, Mth.floor(targetX), Mth.floor(targetZ));
+        entity.teleportTo(level, targetX, SpaceTravel.landingHeight(level.dimension(), ground), targetZ, NO_RELATIVE_MOVEMENT, -90.0F, 45.0F);
         if (entity instanceof ServerPlayer player) {
-            LanderEntity lander = new LanderEntity(player);
-            level.addFreshEntity(lander);
-            lander.setPos(player.getX(), Constant.REENTRY_HEIGHT, player.getZ());
-            player.startRiding(lander, true);
+            DestinationArrival.fromStoredRocket(player, player.position());
         }
     }
 }

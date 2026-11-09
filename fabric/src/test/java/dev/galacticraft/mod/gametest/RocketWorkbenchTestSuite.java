@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -169,7 +170,7 @@ public class RocketWorkbenchTestSuite implements GalacticraftGameTest {
         BlockPos origin = new BlockPos(1, 1, 1);
         ServerPlayer player = context.makeMockServerPlayerInLevel();
 
-        if (!ServerResearchAccessor.galacticraft$backfillFromAdvancements(player).isEmpty()) {
+        if (!dev.galacticraft.mod.machine.workbench.ResearchBackfill.backfillFromAdvancements(player).isEmpty()) {
             context.fail("A player with no completed advancements should be granted nothing", origin);
             return;
         }
@@ -184,7 +185,7 @@ public class RocketWorkbenchTestSuite implements GalacticraftGameTest {
             player.getAdvancements().award(advancement, criterion);
         }
 
-        List<ResourceLocation> granted = ServerResearchAccessor.galacticraft$backfillFromAdvancements(player);
+        List<ResourceLocation> granted = dev.galacticraft.mod.machine.workbench.ResearchBackfill.backfillFromAdvancements(player);
         for (ResourceKey<?> part : List.of(
                 GCRocketParts.TIER_1_CONE, GCRocketParts.TIER_1_BODY,
                 GCRocketParts.TIER_1_FIN, GCRocketParts.TIER_1_ENGINE)) {

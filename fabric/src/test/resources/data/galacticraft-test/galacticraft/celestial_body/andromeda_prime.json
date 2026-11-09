@@ -1,0 +1,61 @@
+{
+  "type": "galacticraft:planet",
+  "config": {
+    "parent": "galacticraft-test:alpheratz",
+    "access_weight": 4,
+    "atmosphere": {
+      "composition": {
+        "galacticraft:argon": 19000.0,
+        "galacticraft:carbon_dioxide": 949000.0,
+        "galacticraft:carbon_monoxide": 800.0,
+        "galacticraft:nitrogen": 26000.0,
+        "galacticraft:oxygen": 1400.0
+      },
+      "pressure": 0.006,
+      "temperature": -63.0
+    },
+    "celestial_handler": "galacticraft:default",
+    "day_length": 24600,
+    "day_temperature": 20,
+    "description": {
+      "text": "Example tier 4 planet; only a rocket with tier 4 parts gets here."
+    },
+    "display": {
+      "type": "galacticraft:icon",
+      "config": {
+        "height": 16,
+        "scale": 1.0,
+        "texture": "galacticraft:textures/gui/celestialbodies/neptune.png",
+        "u": 0,
+        "v": 0,
+        "width": 16
+      }
+    },
+    "gravity": 0.38,
+    "name": {
+      "text": "Andromeda Prime"
+    },
+    "night_temperature": -73,
+    "position": {
+      "type": "galacticraft:orbital",
+      "config": {
+        "distance": 1.0,
+        "orbit_time": 1.8811609745025635,
+        "phase_shift": 0.16670000553131104,
+        "planet": true
+      }
+    },
+    "ring": {
+      "type": "galacticraft:default",
+      "config": {}
+    },
+    "sky": {
+      "sky_color": 2754629,
+      "fog_color": 1706540,
+      "sun_size": 3.0,
+      "star_brightness": 0.8
+    },
+    "teleporter": "galacticraft:lander",
+    "world": "galacticraft-test:andromeda_prime"
+  }
+}

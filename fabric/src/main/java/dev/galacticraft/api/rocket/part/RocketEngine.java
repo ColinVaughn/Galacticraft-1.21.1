@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -58,7 +59,18 @@ public non-sealed interface RocketEngine<C extends RocketEngineConfig, T extends
      *
      * @return the fuel capacity of this rocket. One bucket is 81,000 units.
      */
+    default int getFlightTier() { return this.type().getFlightTier(this.config()); }
+
     default long getFuelCapacity() {
         return this.type().getFuelCapacity(this.config());
+    }
+
+    /**
+     * Returns the fuel this engine burns per tick of powered flight.
+     *
+     * @return the fuel burned per tick. One bucket is 81,000 units.
+     */
+    default long getFuelUsagePerTick() {
+        return this.type().getFuelUsagePerTick(this.config());
     }
 }

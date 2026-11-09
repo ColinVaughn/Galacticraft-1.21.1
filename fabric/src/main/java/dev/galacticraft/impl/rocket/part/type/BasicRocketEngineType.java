@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,8 +23,11 @@
 
 package dev.galacticraft.impl.rocket.part.type;
 
+import java.util.Optional;
+import net.minecraft.resources.ResourceLocation;
 import com.mojang.serialization.Codec;
 import dev.galacticraft.api.rocket.entity.Rocket;
+import dev.galacticraft.api.rocket.part.RocketPartLayout;
 import dev.galacticraft.api.rocket.part.type.RocketEngineType;
 import dev.galacticraft.api.rocket.recipe.RocketPartRecipe;
 import dev.galacticraft.api.rocket.travelpredicate.ConfiguredTravelPredicate;
@@ -36,6 +40,12 @@ public final class BasicRocketEngineType extends RocketEngineType<BasicRocketEng
 
     private BasicRocketEngineType(@NotNull Codec<BasicRocketEngineConfig> configCodec) {
         super(configCodec);
+    }
+
+    @Override
+    public int getFlightTier(BasicRocketEngineConfig config) {
+        return config.predicate().config() instanceof dev.galacticraft.impl.rocket.travelpredicate.config.AccessWeightTravelPredicateConfig weight
+                ? Math.max(1, weight.weight()) : 1;
     }
 
     @Override
@@ -55,5 +65,25 @@ public final class BasicRocketEngineType extends RocketEngineType<BasicRocketEng
     @Override
     public @Nullable RocketPartRecipe<?, ?> getRecipe(BasicRocketEngineConfig config) {
         return config.recipe();
+    }
+
+    @Override
+    public long getFuelUsagePerTick(@NotNull BasicRocketEngineConfig config) {
+        return config.fuelUsage();
+    }
+
+    @Override
+    public @NotNull RocketPartLayout layout(@NotNull BasicRocketEngineConfig config) {
+        return config.layout();
+    }
+
+    @Override
+    public boolean isPaintable(@NotNull BasicRocketEngineConfig config) {
+        return config.paintable();
+    }
+
+    @Override
+    public @NotNull Optional<ResourceLocation> model(@NotNull BasicRocketEngineConfig config) {
+        return config.model();
     }
 }

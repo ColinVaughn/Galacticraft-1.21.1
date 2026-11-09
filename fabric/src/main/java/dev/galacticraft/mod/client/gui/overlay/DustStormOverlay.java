@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,12 +23,13 @@
 
 package dev.galacticraft.mod.client.gui.overlay;
 
+import dev.galacticraft.api.universe.celestialbody.CelestialBodyTags;
 import dev.galacticraft.mod.client.render.dimension.duststorm.ClientDustStorms;
 import dev.galacticraft.mod.content.entity.vehicle.LanderEntity;
 import dev.galacticraft.mod.content.item.GCItems;
 import dev.galacticraft.mod.tag.GCItemTags;
 import dev.galacticraft.mod.util.Translations;
-import dev.galacticraft.mod.world.dimension.GCDimensions;
+import dev.galacticraft.mod.world.dimension.duststorm.DustStormExposure;
 import dev.galacticraft.mod.world.dimension.duststorm.DustStormPhase;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -46,7 +48,7 @@ public class DustStormOverlay {
     public static void onHudRender(GuiGraphics graphics, DeltaTracker delta) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.options.hideGui || mc.level == null || mc.player == null) return;
-        if (!mc.level.dimension().equals(GCDimensions.MARS)) return;
+        if (!CelestialBodyTags.is(mc.level, CelestialBodyTags.DUST_STORMS)) return;
 
         LocalPlayer player = mc.player;
         float intensity = ClientDustStorms.intensity();
@@ -55,8 +57,7 @@ public class DustStormOverlay {
         int width = mc.getWindow().getGuiScaledWidth();
         int height = mc.getWindow().getGuiScaledHeight();
 
-        // --- Screen tint (only when exposed to the open storm) ---
-        boolean sheltered = mc.level.isBreathable(player.blockPosition().above())
+        boolean sheltered = !DustStormExposure.isExposed(mc.level, DustStormExposure.eyeBlock(player))
                 || player.getVehicle() instanceof LanderEntity;
         if (intensity > 0.05F && !sheltered && !player.isSpectator()) {
             boolean glasses = player.getItemBySlot(EquipmentSlot.HEAD).is(GCItemTags.SENSOR_GLASSES);
@@ -71,7 +72,6 @@ public class DustStormOverlay {
             }
         }
 
-        // --- Forecast readout (only with detector-class gear) ---
         if (hasDetectorGear(player)) {
             Component text = null;
             if (phase == DustStormPhase.INCOMING) {
@@ -88,10 +88,7 @@ public class DustStormOverlay {
         }
     }
 
-    /**
-     * The forecast readout is unlocked by gear the player already builds toward: the sensor
-     * glasses (a heads-up display) or the frequency module (a comms/telemetry link).
-     */
+    /** Requires sensor glasses or a frequency module to display the forecast. */
     private static boolean hasDetectorGear(LocalPlayer player) {
         if (player.getItemBySlot(EquipmentSlot.HEAD).is(GCItemTags.SENSOR_GLASSES)) return true;
         Container accessories = player.galacticraft$getAccessories();

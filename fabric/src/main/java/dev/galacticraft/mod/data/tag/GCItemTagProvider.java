@@ -203,11 +203,15 @@ public class GCItemTagProvider extends FabricTagProvider.ItemTagProvider {
         this.tag(GCItemTags.SHIELD_CONTROLLERS)
                 .add(GCItems.SHIELD_CONTROLLER);
         this.tag(GCItemTags.ACCESSORIES)
+                .add(dev.galacticraft.mod.content.item.jupiter.JupiterItems.PRESSURE_CONTROLLER_MK1)
+                .add(dev.galacticraft.mod.content.item.jupiter.JupiterItems.PRESSURE_CONTROLLER_MK2)
                 .addTag(GCItemTags.FREQUENCY_MODULES)
                 .addTag(GCItemTags.PARACHUTES)
                 .addTag(GCItemTags.SHIELD_CONTROLLERS);
 
         this.tag(GCItemTags.BATTERIES)
+                .add(dev.galacticraft.mod.content.item.jupiter.JupiterItems.PRESSURE_CONTROLLER_MK1)
+                .add(dev.galacticraft.mod.content.item.jupiter.JupiterItems.PRESSURE_CONTROLLER_MK2)
                 .add(GCItems.BATTERY)
                 .add(GCItems.INFINITE_BATTERY);
 

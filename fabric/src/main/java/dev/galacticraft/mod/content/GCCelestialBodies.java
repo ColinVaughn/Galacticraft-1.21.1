@@ -23,6 +23,7 @@
 
 package dev.galacticraft.mod.content;
 
+import dev.galacticraft.api.universe.celestialbody.SkyConfig;
 import com.mojang.datafixers.util.Pair;
 import dev.galacticraft.api.gas.GasComposition;
 import dev.galacticraft.api.gas.Gases;
@@ -151,8 +152,8 @@ public class GCCelestialBodies {
                         1.0f,
                         GCCelestialHandlers.OVERWORLD,
                         0,
-                        21, //todo
-                        15, //todo
+                        21,
+                        15,
                         24000,
                         SatelliteRecipe.create(EARTH_SATELLITE_RECIPE)
                 )
@@ -253,7 +254,8 @@ public class GCCelestialBodies {
                 -73,
                 24600L,
                 null
-        )));
+        ).withSky(Optional.of(new SkyConfig(0xC67A54, 0x854A33, 2.0F, 1.0F,
+                Optional.of(Constant.id("shaders/post/mars.json")))))));
 
         context.register(ASTEROID, PlanetType.INSTANCE.configure(new PlanetConfig(
                 Component.translatable(Translations.CelestialBody.ASTEROID),
@@ -277,18 +279,24 @@ public class GCCelestialBodies {
                 null
         )));
 
-        context.register(JUPITER, DecorativePlanetType.INSTANCE.configure(new DecorativePlanetConfig(
+        context.register(JUPITER, PlanetType.INSTANCE.configure(new PlanetConfig(
                 Component.translatable(Translations.CelestialBody.JUPITER),
                 Component.translatable(Translations.CelestialBody.JUPITER_DESC),
                 Optional.of(SOL),
                 OrbitalCelestialPositionType.INSTANCE.configure(new OrbitalCelestialPositionConfig(11.861993428258488499452354874042F, 1.5F, Mth.PI, true)),
                 IconCelestialDisplayType.INSTANCE.configure(new IconCelestialDisplayConfig(Constant.CelestialBody.JUPITER, 0, 0, 16, 16)),
                 DefaultCelestialRingDisplayType.INSTANCE.configure(new DefaultCelestialRingDisplayConfig()),
+                GCDimensions.JUPITER,
+                teleporters.getOrThrow(GCTeleporterTypes.JUPITER_TELEPORTER),
                 new GasComposition.Builder()
-                        .temperature(23.0)
-                        .pressure(3.0E-15F)
-                        .build(),
-                0.166F,
+                        .temperature(-120.0).pressure(1.0F)
+                        .gas(Gases.HYDROGEN_ID, 898000).gas(Gases.HELIUM_ID, 102000).build(),
+                1.35F,
+                GCCelestialHandlers.DEFAULT,
+                3,
+                -120,
+                -145,
+                12000L,
                 null
         )));
 

@@ -112,7 +112,9 @@ public abstract class LevelChunkMixin extends ChunkAccess implements ChunkOxygen
 
     @Inject(method = "setBlockState", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getBlock()Lnet/minecraft/world/level/block/Block;", ordinal = 0))
     private void resetAirOnBlockChange(BlockPos pos, BlockState blockState, boolean bl, CallbackInfoReturnable<BlockState> cir) {
-        if (blockState.isSolidRender(this.level, pos)) {
+        // Bubbles only update their edges; preserve their air when a solid block inside one is broken.
+        if (!this.level.isClientSide && blockState.isSolidRender(this.level, pos)
+                && !((GCLevelAccessor) this.level).galacticraft$getBubbleManager().covers(pos, null)) {
             this.galacticraft$setInverted(pos.getX() & 15, pos.getY(), pos.getZ() & 15, false);
         }
     }

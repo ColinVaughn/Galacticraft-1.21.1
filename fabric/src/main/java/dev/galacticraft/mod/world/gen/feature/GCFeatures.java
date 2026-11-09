@@ -44,7 +44,24 @@ public class GCFeatures {
 
     public static final Feature<NoneFeatureConfiguration> MOON_BURROWER_DEN = new LunarBurrowerDenFeature(NoneFeatureConfiguration.CODEC);
 
+    public static final Feature<NoneFeatureConfiguration> JUPITER_HYDROSULFIDE_CRYSTALS = new JupiterClusterFeature(
+            dev.galacticraft.mod.content.block.jupiter.JupiterBlocks.HYDROSULFIDE_CRYSTAL_CLUSTER, 144, 236, 0.6F);
+    public static final Feature<NoneFeatureConfiguration> JUPITER_CHARGED_CONDENSATE = new JupiterClusterFeature(
+            dev.galacticraft.mod.content.block.jupiter.JupiterBlocks.CHARGED_CONDENSATE_CLUSTER, 40, 143, 0.5F);
+    public static final Feature<NoneFeatureConfiguration> JUPITER_SURVEY_WRECK = new JupiterWreckFeature(JupiterWreckFeature.Kind.SURVEY_WRECK);
+    public static final Feature<NoneFeatureConfiguration> JUPITER_STORM_HARVESTER = new JupiterWreckFeature(JupiterWreckFeature.Kind.STORM_HARVESTER);
+    public static final Feature<NoneFeatureConfiguration> STORMHEART_CITADEL = new StormheartCitadelFeature();
+    public static final Feature<NoneFeatureConfiguration> JUPITER_WEATHER_STATION = new WeatherStationFeature();
+    public static final Feature<NoneFeatureConfiguration> JUPITER_RESEARCH_FACILITY = new ResearchFacilityFeature();
+
     public static void register() {
+        Registry.register(BuiltInRegistries.FEATURE, Constant.id("jupiter_hydrosulfide_crystals"), JUPITER_HYDROSULFIDE_CRYSTALS);
+        Registry.register(BuiltInRegistries.FEATURE, Constant.id("jupiter_charged_condensate"), JUPITER_CHARGED_CONDENSATE);
+        Registry.register(BuiltInRegistries.FEATURE, Constant.id("jupiter_survey_wreck"), JUPITER_SURVEY_WRECK);
+        Registry.register(BuiltInRegistries.FEATURE, Constant.id("jupiter_storm_harvester"), JUPITER_STORM_HARVESTER);
+        Registry.register(BuiltInRegistries.FEATURE, Constant.id("stormheart_citadel"), STORMHEART_CITADEL);
+        Registry.register(BuiltInRegistries.FEATURE, Constant.id("jupiter_weather_station"), JUPITER_WEATHER_STATION);
+        Registry.register(BuiltInRegistries.FEATURE, Constant.id("jupiter_research_facility"), JUPITER_RESEARCH_FACILITY);
         Registry.register(BuiltInRegistries.FEATURE, Constant.id("vapor_spout"), VAPOR_SPOUT);
         Registry.register(BuiltInRegistries.FEATURE, Constant.id("moon_burrower_den"), MOON_BURROWER_DEN);
         Registry.register(BuiltInRegistries.FEATURE, Constant.id("moon_cave_decorations"), MOON_CAVE_DECORATIONS);

@@ -63,7 +63,7 @@ public class GCKeyBinds {
                 // As in Galacticraft Legacy, the key opens whichever vehicle the player is riding.
                 while (OPEN_ROCKET_INVENTORY.consumeClick()) {
                     Entity vehicle = client.player.getVehicle();
-                    if (vehicle instanceof RocketEntity || vehicle instanceof Buggy) {
+                    if (vehicle instanceof RocketEntity || vehicle instanceof Buggy || vehicle instanceof dev.galacticraft.mod.content.entity.vehicle.CloudDiverEntity) {
                         NetworkManager.sendToServer(OpenRocketPayload.INSTANCE);
                     }
                 }
@@ -72,10 +72,14 @@ public class GCKeyBinds {
                     SensorGlassesOverlay.toggleAdvancedMode();
                 }
                 while (TOGGLE_BURROWER_TUNNEL.consumeClick()) {
+                    if (client.player.getVehicle() instanceof dev.galacticraft.mod.content.entity.vehicle.CloudDiverEntity)
+                        NetworkManager.sendToServer(new dev.galacticraft.mod.network.c2s.CloudDiverActionPayload((byte) 1));
                     if (client.player.getVehicle() instanceof LunarBurrowerEntity worm && worm.getControllingPassenger() == client.player)
                         NetworkManager.sendToServer(ToggleBurrowerTunnelPayload.INSTANCE);
                 }
                 while (TOGGLE_ROCKET_LANDING.consumeClick()) {
+                    if (client.player.getVehicle() instanceof dev.galacticraft.mod.content.entity.vehicle.CloudDiverEntity)
+                        NetworkManager.sendToServer(new dev.galacticraft.mod.network.c2s.CloudDiverActionPayload((byte) 0));
                     if (client.player.getVehicle() instanceof RocketEntity)
                         NetworkManager.sendToServer(ToggleRocketLandingPayload.INSTANCE);
                 }

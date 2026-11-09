@@ -58,8 +58,10 @@ public class OxygenMaskRenderLayer<T extends LivingEntity, M extends EntityModel
         super(context);
         float y = context.getModel() instanceof EndermanModel ? -2.0F : -3.0F;
         if (context.getModel() instanceof HierarchicalModel<?> model) {
-            this.head = model.root().getChild(PartNames.HEAD);
-            this.body = model.root().getChild(PartNames.BODY);
+            // Not every model keeps these at the root; getChild would throw and take the renderer down with it.
+            ModelPart root = model.root();
+            this.head = root.hasChild(PartNames.HEAD) ? root.getChild(PartNames.HEAD) : null;
+            this.body = root.hasChild(PartNames.BODY) ? root.getChild(PartNames.BODY) : null;
         } else if (context.getModel() instanceof HumanoidModel<?> model) {
             this.head = model.head;
             this.body = model.body;

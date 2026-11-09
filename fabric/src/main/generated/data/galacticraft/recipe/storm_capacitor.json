@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "galacticraft:charged_condensate"
+    },
+    "E": {
+      "item": "galacticraft:energy_storage_module"
+    },
+    "H": {
+      "item": "galacticraft:heavy_aluminum_wire"
+    },
+    "P": {
+      "item": "galacticraft:jovian_composite_plate"
+    }
+  },
+  "pattern": [
+    "PCP",
+    "EHE",
+    "PCP"
+  ],
+  "result": {
+    "count": 1,
+    "id": "galacticraft:storm_capacitor"
+  }
+}

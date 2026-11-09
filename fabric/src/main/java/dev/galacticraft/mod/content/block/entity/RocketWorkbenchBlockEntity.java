@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +23,8 @@
 
 package dev.galacticraft.mod.content.block.entity;
 
+import net.minecraft.world.level.Level;
+import dev.galacticraft.mod.machine.workbench.WorkbenchUpgrades;
 import dev.galacticraft.api.item.Schematic;
 import dev.galacticraft.mod.content.GCBlockEntityTypes;
 import dev.galacticraft.mod.machine.storage.VariableSizedContainer;
@@ -59,28 +62,15 @@ public class RocketWorkbenchBlockEntity extends BlockEntity implements ExtendedM
     };
 
     /**
-     * The rocket's upgrade slots. Three chests may be installed, one per slot, each worth two rows
-     * of cargo. The explosive upgrade shares this container but only occupies the first slot, since
-     * a rocket carries a single upgrade.
+     * The rocket's upgrade slots. Which items they take is up to the registered rocket upgrades:
+     * stock rockets take up to three chests, one per slot, or an explosive charge in the first
+     * slot. A rocket carries a single upgrade.
      */
     public final SimpleContainer chests = new SimpleContainer(CHEST_SLOTS) {
         @Override
         public boolean canPlaceItem(int slot, ItemStack stack) {
-            if (isExplosive(stack)) {
-                if (slot != 0) return false;
-
-                // Crafting consumes every chest slot, so refuse the charge while chests are loaded
-                // rather than silently eating them for an upgrade the rocket won't get.
-                for (int other = 1; other < this.getContainerSize(); ++other) {
-                    if (!this.getItem(other).isEmpty()) return false;
-                }
-                return true;
-            }
-
-            if (!stack.is(GCItemTags.ROCKET_STORAGE_UPGRADE_ITEMS)) return false;
-
-            // Chests and the explosive charge are different upgrades; only a swap into slot 0 is allowed.
-            return slot == 0 || !isExplosive(this.getItem(0));
+            Level level = RocketWorkbenchBlockEntity.this.level;
+            return level != null && WorkbenchUpgrades.canPlace(level.registryAccess(), slot, stack, this);
         }
 
         @Override
@@ -89,11 +79,7 @@ public class RocketWorkbenchBlockEntity extends BlockEntity implements ExtendedM
         }
     };
 
-    /**
-     * The unlock well on the "add new schematic" page, holding one schematic at a time. Legacy kept
-     * this in its own {@code ContainerSchematic} and dropped it the moment the page was closed; here
-     * it belongs to the block so that flipping pages does not spit the schematic onto the floor.
-     */
+    /** Holds the unlock-page schematic on the block entity so turning pages does not drop it. */
     public final SimpleContainer schematic = new SimpleContainer(1) {
         @Override
         public boolean canPlaceItem(int slot, ItemStack stack) {
@@ -116,7 +102,8 @@ public class RocketWorkbenchBlockEntity extends BlockEntity implements ExtendedM
     public int paintRevision;
     public final SimpleContainer paintInput = new SimpleContainer(1) {
         @Override public boolean canPlaceItem(int slot, ItemStack stack) {
-            return dev.galacticraft.mod.screen.RocketPaintMenu.canPaint(stack);
+            return RocketWorkbenchBlockEntity.this.level != null
+                    && dev.galacticraft.mod.screen.RocketPaintMenu.canPaint(stack, RocketWorkbenchBlockEntity.this.level.registryAccess());
         }
         @Override public int getMaxStackSize() { return 1; }
     };
@@ -131,10 +118,6 @@ public class RocketWorkbenchBlockEntity extends BlockEntity implements ExtendedM
                 RocketWorkbenchMenu.OpeningData.CODEC.encode(buf, new RocketWorkbenchMenu.OpeningData(getBlockPos(), java.util.Optional.ofNullable(returnPage)));
             }
         };
-    }
-
-    private static boolean isExplosive(ItemStack stack) {
-        return stack.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof TntBlock;
     }
 
     // Using a VariableSizedContainer here to support different recipes in the future

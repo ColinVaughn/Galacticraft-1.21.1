@@ -1,0 +1,23 @@
+Pixel-art planet maps adapted from planet maps by Solar System Scope / INOVE
+https://www.solarsystemscope.com/textures/
+Licensed under Creative Commons Attribution 4.0 International
+https://creativecommons.org/licenses/by/4.0/
+
+Changes: the 2048x1024 source maps (downloaded 2026-10-16) were redrawn as Minecraft-style pixel-art cube nets (six 32x32 faces in a 128x96 cross).
+The sources only supply coarse region masks (land/ocean, maria, albedo regions, ice, cloud cover, belt order); each
+region is repainted with a small hand-picked palette and block-texture clumps, and landmarks (ray craters, Martian
+volcanoes and canyons, Jovian festoons and ovals, the Great Red Spot, solar granulation and sunspots) are drawn by hand.
+Generator: tools/planet_pixel_maps.js (runs in Blockbench); preview scene: art/blockbench/solar_system_pixel_maps.bbmodel.
+The unmodified sources are kept in art/blockbench/solar_system_reference/ and are not shipped.
+
+Files and source maps:
+earth.png = 2k_earth_daymap.jpg
+earth_clouds.png = 2k_earth_clouds.jpg
+earth_night.png = 2k_earth_nightmap.jpg
+moon.png = 2k_moon.jpg
+mars.png = 2k_mars.jpg
+mercury.png = 2k_mercury.jpg
+venus.png = 2k_venus_atmosphere.jpg
+jupiter.png = 2k_jupiter.jpg
+sun.png = 2k_sun.jpg
+asteroid.png = 2k_ceres_fictional.jpg (an authored representative of the asteroid destination, not a measured surface)

@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "galacticraft:oxygen_collector"
+    },
+    "F": {
+      "item": "galacticraft:oxygen_fan"
+    },
+    "P": {
+      "item": "galacticraft:compressed_titanium"
+    },
+    "W": {
+      "item": "galacticraft:advanced_wafer"
+    }
+  },
+  "pattern": [
+    "PFP",
+    "PCP",
+    "PWP"
+  ],
+  "result": {
+    "count": 1,
+    "id": "galacticraft:atmospheric_collector"
+  }
+}

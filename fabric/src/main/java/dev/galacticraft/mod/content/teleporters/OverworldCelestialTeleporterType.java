@@ -77,6 +77,7 @@ public class OverworldCelestialTeleporterType<Config extends CelestialTeleporter
 
                     ParachestEntity chest = new ParachestEntity(GCEntityTypes.PARACHEST, level, rocketInv, color, gcPlayer.getFuel());
                     rocketInv.clear();
+                    gcPlayer.setFuel(0);
 
                     chest.setPos(chestSpawn);
                     level.addFreshEntity(chest);

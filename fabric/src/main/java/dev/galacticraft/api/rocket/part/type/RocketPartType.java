@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,15 +26,19 @@ package dev.galacticraft.api.rocket.part.type;
 import com.mojang.serialization.MapCodec;
 import dev.galacticraft.api.rocket.entity.Rocket;
 import dev.galacticraft.api.rocket.part.RocketPart;
+import dev.galacticraft.api.rocket.part.RocketPartLayout;
 import dev.galacticraft.api.rocket.part.config.RocketPartConfig;
 import dev.galacticraft.api.rocket.recipe.RocketPartRecipe;
 import dev.galacticraft.api.rocket.travelpredicate.ConfiguredTravelPredicate;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Optional;
+
 /**
- * Base rocket part interface.
- * To create a custom rocket part, extend {@link RocketEngineType}, {@link RocketBoosterType}, {@link RocketEngineType}, {@link RocketConeType}, {@link RocketFinType}, or {@link RocketUpgradeType}
+ * Base rocket part interface. Extend {@link RocketBodyType}, {@link RocketBoosterType},
+ * {@link RocketEngineType}, {@link RocketConeType}, {@link RocketFinType}, or {@link RocketUpgradeType}.
  */
 public sealed interface RocketPartType<C extends RocketPartConfig> permits RocketBodyType, RocketBoosterType, RocketEngineType, RocketConeType, RocketFinType, RocketUpgradeType {
 
@@ -52,4 +57,30 @@ public sealed interface RocketPartType<C extends RocketPartConfig> permits Rocke
     @NotNull ConfiguredTravelPredicate<?, ?> travelPredicate(@NotNull C config);
 
     @Nullable RocketPartRecipe<?, ?> getRecipe(C config);
+
+    /**
+     * Returns how much room this part takes up on the assembled rocket.
+     *
+     * @see RocketPartLayout
+     */
+    default @NotNull RocketPartLayout layout(@NotNull C config) {
+        return RocketPartLayout.DEFAULT;
+    }
+
+    /**
+     * Returns whether the rocket paint menu offers this part. Only return {@code true} when this
+     * part's renderer applies the rocket's paint colour.
+     */
+    default boolean isPaintable(@NotNull C config) {
+        return false;
+    }
+
+    /**
+     * Returns a model to draw this part with when no renderer is registered for it in code, for
+     * example {@code mypack:models/misc/ion_engine.json}. This is how a datapack part, with its
+     * model in a resource pack, becomes visible without any code.
+     */
+    default @NotNull Optional<ResourceLocation> model(@NotNull C config) {
+        return Optional.empty();
+    }
 }

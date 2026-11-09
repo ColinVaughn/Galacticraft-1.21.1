@@ -1,0 +1,12 @@
+{
+  "axial_tilt": 23.44,
+  "body": "galacticraft:earth",
+  "center": [
+    0.0,
+    1024.0,
+    0.0
+  ],
+  "radius": 96.0,
+  "rotation_period": 0.99727,
+  "texture": "galacticraft:textures/environment/solar_system/earth.png"
+}

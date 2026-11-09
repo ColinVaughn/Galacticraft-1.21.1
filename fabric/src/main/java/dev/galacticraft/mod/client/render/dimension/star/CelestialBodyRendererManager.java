@@ -246,6 +246,10 @@ public class CelestialBodyRendererManager {
         return allBodies;
     }
 
+    public void preloadStars() {
+        renderers.get(CelestialBodyType.STAR).setupBufferPositions(celestialBodies.get(CelestialBodyType.STAR));
+    }
+
     public void render(GCWorldRenderContext worldRenderContext) {
         this.render(worldRenderContext, null);
     }

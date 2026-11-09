@@ -5,7 +5,7 @@ import dev.galacticraft.api.accessor.ServerResearchAccessor;
 import dev.galacticraft.api.component.GCDataComponents;
 import dev.galacticraft.api.rocket.RocketData;
 import dev.galacticraft.api.rocket.RocketPaint;
-import dev.galacticraft.api.rocket.RocketPrefabs;
+import dev.galacticraft.mod.content.rocket.RocketPrefabs;
 import dev.galacticraft.api.rocket.part.RocketPartTypes;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.content.GCBlocks;
@@ -221,6 +221,23 @@ public class RocketRefitGameTest implements GalacticraftGameTest {
         h.assertTrue(((RocketModuleItem) f.menu.getCarried().getItem()).rocketData(f.menu.getCarried()).color() == COLOR, "Extracted legacy tint changed");
         RocketData data = RocketRefit.data(f.menu.refitRocket());
         h.assertTrue(data.color() == COLOR && data.paint().body().isEmpty() && data.paint().engine().isEmpty() && data.tints().engine().orElseThrow() == 0xFFFFFFFF, "Legacy tint leaked onto the new engine");
+        h.succeed();
+    }
+
+    @GameTest(template = EMPTY_STRUCTURE)
+    public void genericUpgradeExchangesThroughRealMenuSlot(GameTestHelper h) {
+        var f = fixture(h, false);
+        var base = RocketPrefabs.TIER_1;
+        var addon = dev.galacticraft.test.addon.ExampleAddon.FUEL_POD;
+        var payload = java.util.Optional.<dev.galacticraft.api.rocket.RocketUpgradeData>of(new dev.galacticraft.test.addon.FuelPodUpgradeType.Pods(2));
+        f.bench.refitInput.setItem(0, rocket(new RocketData(base.cone(), base.body(), base.fin(), base.booster(), base.engine(),
+                java.util.Optional.of(new net.minecraft.world.item.EitherHolder<>(addon)), payload, base.color())));
+        Slot upgrade = f.menu.slots.stream().filter(slot -> slot.container == f.bench.chests && slot.getContainerSlot() == 0).findFirst().orElseThrow();
+        f.menu.clicked(upgrade.index, 0, ClickType.PICKUP, f.player);
+        h.assertTrue(f.menu.getCarried().is(GCItems.ROCKET_MODULE) && RocketRefit.data(f.menu.refitRocket()).upgrade().isEmpty(), "upgrade was not removed");
+        h.assertTrue(GCItems.ROCKET_MODULE.rocketData(f.menu.getCarried()).upgradeData().equals(payload), "upgrade payload lost on extraction");
+        f.menu.clicked(upgrade.index, 0, ClickType.PICKUP, f.player);
+        h.assertTrue(f.menu.getCarried().isEmpty() && RocketRefit.data(f.menu.refitRocket()).upgradeData().equals(payload), "upgrade module cannot reinstall");
         h.succeed();
     }
 

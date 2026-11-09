@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2026 Team Galacticraft
+ * Copyright (c) 2026 Colin Vaughn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -80,7 +81,7 @@ public class GCCookingRecipeBuilder extends GCRecipeBuilder<GCCookingRecipeBuild
     public Recipe<?> createRecipe(ResourceLocation id) {
         this.ensureValid(id);
         String groupName = Objects.requireNonNullElse(this.group, "");
-        ItemStack itemStack = new ItemStack(this.result, this.count);
+        ItemStack itemStack = this.resultStack();
         return this.factory.create(groupName, this.bookCategory, this.ingredient, itemStack, this.experience, this.cookingTime);
     }
 

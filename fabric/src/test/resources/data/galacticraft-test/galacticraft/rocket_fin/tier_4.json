@@ -1,0 +1,38 @@
+{
+  "type": "galacticraft:basic",
+  "config": {
+    "can_maneuver": true,
+    "layout": {
+      "width": 48.0
+    },
+    "predicate": {
+      "type": "galacticraft:access_weight",
+      "config": {
+        "weight": 4
+      }
+    },
+    "model": "galacticraft:models/misc/rocket_fins_tier_3.json",
+    "recipe": {
+      "type": "galacticraft:centered_patterned",
+      "config": {
+        "height": 36,
+        "slots": [
+          {
+            "ingredient": {
+              "item": "minecraft:diamond"
+            },
+            "x": -9,
+            "y": 0
+          },
+          {
+            "ingredient": {
+              "item": "galacticraft:heavy_plating_t3"
+            },
+            "x": -9,
+            "y": 18
+          }
+        ]
+      }
+    }
+  }
+}

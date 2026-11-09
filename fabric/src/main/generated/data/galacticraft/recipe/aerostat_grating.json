@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "I": {
+      "item": "minecraft:iron_bars"
+    },
+    "P": {
+      "item": "galacticraft:compressed_steel"
+    }
+  },
+  "pattern": [
+    "III",
+    "PPP"
+  ],
+  "result": {
+    "count": 6,
+    "id": "galacticraft:aerostat_grating"
+  }
+}
