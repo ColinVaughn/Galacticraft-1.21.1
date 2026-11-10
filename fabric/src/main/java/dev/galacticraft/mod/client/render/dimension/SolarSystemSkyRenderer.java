@@ -26,7 +26,6 @@ package dev.galacticraft.mod.client.render.dimension;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import dev.galacticraft.mod.Constant;
-import dev.galacticraft.api.registry.AddonRegistries;
 import dev.galacticraft.mod.client.model.GCRenderTypes;
 import dev.galacticraft.mod.world.dimension.SpaceTravel;
 import net.minecraft.client.Minecraft;

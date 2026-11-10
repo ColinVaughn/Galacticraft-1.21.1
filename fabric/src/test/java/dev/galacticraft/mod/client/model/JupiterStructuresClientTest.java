@@ -28,7 +28,6 @@ import dev.galacticraft.mod.content.entity.jupiter.StormheartLeviathanEntity;
 import dev.galacticraft.mod.world.gen.feature.GCFeatures;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;

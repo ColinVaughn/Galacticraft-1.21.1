@@ -27,7 +27,6 @@ import dev.galacticraft.api.universe.celestialbody.CelestialBodyTags;
 import dev.galacticraft.mod.client.render.dimension.solarflare.ClientSolarFlares;
 import dev.galacticraft.mod.content.entity.vehicle.LanderEntity;
 import dev.galacticraft.mod.tag.GCItemTags;
-import dev.galacticraft.mod.world.dimension.GCDimensions;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;

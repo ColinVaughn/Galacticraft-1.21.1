@@ -25,7 +25,6 @@ package dev.galacticraft.mod.client.render.dimension.duststorm;
 
 import dev.galacticraft.api.universe.celestialbody.CelestialBodyTags;
 import dev.galacticraft.mod.network.s2c.DustStormSyncPayload;
-import dev.galacticraft.mod.world.dimension.GCDimensions;
 import dev.galacticraft.mod.world.dimension.duststorm.DustStormCurve;
 import dev.galacticraft.mod.world.dimension.duststorm.DustStormPhase;
 import net.minecraft.client.Minecraft;

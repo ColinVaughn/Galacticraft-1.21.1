@@ -59,6 +59,14 @@ public class GCItems {
     public static final GCRegistry<Item> ITEMS = new GCRegistry<>(BuiltInRegistries.ITEM);
     public static final List<ItemLike> HIDDEN_ITEMS = new ArrayList<>(1);
 
+    public static final Item ASTEROID_PICTURE = registerGeneric(Constant.Item.ASTEROID_PICTURE);
+    public static final Item EARTH_PICTURE = registerGeneric(Constant.Item.EARTH_PICTURE);
+    public static final Item MOON_PICTURE = registerGeneric(Constant.Item.MOON_PICTURE);
+    public static final Item MARS_PICTURE = registerGeneric(Constant.Item.MARS_PICTURE);
+    public static final Item VENUS_PICTURE = registerGeneric(Constant.Item.VENUS_PICTURE);
+    public static final Item MERCURY_PICTURE = registerGeneric(Constant.Item.MERCURY_PICTURE);
+    public static final Item JUPITER_PICTURE = registerGeneric(Constant.Item.JUPITER_PICTURE);
+
     // TORCHES
     public static final Item GLOWSTONE_TORCH = ITEMS.register(Constant.Block.GLOWSTONE_TORCH, new StandingAndWallBlockItem(GCBlocks.GLOWSTONE_TORCH, GCBlocks.GLOWSTONE_WALL_TORCH, new Item.Properties(), Direction.DOWN));
     public static final Item UNLIT_TORCH = ITEMS.register(Constant.Block.UNLIT_TORCH, new StandingAndWallBlockItem(GCBlocks.UNLIT_TORCH, GCBlocks.UNLIT_WALL_TORCH, new Item.Properties(), Direction.DOWN));

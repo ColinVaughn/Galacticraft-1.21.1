@@ -42,22 +42,12 @@ import static dev.galacticraft.mod.content.GCBlocks.*;
 import static dev.galacticraft.mod.content.item.GCItems.*;
 
 public class GCCreativeModeTabs {
-    public static final CreativeModeTab BLOCKS_GROUP = CreativeModeTab
+
+    public static final CreativeModeTab MOON_GROUP = CreativeModeTab
             .builder(CreativeModeTab.Row.TOP, 0)
-            .icon(() -> new ItemStack(CHISELED_MOON_ROCK_BRICK))
-            .title(Component.translatable(Translations.ItemGroup.BLOCKS))
+            .icon(() -> new ItemStack(MOON_PICTURE))
+            .title(Component.translatable(Translations.ItemGroup.MOON))
             .displayItems((parameters, output) -> {
-                // DECORATION BLOCKS
-                for (GCBlockRegistry.DecorationSet decorationSet : BLOCKS.getDecorations()) {
-                    output.accept(decorationSet.item());
-                    output.accept(decorationSet.stairsItem());
-                    output.accept(decorationSet.slabItem());
-                    output.accept(decorationSet.wallItem());
-                    output.accept(decorationSet.detailedItem());
-                    output.accept(decorationSet.detailedStairsItem());
-                    output.accept(decorationSet.detailedSlabItem());
-                    output.accept(decorationSet.detailedWallItem());
-                }
 
                 // MOON UNDERGROUND
                 output.accept(VESICULAR_LUNAR_BASALT);
@@ -154,6 +144,39 @@ public class GCCreativeModeTabs {
                 output.accept(MOON_MOSS);
                 output.accept(MOON_TANGLE);
 
+                output.accept(MOON_COPPER_ORE);
+                output.accept(LUNASLATE_COPPER_ORE);
+                output.accept(MOON_TIN_ORE);
+                output.accept(LUNASLATE_TIN_ORE);
+                output.accept(MOON_CHEESE_ORE);
+                output.accept(LUNAR_SAPPHIRE_ORE);
+                output.accept(LUNAR_SAPPHIRE_BLOCK);
+                output.accept(OLIVINE_BASALT);
+                output.accept(RICH_OLIVINE_BASALT);
+
+                // CHEESE BLOCKS
+                output.accept(MOON_CHEESE_BLOCK);
+                output.accept(MOON_CHEESE_LOG);
+                output.accept(MOON_CHEESE_LEAVES);
+
+                // MOON GLASSES
+                output.accept(OLIVINE_GLASS);
+                output.accept(OLIVINE_GLASS_PANE);
+                output.accept(MOON_GLASS);
+                output.accept(MOON_GLASS_PANE);
+
+                output.accept(OLIVINE_BLOCK);
+                output.accept(BUDDING_OLIVINE);
+                output.accept(OLIVINE_CLUSTER);
+
+            }).build();
+
+    public static final CreativeModeTab MARS_GROUP = CreativeModeTab
+            .builder(CreativeModeTab.Row.TOP, 1)
+            .icon(() -> new ItemStack(MARS_PICTURE))
+            .title(Component.translatable(Translations.ItemGroup.MARS))
+            .displayItems((parameters, output) -> {
+
                 // MARS NATURAL
                 output.accept(MARS_SURFACE_ROCK);
                 output.accept(MARS_ROCKY_REGOLITH);
@@ -169,20 +192,22 @@ public class GCCreativeModeTabs {
                 output.accept(MARS_COBBLESTONE_STAIRS);
                 output.accept(MARS_COBBLESTONE_SLAB);
                 output.accept(MARS_COBBLESTONE_WALL);
+                output.accept(RAW_DESH_BLOCK);
+                output.accept(DESH_BLOCK);
 
-                // JUPITER CLOUDLANDS
-                dev.galacticraft.mod.content.block.jupiter.JupiterBlocks.NAMES.keySet().forEach(output::accept);
-                output.accept(DENSE_CLOUD);
-                output.accept(PACKED_CLOUD);
-                output.accept(AMMONIA_FROST);
+                // MARS ORES
+                output.accept(MARS_IRON_ORE);
+                output.accept(MARS_COPPER_ORE);
+                output.accept(MARS_TIN_ORE);
+                output.accept(DESH_ORE);
 
-                // ASTEROID NATURAL
-                output.accept(ASTEROID_ROCK);
-                output.accept(ASTEROID_ROCK_1);
-                output.accept(ASTEROID_ROCK_2);
-                output.accept(DENSE_ICE);
+            }).build();
 
-                // VENUS NATURAL
+    public static final CreativeModeTab VENUS_GROUP = CreativeModeTab
+            .builder(CreativeModeTab.Row.TOP, 2)
+            .icon(() -> new ItemStack(VENUS_PICTURE))
+            .title(Component.translatable(Translations.ItemGroup.VENUS))
+            .displayItems((parameters, output) -> {
                 output.accept(SOFT_VENUS_ROCK);
                 output.accept(HARD_VENUS_ROCK);
                 output.accept(SCORCHED_VENUS_ROCK);
@@ -194,8 +219,20 @@ public class GCCreativeModeTabs {
                 output.accept(PUMICE);
                 output.accept(VAPOR_SPOUT);
                 output.accept(VOLCANO_VENT);
+                output.accept(VENUS_COPPER_ORE);
+                output.accept(VENUS_TIN_ORE);
+                output.accept(VENUS_ALUMINUM_ORE);
+                output.accept(GALENA_ORE);
+                output.accept(SOLAR_ORE);
+                output.accept(RAW_LEAD_BLOCK);
+                output.accept(LEAD_BLOCK);
+            }).build();
 
-                // MERCURY NATURAL
+    public static final CreativeModeTab MERCURY_GROUP = CreativeModeTab
+            .builder(CreativeModeTab.Row.TOP, 3)
+            .icon(() -> new ItemStack(MERCURY_PICTURE))
+            .title(Component.translatable(Translations.ItemGroup.MERCURY))
+            .displayItems((parameters, output) -> {
                 output.accept(MERCURY_ROCKY_REGOLITH);
                 output.accept(MERCURY_PLAINS_ROCK);
                 output.accept(MERCURY_IMPACT_BRECCIA);
@@ -205,6 +242,52 @@ public class GCCreativeModeTabs {
                 output.accept(MERCURY_STONE);
                 output.accept(MERCURY_SCARP_ROCK);
                 output.accept(MERCURY_CRYSTAL_CLUSTER);
+            }).build();
+
+    public static final CreativeModeTab JUPITER_GROUP = CreativeModeTab
+            .builder(CreativeModeTab.Row.TOP, 4)
+            .icon(() -> new ItemStack(JUPITER_PICTURE))
+            .title(Component.translatable(Translations.ItemGroup.JUPITER))
+            .displayItems((parameters, output) -> {
+                dev.galacticraft.mod.content.block.jupiter.JupiterBlocks.NAMES.keySet().forEach(output::accept);
+                output.accept(DENSE_CLOUD);
+                output.accept(PACKED_CLOUD);
+                output.accept(AMMONIA_FROST);
+            }).build();
+
+    public static final CreativeModeTab ASTEROIDS_GROUP = CreativeModeTab
+            .builder(CreativeModeTab.Row.TOP, 5)
+            .icon(() -> new ItemStack(ASTEROID_PICTURE))
+            .title(Component.translatable(Translations.ItemGroup.ASTEROIDS))
+            .displayItems((parameters, output) -> {
+                output.accept(ASTEROID_ROCK);
+                output.accept(ASTEROID_ROCK_1);
+                output.accept(ASTEROID_ROCK_2);
+                output.accept(ASTEROID_IRON_ORE);
+                output.accept(ASTEROID_ALUMINUM_ORE);
+                output.accept(ILMENITE_ORE);
+                output.accept(ASTEROID_SILICON_ORE);
+            }).build();
+
+    public static final CreativeModeTab BLOCKS_GROUP = CreativeModeTab
+            .builder(CreativeModeTab.Row.TOP, 6)
+            .icon(() -> new ItemStack(EARTH_PICTURE))
+            .title(Component.translatable(Translations.ItemGroup.BLOCKS))
+            .displayItems((parameters, output) -> {
+                // DECORATION BLOCKS
+                for (GCBlockRegistry.DecorationSet decorationSet : BLOCKS.getDecorations()) {
+                    output.accept(decorationSet.item());
+                    output.accept(decorationSet.stairsItem());
+                    output.accept(decorationSet.slabItem());
+                    output.accept(decorationSet.wallItem());
+                    output.accept(decorationSet.detailedItem());
+                    output.accept(decorationSet.detailedStairsItem());
+                    output.accept(decorationSet.detailedSlabItem());
+                    output.accept(decorationSet.detailedWallItem());
+                }
+
+                // SHARED WORLD GEN
+                output.accept(DENSE_ICE);
 
                 // ORES
                 output.accept(SILICON_ORE);
@@ -213,58 +296,20 @@ public class GCCreativeModeTabs {
                 output.accept(DEEPSLATE_TIN_ORE);
                 output.accept(ALUMINUM_ORE);
                 output.accept(DEEPSLATE_ALUMINUM_ORE);
-
-                output.accept(MOON_COPPER_ORE);
-                output.accept(LUNASLATE_COPPER_ORE);
-                output.accept(MOON_TIN_ORE);
-                output.accept(LUNASLATE_TIN_ORE);
-                output.accept(MOON_CHEESE_ORE);
-                output.accept(LUNAR_SAPPHIRE_ORE);
-                output.accept(OLIVINE_BASALT);
-                output.accept(RICH_OLIVINE_BASALT);
                 output.accept(FALLEN_METEOR);
-
-                output.accept(MARS_IRON_ORE);
-                output.accept(MARS_COPPER_ORE);
-                output.accept(MARS_TIN_ORE);
-                output.accept(DESH_ORE);
-
-                output.accept(ASTEROID_IRON_ORE);
-                output.accept(ASTEROID_ALUMINUM_ORE);
-                output.accept(ILMENITE_ORE);
-                output.accept(ASTEROID_SILICON_ORE);
-
-                output.accept(VENUS_COPPER_ORE);
-                output.accept(VENUS_TIN_ORE);
-                output.accept(VENUS_ALUMINUM_ORE);
-                output.accept(GALENA_ORE);
-                output.accept(SOLAR_ORE);
 
                 // COMPACT MINERAL BLOCKS
                 output.accept(RAW_TIN_BLOCK);
                 output.accept(RAW_ALUMINUM_BLOCK);
                 output.accept(RAW_METEORIC_IRON_BLOCK);
-                output.accept(RAW_DESH_BLOCK);
                 output.accept(RAW_TITANIUM_BLOCK);
-                output.accept(RAW_LEAD_BLOCK);
 
                 output.accept(SILICON_BLOCK);
-                output.accept(LUNAR_SAPPHIRE_BLOCK);
-                output.accept(OLIVINE_BLOCK);
-                output.accept(BUDDING_OLIVINE);
-                output.accept(OLIVINE_CLUSTER);
 
                 output.accept(TIN_BLOCK);
                 output.accept(ALUMINUM_BLOCK);
                 output.accept(METEORIC_IRON_BLOCK);
-                output.accept(DESH_BLOCK);
                 output.accept(TITANIUM_BLOCK);
-                output.accept(LEAD_BLOCK);
-
-                // CHEESE BLOCKS
-                output.accept(MOON_CHEESE_BLOCK);
-                output.accept(MOON_CHEESE_LOG);
-                output.accept(MOON_CHEESE_LEAVES);
 
                 // MOON VILLAGER SPECIAL
                 output.accept(LUNAR_CARTOGRAPHY_TABLE);
@@ -298,23 +343,11 @@ public class GCCreativeModeTabs {
                 output.accept(METEORIC_IRON_DOOR);
 
                 // SPECIAL
-                output.accept(ALUMINUM_WIRE);
-                output.accept(HEAVY_ALUMINUM_WIRE);
                 output.accept(SEALABLE_ALUMINUM_WIRE);
                 output.accept(HEAVY_SEALABLE_ALUMINUM_WIRE);
                 for (PipeColor color : PipeColor.byRainbowOrder()) {
-                    output.accept(GLASS_FLUID_PIPES.get(color));
-                }
-                for (PipeColor color : PipeColor.byRainbowOrder()) {
                     output.accept(SEALABLE_GLASS_FLUID_PIPES.get(color));
                 }
-                output.accept(ROCKET_LAUNCH_PAD);
-                output.accept(FUELING_PAD);
-                output.accept(ROCKET_WORKBENCH);
-
-                // MISC MACHINES
-                output.accept(CRYOGENIC_CHAMBER);
-                output.accept(PLAYER_TRANSPORT_TUBE);
 
                 for (DyeColor color : GCBlockRegistry.COLOR_ORDER) {
                     ItemStack stack = new ItemStack(PARACHEST);
@@ -327,18 +360,12 @@ public class GCCreativeModeTabs {
                 output.accept(CLEAR_VACUUM_GLASS);
                 output.accept(STRONG_VACUUM_GLASS);
 
-                // MOON GLASSES
-                output.accept(OLIVINE_GLASS);
-                output.accept(OLIVINE_GLASS_PANE);
-                output.accept(MOON_GLASS);
-                output.accept(MOON_GLASS_PANE);
-
                 // MISC WORLD GEN
                 output.accept(CAVERNOUS_VINES);
             }).build();
 
     public static final CreativeModeTab MACHINES_GROUP = CreativeModeTab
-            .builder(CreativeModeTab.Row.TOP, 1)
+            .builder(CreativeModeTab.Row.BOTTOM, 0)
             .icon(() -> new ItemStack(COAL_GENERATOR))
             .title(Component.translatable(Translations.ItemGroup.MACHINES))
             .displayItems((parameters, output) -> {
@@ -377,13 +404,24 @@ public class GCCreativeModeTabs {
                 output.accept(DECONSTRUCTOR);
                 output.accept(AIR_LOCK_FRAME);
                 output.accept(AIR_LOCK_CONTROLLER);
+                output.accept(CRYOGENIC_CHAMBER);
+                output.accept(PLAYER_TRANSPORT_TUBE);
+                output.accept(ROCKET_LAUNCH_PAD);
+                output.accept(FUELING_PAD);
+                output.accept(ROCKET_WORKBENCH);
+                output.accept(ALUMINUM_WIRE);
+                output.accept(HEAVY_ALUMINUM_WIRE);
+                for (PipeColor color : PipeColor.byRainbowOrder()) {
+                    output.accept(GLASS_FLUID_PIPES.get(color));
+                }
             }).build();
 
     public static final CreativeModeTab ITEMS_GROUP = CreativeModeTab
-            .builder(CreativeModeTab.Row.TOP, 2)
-            .icon(() -> new ItemStack(CANVAS))
+            .builder(CreativeModeTab.Row.BOTTOM, 1)
+            .icon(() -> new ItemStack(OXYGEN_GEAR))
             .title(Component.translatable(Translations.ItemGroup.ITEMS))
             .displayItems((parameters, output) -> {
+
                 // BATTERIES
                 dev.galacticraft.mod.content.item.jupiter.JupiterItems.NAMES.keySet().forEach(output::accept);
                 for (var controller : java.util.List.of(dev.galacticraft.mod.content.item.jupiter.JupiterItems.PRESSURE_CONTROLLER_MK1, dev.galacticraft.mod.content.item.jupiter.JupiterItems.PRESSURE_CONTROLLER_MK2)) {
@@ -666,11 +704,20 @@ public class GCCreativeModeTabs {
                 output.accept(CRUDE_OIL_BUCKET);
                 output.accept(FUEL_BUCKET);
                 output.accept(SULFURIC_ACID_BUCKET);
+
+                // PICTURES
+                output.accept(EARTH_PICTURE);
+                output.accept(MOON_PICTURE);
+                output.accept(MARS_PICTURE);
+                output.accept(VENUS_PICTURE);
+                output.accept(MERCURY_PICTURE);
+                output.accept(JUPITER_PICTURE);
+                output.accept(ASTEROID_PICTURE);
             })
             .build();
 
     public static final CreativeModeTab CANNED_FOOD_GROUP = CreativeModeTab
-            .builder(CreativeModeTab.Row.TOP, 3)
+            .builder(CreativeModeTab.Row.BOTTOM, 2)
             .icon(() -> new ItemStack(GCItems.CANNED_FOOD))
             .title(Component.translatable(Translations.ItemGroup.CANNED_FOOD))
             .displayItems((parameters, output) -> {
@@ -683,6 +730,12 @@ public class GCCreativeModeTabs {
     }
 
     public static void register() {
+        Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, Constant.id("moon"), MOON_GROUP);
+        Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, Constant.id("mars"), MARS_GROUP);
+        Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, Constant.id("venus"), VENUS_GROUP);
+        Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, Constant.id("mercury"), MERCURY_GROUP);
+        Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, Constant.id("jupiter"), JUPITER_GROUP);
+        Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, Constant.id("asteroids"), ASTEROIDS_GROUP);
         Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, Constant.id("1." + Constant.Block.ITEM_GROUP_BLOCKS), BLOCKS_GROUP);
         Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, Constant.id("2." + Constant.Block.ITEM_GROUP_MACHINES), MACHINES_GROUP);
         Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, Constant.id("3." + Constant.Item.ITEM_GROUP), ITEMS_GROUP);

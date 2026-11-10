@@ -168,8 +168,8 @@ public class OxygenCompressorBlockEntity extends MachineBlockEntity implements P
 
     private void triggerGasLeak(ServerLevel level, BlockPos pos, BlockState blockstate) {
         didGasTransfer = false;
-        Vec3 particle_pos = Vec3.atCenterOf(pos).relative(blockstate.getValue(BlockStateProperties.HORIZONTAL_FACING), 0.3);
-        level.sendParticles(ParticleTypes.WHITE_SMOKE, particle_pos.x, particle_pos.y, particle_pos.z, 80, 0.1, 0.1, 0.1, 0.04);
+        Vec3 particlePos = Vec3.atCenterOf(pos).relative(blockstate.getValue(BlockStateProperties.HORIZONTAL_FACING), 0.3);
+        level.sendParticles(ParticleTypes.WHITE_SMOKE, particlePos.x, particlePos.y, particlePos.z, 80, 0.1, 0.1, 0.1, 0.04);
         level.playSound(null, pos, GCSounds.GAS_RELEASE, SoundSource.BLOCKS, 0.7f, 1.0f);
     }
 
