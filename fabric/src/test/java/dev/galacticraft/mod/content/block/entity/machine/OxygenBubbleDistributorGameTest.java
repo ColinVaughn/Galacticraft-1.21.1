@@ -104,9 +104,9 @@ public final class OxygenBubbleDistributorGameTest implements GalacticraftGameTe
         OxygenBubbleDistributorBlockEntity first = placeDistributor(context, new BlockPos(2, 1, 3));
         OxygenBubbleDistributorBlockEntity second = placeDistributor(context, new BlockPos(5, 1, 3));
         try {
-            first.distributeOxygenToArea(2, true);
-            second.distributeOxygenToArea(2, true);
-            first.distributeOxygenToArea(2, false);
+            first.updateBreathableArea(2);
+            second.updateBreathableArea(2);
+            first.updateBreathableArea(0);
 
             context.assertTrue(breathable(context, new BlockPos(3, 2, 3)) && breathable(context, new BlockPos(4, 2, 3)),
                     "switching one bubble off took the air it shared with the bubble beside it");
@@ -114,8 +114,8 @@ public final class OxygenBubbleDistributorGameTest implements GalacticraftGameTe
                     "the switched-off bubble kept the air only it covered, so this proves nothing");
             context.succeed();
         } finally {
-            first.distributeOxygenToArea(2, false);
-            second.distributeOxygenToArea(2, false);
+            first.updateBreathableArea(0);
+            second.updateBreathableArea(0);
         }
     }
 
@@ -129,7 +129,7 @@ public final class OxygenBubbleDistributorGameTest implements GalacticraftGameTe
         BlockPos inside = new BlockPos(4, 2, 3);
         OxygenBubbleDistributorBlockEntity distributor = placeDistributor(context, new BlockPos(3, 1, 3));
         try {
-            distributor.distributeOxygenToArea(2, true);
+            distributor.updateBreathableArea(2);
             context.assertTrue(breathable(context, inside), "the bubble never reached the block under test");
 
             context.setBlock(inside, Blocks.STONE);
@@ -137,7 +137,7 @@ public final class OxygenBubbleDistributorGameTest implements GalacticraftGameTe
             context.assertTrue(breathable(context, inside), "building and breaking a block inside a bubble left a pocket of vacuum");
             context.succeed();
         } finally {
-            distributor.distributeOxygenToArea(2, false);
+            distributor.updateBreathableArea(0);
         }
     }
 
@@ -146,12 +146,12 @@ public final class OxygenBubbleDistributorGameTest implements GalacticraftGameTe
     public void anOxygenDetectorPlacedInsideABubbleDetectsIt(GameTestHelper context) {
         BlockPos detectorPos = new BlockPos(3, 2, 4);
         OxygenBubbleDistributorBlockEntity distributor = placeDistributor(context, new BlockPos(3, 1, 3));
-        distributor.distributeOxygenToArea(2, true);
+        distributor.updateBreathableArea(2);
         context.setBlock(detectorPos, GCBlocks.OXYGEN_DETECTOR);
 
         await(context, () -> context.getBlockState(detectorPos).getValue(OxygenDetectorBlock.POWERED),
                 "an oxygen detector inside a bubble never detected any oxygen", () -> {
-            distributor.distributeOxygenToArea(2, false);
+            distributor.updateBreathableArea(0);
             context.succeed();
         });
     }
@@ -191,17 +191,18 @@ public final class OxygenBubbleDistributorGameTest implements GalacticraftGameTe
     }
 
     /**
-     * The bubble is put up by hand, so the distributor has not ticked since: that is also where one stands
-     * straight after its chunk loads back in with its bubble, and breaking it must still clear the air.
+     * The bubble is put up by hand, so the distributor has not ticked since. Its current size matches
+     * the applied radius, as on a running machine, and breaking it must still clear the air.
      */
     @GameTest(template = EMPTY_STRUCTURE, batch = VACUUM_BATCH)
     public void breakingADistributorTakesItsBubbleWithIt(GameTestHelper context) {
         BlockPos distributorPos = new BlockPos(3, 1, 3);
         BlockPos inside = distributorPos.above(2);
         OxygenBubbleDistributorBlockEntity distributor = placeDistributor(context, distributorPos);
-        distributor.distributeOxygenToArea(2, true);
+        distributor.updateBreathableArea(2);
+        distributor.setSize(2);
         if (!breathable(context, inside)) {
-            distributor.distributeOxygenToArea(2, false);
+            distributor.updateBreathableArea(0);
             context.fail("the bubble never went up, so this proves nothing");
             return;
         }
@@ -312,7 +313,7 @@ public final class OxygenBubbleDistributorGameTest implements GalacticraftGameTe
         BlockPos distributorPos = new BlockPos(3, 1, 3);
         OxygenBubbleDistributorBlockEntity distributor = placeDistributor(context, distributorPos);
         try {
-            distributor.distributeOxygenToArea(2, true);
+            distributor.updateBreathableArea(2);
             ServerLevel level = context.getLevel();
             OxygenBubbleManager.Bubbles saved = OxygenBubbleManager.Bubbles.get(level);
             OxygenBubbleManager.Bubbles loaded = OxygenBubbleManager.Bubbles.load(saved.save(new CompoundTag(), level.registryAccess()), level.registryAccess());
@@ -326,7 +327,7 @@ public final class OxygenBubbleDistributorGameTest implements GalacticraftGameTe
                 context.succeed();
             }
         } finally {
-            distributor.distributeOxygenToArea(2, false);
+            distributor.updateBreathableArea(0);
         }
     }
 

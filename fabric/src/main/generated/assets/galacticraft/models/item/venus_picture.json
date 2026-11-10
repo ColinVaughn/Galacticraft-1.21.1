@@ -1,0 +1,6 @@
+{
+  "parent": "galacticraft:item/template_picture",
+  "textures": {
+    "layer0": "galacticraft:gui/celestialbodies/venus"
+  }
+}

@@ -117,7 +117,13 @@ public class GCTranslationProvider extends TranslationProvider {
         this.generateAdvancementsTranslations();
 
         // Tabs in the creative inventory
-        this.add(ItemGroup.BLOCKS, "Galacticraft - Boobcat Edition Blocks");
+        this.add(ItemGroup.BLOCKS, "Galacticraft - BE Blocks");
+        this.add(ItemGroup.MOON, "Galacticraft - BE Blocks");
+        this.add(ItemGroup.MARS, "Galacticraft - BE Blocks");
+        this.add(ItemGroup.VENUS, "Galacticraft - BE Blocks");
+        this.add(ItemGroup.MERCURY, "Galacticraft - BE Blocks");
+        this.add(ItemGroup.JUPITER, "Galacticraft - BE Blocks");
+        this.add(ItemGroup.ASTEROIDS, "Galacticraft - BE Blocks");
         this.add(ItemGroup.ITEMS, "Galacticraft - Boobcat Edition Items");
         this.add(ItemGroup.MACHINES, "Galacticraft - Boobcat Edition Machines");
         this.add(ItemGroup.CANNED_FOOD, "Canned Food");
@@ -689,6 +695,15 @@ public class GCTranslationProvider extends TranslationProvider {
         dev.galacticraft.mod.content.item.jupiter.JupiterItems.NAMES.forEach(this::item);
         this.item(GCItems.BATTERY, "Battery");
         this.item(GCItems.INFINITE_BATTERY, "Infinite Battery");
+
+        // PICTURES
+        this.item(GCItems.ASTEROID_PICTURE, "Asteroid Picture");
+        this.item(GCItems.EARTH_PICTURE, "Earth Picture");
+        this.item(GCItems.MOON_PICTURE, "Moon Picture");
+        this.item(GCItems.MARS_PICTURE, "Mars Picture");
+        this.item(GCItems.VENUS_PICTURE, "Venus Picture");
+        this.item(GCItems.MERCURY_PICTURE, "Mercury Picture");
+        this.item(GCItems.JUPITER_PICTURE, "Jupiter Picture");
 
         // FLUID BUCKETS
         this.item(GCItems.CRUDE_OIL_BUCKET, "Oil Bucket");

@@ -202,7 +202,7 @@ public class OxygenBubbleDistributorBlockEntity extends MachineBlockEntity {
     public void setRemoved() {
         if (this.level != null && !this.level.isClientSide() && this.appliedBubbleRadiusSquared >= 0
                 && this.level.hasChunkAt(this.worldPosition)) {
-            this.updateBreathableArea(this.size);
+            this.updateBreathableArea(0.0);
         }
         super.setRemoved();
     }

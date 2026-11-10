@@ -31,7 +31,6 @@ import dev.galacticraft.mod.content.GCEntityTypes;
 import dev.galacticraft.mod.content.entity.vehicle.RocketEntity;
 import dev.galacticraft.mod.content.entity.vehicle.LanderEntity;
 import dev.galacticraft.mod.content.entity.vehicle.AutomaticLanderEntity;
-import dev.galacticraft.mod.content.teleporters.DestinationArrival;
 import dev.galacticraft.mod.attachments.GCServerPlayer;
 import dev.galacticraft.mod.content.item.GCItems;
 import dev.galacticraft.mod.content.rocket.RocketPrefabs;

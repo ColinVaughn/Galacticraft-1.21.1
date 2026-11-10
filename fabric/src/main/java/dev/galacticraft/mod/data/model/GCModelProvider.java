@@ -774,6 +774,11 @@ public class GCModelProvider extends FabricModelProvider {
     @Override
     public void generateItemModels(ItemModelGenerators generator) {
         dev.galacticraft.mod.content.item.jupiter.JupiterItems.NAMES.keySet().forEach(item -> generator.generateFlatItem(item, ModelTemplates.FLAT_ITEM));
+
+        // PICTURES
+        for (String e : new String[] { "earth", "moon", "mars", "venus", "jupiter", "mercury", "asteroid" })
+            GCModelTemplates.PICTURE.create(Constant.id("item/" + e + "_picture"), TextureMapping.layer0(Constant.id("gui/celestialbodies/" + e)), generator.output);
+
         // MATERIALS
         generator.generateFlatItem(GCItems.SILICON, ModelTemplates.FLAT_ITEM);
 
