@@ -72,7 +72,7 @@ public class CompressorBlockEntity extends BasicRecipeMachineBlockEntity<Craftin
 
     private static final StorageSpec SPEC = StorageSpec.of(
             MachineItemStorage.builder()
-                    .add(ItemResourceSlot.builder(TransferType.TRANSFER)
+                    .add(ItemResourceSlot.builder(TransferType.INPUT)
                             .pos(FUEL_X, FUEL_Y)
                             .filter((item, tag) -> {
                                 return fuelTime(item) > 0;

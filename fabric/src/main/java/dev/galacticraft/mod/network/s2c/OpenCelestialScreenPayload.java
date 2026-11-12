@@ -40,11 +40,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public record OpenCelestialScreenPayload(@Nullable RocketData data,
-                                         Holder<CelestialBody<?, ?>> celestialBody) implements S2CPayload {
+                                         @Nullable Holder<CelestialBody<?, ?>> celestialBody) implements S2CPayload {
     public static final StreamCodec<RegistryFriendlyByteBuf, OpenCelestialScreenPayload> STREAM_CODEC = StreamCodec.composite(
             StreamCodecs.ofNullable(RocketData.STREAM_CODEC),
             p -> p.data,
-            ByteBufCodecs.holderRegistry(AddonRegistries.CELESTIAL_BODY),
+            StreamCodecs.ofNullable(ByteBufCodecs.holderRegistry(AddonRegistries.CELESTIAL_BODY)),
             p -> p.celestialBody,
             OpenCelestialScreenPayload::new
     );
@@ -62,7 +62,8 @@ public record OpenCelestialScreenPayload(@Nullable RocketData data,
         return new Runnable() {
             @Override
             public void run() {
-                net.minecraft.client.Minecraft.getInstance().setScreen(new CelestialSelectionScreen(false, OpenCelestialScreenPayload.this.data(), true, OpenCelestialScreenPayload.this.celestialBody.value()));
+                Holder<CelestialBody<?, ?>> body = OpenCelestialScreenPayload.this.celestialBody;
+                net.minecraft.client.Minecraft.getInstance().setScreen(new CelestialSelectionScreen(false, OpenCelestialScreenPayload.this.data(), true, body != null ? body.value() : null));
             }
         };
     }

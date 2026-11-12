@@ -26,7 +26,8 @@ package dev.galacticraft.mod.machine;
 import dev.galacticraft.machinelib.api.block.entity.MachineBlockEntity;
 import dev.galacticraft.machinelib.api.machine.configuration.IOConfig;
 import dev.galacticraft.machinelib.api.storage.MachineFluidStorage;
-import dev.galacticraft.machinelib.api.storage.slot.FluidResourceSlot;
+import dev.galacticraft.machinelib.api.storage.ResourceStorage;
+import dev.galacticraft.machinelib.api.storage.slot.ResourceSlot;
 import dev.galacticraft.machinelib.api.transfer.TransferType;
 import dev.galacticraft.machinelib.api.storage.MachineEnergyStorage;
 import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
@@ -74,9 +75,13 @@ public final class MachineFaceDefaults {
      * storage's transfer rates. A machine whose only tank is a hidden internal buffer offers nothing.
      */
     public static @Nullable ResourceFlow defaultFluidFlow(MachineFluidStorage storage) {
+        return defaultResourceFlow(storage);
+    }
+
+    static @Nullable ResourceFlow defaultResourceFlow(ResourceStorage<?, ?> storage) {
         boolean insert = false;
         boolean extract = false;
-        for (FluidResourceSlot slot : storage) {
+        for (ResourceSlot<?> slot : storage) {
             TransferType mode = slot.transferMode();
             insert |= mode.externalInsertion();
             extract |= mode.externalExtraction();
@@ -168,6 +173,22 @@ public final class MachineFaceDefaults {
         applyFace(config, BlockFace.LEFT, ResourceFlow.OUTPUT, energyFlow, fluidFlow);
     }
 
+    /** Adds hopper ports to the previous default profile, preserving custom configurations. */
+    static void applyItemFaces(IOConfig config, @Nullable ResourceFlow energyFlow,
+                               @Nullable ResourceFlow fluidFlow, @Nullable ResourceFlow itemFlow) {
+        if (itemFlow == null) return;
+        IOConfig previous = new IOConfig();
+        applyDefaultFaces(previous, energyFlow, fluidFlow);
+        if (config.hasChanged(previous)) return;
+
+        if (itemFlow.canFlowIn(ResourceFlow.INPUT)) {
+            config.get(BlockFace.TOP).setOption(ResourceType.ITEM, ResourceFlow.INPUT);
+        }
+        if (itemFlow.canFlowIn(ResourceFlow.OUTPUT)) {
+            config.get(BlockFace.BOTTOM).setOption(ResourceType.ITEM, ResourceFlow.OUTPUT);
+        }
+    }
+
     /**
      * Applies the default face configuration to {@code machine}, unless it already has one.
      *
@@ -204,5 +225,6 @@ public final class MachineFaceDefaults {
         ResourceFlow energyFlow = defaultEnergyFlow(energy.externalInsertionRate(), energy.externalExtractionRate());
         ResourceFlow fluidFlow = defaultFluidFlow(machine.fluidStorage());
         applyDefaultFaces(config, energyFlow, fluidFlow);
+        applyItemFaces(config, energyFlow, fluidFlow, defaultResourceFlow(machine.itemStorage()));
     }
 }

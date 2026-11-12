@@ -145,6 +145,7 @@ public final class ExampleAddon {
                                 throw new AssertionError("Native datagen helper lost its namespace/prefix");
                         }
                     }, "galacticraft-test:native_probe");
+            ReportedIssuesCheck.check(server);
             passed = true;
             dev.galacticraft.mod.Constant.LOGGER.info("NATIVE ADDON CHECK PASSED: registries, dimension, recipes, sources, capacity");
         } finally {

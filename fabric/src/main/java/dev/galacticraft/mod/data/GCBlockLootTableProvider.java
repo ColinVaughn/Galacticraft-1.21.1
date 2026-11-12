@@ -79,11 +79,11 @@ public class GCBlockLootTableProvider extends FabricBlockLootTableProvider {
         for (DecorationSet decorationSet : GCBlocks.BLOCKS.getDecorations()) {
             this.dropSelf(decorationSet.block());
             this.dropSelf(decorationSet.stairs());
-            this.dropSelf(decorationSet.slab());
+            this.add(decorationSet.slab(), this::createSlabItemTable);
             this.dropSelf(decorationSet.wall());
             this.dropSelf(decorationSet.detailedBlock());
             this.dropSelf(decorationSet.detailedStairs());
-            this.dropSelf(decorationSet.detailedSlab());
+            this.add(decorationSet.detailedSlab(), this::createSlabItemTable);
             this.dropSelf(decorationSet.detailedWall());
         }
 

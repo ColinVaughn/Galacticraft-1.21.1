@@ -706,6 +706,7 @@ public class GCBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                 .add(GCBlocks.MARS_WEATHERED_BASALT, GCBlocks.MARS_SEDIMENTARY_ROCK)
                 .add(GCBlocks.VENUS_PLAINS_BASALT, GCBlocks.VENUS_TESSERA_ROCK, GCBlocks.VENUS_FLOW_BASALT)
                 .forceAddTag(GCBlockTags.MACHINES)
+                .addTag(GCBlockTags.DECORATION_BLOCKS)
                 .add(stairs)
                 .add(slabs)
                 .add(walls)

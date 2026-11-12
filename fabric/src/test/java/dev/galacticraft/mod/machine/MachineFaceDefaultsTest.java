@@ -24,6 +24,9 @@
 package dev.galacticraft.mod.machine;
 
 import dev.galacticraft.machinelib.api.machine.configuration.IOConfig;
+import dev.galacticraft.machinelib.api.storage.MachineItemStorage;
+import dev.galacticraft.machinelib.api.storage.slot.ItemResourceSlot;
+import dev.galacticraft.machinelib.api.transfer.TransferType;
 import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
 import dev.galacticraft.machinelib.api.transfer.ResourceType;
 import dev.galacticraft.machinelib.api.util.BlockFace;
@@ -119,5 +122,52 @@ class MachineFaceDefaultsTest {
         assertTrue(MachineFaceDefaults.isOldTerraformerDefault(config));
         config.get(BlockFace.FRONT).setOption(ResourceType.NONE, ResourceFlow.BOTH);
         assertFalse(MachineFaceDefaults.isOldTerraformerDefault(config));
+    }
+
+    @Test
+    void itemPortsUpgradeThePreviousDefaultWithoutMovingPower() {
+        IOConfig config = new IOConfig();
+        MachineFaceDefaults.applyDefaultFaces(config, ResourceFlow.INPUT, null);
+
+        MachineFaceDefaults.applyItemFaces(config, ResourceFlow.INPUT, null, ResourceFlow.BOTH);
+
+        assertEquals(ResourceType.ITEM, config.get(BlockFace.TOP).getType());
+        assertEquals(ResourceFlow.INPUT, config.get(BlockFace.TOP).getFlow());
+        assertEquals(ResourceType.ITEM, config.get(BlockFace.BOTTOM).getType());
+        assertEquals(ResourceFlow.OUTPUT, config.get(BlockFace.BOTTOM).getFlow());
+        assertEquals(ResourceType.ENERGY, config.get(BlockFace.RIGHT).getType());
+        assertEquals(ResourceType.NONE, config.get(BlockFace.LEFT).getType());
+    }
+
+    @Test
+    void customPortConfigurationsAreNotReplaced() {
+        IOConfig config = new IOConfig();
+        MachineFaceDefaults.applyDefaultFaces(config, ResourceFlow.INPUT, null);
+        config.get(BlockFace.FRONT).setOption(ResourceType.ITEM, ResourceFlow.BOTH);
+        var before = config.createTag();
+
+        MachineFaceDefaults.applyItemFaces(config, ResourceFlow.INPUT, null, ResourceFlow.BOTH);
+
+        assertEquals(before, config.createTag());
+    }
+
+    @Test
+    void inputOnlyStorageDoesNotExposeAnOutput() {
+        IOConfig config = new IOConfig();
+        MachineFaceDefaults.applyItemFaces(config, null, null, ResourceFlow.INPUT);
+        assertEquals(ResourceType.ITEM, config.get(BlockFace.TOP).getType());
+        assertEquals(ResourceType.NONE, config.get(BlockFace.BOTTOM).getType());
+    }
+
+    @Test
+    void itemFlowIgnoresPlayerOnlyBatteryAndInternalSlots() {
+        var hidden = MachineItemStorage.spec(
+                ItemResourceSlot.builder(TransferType.TRANSFER),
+                ItemResourceSlot.builder(TransferType.INTERNAL)).create();
+        assertNull(MachineFaceDefaults.defaultResourceFlow(hidden));
+        var processing = MachineItemStorage.spec(
+                ItemResourceSlot.builder(TransferType.INPUT),
+                ItemResourceSlot.builder(TransferType.OUTPUT)).create();
+        assertEquals(ResourceFlow.BOTH, MachineFaceDefaults.defaultResourceFlow(processing));
     }
 }

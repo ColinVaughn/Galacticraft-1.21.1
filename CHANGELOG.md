@@ -1,5 +1,21 @@
 # Changelog
 
+## 5.4.20-prealpha - 2026-11-11
+
+Minecraft 1.21.1. Separate builds are provided for Fabric and NeoForge. Java 21 is required.
+
+### Fixes
+
+- Fixed a rocket launch crash in dimensions without a registered Galacticraft celestial body, including dimensions added by Custom Dimensions.
+- Fixed slow pickaxe mining and missing drops for decorative stairs, slabs, and walls.
+- Fixed double decorative slabs dropping only one slab instead of two.
+- Enabled default machine item automation: hoppers insert from above and extract from below. Custom port configurations are preserved.
+- Allowed hoppers to supply fuel to coal-powered compressors.
+
+### Updating
+
+- Update Galacticraft on both clients and servers; the celestial-screen packet format changed.
+
 ## 5.4.19-prealpha - 2026-11-08
 
 Minecraft 1.21.1. Separate builds are provided for Fabric and NeoForge. Java 21 is required.

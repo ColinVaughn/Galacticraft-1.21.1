@@ -58,6 +58,7 @@
       "dev.galacticraft.mod.gametest.SpiderBroodTestSuite",
       "dev.galacticraft.mod.gametest.GratingTestSuite",
       "dev.galacticraft.mod.gametest.MachineEnergyTransferTestSuite",
+      "dev.galacticraft.mod.gametest.MachineItemTransferTestSuite",
       "dev.galacticraft.mod.gametest.MonsterSpawnRuleTestSuite",
       "dev.galacticraft.mod.gametest.SpaceEvolutionTestSuite",
       "dev.galacticraft.mod.gametest.MoonVillagerCarryTestSuite",

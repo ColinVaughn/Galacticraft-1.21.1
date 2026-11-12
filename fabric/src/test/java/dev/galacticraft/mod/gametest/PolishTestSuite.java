@@ -40,17 +40,25 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.util.valueproviders.UniformFloat;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.Pig;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.VerticalAnchor;
 import net.minecraft.world.level.levelgen.carver.CarverDebugSettings;
 import net.minecraft.world.level.levelgen.heightproviders.ConstantHeight;
+
+import java.util.List;
 
 public final class PolishTestSuite implements GalacticraftGameTest {
     @GameTest(template = EMPTY_STRUCTURE)
@@ -142,6 +150,39 @@ public final class PolishTestSuite implements GalacticraftGameTest {
         } else {
             context.succeed();
         }
+    }
+
+    @GameTest(template = EMPTY_STRUCTURE)
+    public void everyDecorationVariantMinesAndDropsWithAPickaxe(GameTestHelper context) {
+        var player = context.makeMockPlayer(GameType.SURVIVAL);
+        var pickaxe = new ItemStack(Items.IRON_PICKAXE);
+        player.setItemSlot(EquipmentSlot.MAINHAND, pickaxe);
+        for (var set : GCBlocks.BLOCKS.getDecorations()) {
+            for (var block : List.of(set.block(), set.stairs(), set.slab(), set.wall(),
+                    set.detailedBlock(), set.detailedStairs(), set.detailedSlab(), set.detailedWall())) {
+                var state = block.defaultBlockState();
+                var id = BuiltInRegistries.BLOCK.getKey(block);
+                context.assertTrue(player.hasCorrectToolForDrops(state), id + " rejects an iron pickaxe");
+                context.assertTrue(pickaxe.getDestroySpeed(state) > 1, id + " mines at bare-hand speed");
+                var drops = Block.getDrops(state, context.getLevel(), context.absolutePos(BlockPos.ZERO), null, player, pickaxe);
+                context.assertTrue(drops.size() == 1 && drops.getFirst().is(block.asItem()) && drops.getFirst().getCount() == 1,
+                        id + " does not drop itself when mined");
+            }
+        }
+        context.succeed();
+    }
+
+    @GameTest(template = EMPTY_STRUCTURE)
+    public void doubleDecorationSlabsReturnBothSlabs(GameTestHelper context) {
+        for (var set : GCBlocks.BLOCKS.getDecorations()) {
+            for (var slab : List.of(set.slab(), set.detailedSlab())) {
+                var state = slab.defaultBlockState().setValue(SlabBlock.TYPE, SlabType.DOUBLE);
+                var drops = Block.getDrops(state, context.getLevel(), context.absolutePos(BlockPos.ZERO), null);
+                context.assertTrue(drops.size() == 1 && drops.getFirst().is(slab.asItem()) && drops.getFirst().getCount() == 2,
+                        BuiltInRegistries.BLOCK.getKey(slab) + " loses a slab when a double slab is mined");
+            }
+        }
+        context.succeed();
     }
 
     private static final class TestMeteor extends ThrowableMeteorChunkEntity {

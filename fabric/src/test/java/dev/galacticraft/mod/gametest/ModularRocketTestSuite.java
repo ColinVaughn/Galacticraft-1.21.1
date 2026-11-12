@@ -25,12 +25,14 @@ package dev.galacticraft.mod.gametest;
 
 import dev.galacticraft.api.accessor.ServerResearchAccessor;
 import dev.galacticraft.api.component.GCDataComponents;
+import dev.galacticraft.api.registry.AddonRegistries;
 import dev.galacticraft.api.rocket.LaunchStage;
 import dev.galacticraft.api.rocket.RocketData;
 import dev.galacticraft.mod.content.rocket.RocketPrefabs;
 import dev.galacticraft.api.rocket.part.RocketPartTypes;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.content.GCBlocks;
+import dev.galacticraft.mod.content.GCCelestialBodies;
 import dev.galacticraft.mod.content.GCEntityTypes;
 import dev.galacticraft.mod.content.GCRocketParts;
 import dev.galacticraft.mod.content.block.entity.RocketWorkbenchBlockEntity;
@@ -38,6 +40,7 @@ import dev.galacticraft.mod.content.entity.vehicle.RocketEntity;
 import dev.galacticraft.mod.content.item.GCItems;
 import dev.galacticraft.mod.content.item.RocketModuleItem;
 import dev.galacticraft.mod.content.rocket.part.data.StorageRocketData;
+import dev.galacticraft.mod.network.s2c.OpenCelestialScreenPayload;
 import dev.galacticraft.mod.recipe.GCRecipes;
 import dev.galacticraft.mod.recipe.ModularRocketRecipe;
 import dev.galacticraft.mod.screen.RocketWorkbenchMenu;
@@ -216,6 +219,36 @@ public class ModularRocketTestSuite implements GalacticraftGameTest {
                         "Synced recipe rejected a module tier");
             }
         } finally { buf.release(); }
+        context.succeed();
+    }
+
+    @GameTest(template = EMPTY_STRUCTURE)
+    public void celestialScreenSyncSupportsCustomDimensionsWithoutAPlanet(GameTestHelper context) {
+        var access = context.getLevel().registryAccess();
+        var bodies = access.registryOrThrow(AddonRegistries.CELESTIAL_BODY);
+        var earth = bodies.getHolderOrThrow(GCCelestialBodies.EARTH);
+        var moon = bodies.getHolderOrThrow(GCCelestialBodies.MOON);
+        var buffer = new RegistryFriendlyByteBuf(Unpooled.buffer(), access);
+        try {
+            for (var packet : List.of(
+                    new OpenCelestialScreenPayload(RocketPrefabs.TIER_1, null),
+                    new OpenCelestialScreenPayload(null, null),
+                    new OpenCelestialScreenPayload(RocketPrefabs.TIER_1, earth),
+                    new OpenCelestialScreenPayload(null, moon))) {
+                OpenCelestialScreenPayload.STREAM_CODEC.encode(buffer, packet);
+                var decoded = OpenCelestialScreenPayload.STREAM_CODEC.decode(buffer);
+                context.assertTrue(packet.celestialBody() == decoded.celestialBody(),
+                        "Celestial screen sync lost the departure planet");
+                if (packet.data() != null) assertParts(context, decoded.data(), 1, 1, 1, 1);
+                else context.assertTrue(decoded.data() == null, "Celestial screen sync added rocket data");
+                context.assertTrue(!buffer.isReadable(), "Celestial screen packet left unread bytes");
+                buffer.clear();
+            }
+        } finally { buffer.release(); }
+        context.assertTrue(RocketPrefabs.TIER_1.canTravel(access, null, moon.value()),
+                "A tier-1 rocket cannot reach the Moon from an unregistered dimension");
+        context.assertTrue(!RocketPrefabs.TIER_1.canTravel(access, null, bodies.getOrThrow(GCCelestialBodies.MARS)),
+                "An unregistered departure dimension bypassed rocket tier limits");
         context.succeed();
     }
 

@@ -72,7 +72,7 @@ public class CelestialSelectionScreen extends CelestialScreen {
 
     public final boolean mapMode;
     private final @Nullable RocketData data;
-    protected final CelestialBody<?, ?> fromBody;
+    protected final @Nullable CelestialBody<?, ?> fromBody;
     public final boolean canCreateStations;
 
     protected int createSpaceStationButtonY;
@@ -90,7 +90,7 @@ public class CelestialSelectionScreen extends CelestialScreen {
 
     private static final int SYSTEM_ROW = 14;
 
-    public CelestialSelectionScreen(boolean mapMode, @Nullable RocketData data, boolean canCreateStations, CelestialBody<?, ?> fromBody) {
+    public CelestialSelectionScreen(boolean mapMode, @Nullable RocketData data, boolean canCreateStations, @Nullable CelestialBody<?, ?> fromBody) {
         super(Component.empty());
         this.mapMode = mapMode;
         this.data = data;

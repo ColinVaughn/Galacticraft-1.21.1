@@ -81,7 +81,8 @@ sourceSets {
             srcDir(rootProject.file("fabric/src/test/java"))
             include("dev/galacticraft/test/addon/FuelPodUpgradeType.java")
             include("dev/galacticraft/test/addon/ExampleAddon.java")
-            include("dev/galacticraft/neoforge/BundledMixinPluginTest.java")
+            include("dev/galacticraft/test/addon/ReportedIssuesCheck.java")
+            if (!project.hasProperty("addonTest")) include("dev/galacticraft/neoforge/BundledMixinPluginTest.java")
             exclude { it.file.canonicalFile == rootProject.file("fabric/src/test/java/dev/galacticraft/test/addon/ExampleAddon.java").canonicalFile }
         }
         resources {
