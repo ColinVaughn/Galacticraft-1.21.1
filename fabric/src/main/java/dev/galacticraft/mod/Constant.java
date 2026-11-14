@@ -426,8 +426,8 @@ public interface Constant {
         String GEOTHERMAL_GENERATOR = "geothermal_generator";
         String ENERGY_STORAGE_MODULE = "energy_storage_module";
         String ENERGY_STORAGE_CLUSTER = "energy_storage_cluster";
-        String ALUMINUM_WIRE = "aluminum_wire";
-        String HEAVY_ALUMINUM_WIRE = "heavy_aluminum_wire";
+        String GRAY_ALUMINUM_WIRE = "gray_aluminum_wire";
+        String GRAY_HEAVY_ALUMINUM_WIRE = "gray_heavy_aluminum_wire";
         String SWITCHABLE_ALUMINUM_WIRE = "switchable_aluminum_wire";
         String SEALABLE_ALUMINUM_WIRE = "sealable_aluminum_wire";
         String HEAVY_SEALABLE_ALUMINUM_WIRE = "heavy_sealable_aluminum_wire";
@@ -446,6 +446,7 @@ public interface Constant {
         String MOON_TANGLE = "moon_tangle";
         String METEORIC_IRON_DOOR = "meteoric_iron_door";
         String BUDDING_OLIVINE = "budding_olivine";
+
     }
 
     interface Fluid {
@@ -474,6 +475,13 @@ public interface Constant {
     interface Item {
         String ITEM_GROUP_CANS = "cans";
         String ITEM_GROUP = "items";
+        String ASTEROID_PICTURE = "asteroid_picture";
+        String EARTH_PICTURE = "earth_picture";
+        String MOON_PICTURE = "moon_picture";
+        String MARS_PICTURE = "mars_picture";
+        String VENUS_PICTURE = "venus_picture";
+        String MERCURY_PICTURE = "mercury_picture";
+        String JUPITER_PICTURE = "jupiter_picture";
         String SILICON = "silicon";
         String EMPTY_CAN = "empty_can";
         String CANNED_FOOD = "canned_food";

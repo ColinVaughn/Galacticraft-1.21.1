@@ -49,12 +49,6 @@ public record BubbleSizePayload(BlockPos pos, double size) implements S2CPayload
     public static final ResourceLocation ID = Constant.id("bubble_size");
     public static final CustomPacketPayload.Type<BubbleSizePayload> TYPE = new CustomPacketPayload.Type<>(ID);
 
-    public BubbleSizePayload {
-        if (size < 0) {
-            throw new IllegalArgumentException("Size cannot be negative");
-        }
-    }
-
     @Override
     public Runnable handle(@NotNull NetworkManager.PacketContext context) {
         return () -> {

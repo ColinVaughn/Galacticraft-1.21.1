@@ -2,7 +2,6 @@ package dev.galacticraft.mod.client.gui.overlay;
 
 import dev.galacticraft.api.universe.celestialbody.CelestialBodyTags;
 import dev.galacticraft.mod.network.s2c.JupiterPressurePayload;
-import dev.galacticraft.mod.world.dimension.GCDimensions;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;

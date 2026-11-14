@@ -2,7 +2,7 @@
   "multipart": [
     {
       "apply": {
-        "model": "galacticraft:block/aluminum_wire"
+        "model": "galacticraft:block/gray_aluminum_wire"
       }
     },
     {

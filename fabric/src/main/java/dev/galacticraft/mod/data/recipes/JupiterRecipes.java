@@ -93,12 +93,12 @@ public final class JupiterRecipes {
                 .unlockedBy("has_frequency_module", has(GCItems.FREQUENCY_MODULE)).save(output);
         GCShapedRecipeBuilder.crafting(RecipeCategory.MISC, JupiterBlocks.STORM_CAPACITOR)
                 .define('P', JupiterItems.JOVIAN_COMPOSITE_PLATE).define('C', JupiterItems.CHARGED_CONDENSATE)
-                .define('E', GCBlocks.ENERGY_STORAGE_MODULE).define('H', GCBlocks.HEAVY_ALUMINUM_WIRE)
+                .define('E', GCBlocks.ENERGY_STORAGE_MODULE).define('H', GCBlocks.GRAY_HEAVY_ALUMINUM_WIRE)
                 .pattern("PCP").pattern("EHE").pattern("PCP")
                 .unlockedBy("has_charged_condensate", has(JupiterItems.CHARGED_CONDENSATE)).save(output);
         GCShapedRecipeBuilder.crafting(RecipeCategory.MISC, JupiterBlocks.LIGHTNING_GROUNDER)
                 .define('C', JupiterItems.CHARGED_CONDENSATE).define('R', GCItems.STEEL_POLE)
-                .define('P', JupiterItems.JOVIAN_COMPOSITE_PLATE).define('H', GCBlocks.HEAVY_ALUMINUM_WIRE)
+                .define('P', JupiterItems.JOVIAN_COMPOSITE_PLATE).define('H', GCBlocks.GRAY_HEAVY_ALUMINUM_WIRE)
                 .pattern("CRC").pattern(" R ").pattern("PHP")
                 .unlockedBy("has_charged_condensate", has(JupiterItems.CHARGED_CONDENSATE)).save(output);
         // Advanced habitats are the Stormheart encounter's reward.

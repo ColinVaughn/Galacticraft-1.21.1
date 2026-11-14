@@ -18,6 +18,11 @@
     {
       "type": "minecraft:single",
       "resource": "galacticraft:model/sphere"
+    },
+    {
+      "type": "directory",
+      "source": "gui/celestialbodies",
+      "prefix": "gui/celestialbodies/"
     }
   ]
 }

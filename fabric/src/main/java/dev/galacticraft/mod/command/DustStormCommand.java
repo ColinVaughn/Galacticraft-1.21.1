@@ -28,7 +28,6 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import dev.galacticraft.mod.Galacticraft;
-import dev.galacticraft.mod.content.GCCelestialBodies;
 import dev.galacticraft.mod.world.dimension.duststorm.DustStormTuning;
 import dev.galacticraft.mod.world.dimension.duststorm.MarsDustStormManager;
 import dev.galacticraft.mod.world.dimension.duststorm.MarsDustStormState;

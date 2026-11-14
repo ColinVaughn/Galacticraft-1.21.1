@@ -29,7 +29,6 @@ import com.llamalad7.mixinextras.sugar.Local;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.client.render.dimension.OverworldRenderer;
 import dev.galacticraft.mod.client.render.dimension.JupiterDimensionEffects;
-import dev.galacticraft.mod.world.dimension.GCDimensions;
 import dev.galacticraft.mod.content.entity.vehicle.RocketEntity;
 import dev.galacticraft.mod.tag.GCFluidTags;
 import net.minecraft.client.Camera;

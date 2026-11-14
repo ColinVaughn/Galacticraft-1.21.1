@@ -507,8 +507,8 @@ public final class OxygenSealerTestSuite implements GalacticraftGameTest {
 
         await(context, () -> sealer.isSealed() && breathable(context, BUBBLE_CENTRE),
                 "the sealer never sealed the room around the distributor", () -> {
-            distributor.distributeOxygenToArea(1, true);
-            distributor.distributeOxygenToArea(1, false);
+            distributor.updateBreathableArea(1);
+            distributor.updateBreathableArea(0);
             check(context, () -> {
                 if (!breathable(context, BUBBLE_CENTRE)) return "switching a bubble off inside a sealed room took the room's air";
                 if (breathable(context, WALL_IN_BUBBLE)) return "the bubble kept the air only it covered, so this proves nothing";
@@ -529,7 +529,7 @@ public final class OxygenSealerTestSuite implements GalacticraftGameTest {
 
         await(context, () -> sealer.isSealed() && breathable(context, INTERIOR),
                 "the sealer never sealed the room around the distributor", () -> {
-            distributor.distributeOxygenToArea(1, true);
+            distributor.updateBreathableArea(1);
             context.setBlock(CEILING, Blocks.AIR);
 
             runAt(context, SETTLE_TICKS, () -> {
@@ -541,7 +541,7 @@ public final class OxygenSealerTestSuite implements GalacticraftGameTest {
                         return null;
                     });
                 } finally {
-                    distributor.distributeOxygenToArea(1, false);
+                    distributor.updateBreathableArea(0);
                 }
             });
         });

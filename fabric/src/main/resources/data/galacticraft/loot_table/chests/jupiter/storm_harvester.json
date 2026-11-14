@@ -148,7 +148,7 @@
         {
           "type": "minecraft:item",
           "weight": 4,
-          "name": "galacticraft:heavy_aluminum_wire",
+          "name": "galacticraft:gray_heavy_aluminum_wire",
           "functions": [
             {
               "function": "minecraft:set_count",

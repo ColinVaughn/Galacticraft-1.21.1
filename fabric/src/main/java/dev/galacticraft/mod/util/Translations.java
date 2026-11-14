@@ -66,6 +66,12 @@ public interface Translations {
     }
 
     interface ItemGroup {
+        String MOON = "itemGroup.galacticraft.moon";
+        String MARS = "itemGroup.galacticraft.mars";
+        String VENUS = "itemGroup.galacticraft.venus";
+        String MERCURY = "itemGroup.galacticraft.mercury";
+        String JUPITER = "itemGroup.galacticraft.jupiter";
+        String ASTEROIDS = "itemGroup.galacticraft.asteroids";
         String ITEMS = "itemGroup.galacticraft.items";
         String BLOCKS = "itemGroup.galacticraft.blocks";
         String MACHINES = "itemGroup.galacticraft.machines";

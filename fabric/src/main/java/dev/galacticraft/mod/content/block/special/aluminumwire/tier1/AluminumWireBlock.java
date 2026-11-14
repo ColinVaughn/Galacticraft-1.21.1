@@ -24,6 +24,7 @@ package dev.galacticraft.mod.content.block.special.aluminumwire.tier1;
 
 import dev.galacticraft.mod.api.block.FluidLoggable;
 import dev.galacticraft.mod.api.block.WireBlock;
+import dev.galacticraft.mod.api.block.entity.PipeColor;
 import dev.galacticraft.mod.content.GCBlockEntityTypes;
 import dev.galacticraft.mod.content.block.entity.networked.WireBlockEntity;
 import net.minecraft.core.BlockPos;
@@ -38,8 +39,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class AluminumWireBlock extends WireBlock implements FluidLoggable {
-    public AluminumWireBlock(Properties settings) {
-        super(0.125f, settings);
+    public AluminumWireBlock(Properties settings, PipeColor color) {
+        super(0.125f, settings, color);
 
         BlockState defaultState = this.getStateDefinition().any();
         defaultState = FluidLoggable.applyDefaultState(defaultState);

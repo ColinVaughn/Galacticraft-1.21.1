@@ -1,7 +1,6 @@
 package dev.galacticraft.mod.world.dimension.jupiter;
 
 import dev.galacticraft.mod.content.GCBlocks;
-import dev.galacticraft.mod.content.block.special.launchpad.AbstractLaunchPad;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
