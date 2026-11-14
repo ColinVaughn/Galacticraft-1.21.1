@@ -409,8 +409,14 @@ public class GCCreativeModeTabs {
                 output.accept(ROCKET_LAUNCH_PAD);
                 output.accept(FUELING_PAD);
                 output.accept(ROCKET_WORKBENCH);
-                output.accept(ALUMINUM_WIRE);
-                output.accept(HEAVY_ALUMINUM_WIRE);
+                for (PipeColor color : PipeColor.byRainbowOrder())
+                    if (COLORED_ALUMINUM_WIRES.containsKey(color))
+                        output.accept(COLORED_ALUMINUM_WIRES.get(color));
+
+                for (PipeColor color : PipeColor.byRainbowOrder())
+                    if (COLORED_ALUMINUM_WIRES.containsKey(color))
+                        output.accept(COLORED_HEAVY_ALUMINUM_WIRES.get(color));
+
                 for (PipeColor color : PipeColor.byRainbowOrder()) {
                     output.accept(GLASS_FLUID_PIPES.get(color));
                 }

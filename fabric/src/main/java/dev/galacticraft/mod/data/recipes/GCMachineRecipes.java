@@ -60,7 +60,7 @@ public class GCMachineRecipes extends FabricRecipeProvider {
         GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.GEOTHERMAL_GENERATOR)
                 .define('X', GCItemTags.BRONZE_PLATES)
                 .define('V', GCItems.ATMOSPHERIC_VALVE)
-                .define('W', GCBlocks.ALUMINUM_WIRE)
+                .define('W', GCBlocks.GRAY_ALUMINUM_WIRE)
                 .define('G', GCBlocks.COAL_GENERATOR)
                 .define('Y', GCItemTags.LEAD_INGOTS)
                 .pattern("XVX").pattern("WGW").pattern("XYX")
@@ -85,7 +85,7 @@ public class GCMachineRecipes extends FabricRecipeProvider {
                 .define('S', GCItems.COMPRESSED_STEEL)
                 .define('F', GCItems.FULL_SOLAR_PANEL)
                 .define('P', GCItems.STEEL_POLE)
-                .define('W', GCBlocks.ALUMINUM_WIRE)
+                .define('W', GCBlocks.GRAY_ALUMINUM_WIRE)
                 .define('B', GCItems.BASIC_WAFER)
                 .pattern("SFS")
                 .pattern("SPS")
@@ -99,7 +99,7 @@ public class GCMachineRecipes extends FabricRecipeProvider {
                 .define('L', Items.LEVER)
                 .define('B', ItemTags.STONE_BUTTONS)
                 .define('F', ConventionalItemTags.PLAYER_WORKSTATIONS_FURNACES)
-                .define('W', GCBlocks.ALUMINUM_WIRE)
+                .define('W', GCBlocks.GRAY_ALUMINUM_WIRE)
                 .define('R', Items.REDSTONE_TORCH)
                 .pattern("ALA")
                 .pattern("BFB")
@@ -112,7 +112,7 @@ public class GCMachineRecipes extends FabricRecipeProvider {
                 .define('C', ConventionalItemTags.COPPER_INGOTS)
                 .define('A', GCItemTags.ALUMINUM_INGOTS)
                 .define('F', ConventionalItemTags.PLAYER_WORKSTATIONS_FURNACES)
-                .define('W', GCBlocks.ALUMINUM_WIRE)
+                .define('W', GCBlocks.GRAY_ALUMINUM_WIRE)
                 .pattern("CCC")
                 .pattern("AFA")
                 .pattern("AWA")
@@ -147,7 +147,7 @@ public class GCMachineRecipes extends FabricRecipeProvider {
         GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.ASTRO_MINER_BASE)
                 .define('H', GCItems.TIER_2_HEAVY_DUTY_PLATE)
                 .define('D', GCItems.COMPRESSED_DESH)
-                .define('W', GCBlocks.ALUMINUM_WIRE)
+                .define('W', GCBlocks.GRAY_ALUMINUM_WIRE)
                 .pattern("HDH")
                 .pattern("DWD")
                 .pattern("HDH")
@@ -187,7 +187,7 @@ public class GCMachineRecipes extends FabricRecipeProvider {
                 .define('A', Items.ANVIL)
                 .define('B', GCItems.COMPRESSED_BRONZE)
                 .define('W', GCItems.ADVANCED_WAFER)
-                .define('I', GCBlocks.ALUMINUM_WIRE)
+                .define('I', GCBlocks.GRAY_ALUMINUM_WIRE)
                 .pattern("SAS")
                 .pattern("SBS")
                 .pattern("IWI")
@@ -198,7 +198,7 @@ public class GCMachineRecipes extends FabricRecipeProvider {
                 .define('T', GCItems.COMPRESSED_TIN)
                 .define('C', GCBlocks.COMPRESSOR)
                 .define('W', GCItems.ADVANCED_WAFER)
-                .define('I', GCBlocks.ALUMINUM_WIRE)
+                .define('I', GCBlocks.GRAY_ALUMINUM_WIRE)
                 .pattern("STS")
                 .pattern("SCS")
                 .pattern("IWI")
@@ -305,7 +305,7 @@ public class GCMachineRecipes extends FabricRecipeProvider {
                 .define('P', Items.PISTON)
                 .define('C', GCItems.EMPTY_CAN)
                 .define('B', GCItems.BASIC_WAFER)
-                .define('A', GCBlocks.ALUMINUM_WIRE)
+                .define('A', GCBlocks.GRAY_ALUMINUM_WIRE)
                 .pattern("SPS")
                 .pattern("SCS")
                 .pattern("ABA")
@@ -391,7 +391,7 @@ public class GCMachineRecipes extends FabricRecipeProvider {
                 .define('P', GCItems.COMPRESSED_DESH)
                 .define('F', GCItems.FREQUENCY_MODULE)
                 .define('W', GCItems.ADVANCED_WAFER)
-                .define('C', GCBlocks.ALUMINUM_WIRE)
+                .define('C', GCBlocks.GRAY_ALUMINUM_WIRE)
                 .pattern("DFD")
                 .pattern("PWP")
                 .pattern("DCD")
@@ -513,7 +513,28 @@ public class GCMachineRecipes extends FabricRecipeProvider {
                 .save(output, Constant.id("_wash_stained_glass_fluid_pipe")); // Leading _ here makes REI show it after the pane recipe
 
         // Wires
-        GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.ALUMINUM_WIRE, 6)
+        for (PipeColor color : GCBlocks.COLORED_ALUMINUM_WIRES.keySet()) {
+            if (color == PipeColor.GRAY) continue;
+            ItemLike wire = GCBlocks.COLORED_ALUMINUM_WIRES.get(color);
+            ItemLike heavyWire = GCBlocks.COLORED_HEAVY_ALUMINUM_WIRES.get(color);
+            GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, wire, 8)
+                    .define('W', GCBlocks.GRAY_ALUMINUM_WIRE)
+                    .define('D', color.dye())
+                    .pattern("WWW")
+                    .pattern("WDW")
+                    .pattern("WWW")
+                    .unlockedBy(getHasName(GCBlocks.GRAY_ALUMINUM_WIRE), has(GCBlocks.GRAY_ALUMINUM_WIRE))
+                    .save(output);
+            GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, heavyWire, 8)
+                    .define('W', GCBlocks.GRAY_HEAVY_ALUMINUM_WIRE)
+                    .define('D', color.dye())
+                    .pattern("WWW")
+                    .pattern("WDW")
+                    .pattern("WWW")
+                    .unlockedBy(getHasName(GCBlocks.GRAY_HEAVY_ALUMINUM_WIRE), has(GCBlocks.GRAY_HEAVY_ALUMINUM_WIRE))
+                    .save(output);
+        }
+        GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.GRAY_ALUMINUM_WIRE, 6)
                 .define('W', ItemTags.WOOL)
                 .define('A', GCItemTags.ALUMINUM_INGOTS)
                 .pattern("WWW")
@@ -523,40 +544,40 @@ public class GCMachineRecipes extends FabricRecipeProvider {
                 .emiDefaultRecipe(true)
                 .save(output);
 
-        GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.HEAVY_ALUMINUM_WIRE)
+        GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.GRAY_HEAVY_ALUMINUM_WIRE)
                 .define('A', GCItemTags.ALUMINUM_INGOTS)
-                .define('W', GCBlocks.ALUMINUM_WIRE)
+                .define('W', GCBlocks.GRAY_ALUMINUM_WIRE)
                 .define('L', ItemTags.WOOL)
                 .pattern("A")
                 .pattern("W")
                 .pattern("L")
-                .unlockedBy(getHasName(GCBlocks.ALUMINUM_WIRE), has(GCBlocks.ALUMINUM_WIRE))
+                .unlockedBy(getHasName(GCBlocks.GRAY_ALUMINUM_WIRE), has(GCBlocks.GRAY_ALUMINUM_WIRE))
                 .emiDefaultRecipe(true)
                 .save(output);
 
-        GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.HEAVY_ALUMINUM_WIRE)
+        GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.GRAY_HEAVY_ALUMINUM_WIRE)
                 .define('A', GCItemTags.ALUMINUM_INGOTS)
-                .define('W', GCBlocks.ALUMINUM_WIRE)
+                .define('W', GCBlocks.GRAY_ALUMINUM_WIRE)
                 .define('L', ItemTags.WOOL)
                 .pattern("L")
                 .pattern("W")
                 .pattern("A")
-                .unlockedBy(getHasName(GCBlocks.ALUMINUM_WIRE), has(GCBlocks.ALUMINUM_WIRE))
-                .save(output, RecipeBuilder.getDefaultRecipeId(GCBlocks.HEAVY_ALUMINUM_WIRE).withSuffix("_mirrored"));
+                .unlockedBy(getHasName(GCBlocks.GRAY_ALUMINUM_WIRE), has(GCBlocks.GRAY_ALUMINUM_WIRE))
+                .save(output, RecipeBuilder.getDefaultRecipeId(GCBlocks.GRAY_HEAVY_ALUMINUM_WIRE).withSuffix("_mirrored"));
 
         GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.SEALABLE_ALUMINUM_WIRE, 6)
                 .define('T', GCBlocks.TIN_DECORATION)
-                .define('W', GCBlocks.ALUMINUM_WIRE)
+                .define('W', GCBlocks.GRAY_ALUMINUM_WIRE)
                 .pattern("TWT")
-                .unlockedBy(getHasName(GCBlocks.ALUMINUM_WIRE), has(GCBlocks.ALUMINUM_WIRE))
+                .unlockedBy(getHasName(GCBlocks.GRAY_ALUMINUM_WIRE), has(GCBlocks.GRAY_ALUMINUM_WIRE))
                 .emiDefaultRecipe(true)
                 .save(output);
 
         GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.HEAVY_SEALABLE_ALUMINUM_WIRE)
                 .define('T', GCBlocks.TIN_DECORATION)
-                .define('W', GCBlocks.HEAVY_ALUMINUM_WIRE)
+                .define('W', GCBlocks.GRAY_HEAVY_ALUMINUM_WIRE)
                 .pattern("TWT")
-                .unlockedBy(getHasName(GCBlocks.HEAVY_ALUMINUM_WIRE), has(GCBlocks.HEAVY_ALUMINUM_WIRE))
+                .unlockedBy(getHasName(GCBlocks.GRAY_HEAVY_ALUMINUM_WIRE), has(GCBlocks.GRAY_HEAVY_ALUMINUM_WIRE))
                 .emiDefaultRecipe(true)
                 .save(output);
 
@@ -584,7 +605,7 @@ public class GCMachineRecipes extends FabricRecipeProvider {
 
         GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.WIRE_WALKWAY, 5)
                 .define('T', GCItems.COMPRESSED_TITANIUM)
-                .define('W', GCBlocks.ALUMINUM_WIRE)
+                .define('W', GCBlocks.GRAY_ALUMINUM_WIRE)
                 .pattern("TTT")
                 .pattern("WTW")
                 .pattern("WWW")
@@ -593,13 +614,13 @@ public class GCMachineRecipes extends FabricRecipeProvider {
 
         GCShapelessRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.WIRE_WALKWAY)
                 .requires(GCBlocks.WALKWAY)
-                .requires(GCBlocks.ALUMINUM_WIRE)
+                .requires(GCBlocks.GRAY_ALUMINUM_WIRE)
                 .unlockedBy(getHasName(GCBlocks.WALKWAY), has(GCBlocks.WALKWAY))
                 .save(output, RecipeBuilder.getDefaultRecipeId(GCBlocks.WIRE_WALKWAY).withSuffix("_shapeless"));
 
         GCShapedRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.HEAVY_WIRE_WALKWAY, 5)
                 .define('T', GCItems.COMPRESSED_TITANIUM)
-                .define('W', GCBlocks.HEAVY_ALUMINUM_WIRE)
+                .define('W', GCBlocks.GRAY_HEAVY_ALUMINUM_WIRE)
                 .pattern("TTT")
                 .pattern("WTW")
                 .pattern("WWW")
@@ -608,7 +629,7 @@ public class GCMachineRecipes extends FabricRecipeProvider {
 
         GCShapelessRecipeBuilder.crafting(RecipeCategory.DECORATIONS, GCBlocks.HEAVY_WIRE_WALKWAY)
                 .requires(GCBlocks.WALKWAY)
-                .requires(GCBlocks.HEAVY_ALUMINUM_WIRE)
+                .requires(GCBlocks.GRAY_HEAVY_ALUMINUM_WIRE)
                 .unlockedBy(getHasName(GCBlocks.WALKWAY), has(GCBlocks.WALKWAY))
                 .save(output, RecipeBuilder.getDefaultRecipeId(GCBlocks.HEAVY_WIRE_WALKWAY).withSuffix("_shapeless"));
 

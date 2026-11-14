@@ -1,11 +1,11 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_aluminum_wire": {
+    "has_gray_aluminum_wire": {
       "conditions": {
         "items": [
           {
-            "items": "galacticraft:aluminum_wire"
+            "items": "galacticraft:gray_aluminum_wire"
           }
         ]
       },
@@ -21,7 +21,7 @@
   "requirements": [
     [
       "has_the_recipe",
-      "has_aluminum_wire"
+      "has_gray_aluminum_wire"
     ]
   ],
   "rewards": {

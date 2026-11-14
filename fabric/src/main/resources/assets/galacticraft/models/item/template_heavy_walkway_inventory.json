@@ -4,7 +4,7 @@
     "textures": {
         "0": "galacticraft:block/walkway",
         "particle": "galacticraft:block/walkway",
-        "texture": "galacticraft:block/heavy_aluminum_wire"
+        "texture": "galacticraft:block/gray_heavy_aluminum_wire"
     },
     "elements": [
         {

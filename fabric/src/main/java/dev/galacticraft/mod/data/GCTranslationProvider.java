@@ -117,16 +117,16 @@ public class GCTranslationProvider extends TranslationProvider {
         this.generateAdvancementsTranslations();
 
         // Tabs in the creative inventory
-        this.add(ItemGroup.BLOCKS, "Galacticraft - BE Blocks");
-        this.add(ItemGroup.MOON, "Galacticraft - BE Blocks");
-        this.add(ItemGroup.MARS, "Galacticraft - BE Blocks");
-        this.add(ItemGroup.VENUS, "Galacticraft - BE Blocks");
-        this.add(ItemGroup.MERCURY, "Galacticraft - BE Blocks");
-        this.add(ItemGroup.JUPITER, "Galacticraft - BE Blocks");
-        this.add(ItemGroup.ASTEROIDS, "Galacticraft - BE Blocks");
-        this.add(ItemGroup.ITEMS, "Galacticraft - Boobcat Edition Items");
-        this.add(ItemGroup.MACHINES, "Galacticraft - Boobcat Edition Machines");
-        this.add(ItemGroup.CANNED_FOOD, "Canned Food");
+        this.add(ItemGroup.BLOCKS, "Galacticraft - BE Blocks Overworld");
+        this.add(ItemGroup.MOON, "Galacticraft - BE Blocks Moon");
+        this.add(ItemGroup.MARS, "Galacticraft - BE Blocks Mars");
+        this.add(ItemGroup.VENUS, "Galacticraft - BE Blocks Venus");
+        this.add(ItemGroup.MERCURY, "Galacticraft - BE Blocks Mercury");
+        this.add(ItemGroup.JUPITER, "Galacticraft - BE Blocks Jupiter");
+        this.add(ItemGroup.ASTEROIDS, "Galacticraft - BE Blocks Asteroids");
+        this.add(ItemGroup.ITEMS, "Galacticraft - BE Items");
+        this.add(ItemGroup.MACHINES, "Galacticraft - BE Machines");
+        this.add(ItemGroup.CANNED_FOOD, "Galacticraft - BE Canned Food");
 
         this.add(RecipeCategory.CIRCUIT_FABRICATOR, "Circuit Fabrication");
         this.add(RecipeCategory.COMPRESSOR, "Compressing");
@@ -338,8 +338,8 @@ public class GCTranslationProvider extends TranslationProvider {
         this.block(GCBlocks.METEORIC_IRON_DOOR, "Meteoric Iron Door");
 
         // SPECIAL
-        this.block(GCBlocks.ALUMINUM_WIRE, "Aluminum Wire");
-        this.block(GCBlocks.HEAVY_ALUMINUM_WIRE, "Heavy Aluminum Wire");
+        GCBlocks.COLORED_ALUMINUM_WIRES.forEach((color, wire) -> this.block(wire, TranslationProvider.normalizeName(color.getName()) + " Aluminum Wire"));
+        GCBlocks.COLORED_HEAVY_ALUMINUM_WIRES.forEach((color, wire) -> this.block(wire, TranslationProvider.normalizeName(color.getName()) + " Heavy Aluminum Wire"));
         this.block(GCBlocks.SEALABLE_ALUMINUM_WIRE, "Sealable Aluminum Wire");
         this.block(GCBlocks.HEAVY_SEALABLE_ALUMINUM_WIRE, "Heavy Sealable Aluminum Wire");
         this.block(GCBlocks.GLASS_FLUID_PIPE, "Glass Fluid Pipe");

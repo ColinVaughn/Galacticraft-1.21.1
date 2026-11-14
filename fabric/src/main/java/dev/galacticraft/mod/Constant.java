@@ -426,8 +426,8 @@ public interface Constant {
         String GEOTHERMAL_GENERATOR = "geothermal_generator";
         String ENERGY_STORAGE_MODULE = "energy_storage_module";
         String ENERGY_STORAGE_CLUSTER = "energy_storage_cluster";
-        String ALUMINUM_WIRE = "aluminum_wire";
-        String HEAVY_ALUMINUM_WIRE = "heavy_aluminum_wire";
+        String GRAY_ALUMINUM_WIRE = "gray_aluminum_wire";
+        String GRAY_HEAVY_ALUMINUM_WIRE = "gray_heavy_aluminum_wire";
         String SWITCHABLE_ALUMINUM_WIRE = "switchable_aluminum_wire";
         String SEALABLE_ALUMINUM_WIRE = "sealable_aluminum_wire";
         String HEAVY_SEALABLE_ALUMINUM_WIRE = "heavy_sealable_aluminum_wire";
