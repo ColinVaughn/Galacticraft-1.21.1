@@ -11,12 +11,14 @@ Minecraft 1.21.1. Separate builds are provided for Fabric and NeoForge. Java 21 
 - The oxygen compressor shows the tank inside it.
 - A creative tab per world; machines are grouped in the Machines tab.
 - Sculk sensors hear further in thick atmospheres and only through contact in a vacuum.
+- Russian translation.
 
 ### Fixes
 
 - Rockets keep their leftover fuel when packed into an item.
 - Arriving at a space station returns your rocket, launch pad and cargo, without fall damage.
 - The bubble distributor stops its bubble when it loses power.
+- Fixed garbled characters in some English text.
 
 ### Changes
 

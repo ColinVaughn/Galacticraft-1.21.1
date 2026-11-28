@@ -69,7 +69,7 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add("ui.galacticraft.space.system", "SOL SYSTEM");
         this.add("ui.galacticraft.space.range", "%s m");
         this.add("ui.galacticraft.space.speed", "%s m/s");
-        this.add("ui.galacticraft.space.unreachable", "This destination is outside your rocketâ€™s reach.");
+        this.add("ui.galacticraft.space.unreachable", "This destination is outside your rocket’s reach.");
         this.add("ui.galacticraft.space.denied", "Atmospheric entry was denied.");
         this.add("tooltip.galacticraft.pressure_rating", "Pressure limit: P%s");
         this.add("tooltip.galacticraft.pressure_controller", "Equip in an accessory slot. Sneak-use to ascend; fully recharge to restore the emergency charge.");
@@ -184,7 +184,7 @@ public class GCTranslationProvider extends TranslationProvider {
         this.block(GCBlocks.BURROWER_EGG_CLUSTER, "Burrower Egg Cluster");
         this.block(GCBlocks.LUNAR_BURROWER_EGG, "Lunar Burrower Egg");
         this.add("entity.galacticraft.lunar_burrower.cargo", "Burrower Cargo");
-        this.add("entity.galacticraft.lunar_burrower.tunnel_on", "Tunneling ON [%s] Ã‚Â· Look to aim, move forward to dig");
+        this.add("entity.galacticraft.lunar_burrower.tunnel_on", "Tunneling ON [%s] · Look to aim, move forward to dig");
         this.add("entity.galacticraft.lunar_burrower.tunnel_off", "Tunneling OFF [%s]");
         this.block(GCBlocks.BURROWER_BROKEN_EGGSHELL, "Burrower Broken Eggshell");
         this.block(GCBlocks.BURROWER_EXCAVATED_TAILINGS, "Excavated Lunar Dirt");
@@ -500,7 +500,7 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add("ui.galacticraft.telepad.target.5", "Target needs 2,500 gJ");
         this.add("ui.galacticraft.telepad.target.6", "Target landing area blocked");
         this.add("ui.galacticraft.telepad.target.7", "Target is this telepad");
-        this.blockDesc(GCBlocks.GEOTHERMAL_GENERATOR, "Generates 30â€“200 gJ/t above a vapor spout with a clear shaft to sulfuric acid, less than 20 blocks below.");
+        this.blockDesc(GCBlocks.GEOTHERMAL_GENERATOR, "Generates 30–200 gJ/t above a vapor spout with a clear shaft to sulfuric acid, less than 20 blocks below.");
         this.add("ui.galacticraft.machine.status.invalid_spout", "Invalid Vapor Spout");
         this.add("ui.galacticraft.geothermal.spout_hint", "Clear shaft to sulfuric acid");
         this.add("ui.galacticraft.geothermal.generating", "Generating: %s gJ/t");
@@ -786,7 +786,7 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add("gui.galacticraft.rocket_refit.label", "Refit");
         this.add("gui.galacticraft.rocket_refit.insert", "Insert a rocket to remove or replace its modules.");
         this.add("gui.galacticraft.rocket_refit.clear", "Clear the assembly and upgrade wells first.");
-        this.add("gui.galacticraft.rocket_refit.incomplete", "Incomplete rocket â€” cannot be placed on a launch pad");
+        this.add("gui.galacticraft.rocket_refit.incomplete", "Incomplete rocket — cannot be placed on a launch pad");
         this.add("gui.galacticraft.rocket_refit.missing", "Missing: %s");
         this.add("gui.galacticraft.rocket_refit.remove", "Click to remove. Insert a matching module to swap.");
         this.add("gui.galacticraft.rocket_refit.install", "Insert a matching module to install.");
@@ -1437,7 +1437,7 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(SpaceRace.BACK, "Back");
         this.add(SpaceRace.BUTTON, "Space Race");
         this.add(SpaceRace.BUTTON_2, "Manager");
-        this.add(SpaceRace.COMING_SOON, "Coming Soonâ„¢");
+        this.add(SpaceRace.COMING_SOON, "Coming Soon™");
         this.add(SpaceRace.EXIT, "Exit");
         this.add(SpaceRace.GLOBAL_STATS, "Global Statistics");
         this.add(SpaceRace.GLOBAL_STATS_ERROR, "Unable to load global statistics");
@@ -1447,7 +1447,7 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(SpaceRace.REFRESH, "Refresh");
         this.add(SpaceRace.REMOVE_PLAYERS, "Remove Player(s)");
         this.add(SpaceRace.SERVER_STATS, "Server Statistics");
-        this.add(SpaceRace.SERVER_STATS_SUMMARY, "%s tracked players â€¢ %s online");
+        this.add(SpaceRace.SERVER_STATS_SUMMARY, "%s tracked players • %s online");
         this.add(SpaceRace.FLAG_CONFIRM, "Use this team flag?");
         this.add(SpaceRace.FLAG_CONFIRM_MESSAGE, "Your design is saved on this computer and flies on your team flags.");
         this.add(SpaceRace.CUSTOMIZE_FLAG, "Customize Flag");
@@ -1784,7 +1784,7 @@ public class GCTranslationProvider extends TranslationProvider {
     protected void generateWailaTranslations() {
         this.add(Waila.PLUGIN_GALACTICRAFT, "Galacticraft - Boobcat Edition");
         this.add(Waila.SHOW_OXYGEN_LEVEL, "Show Oxygen Tank Levels");
-        this.add(Waila.OXYGEN_TANK_LABEL, "Oâ‚‚ Tank %s");
+        this.add(Waila.OXYGEN_TANK_LABEL, "O₂ Tank %s");
     }
 
     protected void generateStatsTranslations() {
