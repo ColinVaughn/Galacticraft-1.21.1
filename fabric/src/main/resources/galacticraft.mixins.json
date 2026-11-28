@@ -20,8 +20,11 @@
     "DimensionTransitionMixin",
     "DerivedLevelDataMixin",
     "EntityMixin",
+    "EntityPositionSourceAccessor",
+    "EuclideanGameEventListenerRegistryMixin",
     "FireworkRocketItemMixin",
     "FlowingFluidMixin",
+    "GameEventDispatcherMixin",
     "GenerationChunkHolderMixin",
     "ItemEntityMixin",
     "ItemStackMixin",
@@ -36,6 +39,7 @@
     "MultiNoiseBiomeSourceParameterListPresetAccessor",
     "PlayerMixin",
     "ServerLevelMixin",
+    "SculkSensorVibrationUserMixin",
     "ServerPlayerMixin",
     "SpiderMixin"
     ,"StructureAccessor"
@@ -45,7 +49,6 @@
   "client": [
     "client.AbstractClientPlayerMixin",
     "client.AbstractContainerScreenMixin",
-    "client.AlphaWarningTitleScreenMixin",
     "client.AnimalModelAgeableListModel",
     "client.EntityRenderDispatcherMixin",
     "client.LivingEntityRendererAccessor",

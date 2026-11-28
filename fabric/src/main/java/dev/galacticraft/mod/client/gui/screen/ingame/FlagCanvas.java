@@ -57,7 +57,7 @@ final class FlagCanvas {
     /**
      * What a tool paints with.
      *
-     * @param color an opaque colour, or {@link #CLEAR} to erase
+     * @param color an opaque color, or {@link #CLEAR} to erase
      * @param size the side of the square stamped at each point, 1 to {@link #MAX_BRUSH}, and the thickness of outlines
      * @param mirrorX whether everything is also painted mirrored left to right
      * @param mirrorY whether everything is also painted mirrored top to bottom
@@ -343,7 +343,7 @@ final class FlagCanvas {
         Arrays.fill(activeLayerPixels(), color | 0xFF000000);
     }
 
-    /** Draws a one-pixel line in an opaque colour; {@code 0} here is black, not {@link #CLEAR}. */
+    /** Draws a one-pixel line in an opaque color; {@code 0} here is black, not {@link #CLEAR}. */
     void line(int x0, int y0, int x1, int y1, int color) {
         line(x0, y0, x1, y1, new Brush(color | 0xFF000000, 1, false, false));
     }
@@ -425,7 +425,7 @@ final class FlagCanvas {
     }
 
     /**
-     * Recolours the region of the selected layer that matches this pixel - one colour, or empty - never across a
+     * Recolors the region of the selected layer that matches this pixel - one color, or empty - never across a
      * corner; and its mirror images.
      */
     void floodFill(int x, int y, Brush brush) {

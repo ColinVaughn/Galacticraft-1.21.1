@@ -25,7 +25,6 @@ package dev.galacticraft.mod.client.render.dimension.solarflare;
 
 import dev.galacticraft.api.universe.celestialbody.CelestialBodyTags;
 import dev.galacticraft.mod.network.s2c.SolarFlareSyncPayload;
-import dev.galacticraft.mod.world.dimension.GCDimensions;
 import dev.galacticraft.mod.world.dimension.solarflare.SolarFlareCurve;
 import dev.galacticraft.mod.world.dimension.solarflare.SolarFlarePhase;
 import net.minecraft.client.Minecraft;

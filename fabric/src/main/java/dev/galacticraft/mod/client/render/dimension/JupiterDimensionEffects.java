@@ -64,7 +64,7 @@ public final class JupiterDimensionEffects extends GalacticDimensionEffects {
         return color.lerp(INCANDESCENT_COLOR, Mth.smoothstep(Mth.clamp((-78.0 - y) / 40.0, 0.0, 1.0)));
     }
 
-    /** The fog colour the core paints over vanilla's void darkening. */
+    /** The fog color the core paints over vanilla's void darkening. */
     public Vec3 coreFog(ClientLevel level, float partialTicks) {
         return this.atmosphereColor(level, partialTicks);
     }

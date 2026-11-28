@@ -26,6 +26,7 @@ import dev.galacticraft.mod.api.block.FluidLoggable;
 import dev.galacticraft.mod.api.block.WireBlock;
 import dev.galacticraft.mod.content.GCBlockEntityTypes;
 import dev.galacticraft.mod.content.block.entity.networked.WireBlockEntity;
+import dev.galacticraft.mod.api.block.entity.PipeColor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -37,8 +38,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class HeavyAluminumWireBlock extends WireBlock implements FluidLoggable {
-    public HeavyAluminumWireBlock(Properties settings) {
-        super(0.1875f, settings);
+    public HeavyAluminumWireBlock(Properties settings, PipeColor color) {
+        super(0.1875f, settings, color);
         BlockState defaultState = this.getStateDefinition().any();
         defaultState = FluidLoggable.applyDefaultState(defaultState);
         this.registerDefaultState(defaultState);

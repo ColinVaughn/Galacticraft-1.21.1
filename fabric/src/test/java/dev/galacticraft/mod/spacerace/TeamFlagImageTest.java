@@ -66,7 +66,7 @@ class TeamFlagImageTest {
     }
 
     @Test
-    void aTextureColourIsSwappedToAndFromItsBlueFirstForm() {
+    void aTextureColorIsSwappedToAndFromItsBlueFirstForm() {
         assertEquals(0xFF332211, TeamFlagImage.swapRedBlue(0xFF112233));
         assertEquals(0xFF112233, TeamFlagImage.swapRedBlue(TeamFlagImage.swapRedBlue(0xFF112233)));
     }

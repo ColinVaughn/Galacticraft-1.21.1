@@ -36,6 +36,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -72,6 +73,13 @@ public class WireBlockEntity extends BlockEntity implements Wire, EnergyStorage 
         if (!this.level.isClientSide) {
             this.network = new WireNetworkImpl((ServerLevel) this.level, this.maxTransferRate, this.getBlockPos());
         }
+    }
+
+    @Override
+    public void setLevel(Level level) {
+        super.setLevel(level);
+        if (level instanceof ServerLevel serverLevel)
+            serverLevel.scheduleTick(this.worldPosition, this.getBlockState().getBlock(), 1);
     }
 
     @Override

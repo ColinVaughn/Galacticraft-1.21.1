@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": {
+      "tag": "c:dyes/light_blue"
+    },
+    "W": {
+      "item": "galacticraft:aluminum_wire"
+    }
+  },
+  "pattern": [
+    "WWW",
+    "WDW",
+    "WWW"
+  ],
+  "result": {
+    "count": 8,
+    "id": "galacticraft:light_blue_aluminum_wire"
+  }
+}

@@ -137,7 +137,7 @@ public final class MachineEnergyTransferTestSuite implements GalacticraftGameTes
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 200)
     public void powerFlowsAlongAWire(GameTestHelper context) {
         context.setBlock(SOURCE, GCBlocks.COAL_GENERATOR.defaultBlockState().setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.SOUTH));
-        context.setBlock(MIDDLE, GCBlocks.ALUMINUM_WIRE);
+        context.setBlock(MIDDLE, GCBlocks.GRAY_ALUMINUM_WIRE);
         context.setBlock(SINK, GCBlocks.OXYGEN_SEALER.defaultBlockState().setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.SOUTH));
         CoalGeneratorBlockEntity generator = context.getBlockEntity(SOURCE);
         OxygenSealerBlockEntity sealer = context.getBlockEntity(SINK);

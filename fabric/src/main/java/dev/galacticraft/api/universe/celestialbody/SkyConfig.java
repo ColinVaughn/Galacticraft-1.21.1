@@ -35,8 +35,8 @@ import java.util.Optional;
  * space sky: the body's star, the other bodies of its system drawn from the celestial registry, and
  * a starfield, all with no client code.
  *
- * @param skyColor       RGB sky colour at noon; 0 (black) for an airless body
- * @param fogColor       RGB fog colour at noon
+ * @param skyColor       RGB sky color at noon; 0 (black) for an airless body
+ * @param fogColor       RGB fog color at noon
  * @param sunSize        apparent size of the star, as a half-width at 100 blocks (the Moon's is 2)
  * @param starBrightness 0 to 1; airless bodies show stars by day, others only at night
  * @param postEffect     an optional full-screen post effect, for example

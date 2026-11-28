@@ -23,20 +23,49 @@
 package dev.galacticraft.mod.gametest;
 
 import dev.galacticraft.mod.api.block.FluidLoggable;
+import dev.galacticraft.mod.api.block.PipeShapedBlock;
+import dev.galacticraft.mod.api.block.WireBlock;
+import dev.galacticraft.mod.api.block.entity.PipeColor;
 import dev.galacticraft.mod.api.wire.Wire;
 import dev.galacticraft.mod.api.wire.impl.WireNetworkImpl;
 import dev.galacticraft.mod.content.GCBlocks;
 import dev.galacticraft.mod.content.GCFluids;
+import dev.galacticraft.mod.content.block.entity.networked.WireBlockEntity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.level.block.Block;
 
 public class WireTestSuite implements GalacticraftGameTest {
     @GameTest(template = EMPTY_STRUCTURE)
+    public void heavyWireConnectionsRefreshAfterNeighborRemoval(GameTestHelper context) {
+        BlockPos lower = new BlockPos(0, 1, 0);
+        BlockPos upper = lower.above();
+        context.setBlock(lower, GCBlocks.GRAY_HEAVY_ALUMINUM_WIRE);
+        context.setBlock(upper, GCBlocks.COLORED_HEAVY_ALUMINUM_WIRES.get(PipeColor.RED));
+
+        WireBlockEntity lowerWire = (WireBlockEntity) context.getBlockEntity(lower);
+        context.assertTrue(lowerWire.isConnected(Direction.UP), "Heavy wires did not connect");
+        context.getLevel().destroyBlock(context.absolutePos(upper), true);
+        context.assertTrue(!lowerWire.isConnected(Direction.UP), "Heavy wire still points at the removed wire");
+
+        // A world saved before connection changes were persisted can restore an obsolete arm.
+        lowerWire.getConnections()[Direction.UP.get3DDataValue()] = true;
+        Block block = context.getBlockState(lower).getBlock();
+        ((WireBlock) block).tick(context.getBlockState(lower), (net.minecraft.server.level.ServerLevel) context.getLevel(),
+                context.absolutePos(lower), context.getLevel().random);
+        context.assertTrue(!lowerWire.isConnected(Direction.UP), "Reload refresh kept the obsolete arm");
+        context.assertTrue(context.getBlockState(lower).getShape(context.getLevel(), context.absolutePos(lower))
+                .equals(((PipeShapedBlock<?>) block).shapes[0]), "Heavy wire kept the obsolete hitbox");
+        context.succeed();
+    }
+
+    @GameTest(template = EMPTY_STRUCTURE)
     public void heavyAluminumWireCanContainFlowingFuel(GameTestHelper context) {
         final var pos = new BlockPos(0, 1, 0);
-        context.setBlock(pos, GCBlocks.HEAVY_ALUMINUM_WIRE);
+        context.setBlock(pos, GCBlocks.GRAY_HEAVY_ALUMINUM_WIRE);
 
         var state = context.getBlockState(pos);
         var fluidLoggable = (FluidLoggable) state.getBlock();
@@ -61,9 +90,9 @@ public class WireTestSuite implements GalacticraftGameTest {
         final var pos0 = new BlockPos(0, 1, 0);
         final var pos1 = new BlockPos(0, 2, 0);
         final var pos2 = new BlockPos(0, 3, 0);
-        context.setBlock(pos0, GCBlocks.ALUMINUM_WIRE);
-        context.setBlock(pos1, GCBlocks.ALUMINUM_WIRE);
-        context.setBlock(pos2, GCBlocks.ALUMINUM_WIRE);
+        context.setBlock(pos0, GCBlocks.COLORED_ALUMINUM_WIRES.get(PipeColor.RED));
+        context.setBlock(pos1, GCBlocks.GRAY_ALUMINUM_WIRE);
+        context.setBlock(pos2, GCBlocks.COLORED_ALUMINUM_WIRES.get(PipeColor.BLUE));
         final var be0 = context.getBlockEntity(pos0);
         final var be1 = context.getBlockEntity(pos1);
         final var be2 = context.getBlockEntity(pos2);

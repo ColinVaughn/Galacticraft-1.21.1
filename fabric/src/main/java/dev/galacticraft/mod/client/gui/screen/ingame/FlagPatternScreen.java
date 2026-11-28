@@ -34,7 +34,7 @@ import net.minecraft.network.chat.Component;
 
 import java.util.function.Consumer;
 
-/** Offers the flag layouts, drawn in the editor's primary and secondary colours, to start a design from. */
+/** Offers the flag layouts, drawn in the editor's primary and secondary colors, to start a design from. */
 final class FlagPatternScreen extends Screen {
     private static final int COLUMNS = 5;
     private final Screen parent;

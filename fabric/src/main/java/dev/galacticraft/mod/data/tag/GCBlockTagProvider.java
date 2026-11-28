@@ -711,6 +711,8 @@ public class GCBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                 .add(slabs)
                 .add(walls)
                 .add(Arrays.stream(PipeColor.byRainbowOrder()).map(GCBlocks.GLASS_FLUID_PIPES::get).toArray(Block[]::new))
+                .add(GCBlocks.COLORED_ALUMINUM_WIRES.values().toArray(Block[]::new))
+                .add(GCBlocks.COLORED_HEAVY_ALUMINUM_WIRES.values().toArray(Block[]::new))
                 .add(GCBlocks.FLAGS.colorMap().values().toArray(Block[]::new))
                 .add(
                         GCBlocks.MARS_IRON_ORE,
@@ -759,8 +761,6 @@ public class GCBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                         GCBlocks.SOLAR_PANEL_PART,
                         GCBlocks.AIR_LOCK_FRAME,
                         GCBlocks.AIR_LOCK_CONTROLLER,
-                        GCBlocks.ALUMINUM_WIRE,
-                        GCBlocks.HEAVY_ALUMINUM_WIRE,
                         GCBlocks.SEALABLE_ALUMINUM_WIRE,
                         GCBlocks.HEAVY_SEALABLE_ALUMINUM_WIRE,
 

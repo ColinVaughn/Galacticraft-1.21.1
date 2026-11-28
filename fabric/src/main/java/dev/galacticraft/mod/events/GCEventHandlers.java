@@ -31,6 +31,7 @@ import dev.galacticraft.api.registry.AddonRegistries;
 import dev.architectury.event.events.common.TickEvent;
 import dev.architectury.event.events.common.LifecycleEvent;
 import dev.galacticraft.mod.content.block.special.launchpad.CargoPadRegistry;
+import dev.galacticraft.mod.content.teleporters.DestinationArrival;
 import dev.architectury.networking.NetworkManager;
 import dev.galacticraft.api.universe.celestialbody.CelestialBody;
 import dev.galacticraft.api.universe.celestialbody.landable.Landable;
@@ -83,7 +84,12 @@ public class GCEventHandlers {
             }
             if (CelestialEvents.BEFORE_TRAVEL.invoker().beforeTravel(player, body, fromBody).isFalse()) return;
             player.galacticraft$closeCelestialScreen();
-            ((CelestialTeleporter) landable.teleporter(body.config()).value()).onEnterAtmosphere(server.getLevel(landable.world(body.config())), player, body, fromBody);
+            // The short drop after the rocket is removed would otherwise be charged on arrival.
+            player.resetFallDistance();
+            ServerLevel destination = server.getLevel(landable.world(body.config()));
+            ((CelestialTeleporter) landable.teleporter(body.config()).value()).onEnterAtmosphere(destination, player, body, fromBody);
+            // Skipped if the teleporter refused the trip and left the player where they were.
+            if (player.level() == destination) DestinationArrival.returnParkedCargo(player);
             CelestialEvents.AFTER_TRAVEL.invoker().afterTravel(player, body, fromBody);
         } else {
             player.connection.disconnect(Component.translatable(Translations.DimensionTp.INVALID_PACKET));

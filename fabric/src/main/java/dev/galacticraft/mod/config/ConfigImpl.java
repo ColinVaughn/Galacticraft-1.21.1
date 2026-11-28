@@ -145,7 +145,6 @@ public class ConfigImpl implements Config {
     private boolean gc4RocketFuelMode = true;
     private boolean seamlessSpaceTravel = false;
     private double refineryOilToFuelRatio = RefineryFuelLogic.DEFAULT_OIL_TO_FUEL_RATIO;
-    private boolean hideAlphaWarning = false;
     private boolean enableGcHouston = true;
     private boolean enableCreativeGearInv = true;
     private boolean disableSpaceStationCreation = false;
@@ -161,15 +160,6 @@ public class ConfigImpl implements Config {
                 .create();
         this.file = file;
         this.load();
-    }
-
-    @Override
-    public boolean isAlphaWarningHidden() {
-        return this.hideAlphaWarning;
-    }
-
-    public void setAlphaWarningHidden(boolean flag) {
-        this.hideAlphaWarning = flag;
     }
 
     @Override
@@ -957,16 +947,6 @@ public class ConfigImpl implements Config {
                     config.isDebugLogEnabled())
                     .setTooltip(tooltipSingular.apply(Translations.Config.RESET))
                     .setSaveConsumer(config::setDebugLog)
-                    .setDefaultValue(false)
-                    .build()
-            );
-
-            dB.addEntry(new BooleanToggleBuilder(
-                    Component.translatable(Translations.Config.RESET),
-                    label.apply(Translations.Config.HIDE_ALPHA_WARNING),
-                    config.isAlphaWarningHidden())
-                    .setTooltip(tooltipSingular.apply(Translations.Config.HIDE_ALPHA_WARNING))
-                    .setSaveConsumer(config::setAlphaWarningHidden)
                     .setDefaultValue(false)
                     .build()
             );

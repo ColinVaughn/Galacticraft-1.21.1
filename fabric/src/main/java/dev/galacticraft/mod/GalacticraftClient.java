@@ -321,7 +321,7 @@ public class GalacticraftClient implements ClientModInitializer {
         ColorProviderRegistry.ITEM.register((stack, layer) -> layer != 1 ? -1 : ColorUtil.getRainbowOpaque(), GCItems.INFINITE_BATTERY, GCItems.INFINITE_OXYGEN_TANK);
         ColorProviderRegistry.ITEM.register((stack, layer) -> layer != 1 ? -1 : FastColor.ARGB32.opaque(stack.getOrDefault(GCDataComponents.COLOR, 0xFFFFFF)), GCItems.CANNED_FOOD);
 
-        // Fluids can be added to the list below to give them a colour for the Fluid Canister
+        // Fluids can be added to the list below to give them a color for the Fluid Canister
         // Fluids that use a tint are handled automatically
         ColorProviderRegistry.ITEM.register((stack, layer) -> {
             if (layer != 1) return -1;

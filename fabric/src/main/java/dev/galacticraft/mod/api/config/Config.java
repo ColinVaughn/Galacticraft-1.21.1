@@ -28,8 +28,6 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.List;
 
 public interface Config {
-    boolean isAlphaWarningHidden();
-
     boolean isDebugLogEnabled();
 
     long wireTransferLimit();

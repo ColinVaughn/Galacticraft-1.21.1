@@ -345,8 +345,25 @@ public class GCBlocks {
     public static final Block FUELING_PAD = BLOCKS.registerWithItem(Constant.Block.FUELING_PAD, new FuelPadBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GRAY).instrument(NoteBlockInstrument.BASEDRUM).strength(1.5F, 10.0F).requiresCorrectToolForDrops()));
     public static final Block ROCKET_WORKBENCH = BLOCKS.registerWithItem(Constant.Block.ROCKET_WORKBENCH, new RocketWorkbench(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GRAY).instrument(NoteBlockInstrument.BASEDRUM).strength(1.5F, 6.0F).requiresCorrectToolForDrops()));
     public static final Block PARACHEST = BLOCKS.registerWithItem(Constant.Block.PARACHEST, new ParachestBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.CHEST)));
-    public static final Block ALUMINUM_WIRE = BLOCKS.registerWithItem(Constant.Block.ALUMINUM_WIRE, new AluminumWireBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.WHITE_WOOL).forceSolidOn()));
-    public static final Block HEAVY_ALUMINUM_WIRE = BLOCKS.registerWithItem(Constant.Block.HEAVY_ALUMINUM_WIRE, new HeavyAluminumWireBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.WHITE_WOOL).forceSolidOn()));
+    public static final Map<PipeColor, Block> COLORED_ALUMINUM_WIRES = coloredWires(false);
+    public static final Map<PipeColor, Block> COLORED_HEAVY_ALUMINUM_WIRES = coloredWires(true);
+    public static final Block GRAY_ALUMINUM_WIRE = COLORED_ALUMINUM_WIRES.get(PipeColor.GRAY);
+    public static final Block GRAY_HEAVY_ALUMINUM_WIRE = COLORED_HEAVY_ALUMINUM_WIRES.get(PipeColor.GRAY);
+
+    private static Map<PipeColor, Block> coloredWires(boolean heavy) {
+        Map<PipeColor, Block> wires = new EnumMap<>(PipeColor.class);
+        for (PipeColor color : PipeColor.values()) {
+            if (color == PipeColor.CLEAR) continue;
+            String name = color == PipeColor.GRAY
+                    ? (heavy ? Constant.Block.GRAY_HEAVY_ALUMINUM_WIRE : Constant.Block.GRAY_ALUMINUM_WIRE)
+                    : color.getName() + (heavy ? "_heavy_aluminum_wire" : "_aluminum_wire");
+            Block block = heavy
+                    ? new HeavyAluminumWireBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.WHITE_WOOL).forceSolidOn(), color)
+                    : new AluminumWireBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.WHITE_WOOL).forceSolidOn(), color);
+            wires.put(color, BLOCKS.registerWithItem(name, block));
+        }
+        return wires;
+    }
     public static final Block SEALABLE_ALUMINUM_WIRE = BLOCKS.registerWithItem(Constant.Block.SEALABLE_ALUMINUM_WIRE, new SealableAluminumWireBlock(BlockBehaviour.Properties.ofFullCopy(TIN_DECORATION.block())));
     public static final Block HEAVY_SEALABLE_ALUMINUM_WIRE = BLOCKS.registerWithItem(Constant.Block.HEAVY_SEALABLE_ALUMINUM_WIRE, new HeavySealableAluminumWireBlock(BlockBehaviour.Properties.ofFullCopy(TIN_DECORATION.block())));
 

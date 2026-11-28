@@ -25,11 +25,13 @@ package dev.galacticraft.mod.api.block;
 import dev.architectury.platform.Platform;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.Galacticraft;
+import dev.galacticraft.mod.api.block.entity.PipeColor;
 import dev.galacticraft.mod.api.wire.Wire;
 import dev.galacticraft.mod.content.block.entity.networked.WireBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -42,8 +44,28 @@ import org.jetbrains.annotations.Nullable;
 
 /** NeoForge wire block using the native block energy capability. */
 public abstract class WireBlock extends PipeShapedBlock<WireBlockEntity> {
+    public final PipeColor color;
+
     public WireBlock(float radius, Properties settings) {
+        this(radius, settings, PipeColor.CLEAR);
+    }
+
+    public WireBlock(float radius, Properties settings, PipeColor color) {
         super(radius, settings.pushReaction(PushReaction.BLOCK));
+        this.color = color;
+    }
+
+    @Override
+    public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+        if (!(level.getBlockEntity(pos) instanceof WireBlockEntity wire)) return;
+        if (wire.getNetwork() == null || wire.getNetwork().markedForRemoval())
+            wire.createNetwork();
+
+        for (Direction direction : Direction.values()) {
+            BlockPos neighborPos = pos.relative(direction);
+            if (this.updateConnection(state, pos, direction, neighborPos, level))
+                this.onConnectionChanged(level, pos, direction, neighborPos);
+        }
     }
 
     @Override
@@ -64,6 +86,11 @@ public abstract class WireBlock extends PipeShapedBlock<WireBlockEntity> {
 
     @Override
     public boolean canConnectTo(Level level, BlockPos thisPos, Direction direction, BlockPos neighborPos, BlockState thisState) {
+        if (level.getBlockState(neighborPos).getBlock() instanceof WireBlock wire
+                && this.color != PipeColor.GRAY && wire.color != PipeColor.GRAY
+                && !this.color.canConnectTo(wire.color)) {
+            return false;
+        }
         if (level.getBlockEntity(neighborPos) instanceof Wire) return true;
         return level instanceof ServerLevel serverLevel && Capabilities.EnergyStorage.BLOCK.getCapability(
                 serverLevel, neighborPos, null, null, direction.getOpposite()) != null;

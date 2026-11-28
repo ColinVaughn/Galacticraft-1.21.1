@@ -23,7 +23,9 @@
 
 package dev.galacticraft.mod.content.teleporters;
 
+import dev.galacticraft.api.component.GCDataComponents;
 import dev.galacticraft.mod.attachments.GCServerPlayer;
+import dev.galacticraft.mod.content.item.GCItems;
 import dev.galacticraft.mod.content.GCEntityTypes;
 import dev.galacticraft.mod.content.GCBlocks;
 import dev.galacticraft.mod.content.entity.ParachestEntity;
@@ -66,6 +68,22 @@ public final class DestinationArrival {
         stored.getRocketStacks().clear();
         stored.setFuel(0);
         return arrival;
+    }
+
+    public static void returnParkedCargo(ServerPlayer player) {
+        var stored = GCServerPlayer.get(player);
+        long fuel = stored.getFuel();
+        for (ItemStack stack : stored.getRocketStacks()) {
+            if (stack.isEmpty()) continue;
+            // Older saves park the fuel separately.
+            if (fuel > 0 && stack.is(GCItems.ROCKET) && !stack.has(GCDataComponents.ROCKET_FUEL)) {
+                stack.set(GCDataComponents.ROCKET_FUEL, fuel);
+                fuel = 0;
+            }
+            player.getInventory().placeItemBackInInventory(stack.copy());
+        }
+        stored.getRocketStacks().clear();
+        stored.setFuel(fuel);
     }
 
     public static Entity spawn(ServerPlayer player, Vec3 position, NonNullList<ItemStack> cargo, long fuel) {

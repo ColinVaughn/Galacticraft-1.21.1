@@ -84,7 +84,7 @@ public final class FlagEditorClientTest implements ClientModInitializer {
                 wait = 10;
             }
             case 1 -> {
-                // Type the primary colour into the hex box, and right click blue as the secondary.
+                // Type the primary color into the hex box, and right click blue as the secondary.
                 AbstractWidget hex = widget(Translations.SpaceRace.FLAG_HEX);
                 click(hex, 0);
                 this.editor.keyPressed(GLFW.GLFW_KEY_END, 0, 0);
@@ -101,8 +101,8 @@ public final class FlagEditorClientTest implements ClientModInitializer {
             case 3 -> click(widget(Translations.SpaceRace.FLAG_PATTERN_PREFIX + "nordic_cross"), 0);
             case 4 -> {
                 if (client.screen != this.editor) failures.add("choosing a pattern did not return to the editor");
-                expectCanvas(16, 0, YELLOW, "the Nordic cross's upright, in the primary colour");
-                expectCanvas(0, 0, BLUE, "the field, in the secondary colour");
+                expectCanvas(16, 0, YELLOW, "the Nordic cross's upright, in the primary color");
+                expectCanvas(0, 0, BLUE, "the field, in the secondary color");
                 shot(client, "sweden");
             }
             case 5 -> {
@@ -138,7 +138,7 @@ public final class FlagEditorClientTest implements ClientModInitializer {
                 this.editor.keyPressed(GLFW.GLFW_KEY_I, 0, 0);
                 drag(35, 6, 35, 6, 1);
                 drag(2, 28, 2, 28, 1);
-                expectCanvas(2, 28, RED, "a right-click fill with the picked secondary colour");
+                expectCanvas(2, 28, RED, "a right-click fill with the picked secondary color");
             }
             case 9 -> {
                 click(widget(Translations.SpaceRace.FLAG_UNDO), 0);

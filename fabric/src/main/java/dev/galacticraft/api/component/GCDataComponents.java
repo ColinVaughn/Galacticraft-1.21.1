@@ -55,6 +55,9 @@ public class GCDataComponents {
     );
     public static final DataComponentType<Long> AMOUNT = register("amount", b -> b
             .persistent(Codec.LONG).networkSynchronized(StreamCodecs.LONG));
+    /** In droplets. */
+    public static final DataComponentType<Long> ROCKET_FUEL = register("rocket_fuel", b -> b
+            .persistent(Codec.LONG).networkSynchronized(StreamCodecs.LONG));
     public static final DataComponentType<Integer> COLOR = register("color", b -> b
             .persistent(ExtraCodecs.NON_NEGATIVE_INT).networkSynchronized(ByteBufCodecs.INT));
     public static final DataComponentType<Integer> TICKS_UNTIL_COOL = register("ticks_until_cool", b -> b

@@ -1,5 +1,27 @@
 # Changelog
 
+## 5.4.21 - 2026-11-28
+
+Minecraft 1.21.1. Separate builds are provided for Fabric and NeoForge. Java 21 is required.
+
+### Additions
+
+- Colored aluminum wires. Existing wires become gray wires.
+- Status display on the oxygen bubble distributor and fill gauges on storage modules.
+- The oxygen compressor shows the tank inside it.
+- A creative tab per world; machines are grouped in the Machines tab.
+- Sculk sensors hear further in thick atmospheres and only through contact in a vacuum.
+
+### Fixes
+
+- Rockets keep their leftover fuel when packed into an item.
+- Arriving at a space station returns your rocket, launch pad and cargo, without fall damage.
+- The bubble distributor stops its bubble when it loses power.
+
+### Changes
+
+- Removed the alpha warning screen.
+
 ## 5.4.20-prealpha - 2026-11-11
 
 Minecraft 1.21.1. Separate builds are provided for Fabric and NeoForge. Java 21 is required.

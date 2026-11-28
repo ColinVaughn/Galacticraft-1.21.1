@@ -5,7 +5,6 @@ import dev.architectury.networking.NetworkManager;
 import dev.galacticraft.mod.content.entity.damage.GCDamageTypes;
 import dev.galacticraft.mod.content.item.jupiter.PressureControllerItem;
 import dev.galacticraft.mod.network.s2c.JupiterPressurePayload;
-import dev.galacticraft.mod.world.dimension.GCDimensions;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;

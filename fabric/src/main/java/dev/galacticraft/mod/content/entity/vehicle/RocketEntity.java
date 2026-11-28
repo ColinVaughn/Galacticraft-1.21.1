@@ -483,7 +483,9 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
 
     @Override
     public ItemStack getPickResult() {
-        return this.getDropItem();
+        ItemStack rocket = this.getDropItem();
+        rocket.remove(GCDataComponents.ROCKET_FUEL);
+        return rocket;
     }
 
     @Override
@@ -492,6 +494,8 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
         rocket.applyComponents(this.getRocketData().asPatch());
         if (this.isCreative()) {
             rocket.set(GCDataComponents.CREATIVE, true);
+        } else if (this.tank.getAmount() > 0) {
+            rocket.set(GCDataComponents.ROCKET_FUEL, this.tank.getAmount());
         }
         return rocket;
     }
@@ -1235,15 +1239,9 @@ public class RocketEntity extends AdvancedVehicle implements Rocket, IgnoreShift
     private void packReturnInventory(ServerPlayer serverPlayer) {
         GCServerPlayer gcPlayer = GCServerPlayer.get(serverPlayer);
         gcPlayer.setRocketStacks(this.collectCargoForTransfer());
-        gcPlayer.setFuel(this.tank.getAmount());
-
-        var rocket = new ItemStack(GCItems.ROCKET);
-        RocketData d = this.getRocketData();
-        rocket.applyComponents(d.asPatch());
-        if (this.isCreative()) {
-            rocket.set(GCDataComponents.CREATIVE, true);
-        }
-        gcPlayer.finishReturnInventory(rocket);
+        // The fuel goes in the rocket item instead.
+        gcPlayer.setFuel(0);
+        gcPlayer.finishReturnInventory(this.getDropItem());
     }
 
     private void tickSpaceflight() {

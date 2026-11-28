@@ -117,10 +117,16 @@ public class GCTranslationProvider extends TranslationProvider {
         this.generateAdvancementsTranslations();
 
         // Tabs in the creative inventory
-        this.add(ItemGroup.BLOCKS, "Galacticraft - Boobcat Edition Blocks");
-        this.add(ItemGroup.ITEMS, "Galacticraft - Boobcat Edition Items");
-        this.add(ItemGroup.MACHINES, "Galacticraft - Boobcat Edition Machines");
-        this.add(ItemGroup.CANNED_FOOD, "Canned Food");
+        this.add(ItemGroup.BLOCKS, "Galacticraft BE - Overworld");
+        this.add(ItemGroup.MOON, "Galacticraft BE - Moon");
+        this.add(ItemGroup.MARS, "Galacticraft BE - Mars");
+        this.add(ItemGroup.VENUS, "Galacticraft BE - Venus");
+        this.add(ItemGroup.MERCURY, "Galacticraft BE - Mercury");
+        this.add(ItemGroup.JUPITER, "Galacticraft BE - Jupiter");
+        this.add(ItemGroup.ASTEROIDS, "Galacticraft BE - Asteroids");
+        this.add(ItemGroup.ITEMS, "Galacticraft BE - Items");
+        this.add(ItemGroup.MACHINES, "Galacticraft BE - Machines");
+        this.add(ItemGroup.CANNED_FOOD, "Galacticraft BE - Canned Food");
 
         this.add(RecipeCategory.CIRCUIT_FABRICATOR, "Circuit Fabrication");
         this.add(RecipeCategory.COMPRESSOR, "Compressing");
@@ -332,8 +338,8 @@ public class GCTranslationProvider extends TranslationProvider {
         this.block(GCBlocks.METEORIC_IRON_DOOR, "Meteoric Iron Door");
 
         // SPECIAL
-        this.block(GCBlocks.ALUMINUM_WIRE, "Aluminum Wire");
-        this.block(GCBlocks.HEAVY_ALUMINUM_WIRE, "Heavy Aluminum Wire");
+        GCBlocks.COLORED_ALUMINUM_WIRES.forEach((color, wire) -> this.block(wire, TranslationProvider.normalizeName(color.getName()) + " Aluminum Wire"));
+        GCBlocks.COLORED_HEAVY_ALUMINUM_WIRES.forEach((color, wire) -> this.block(wire, TranslationProvider.normalizeName(color.getName()) + " Heavy Aluminum Wire"));
         this.block(GCBlocks.SEALABLE_ALUMINUM_WIRE, "Sealable Aluminum Wire");
         this.block(GCBlocks.HEAVY_SEALABLE_ALUMINUM_WIRE, "Heavy Sealable Aluminum Wire");
         this.block(GCBlocks.GLASS_FLUID_PIPE, "Glass Fluid Pipe");
@@ -689,6 +695,15 @@ public class GCTranslationProvider extends TranslationProvider {
         dev.galacticraft.mod.content.item.jupiter.JupiterItems.NAMES.forEach(this::item);
         this.item(GCItems.BATTERY, "Battery");
         this.item(GCItems.INFINITE_BATTERY, "Infinite Battery");
+
+        // PICTURES
+        this.item(GCItems.ASTEROID_PICTURE, "Asteroid Picture");
+        this.item(GCItems.EARTH_PICTURE, "Earth Picture");
+        this.item(GCItems.MOON_PICTURE, "Moon Picture");
+        this.item(GCItems.MARS_PICTURE, "Mars Picture");
+        this.item(GCItems.VENUS_PICTURE, "Venus Picture");
+        this.item(GCItems.MERCURY_PICTURE, "Mercury Picture");
+        this.item(GCItems.JUPITER_PICTURE, "Jupiter Picture");
 
         // FLUID BUCKETS
         this.item(GCItems.CRUDE_OIL_BUCKET, "Oil Bucket");
@@ -1341,7 +1356,6 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(Config.SPACE_STATION_SHARED_BODIES_DESC, "Celestial body IDs whose stations share one communal dimension, each player scattered far apart. Leave empty for private per-player stations.");
         this.add(Config.DEBUG, "Debug");
         this.add(Config.DEBUG_LOGGING, "Debug Logging");
-        this.add(Config.HIDE_ALPHA_WARNING, "Hide Alpha Warning");
 
         this.add(Config.ENERGY, "Energy");
 
@@ -1666,10 +1680,6 @@ public class GCTranslationProvider extends TranslationProvider {
         this.add(Ui.AIRLOCK_STATUS, "Status:");
         this.add(Ui.AIRLOCK_OPEN, "Open");
         this.add(Ui.AIRLOCK_CLOSED, "Closed");
-        this.add(Ui.ALPHA_WARNING_1, "Galacticraft - Boobcat Edition is currently in ALPHA.");
-        this.add(Ui.ALPHA_WARNING_2, "Please report all issues you find.");
-        this.add(Ui.ALPHA_WARNING_3, "Press [ESC] or click to continue.");
-        this.add(Ui.ALPHA_WARNING_HEADER, "WARNING");
         this.add(Ui.OXYGEN_COMPRESSOR_DECOMPRESSOR_TITLE, "Oxygen Decompressor");
         this.add(Ui.BUBBLE_CURRENT_SIZE, "Current Size: %s");
         this.add(Ui.BUBBLE_NOT_VISIBLE, "Bubble Not Visible");

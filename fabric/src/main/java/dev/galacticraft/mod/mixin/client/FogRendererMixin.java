@@ -29,7 +29,6 @@ import com.llamalad7.mixinextras.sugar.Local;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.client.render.dimension.OverworldRenderer;
 import dev.galacticraft.mod.client.render.dimension.JupiterDimensionEffects;
-import dev.galacticraft.mod.world.dimension.GCDimensions;
 import dev.galacticraft.mod.content.entity.vehicle.RocketEntity;
 import dev.galacticraft.mod.tag.GCFluidTags;
 import net.minecraft.client.Camera;
@@ -94,7 +93,7 @@ public class FogRendererMixin {
 
     /**
      * Vanilla fades the fog to black near and below the world's floor. On Jupiter the depths glow instead, so the core
-     * colour is painted over the final fog and clear colour once the camera sinks into the heat.
+     * color is painted over the final fog and clear color once the camera sinks into the heat.
      */
     @Inject(method = "setupColor", at = @At("TAIL"))
     private static void gc$jupiterCoreGlow(Camera camera, float partialTicks, ClientLevel clientLevel, int renderDistanceChunks, float bossColorModifier, CallbackInfo ci) {

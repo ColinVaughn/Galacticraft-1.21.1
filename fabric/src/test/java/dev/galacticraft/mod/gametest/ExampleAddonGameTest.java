@@ -435,7 +435,8 @@ public class ExampleAddonGameTest implements GalacticraftGameTest {
             test.assertTrue(pilot.level().dimension().equals(primeKey)
                     && pilot.getVehicle() instanceof dev.galacticraft.mod.content.entity.vehicle.LanderEntity, "waiting for addon lander arrival");
             var lander = (dev.galacticraft.mod.content.entity.vehicle.LanderEntity) pilot.getVehicle();
-            test.assertTrue(lander.getFuel() > 0, "addon arrival lost fuel");
+            test.assertTrue(lander.getItem(lander.getContainerSize() - 2).getOrDefault(
+                    dev.galacticraft.api.component.GCDataComponents.ROCKET_FUEL, 0L) > 0, "addon arrival lost fuel");
         });
     }
 

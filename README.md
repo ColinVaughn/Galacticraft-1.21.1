@@ -6,7 +6,7 @@
 
 # Galacticraft - Boobcat Edition
 
-> Multi-loader port in progress: the project now has Architectury `common`, `fabric`, and `neoforge` modules. Fabric remains the playable implementation while subsystems are migrated to common code.
+> Separate builds are provided for Fabric and NeoForge.
 
 > **A fork by [Boobcat](https://github.com/ColinVaughn), based on [Team Galacticraft's](https://github.com/TeamGalacticraft/Galacticraft) 1.21.1 branch.**
 >
@@ -38,7 +38,7 @@ GPU timing covers the Moon lighting pass, rather than complete Minecraft frame t
 
 ---
 
-*The upstream Galacticraft README follows.*
+*Adapted from the upstream Galacticraft README.*
 
 # Galacticraft 5
 The classic Minecraft space mod, rewritten from the ground up for modern versions of the game.
@@ -47,28 +47,15 @@ The classic Minecraft space mod, rewritten from the ground up for modern version
 Here we answer a few common questions we get regarding the release of the mod.\
 More information can be found in the `#faq` channel in [our Discord][discord].
 
-**When will Galacticraft 5 be released?**\
-There is currently no ETA for a release.
-Keep an eye out on [our Discord server][discord] for an alpha release announcement.
-
-**Will Galacticraft 5 be on Forge?**\
-Yes, Forge development will start *after* we have a survival-playable alpha build out for Fabric.
-
 **Will Galacticraft 5 work with Galacticraft 4 addons?**\
 No, Galacticraft 5 is a complete rewrite, and does not have backwards compatibility with the old addon api.
 
 **How do I make a Galacticraft 5 addon?**\
 See the [addon guide](docs/addon-guide.md) for adding rocket parts, rocket tiers, upgrades and planets.
 
-## Pre-Alpha Builds
-> [!IMPORTANT]
-> Galacticraft 5 is still under development!\
-> It is possible that saves will become corrupted and/or unloadable after updates.\
-> It is strongly discouraged to use these builds for anything but testing.\
-> No support will be provided regarding the use of these builds.
-
-Pre-alpha builds are created after every commit to the `main` branch of this repository.\
-They can be found on the [GitHub Actions][actions] tab (select a commit and look for "Artifacts" at the bottom).
+## Builds
+Release builds for Fabric and NeoForge are published on the [releases page](https://github.com/ColinVaughn/Galacticraft-1.21.1/releases).
+Back up your worlds before updating.
 
 ## Contributing
 We welcome and encourage community contributions,

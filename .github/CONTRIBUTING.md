@@ -7,12 +7,9 @@ Thanks for your interest in contributing to Galacticraft!
 
 ### Builds
 > [!IMPORTANT]
-> Galacticraft 5 is still under development!\
-> It is possible that saves will become corrupted and/or unloadable after updates.\
-> It is strongly discouraged to use these builds for anything but testing.\
-> No support will be provided regarding the use of these builds.
+> Development builds may contain bugs. Back up your worlds before testing them.
 
-Pre-alpha builds are created after every commit to the `main` branch of this repository.\
+Development builds are created after every commit to the `main` branch of this repository.\
 They can be found on the [GitHub Actions][actions] tab (select a commit and look for "Artifacts" at the bottom).
 
 ### Bug Reports

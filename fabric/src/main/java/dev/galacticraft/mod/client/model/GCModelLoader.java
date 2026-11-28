@@ -48,6 +48,7 @@ import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.model.AtlasSet;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.UnbakedModel;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.data.models.model.ModelLocationUtils;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
@@ -115,18 +116,11 @@ public class GCModelLoader implements ModelLoadingPlugin, IdentifiableResourceRe
         pluginContext.resolveModel().register(context -> {
             var resourceId = context.id();
 
-            for (Block pipe : GCBlocks.GLASS_FLUID_PIPES.values()) {
-                if (ModelLocationUtils.getModelLocation(pipe).equals(resourceId)) {
-                    return new PipeUnbakedModel(resourceId, 0.125f);
-                }
-            }
-
-            if (ModelLocationUtils.getModelLocation(GCBlocks.ALUMINUM_WIRE).equals(resourceId)) {
-                return new PipeUnbakedModel(Constant.id("block/aluminum_wire"), 0.125f);
-            } else if (ModelLocationUtils.getModelLocation(GCBlocks.HEAVY_ALUMINUM_WIRE).equals(resourceId)) {
-                return new PipeUnbakedModel(Constant.id("block/heavy_aluminum_wire"), 0.1875f);
+            UnbakedModel pipe = pipeModel(resourceId);
+            if (pipe != null) {
+                return pipe;
             } else if (Constant.BakedModel.HEAVY_WIRE_WALKWAY_MARKER.equals(resourceId)) {
-                return new PipeUnbakedModel(Constant.id("block/heavy_aluminum_wire"), 0.1875f);
+                return new PipeUnbakedModel(Constant.id("block/" + Constant.Block.GRAY_HEAVY_ALUMINUM_WIRE), 0.1875f);
             } else if (Constant.BakedModel.WALKWAY_CONNECTOR_MARKER.equals(resourceId)) {
                 return new PipeUnbakedModel(Constant.id("block/walkway_connector"), 0.125f);
             } else if (Constant.BakedModel.WALKWAY_CENTER_MARKER.equals(resourceId)) {
@@ -134,9 +128,9 @@ public class GCModelLoader implements ModelLoadingPlugin, IdentifiableResourceRe
             } else if (Constant.BakedModel.PIPE_WALKWAY_CENTER_MARKER.equals(resourceId)) {
                 return new WalkwayCenterModel(Constant.id("block/glass_fluid_pipe"));
             } else if (Constant.BakedModel.WIRE_WALKWAY_CENTER_MARKER.equals(resourceId)) {
-                return new WalkwayCenterModel(Constant.id("block/aluminum_wire"));
+                return new WalkwayCenterModel(Constant.id("block/" + Constant.Block.GRAY_ALUMINUM_WIRE));
             } else if (Constant.BakedModel.HEAVY_WIRE_WALKWAY_CENTER_MARKER.equals(resourceId)) {
-                return new WalkwayCenterModel(Constant.id("block/heavy_aluminum_wire"), 0.1875f);
+                return new WalkwayCenterModel(Constant.id("block/" + Constant.Block.GRAY_HEAVY_ALUMINUM_WIRE), 0.1875f);
             } else if (Constant.BakedModel.VACUUM_GLASS_MODEL.equals(resourceId)) {
                 return VacuumGlassUnbakedModel.INSTANCE;
             } else if (PARACHEST_ITEM.equals(resourceId)) {
@@ -148,6 +142,19 @@ public class GCModelLoader implements ModelLoadingPlugin, IdentifiableResourceRe
             }
             return null;
         });
+    }
+
+    private static @Nullable UnbakedModel pipeModel(ResourceLocation resourceId) {
+        for (Block pipe : GCBlocks.GLASS_FLUID_PIPES.values()) {
+            if (ModelLocationUtils.getModelLocation(pipe).equals(resourceId)) return new PipeUnbakedModel(resourceId, 0.125f);
+        }
+        for (Block wire : GCBlocks.COLORED_ALUMINUM_WIRES.values()) {
+            if (ModelLocationUtils.getModelLocation(wire).equals(resourceId)) return new PipeUnbakedModel(resourceId, 0.125f);
+        }
+        for (Block wire : GCBlocks.COLORED_HEAVY_ALUMINUM_WIRES.values()) {
+            if (ModelLocationUtils.getModelLocation(wire).equals(resourceId)) return new PipeUnbakedModel(resourceId, 0.1875f);
+        }
+        return null;
     }
 
     public static void registerModelType(GCUnbakedModel.GCModelType type) {

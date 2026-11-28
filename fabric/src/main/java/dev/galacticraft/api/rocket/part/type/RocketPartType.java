@@ -69,7 +69,7 @@ public sealed interface RocketPartType<C extends RocketPartConfig> permits Rocke
 
     /**
      * Returns whether the rocket paint menu offers this part. Only return {@code true} when this
-     * part's renderer applies the rocket's paint colour.
+     * part's renderer applies the rocket's paint color.
      */
     default boolean isPaintable(@NotNull C config) {
         return false;

@@ -387,7 +387,7 @@ final class FlagEditorIcons {
             case 'B' -> 0xFF2A63A8;
             case 'r' -> 0xFFD94B3F;
             case 'g' -> 0xFF9AA0A6;
-            default -> throw new IllegalArgumentException("No icon colour " + key);
+            default -> throw new IllegalArgumentException("No icon color " + key);
         };
     }
 }

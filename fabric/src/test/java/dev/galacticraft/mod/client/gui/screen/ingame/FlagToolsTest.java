@@ -123,14 +123,14 @@ class FlagToolsTest {
     }
 
     @Test
-    void floodFillTakesOnlyTheTouchingRegionOfOneColour() {
+    void floodFillTakesOnlyTheTouchingRegionOfOneColor() {
         FlagCanvas canvas = white();
         FlagCanvas.Brush wall = new FlagCanvas.Brush(BLACK, 1, false, false);
         canvas.line(24, 0, 24, 31, wall);
         canvas.floodFill(3, 3, new FlagCanvas.Brush(RED, 1, false, false));
         assertEquals(RED, canvas.pixel(0, 0));
         assertEquals(RED, canvas.pixel(23, 31));
-        assertEquals(BLACK, canvas.pixel(24, 10), "the wall is not a matching colour");
+        assertEquals(BLACK, canvas.pixel(24, 10), "the wall is not a matching color");
         assertEquals(WHITE, canvas.pixel(25, 10), "it does not cross the wall");
 
         FlagCanvas diagonal = white();
@@ -203,7 +203,7 @@ class FlagToolsTest {
     }
 
     @Test
-    void theFlagsOwnColoursComeFirstInTheRecentRow() {
+    void theFlagsOwnColorsComeFirstInTheRecentRow() {
         FlagCanvas canvas = white();
         canvas.rectangle(0, 0, 47, 9, new FlagCanvas.Brush(RED, 1, false, false), true);
         canvas.rectangle(0, 10, 3, 10, new FlagCanvas.Brush(BLUE, 1, false, false), true);
@@ -212,7 +212,7 @@ class FlagToolsTest {
     }
 
     @Test
-    void everyPatternUsesBothColoursWhereItShould() {
+    void everyPatternUsesBothColorsWhereItShould() {
         for (FlagPattern pattern : FlagPattern.values()) {
             FlagCanvas canvas = white();
             canvas.applyPattern(pattern, RED, BLUE);
@@ -221,7 +221,7 @@ class FlagToolsTest {
             if (pattern == FlagPattern.SOLID) {
                 assertEquals(W * H, red);
             } else {
-                assertTrue(red > 0 && blue > 0, pattern + " uses both colours");
+                assertTrue(red > 0 && blue > 0, pattern + " uses both colors");
             }
         }
     }

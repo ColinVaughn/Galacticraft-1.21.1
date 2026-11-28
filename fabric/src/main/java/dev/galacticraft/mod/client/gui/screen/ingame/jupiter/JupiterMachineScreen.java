@@ -113,7 +113,7 @@ public abstract class JupiterMachineScreen<T extends MachineBlockEntity> extends
         return status != null && status.getType().isActive();
     }
 
-    /** One line of panel text at panel-relative {@code (x, y)}, in the classic dark grey. */
+    /** One line of panel text at panel-relative {@code (x, y)}, in the classic dark gray. */
     protected void text(GuiGraphics graphics, Component text, int x, int y) {
         this.text(graphics, text, x, y, TEXT);
     }

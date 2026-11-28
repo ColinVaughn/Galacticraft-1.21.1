@@ -121,10 +121,10 @@ public class ConfigurableSkyRenderer extends SpaceSkyRenderer {
         net.minecraft.world.phys.Vec3 above = haze.multiply(1 - 0.6 * heat, 1 - 0.75 * heat, 1 - 0.85 * heat);
         net.minecraft.world.phys.Vec3 below = haze.lerp(new net.minecraft.world.phys.Vec3(1.0, 0.93, 0.78), 0.65 * heat);
         double[] elevation = {90, 50, 20, 6, 0, -6, -20, -50, -90};
-        net.minecraft.world.phys.Vec3[] colour = new net.minecraft.world.phys.Vec3[elevation.length];
+        net.minecraft.world.phys.Vec3[] color = new net.minecraft.world.phys.Vec3[elevation.length];
         for (int i = 0; i < elevation.length; i++) {
             double e = elevation[i];
-            colour[i] = e >= 0 ? haze.lerp(above, Math.pow(e / 90.0, 0.6)) : haze.lerp(below, Math.pow(-e / 90.0, 0.6));
+            color[i] = e >= 0 ? haze.lerp(above, Math.pow(e / 90.0, 0.6)) : haze.lerp(below, Math.pow(-e / 90.0, 0.6));
         }
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         Matrix4f matrix = context.positionMatrix();
@@ -133,10 +133,10 @@ public class ConfigurableSkyRenderer extends SpaceSkyRenderer {
         for (int ring = 0; ring < elevation.length - 1; ring++) {
             for (int seg = 0; seg < segments; seg++) {
                 double a0 = seg * Math.PI * 2 / segments, a1 = (seg + 1) * Math.PI * 2 / segments;
-                skyVertex(buffer, matrix, a0, elevation[ring], colour[ring]);
-                skyVertex(buffer, matrix, a1, elevation[ring], colour[ring]);
-                skyVertex(buffer, matrix, a1, elevation[ring + 1], colour[ring + 1]);
-                skyVertex(buffer, matrix, a0, elevation[ring + 1], colour[ring + 1]);
+                skyVertex(buffer, matrix, a0, elevation[ring], color[ring]);
+                skyVertex(buffer, matrix, a1, elevation[ring], color[ring]);
+                skyVertex(buffer, matrix, a1, elevation[ring + 1], color[ring + 1]);
+                skyVertex(buffer, matrix, a0, elevation[ring + 1], color[ring + 1]);
             }
         }
         RenderSystem.disableCull();
@@ -144,11 +144,11 @@ public class ConfigurableSkyRenderer extends SpaceSkyRenderer {
         RenderSystem.enableCull();
     }
 
-    private static void skyVertex(BufferBuilder buffer, Matrix4f matrix, double azimuth, double elevationDegrees, net.minecraft.world.phys.Vec3 colour) {
+    private static void skyVertex(BufferBuilder buffer, Matrix4f matrix, double azimuth, double elevationDegrees, net.minecraft.world.phys.Vec3 color) {
         double e = Math.toRadians(elevationDegrees);
         float r = CELESTIAL_DISTANCE * 1.5F;
         buffer.addVertex(matrix, (float) (Math.cos(azimuth) * Math.cos(e) * r), (float) (Math.sin(e) * r), (float) (Math.sin(azimuth) * Math.cos(e) * r))
-                .setColor((float) colour.x, (float) colour.y, (float) colour.z, 1.0F);
+                .setColor((float) color.x, (float) color.y, (float) color.z, 1.0F);
     }
 
     private static void drawQuad(Matrix4f matrix, float size) {

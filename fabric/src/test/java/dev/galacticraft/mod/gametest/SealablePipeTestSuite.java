@@ -158,11 +158,11 @@ public final class SealablePipeTestSuite implements GalacticraftGameTest {
     }
 
     /**
-     * Every colour has to be a full block, since that is the only thing making it seal. A colour that
+     * Every color has to be a full block, since that is the only thing making it seal. A color that
      * slipped back to the bare pipe's thickness would leak while looking identical in the inventory.
      */
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 200)
-    public void everySealablePipeColourIsSolidOnEveryFace(GameTestHelper context) {
+    public void everySealablePipeColorIsSolidOnEveryFace(GameTestHelper context) {
         BlockPos pos = new BlockPos(1, 1, 1);
         for (PipeColor color : PipeColor.values()) {
             Block pipe = GCBlocks.SEALABLE_GLASS_FLUID_PIPES.get(color);

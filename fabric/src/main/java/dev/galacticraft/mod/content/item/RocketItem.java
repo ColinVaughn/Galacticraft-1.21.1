@@ -86,6 +86,8 @@ public class RocketItem extends Item {
                 boolean creative = held.getComponents().getOrDefault(GCDataComponents.CREATIVE, false);
                 if (creative) {
                     rocket.setCreative(true);
+                } else {
+                    rocket.setFuel(held.getOrDefault(GCDataComponents.ROCKET_FUEL, 0L));
                 }
                 level.addFreshEntity(rocket);
 
@@ -111,6 +113,11 @@ public class RocketItem extends Item {
         Style style = TooltipUtil.DEFAULT_STYLE;
         RocketData data = stack.has(GCDataComponents.ROCKET_DATA) ? stack.get(GCDataComponents.ROCKET_DATA) : RocketPrefabs.MISSING;
         List<Component> list = new ArrayList<>();
+        long fuel = stack.getOrDefault(GCDataComponents.ROCKET_FUEL, 0L);
+        if (fuel > 0) {
+            tooltip.add(Component.translatable(Translations.Ui.ROCKET_FUEL).append(" ").withStyle(style).append(Component.literal(
+                    fuel * 1000 / dev.galacticraft.mod.util.FluidUtil.bucketsToDroplets(1) + " " + dev.galacticraft.mod.util.FluidUtil.SUFFIX_MILLIBUCKETS)));
+        }
         if (!data.isValid() && stack.has(GCDataComponents.ROCKET_DATA)) {
             tooltip.add(Component.translatable("gui.galacticraft.rocket_refit.incomplete").withStyle(net.minecraft.ChatFormatting.RED));
             for (RocketPartTypes type : java.util.List.of(RocketPartTypes.CONE, RocketPartTypes.BODY, RocketPartTypes.FIN, RocketPartTypes.ENGINE)) {

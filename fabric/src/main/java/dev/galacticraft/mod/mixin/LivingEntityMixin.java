@@ -37,7 +37,7 @@ import dev.galacticraft.mod.content.block.special.TinLadderBlock;
 import dev.galacticraft.mod.content.item.CannedFoodItem;
 import dev.galacticraft.mod.content.item.ParachuteItem;
 import dev.galacticraft.mod.content.item.ParachuteLogic;
-import dev.galacticraft.mod.tag.GCDimensionTypeTags;
+import dev.galacticraft.mod.world.atmosphere.AtmosphericDensity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -273,19 +273,13 @@ public abstract class LivingEntityMixin extends Entity implements CryogenicAcces
 
     @ModifyExpressionValue(method = "travel", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isFallFlying()Z"))
     private boolean gc$canStartFallFlying(boolean original) {
-        return this.level().galacticraft$hasDimensionTypeTag(GCDimensionTypeTags.VACUUM) ? false : original;
+        return AtmosphericDensity.isVacuum(this.level()) ? false : original;
     }
 
     @ModifyArg(method = "travel", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;setDeltaMovement(Lnet/minecraft/world/phys/Vec3;)V", ordinal = 6), index = 0)
     private Vec3 gc$adjustAtmosphericDrag(Vec3 original) {
-        Holder<CelestialBody<?, ?>> holder = this.level().galacticraft$getCelestialBody();
-        if (holder != null) {
-            // Capped so a very dense atmosphere (Venus at 92 bar) stays noticeably thick to move
-            // through without bringing movement to a halt.
-            float drag = Math.min(0.02F, holder.value().atmosphere().pressure() / 2000.0F);
-            return original.multiply(1.0F - drag, 1.0F - drag * 2.0F, 1.0F - drag);
-        }
-        return original;
+        float drag = AtmosphericDensity.elytraDrag(this.level());
+        return drag > 0.0F ? original.multiply(1.0F - drag, 1.0F - drag * 2.0F, 1.0F - drag) : original;
     }
 
     @WrapOperation(method = "triggerItemUseEffects", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;spawnItemParticles(Lnet/minecraft/world/item/ItemStack;I)V"))

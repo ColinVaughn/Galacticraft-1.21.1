@@ -44,8 +44,8 @@ import org.jetbrains.annotations.Nullable;
  * which is the same thing that makes the sealable wire work - neither block is in the {@code sealable}
  * tag, and neither needs to be.
  *
- * Carries fluid exactly as the pipe it encloses does, colour included, so a coloured line keeps its
- * identity through a wall instead of being bridged into every other line by a colourless section.
+ * Carries fluid exactly as the pipe it encloses does, color included, so a colored line keeps its
+ * identity through a wall instead of being bridged into every other line by a colorless section.
  */
 public class SealableGlassFluidPipeBlock extends FluidPipeBlock {
     /** Fills the block, rather than the 0.125 of a bare pipe. */

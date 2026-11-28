@@ -63,8 +63,8 @@ public final class GCNeoDynamicModels {
                         : model);
         for (Block pipe : GCBlocks.GLASS_FLUID_PIPES.values()) replace(event, pipe, ModelLocationUtils.getModelLocation(pipe), 0.125F);
         replace(event, GCBlocks.GLASS_FLUID_PIPE, Constant.id("block/glass_fluid_pipe"), 0.125F);
-        replace(event, GCBlocks.ALUMINUM_WIRE, Constant.id("block/aluminum_wire"), 0.125F);
-        replace(event, GCBlocks.HEAVY_ALUMINUM_WIRE, Constant.id("block/heavy_aluminum_wire"), 0.1875F);
+        for (Block wire : GCBlocks.COLORED_ALUMINUM_WIRES.values()) replace(event, wire, ModelLocationUtils.getModelLocation(wire), 0.125F);
+        for (Block wire : GCBlocks.COLORED_HEAVY_ALUMINUM_WIRES.values()) replace(event, wire, ModelLocationUtils.getModelLocation(wire), 0.1875F);
         var frame = event.getTextureGetter().apply(new Material(InventoryMenu.BLOCK_ATLAS, Constant.id("block/aluminum_decoration")));
         replaceVacuumGlass(event, GCBlocks.VACUUM_GLASS, Constant.id("block/vacuum_glass_vanilla"), frame);
         replaceVacuumGlass(event, GCBlocks.CLEAR_VACUUM_GLASS, Constant.id("block/vacuum_glass_clear"), frame);

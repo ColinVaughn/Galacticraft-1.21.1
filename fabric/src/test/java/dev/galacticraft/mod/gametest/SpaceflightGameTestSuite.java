@@ -31,7 +31,6 @@ import dev.galacticraft.mod.content.GCEntityTypes;
 import dev.galacticraft.mod.content.entity.vehicle.RocketEntity;
 import dev.galacticraft.mod.content.entity.vehicle.LanderEntity;
 import dev.galacticraft.mod.content.entity.vehicle.AutomaticLanderEntity;
-import dev.galacticraft.mod.content.teleporters.DestinationArrival;
 import dev.galacticraft.mod.attachments.GCServerPlayer;
 import dev.galacticraft.mod.content.item.GCItems;
 import dev.galacticraft.mod.content.rocket.RocketPrefabs;
@@ -122,18 +121,22 @@ public class SpaceflightGameTestSuite implements GalacticraftGameTest {
             test.assertTrue(pilot.getVehicle() instanceof LanderEntity, "waiting for Moon lander");
             LanderEntity lander = (LanderEntity) pilot.getVehicle();
             require(lander.getType() == GCEntityTypes.LANDER && pilot.level().dimension().equals(GCDimensions.MOON), "wrong arrival vehicle");
-            require(lander.getItem(lander.getContainerSize() - 2).save(lander.registryAccess()).equals(expectedRocket.save(lander.registryAccess())), "rocket paint or parts were lost");
+            ItemStack landedRocket = lander.getItem(lander.getContainerSize() - 2).copy();
+            long landedFuel = landedRocket.getOrDefault(dev.galacticraft.api.component.GCDataComponents.ROCKET_FUEL, 0L);
+            landedRocket.remove(dev.galacticraft.api.component.GCDataComponents.ROCKET_FUEL);
+            require(landedRocket.save(lander.registryAccess()).equals(expectedRocket.save(lander.registryAccess())), "rocket paint or parts were lost");
             require(lander.getItem(0).is(Items.DIAMOND) && lander.getItem(0).getCount() == 17
                     && lander.getItem(53).is(Items.EMERALD) && lander.getItem(53).getCount() == 64, "cargo was lost or duplicated");
             require(lander.getItem(lander.getContainerSize() - 3).getCount() == 9, "launch pad was lost");
-            require(lander.getFuel() > 0 && lander.getFuel() <= fuel, "fuel was lost or created");
+            require(landedFuel > 0 && landedFuel <= fuel, "fuel was lost or created");
+            require(lander.getFuel() == 0, "fuel was duplicated into the lander");
             require(GCServerPlayer.get(pilot).getFuel() == 0
                     && GCServerPlayer.get(pilot).getRocketStacks().stream().allMatch(ItemStack::isEmpty), "player attachment duplicated cargo");
             var saved = new CompoundTag();
             lander.saveWithoutId(saved);
             var restored = new LanderEntity(GCEntityTypes.LANDER, lander.level());
             restored.load(saved);
-            require(restored.getFuel() == lander.getFuel() && restored.getItem(restored.getContainerSize() - 2).save(lander.registryAccess()).equals(expectedRocket.save(lander.registryAccess())), "reload lost rocket or fuel");
+            require(restored.getItem(restored.getContainerSize() - 2).save(lander.registryAccess()).equals(lander.getItem(lander.getContainerSize() - 2).save(lander.registryAccess())), "reload lost rocket or fuel");
             require(restored.shouldMove(), "reload restarted the old 40 tick landing delay");
             var menu = lander.createMenu(1, pilot.getInventory(), pilot);
             var recovered = menu.quickMoveStack(pilot, 36 + lander.getContainerSize() - 2);
@@ -307,12 +310,15 @@ public class SpaceflightGameTestSuite implements GalacticraftGameTest {
                 require(player.galacticraft$isParachuteOpen(), "equipped parachute did not open");
                 var chests = player.level().getEntitiesOfClass(dev.galacticraft.mod.content.entity.ParachestEntity.class, player.getBoundingBox().inflate(12));
                 require(chests.size() == 1, "arrival did not create exactly one parachest");
-                require(chests.getFirst().cargo.getFirst().getCount() == 7 && chests.getFirst().fuelLevel > 0, "parachest lost cargo or fuel");
+                var cargo = chests.getFirst().cargo;
+                require(cargo.getFirst().getCount() == 7 && chests.getFirst().fuelLevel == 0
+                        && cargo.getLast().getOrDefault(dev.galacticraft.api.component.GCDataComponents.ROCKET_FUEL, 0L) > 0, "parachest lost cargo or the rocket's fuel");
                 chests.getFirst().discard();
             } else {
                 test.assertTrue(player.getVehicle() != null && player.getVehicle().getType() == expected, "waiting for destination vehicle");
                 var lander = (AutomaticLanderEntity) player.getVehicle();
-                require(!lander.hasManualControls() && lander.getFuel() > 0 && lander.getItem(0).getCount() == 7, "automatic arrival lost cargo or fuel");
+                long landedFuel = lander.getItem(lander.getContainerSize() - 2).getOrDefault(dev.galacticraft.api.component.GCDataComponents.ROCKET_FUEL, 0L);
+                require(!lander.hasManualControls() && landedFuel > 0 && lander.getFuel() == 0 && lander.getItem(0).getCount() == 7, "automatic arrival lost cargo or fuel");
                 double expectedY = destinationIndex == 5 ? 310 : 900;
                 require(lander.getY() >= expectedY - 40, "arrival deployed near the surface instead of GC4 entry height");
                 double y = lander.getY();

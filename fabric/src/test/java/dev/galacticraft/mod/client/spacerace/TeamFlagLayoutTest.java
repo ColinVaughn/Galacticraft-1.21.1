@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class TeamFlagLayoutTest {
     private static final int W = TeamFlagImage.WIDTH, H = TeamFlagImage.HEIGHT;
 
-    /** Every pixel a different colour, so each texel says exactly which pixel it came from. */
+    /** Every pixel a different color, so each texel says exactly which pixel it came from. */
     private static int[] numbered() {
         int[] design = new int[W * H];
         for (int i = 0; i < design.length; i++) design[i] = 0xFF000000 | (i + 1);
@@ -84,7 +84,7 @@ class TeamFlagLayoutTest {
     }
 
     @Test
-    void theEdgesTakeTheColourOfTheClothBesideThem() {
+    void theEdgesTakeTheColorOfTheClothBesideThem() {
         int[] layout = TeamFlagLayout.layout(numbered());
 
         assertEquals(pixel(0, 0), texel(layout, 101, 5), "top edge");

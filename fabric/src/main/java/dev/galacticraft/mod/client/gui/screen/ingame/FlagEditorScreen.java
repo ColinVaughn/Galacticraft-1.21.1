@@ -629,7 +629,7 @@ final class FlagEditorScreen extends Screen {
         }
     }
 
-    /** A colour to paint with: left click makes it the primary, right click the secondary. */
+    /** A color to paint with: left click makes it the primary, right click the secondary. */
     private final class ColorCell extends AbstractWidget {
         private final int color;
 

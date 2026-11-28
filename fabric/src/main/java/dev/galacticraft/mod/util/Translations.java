@@ -66,6 +66,12 @@ public interface Translations {
     }
 
     interface ItemGroup {
+        String MOON = "itemGroup.galacticraft.moon";
+        String MARS = "itemGroup.galacticraft.mars";
+        String VENUS = "itemGroup.galacticraft.venus";
+        String MERCURY = "itemGroup.galacticraft.mercury";
+        String JUPITER = "itemGroup.galacticraft.jupiter";
+        String ASTEROIDS = "itemGroup.galacticraft.asteroids";
         String ITEMS = "itemGroup.galacticraft.items";
         String BLOCKS = "itemGroup.galacticraft.blocks";
         String MACHINES = "itemGroup.galacticraft.machines";
@@ -205,7 +211,6 @@ public interface Translations {
 
         String DEBUG = "config.galacticraft.debug";
         String DEBUG_LOGGING = "config.galacticraft.debug.logging";
-        String HIDE_ALPHA_WARNING = "config.galacticraft.debug.hide_alpha_warning";
 
         String ENERGY = "config.galacticraft.energy";
 
@@ -579,10 +584,6 @@ public interface Translations {
         String AIRLOCK_STATUS = "ui.galacticraft.airlock.status";
         String AIRLOCK_OPEN = "ui.galacticraft.airlock.open";
         String AIRLOCK_CLOSED = "ui.galacticraft.airlock.closed";
-        String ALPHA_WARNING_1 = "ui.galacticraft.alpha_warning.content1";
-        String ALPHA_WARNING_2 = "ui.galacticraft.alpha_warning.content2";
-        String ALPHA_WARNING_3 = "ui.galacticraft.alpha_warning.content3";
-        String ALPHA_WARNING_HEADER = "ui.galacticraft.alpha_warning.header";
 
         String OXYGEN_COMPRESSOR_DECOMPRESSOR_TITLE = "ui.galacticraft.oxygen_compressor.decompressor_mode";
         String BUBBLE_CURRENT_SIZE = "ui.galacticraft.bubble_distributor.current_size";

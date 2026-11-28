@@ -27,7 +27,6 @@ import dev.galacticraft.api.universe.celestialbody.CelestialBodyTags;
 import dev.galacticraft.api.universe.celestialbody.CelestialBody;
 import dev.galacticraft.mod.Galacticraft;
 import dev.galacticraft.mod.api.config.Config;
-import dev.galacticraft.mod.content.GCCelestialBodies;
 import dev.galacticraft.mod.content.block.special.CryogenicChamberBlock;
 import dev.galacticraft.mod.content.block.special.CryogenicChamberPart;
 import dev.galacticraft.mod.content.entity.damage.GCDamageTypes;

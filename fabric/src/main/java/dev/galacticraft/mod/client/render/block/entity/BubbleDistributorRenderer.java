@@ -23,20 +23,119 @@
 package dev.galacticraft.mod.client.render.block.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import dev.galacticraft.machinelib.api.machine.MachineStatus;
 import dev.galacticraft.mod.Constant;
 import dev.galacticraft.mod.client.model.GCModel;
 import dev.galacticraft.mod.client.model.GCModelLoader;
 import dev.galacticraft.mod.client.model.GCRenderTypes;
+import dev.galacticraft.mod.client.render.block.entity.lcd.LcdImage;
+import dev.galacticraft.mod.client.render.block.entity.lcd.LcdRenderer;
 import dev.galacticraft.mod.content.block.entity.machine.OxygenBubbleDistributorBlockEntity;
+import dev.galacticraft.mod.machine.GCMachineStatuses;
+import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.AABB;
 
+import java.util.List;
+
 public class BubbleDistributorRenderer implements BlockEntityRenderer<OxygenBubbleDistributorBlockEntity> {
+    private static final int WARNING_RED = 0xB91C1C;
+    private static final int BUBBLE_CYAN = 0x09D1EF;
+    private static final int RIPPLE_DELAY_MS = 375;
+    private static final LcdImage NO_POWER = LcdImage.parse(32, 10, 8,
+            "#...#...###.",
+            "#...#..#...#",
+            "##..#..#...#",
+            "#.#.#..#...#",
+            "#..##..#...#",
+            "#...#..#...#",
+            "#...#...###.",
+            "............",
+            "............",
+            "####...#...#",
+            "#...#..#...#",
+            "#...#..#...#",
+            "####...#.#.#",
+            "#......#.#.#",
+            "#......#.#.#",
+            "#.......#.#.");
+    private static final LcdImage NO_OXYGEN = LcdImage.parse(32, 10, 8,
+            "#...#...###.",
+            "#...#..#...#",
+            "##..#..#...#",
+            "#.#.#..#...#",
+            "#..##..#...#",
+            "#...#..#...#",
+            "#...#...###.",
+            "............",
+            "............",
+            ".###....###.",
+            "#...#..#...#",
+            "#...#......#",
+            "#...#.....#.",
+            "#...#....#..",
+            "#...#...#...",
+            ".###...#####");
+    private static final LcdImage RIPPLE_INNER = LcdImage.parse(32, 12, 12,
+            "..####..",
+            "..####..",
+            "##....##",
+            "##....##",
+            "##....##",
+            "##....##",
+            "..####..",
+            "..####..");
+    private static final LcdImage RIPPLE_MIDDLE = LcdImage.parse(32, 8, 8,
+            "....########....",
+            "....########....",
+            "..##........##..",
+            "..##........##..",
+            "##............##",
+            "##............##",
+            "##............##",
+            "##............##",
+            "##............##",
+            "##............##",
+            "##............##",
+            "##............##",
+            "..##........##..",
+            "..##........##..",
+            "....########....",
+            "....########....");
+    private static final LcdImage RIPPLE_OUTER = LcdImage.parse(32, 4, 4,
+            "........########........",
+            "........########........",
+            "....####........####....",
+            "....####........####....",
+            "..##................##..",
+            "..##................##..",
+            "..##................##..",
+            "..##................##..",
+            "##....................##",
+            "##....................##",
+            "##....................##",
+            "##....................##",
+            "##....................##",
+            "##....................##",
+            "##....................##",
+            "##....................##",
+            "..##................##..",
+            "..##................##..",
+            "..##................##..",
+            "..##................##..",
+            "....####........####....",
+            "....####........####....",
+            "........########........",
+            "........########........");
+    private static final List<LcdImage> RIPPLES = List.of(RIPPLE_INNER, RIPPLE_MIDDLE, RIPPLE_OUTER);
+
     public static final ResourceLocation MODEL = Constant.id("models/misc/sphere.json");
     /**
      * Large bubbles stay on screen long after the machine block itself is out of the default 64 block
@@ -59,13 +158,28 @@ public class BubbleDistributorRenderer implements BlockEntityRenderer<OxygenBubb
 
     @Override
     public void render(OxygenBubbleDistributorBlockEntity machine, float tickDelta, PoseStack matrices, MultiBufferSource vertexConsumers, int light, int overlay) {
-        if (machine.isDisabled() || !machine.isBubbleVisible()) {
-            return;
+        if (machine.isDisabled()) return;
+
+        Direction facing = machine.getBlockState().getValue(BlockStateProperties.HORIZONTAL_FACING);
+        light = LevelRenderer.getLightColor(machine.getLevel(), machine.getBlockPos().above());
+        MachineStatus status = machine.getState().getStatus();
+        if (GCMachineStatuses.DISTRIBUTING.equals(status)) {
+            for (int i = 0; i < RIPPLES.size(); i++) {
+                LcdRenderer.draw(LcdRenderer.Face.TOP, RIPPLES.get(i), LcdRenderer.pulse(BUBBLE_CYAN, i * RIPPLE_DELAY_MS),
+                        facing, matrices, vertexConsumers, light, overlay);
+            }
+        } else {
+            LcdImage warning = GCMachineStatuses.NOT_ENOUGH_OXYGEN.equals(status) ? NO_OXYGEN : NO_POWER;
+            LcdRenderer.draw(LcdRenderer.Face.TOP, warning, LcdRenderer.pulse(WARNING_RED, 0), facing, matrices, vertexConsumers, light, overlay);
         }
+
+        if (!machine.isBubbleVisible())
+            return;
+
         GCModel bubbleModel = GCModelLoader.INSTANCE.getModel(MODEL);
-        if (bubbleModel == GCModelLoader.MISSING_MODEL) {
+        if (bubbleModel == GCModelLoader.MISSING_MODEL)
             return;
-        }
+
         double size = machine.getSize();
 
         matrices.pushPose();
